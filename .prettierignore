@@ -4,3 +4,8 @@
 /.nx/cache
 /.nx/workspace-data
 .nx/self-healing
+# Generated token outputs (design-system:tokens) — regenerate, never reformat
+packages/design-system/build
+packages/design-system/src/theme/palette-recipe.data.ts
+packages/design-system/tokens/palette-fixtures.json
+packages/design-system/tokens/reference

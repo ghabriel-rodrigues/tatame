@@ -56,11 +56,11 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 2 — Auth &amp; authorization ([spec 001](docs/specs/001-auth.md))
 
-- [ ] AUTH.1 DB: Drizzle schema for auth-critical tables (users, credentials, sessions, refresh_tokens, password_reset_tokens, memberships, role_permissions, invites, academies, platform_users, platform_plans, academy_subscriptions) — UUIDv7 PKs, composite tenant FKs, enums
-- [ ] AUTH.2 DB: forced RLS everywhere — tenant policies, self policies, narrow platform reads, fail-closed defaults
-- [ ] AUTH.3 DB: SECURITY DEFINER functions for pre-auth seams (login-by-email, refresh rotation, password reset, invite landing/accept)
-- [ ] AUTH.4 DB: migrations apply cleanly to fresh database + RLS fail-closed meta-test
-- [ ] AUTH.5 DB: seeds — platform plan catalog + dev fixtures (2 academies, all 6 personas) via tenant-scoped path
+- [x] AUTH.1 DB: Drizzle schema for auth-critical tables (users, credentials, sessions, refresh_tokens, password_reset_tokens, memberships, role_permissions, invites, academies, platform_users, platform_plans, academy_subscriptions) — UUIDv7 PKs, composite tenant FKs, enums
+- [x] AUTH.2 DB: forced RLS everywhere — tenant policies, self policies, narrow platform reads, fail-closed defaults
+- [x] AUTH.3 DB: SECURITY DEFINER functions for pre-auth seams (login-by-email, refresh rotation, password reset, invite landing/accept)
+- [x] AUTH.4 DB: migrations apply cleanly to fresh database + RLS fail-closed meta-test
+- [x] AUTH.5 DB: seeds — platform plan catalog + dev fixtures (2 academies, all 6 personas) via tenant-scoped path
 - [ ] AUTH.6 Backend: identity module — login (membership resolution + TOTP challenge), refresh rotation + family-reuse revocation, switch, logout, logout-all, me
 - [ ] AUTH.7 Backend: password reset via Resend (single-use 1h token, 202-always, revoke-all) + platform TOTP setup/enable
 - [ ] AUTH.8 Backend: public invite endpoints — landing payload + atomic accept transaction (minor-requires-guardian)

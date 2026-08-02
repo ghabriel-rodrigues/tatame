@@ -36,3 +36,5 @@ Locked monorepo + docker + CI/deploy conventions: nx project layout with enforce
 - Kubernetes / production scaling architecture — premature before first deploy; revisit as a fresh effort if needed.
 - Multi-region or multi-unit infrastructure — per handoff design backlog.
 - Observability/monitoring stack selection — owned as fog in the backend map, not here.
+
+- Production migration/ops roles: dedicated `tatame_owner` WITH BYPASSRLS as migration owner; API login user GRANTed `tatame_app`/`tatame_platform` (surfaced by AUTH.1-5 implementation — SECURITY DEFINER functions rely on owner bypass).
