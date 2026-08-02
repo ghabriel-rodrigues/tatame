@@ -1,0 +1,122 @@
+import type { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import {
+  AcademyStatusService,
+  AppModule,
+  configureApp,
+  NOTIFICATION_PORT,
+  type PasswordResetNotification,
+} from '@org/api';
+import {
+  academies,
+  createAppDb,
+  createPlatformDb,
+  withPlatform,
+  type DbHandle,
+} from '@tatame/db';
+import {
+  createFreshDb,
+  DEV_PASSWORD,
+  seedDevFixtures,
+  seedPlatformPlans,
+  testAdminUrl,
+  type FreshDb,
+} from '@tatame/db/testing';
+import { eq } from 'drizzle-orm';
+import request from 'supertest';
+
+export { DEV_PASSWORD };
+
+export interface TestApp {
+  app: INestApplication;
+  /** BYPASSRLS handle for out-of-band setup/verification queries. */
+  platformDb: DbHandle;
+  /** RLS-enforced (`tatame_app`) handle — same posture as the API. */
+  appDb: DbHandle;
+  /** Password-reset notifications captured from the NotificationPort seam. */
+  sentEmails: PasswordResetNotification[];
+  http: () => request.Agent;
+  /** Login helper; returns the response body (body transport). */
+  login: (email: string, password?: string) => Promise<Record<string, any>>;
+  academyIdBySlug: (slug: string) => Promise<string>;
+  setAcademyStatus: (
+    slug: string,
+    status: 'trial' | 'active' | 'delinquent' | 'suspended',
+  ) => Promise<void>;
+  close: () => Promise<void>;
+}
+
+/**
+ * Boots the REAL Nest application (full guard chain, RLS-enforced pools)
+ * against a fresh migrated + seeded database on the shared Testcontainer.
+ * Only the NotificationPort is overridden — with a recorder, so reset-token
+ * emails can be asserted without any network.
+ */
+export async function createTestApp(): Promise<TestApp> {
+  const fresh: FreshDb = await createFreshDb(testAdminUrl());
+  const appDb = createAppDb(fresh.url);
+  const platformDb = createPlatformDb(fresh.url);
+  await seedPlatformPlans(platformDb.db);
+  await seedDevFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+
+  process.env['DATABASE_URL'] = fresh.url;
+  process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';
+  process.env['NODE_ENV'] = 'test';
+  delete process.env['RESEND_API_KEY']; // never depend on network in tests
+
+  const sentEmails: PasswordResetNotification[] = [];
+  const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+    .overrideProvider(NOTIFICATION_PORT)
+    .useValue({
+      sendPasswordReset: async (input: PasswordResetNotification) => {
+        sentEmails.push(input);
+      },
+    })
+    .compile();
+
+  const app = moduleRef.createNestApplication({ logger: false });
+  configureApp(app);
+  await app.init();
+
+  const http = () => request(app.getHttpServer());
+
+  return {
+    app,
+    platformDb,
+    appDb,
+    sentEmails,
+    http,
+    login: async (email, password = DEV_PASSWORD) => {
+      const res = await http()
+        .post('/v1/auth/login')
+        .send({ email, password, transport: 'body' });
+      if (res.status !== 200 && res.status !== 202) {
+        throw new Error(`login(${email}) failed: ${res.status} ${JSON.stringify(res.body)}`);
+      }
+      return res.body;
+    },
+    academyIdBySlug: async (slug) => {
+      const rows = await withPlatform(platformDb.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      if (!rows[0]) throw new Error(`academy ${slug} not seeded`);
+      return rows[0].id;
+    },
+    setAcademyStatus: async (slug, status) => {
+      await withPlatform(platformDb.db, (tx) =>
+        tx.update(academies).set({ status }).where(eq(academies.slug, slug)),
+      );
+      // The guard's 30 s status cache must not leak stale state into tests.
+      app.get(AcademyStatusService).invalidate();
+    },
+    close: async () => {
+      await app.close();
+      await appDb.close();
+      await platformDb.close();
+      await fresh.drop();
+    },
+  };
+}
+
+/** Authorization header helper. */
+export const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });

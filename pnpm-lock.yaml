@@ -208,6 +208,12 @@ importers:
 
   apps/api-e2e:
     devDependencies:
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.1)(supports-color@8.1.1)
+      '@nestjs/core':
+        specifier: ^11.0.0
+        version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/platform-express@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/testing':
         specifier: ^11.0.0
         version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.1)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@nestjs/platform-express@11.1.28)
@@ -220,6 +226,12 @@ importers:
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@types/pg@8.20.3)(pg@8.22.0)
+      otplib:
+        specifier: ^12.0.1
+        version: 12.0.1
       supertest:
         specifier: ^7.1.4
         version: 7.2.2(supports-color@8.1.1)

@@ -2,10 +2,17 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "out-tsc/api-e2e",
+    "types": ["vitest/globals", "vitest/importMeta", "vite/client", "node", "vitest"],
     "esModuleInterop": true,
-    "noUnusedLocals": false,
-    "noImplicitAny": false
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["jest.config.ts", "src/**/*.ts"],
-  "references": []
+  "include": ["vitest.config.mts", "src/**/*.ts"],
+  "references": [
+    {
+      "path": "../../packages/db"
+    },
+    {
+      "path": "../api"
+    }
+  ]
 }

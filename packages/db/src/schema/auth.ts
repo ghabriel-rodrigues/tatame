@@ -11,6 +11,7 @@ import {
   uuid,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
+import { academies } from './academies.js';
 import { credentialProvider, userStatus } from './enums.js';
 import { id, timestamps } from './helpers.js';
 import { appRole } from './roles.js';
@@ -105,10 +106,27 @@ export const sessions = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id),
+    /**
+     * Active membership bound to the session (ticket 02: login binds tokens to
+     * one membership; `/v1/auth/switch` re-points it). Holds either an academy
+     * `memberships.id` or a `platform_users.id` (platform persona) — no FK on
+     * purpose. NULL for impersonated sessions.
+     */
+    membershipId: uuid('membership_id'),
+    /** Set only on impersonated sessions ("entrar como admin"). */
+    impersonatorUserId: uuid('impersonator_user_id').references(() => users.id),
+    /** Target tenant of an impersonated session (no membership row exists). */
+    impersonatedTenantId: uuid('impersonated_tenant_id').references(() => academies.id),
+    /**
+     * Absolute session cap fixed at mint time (30 d login / 1 h impersonation).
+     * Refresh rotation never extends past it. NULL = pre-migration rows.
+     */
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
     ip: inet('ip'),
     userAgent: text('user_agent'),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    revokedReason: text('revoked_reason'),
     ...timestamps,
   },
   (t) => [

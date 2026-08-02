@@ -1,0 +1,2 @@
+ALTER TABLE "audit_logs" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+CREATE POLICY "audit_logs_tenant_select" ON "audit_logs" AS PERMISSIVE FOR SELECT TO "tatame_app" USING ("audit_logs"."tenant_id" = NULLIF(current_setting('app.tenant_id', true), '')::uuid);

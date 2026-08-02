@@ -2,26 +2,21 @@
   "name": "@org/api-e2e",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "nx": {
     "name": "api-e2e",
-    "implicitDependencies": [
-      "api"
-    ],
-    "targets": {
-      "e2e": {
-        "executor": "@nx/jest:jest",
-        "outputs": [
-          "{projectRoot}/test-output/jest/coverage"
-        ],
-        "options": {
-          "jestConfig": "apps/api-e2e/jest.config.cts",
-          "passWithNoTests": true
-        },
-        "dependsOn": [
-          "api:build",
-          "api:serve"
-        ]
-      }
-    }
+    "implicitDependencies": ["api"]
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/testing": "^11.0.0",
+    "@org/api": "workspace:*",
+    "@tatame/db": "workspace:*",
+    "@types/supertest": "^6.0.3",
+    "drizzle-orm": "^0.45.2",
+    "otplib": "^12.0.1",
+    "supertest": "^7.1.4",
+    "unplugin-swc": "^1.5.5"
   }
 }

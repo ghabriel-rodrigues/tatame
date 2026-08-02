@@ -4,3 +4,4 @@ export * from './academies.js';
 export * from './auth.js';
 export * from './tenancy.js';
 export * from './platform.js';
+export * from './audit.js';

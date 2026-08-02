@@ -2,6 +2,7 @@
   "name": "@org/api",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "nx": {
     "name": "api",
     "targets": {
@@ -78,15 +79,41 @@
       }
     }
   },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@node-rs/argon2": "^2.0.2",
+    "@tatame/db": "workspace:*",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "cookie-parser": "^1.4.7",
+    "drizzle-orm": "^0.45.2",
+    "nestjs-cls": "^6.0.1",
+    "otplib": "^12.0.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.0",
-    "tslib": "^2.3.0"
+    "swagger-ui-express": "^5.0.1",
+    "tslib": "^2.3.0",
+    "zod": "^4.1.9"
   },
   "devDependencies": {
-    "@nestjs/testing": "^11.0.0"
+    "@nestjs/testing": "^11.0.0",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.0",
+    "unplugin-swc": "^1.5.5"
   }
 }

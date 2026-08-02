@@ -32,6 +32,14 @@ export const platformUsers = pgTable('platform_users', {
     .references(() => users.id),
   role: platformRole('role').notNull(),
   status: userStatus('status').notNull().default('active'),
+  /**
+   * Opt-in TOTP (RFC 6238), platform staff only. Secret encrypted at rest by
+   * the API (AES-256-GCM under TOTP_ENC_KEY); set at setup, armed at enable.
+   */
+  totpSecret: text('totp_secret'),
+  totpEnabledAt: timestamp('totp_enabled_at', { withTimezone: true }),
+  /** Array of sha256 hex hashes of single-use recovery codes. */
+  totpRecoveryCodes: jsonb('totp_recovery_codes'),
   ...timestamps,
 }).enableRLS();
 

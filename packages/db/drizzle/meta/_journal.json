@@ -22,6 +22,27 @@
       "when": 1785685507046,
       "tag": "0002_rls_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785686240550,
+      "tag": "0003_auth_context",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785686250526,
+      "tag": "0004_auth_seams_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785686437499,
+      "tag": "0005_audit_tenant_select",
+      "breakpoints": true
     }
   ]
 }

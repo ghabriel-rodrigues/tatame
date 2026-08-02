@@ -61,12 +61,12 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AUTH.3 DB: SECURITY DEFINER functions for pre-auth seams (login-by-email, refresh rotation, password reset, invite landing/accept)
 - [x] AUTH.4 DB: migrations apply cleanly to fresh database + RLS fail-closed meta-test
 - [x] AUTH.5 DB: seeds — platform plan catalog + dev fixtures (2 academies, all 6 personas) via tenant-scoped path
-- [ ] AUTH.6 Backend: identity module — login (membership resolution + TOTP challenge), refresh rotation + family-reuse revocation, switch, logout, logout-all, me
-- [ ] AUTH.7 Backend: password reset via Resend (single-use 1h token, 202-always, revoke-all) + platform TOTP setup/enable
-- [ ] AUTH.8 Backend: public invite endpoints — landing payload + atomic accept transaction (minor-requires-guardian)
-- [ ] AUTH.9 Backend: global guard chain (JWT+CLS, academy status + bypass decorator, default-deny roles, permissions) + permission-toggle endpoints
-- [ ] AUTH.10 Backend: impersonation (owner/support, audited mint, 1h session, actor claim) + audit interceptor + restrictions
-- [ ] AUTH.11 Backend: e2e suite green — RBAC matrix, refresh reuse, invite flows, reset single-use, suspension/read-only, guardian 404, impersonation audit, route-metadata meta-test
+- [x] AUTH.6 Backend: identity module — login (membership resolution + TOTP challenge), refresh rotation + family-reuse revocation, switch, logout, logout-all, me
+- [x] AUTH.7 Backend: password reset via Resend (single-use 1h token, 202-always, revoke-all) + platform TOTP setup/enable
+- [x] AUTH.8 Backend: public invite endpoints — landing payload + atomic accept transaction (minor-requires-guardian); existing email → 409 + authenticated accept
+- [x] AUTH.9 Backend: global guard chain (JWT+CLS, academy status + bypass decorator, default-deny roles, permissions) + permission-toggle endpoints + `POST /v1/invites`
+- [x] AUTH.10 Backend: impersonation (owner/support, audited mint, 1h session, actor claim) + audit interceptor + restrictions
+- [x] AUTH.11 Backend: e2e suite green (39 e2e + 14 unit + 26 db) — RBAC matrix, refresh reuse, invite flows, reset single-use, suspension/read-only, impersonation audit, route-metadata meta-test; guardian-dependent 404 deferred to enrollment slice
 - [ ] AUTH.12 Web: login page pixel-perfect per handoff (Lumira tokens, forgot-password, invite notice)
 - [ ] AUTH.13 Web: session bootstrap — memory access token, httpOnly refresh cookie, silent refresh, single-flight 401, cache clear on auth loss
 - [ ] AUTH.14 Web: route guards + post-login redirects for /admin and /plataforma + download-the-app landing for mobile-only personas
