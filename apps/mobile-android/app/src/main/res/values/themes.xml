@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launch/splash theming ONLY. App colors live in Compose via Lumira tokens —
+     never in XML (BOSS checklist #4). -->
+<resources>
+    <style name="Theme.Tatame.Launch" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>

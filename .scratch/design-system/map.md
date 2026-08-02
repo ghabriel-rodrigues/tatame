@@ -40,3 +40,5 @@ A locked architecture for `packages/design-system` — the single package consum
 - Backend, app-level routing, and screen implementations for any persona.
 
 - Extend `design-system:tokens` build to also emit `PaletteRecipe.swift` and the Kotlin recipe-data file so native recipe mirrors regenerate with the pipeline instead of being hand-synced (golden fixtures pin them meanwhile; surfaced by DS.9).
+
+- Kotlin token emission fixes (surfaced by DS.8): emit package `br.com.tatame.core.designsystem.tokens` instead of `com.tatame.designsystem.tokens`; canonical sync path is `core/designsystem/tokens/`; also emit the Kotlin recipe-data file (see Swift note above) and add fixture-copy freshness checks for both native projects.
