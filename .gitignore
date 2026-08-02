@@ -48,3 +48,7 @@ Thumbs.db
 .nx/polygraph
 .nx/self-healing
 .nx/migrate-runs
+# Environment files
+.env
+.env.*
+!.env.example
