@@ -1,12 +1,38 @@
 /**
- * @tatame/design-system/native — React Native entry (stub for DS.1-4).
+ * @tatame/design-system/native — React Native entry (DS.7).
  *
- * Re-exports the RN token module and the platform-neutral theming API.
- * The RN ThemeProvider/useTheme runtime, Text primitive, motion presets, and
- * P0 components land with DS.7 (per rn-03 this entry must never pull web/MUI
- * code into the Metro bundle — keep web-only modules out of this graph).
+ * Theming runtime (ThemeProvider/useTheme/createTheme), Text primitive,
+ * motion presets, and the P0 components. Per rn-03 this entry must never
+ * pull web/MUI code into the Metro bundle — keep web-only modules out of
+ * this graph. Native deps (expo-blur, expo-linear-gradient, reanimated,
+ * lucide-react-native) are peerDependencies installed in the app via
+ * `expo install`.
  */
 
+/* Theming runtime */
+export { ThemeProvider, useTheme, type ThemeProviderProps } from './theme/ThemeProvider.tsx';
+export { createTheme, type Theme, type ThemeTokens, type CreateThemeOptions } from './theme/theme.ts';
+
+/* Typography primitive */
+export {
+  Text,
+  quicksandFamily,
+  type TextProps,
+  type TextVariant,
+  type FontWeightName,
+} from './typography/Text.tsx';
+
+/* Motion presets */
+export { fadeUp, rise, pop, usePressScale, easeOut, easeSpring, durations } from './motion.ts';
+
+/* Helpers */
+export { shadowStyle, type ShadowLayer } from './lib/shadows.ts';
+export { hexToRgba } from './lib/color.ts';
+
+/* P0 components */
+export * from './components/index.ts';
+
+/* Platform-neutral theming API (canonical executors) */
 export {
   derivePalette,
   mixOklab,
@@ -30,4 +56,5 @@ export {
   type PresetKey,
 } from '../theme/presets.ts';
 
+/* Generated Lumira token modules (RN target) */
 export { tokens, darkTokens, type Tokens, type DarkTokens } from '../../build/native/tokens.ts';
