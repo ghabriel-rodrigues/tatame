@@ -36,7 +36,51 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] 0.1 Nx + pnpm monorepo scaffold
 - [x] 0.2 Postgres via docker-compose + `.env.example` (Stripe/Resend/Netlify placeholders)
 - [x] 0.3 AGENTE BOSS charter + project governance (CLAUDE.md, agents/boss.md)
-- [ ] 0.4 Wayfinder maps charted per subsystem (`.scratch/`)
-- [ ] 0.5 Specs written per subsystem (`docs/specs/`) and indexed here
+- [x] 0.4 Wayfinder maps charted per subsystem (`.scratch/`)
+- [x] 0.5 Specs written: [001-auth](docs/specs/001-auth.md), [002-design-system](docs/specs/002-design-system.md)
+- [x] 0.6 Apps and packages generated: `api`, `api-e2e`, `web`, `@tatame/shared`, `@tatame/design-system`, `@tatame/db`
 
-_Further phases are appended by the spec-writing pass (Phase 1 = Auth &amp; Authorization)._
+### Phase 1 — Design system foundation ([spec 002](docs/specs/002-design-system.md))
+
+> Runs in parallel with Phase 2's DB/backend slices; DS.1–DS.7 gate the web and RN login screens.
+
+- [ ] DS.1 Scaffold `packages/design-system` exports map (`.`, `./native`, `./tokens`, `./tokens/native`) + peerDependencies; web and RN resolve their entry points
+- [ ] DS.2 Convert Lumira `colors_and_type.css` into DTCG `tokens.json` (light + dark, ink tokens, `color.belt.*`); freeze CSS as reference
+- [ ] DS.3 style-dictionary v4 `design-system:tokens` target emitting 4 outputs: `tokens.css` + TS (web), RN TS module, `LumiraTokens.kt`, `LumiraTokens.swift`
+- [ ] DS.4 `palette-recipe.json` + canonical TS `derivePalette()` + `applyBrand()` + 4 presets + `palette-fixtures.json` golden tests passing
+- [ ] DS.5 `createTatameTheme()` (MUI v6, cssVariables, palette/typography/shape/shadows, component overrides, glass mixins) integrated into web shell
+- [ ] DS.6 Six P0 components web (TatameButton, FormField, Card, Toast, BrandLogo, ScreenHeader) reviewed against handoff screenshots
+- [ ] DS.7 Six P0 components RN under `./native` (+ ThemeProvider, Text primitive, fonts, motion presets) reviewed against handoff screenshots
+- [ ] DS.8 Kotlin token export (`LumiraTokens.kt` + `DerivePalette.kt`) committed in Android project, golden tests passing
+- [ ] DS.9 Swift token export (`LumiraTokens.swift` + `DerivePalette.swift`) committed in iOS project, golden tests passing
+
+### Phase 2 — Auth &amp; authorization ([spec 001](docs/specs/001-auth.md))
+
+- [ ] AUTH.1 DB: Drizzle schema for auth-critical tables (users, credentials, sessions, refresh_tokens, password_reset_tokens, memberships, role_permissions, invites, academies, platform_users, platform_plans, academy_subscriptions) — UUIDv7 PKs, composite tenant FKs, enums
+- [ ] AUTH.2 DB: forced RLS everywhere — tenant policies, self policies, narrow platform reads, fail-closed defaults
+- [ ] AUTH.3 DB: SECURITY DEFINER functions for pre-auth seams (login-by-email, refresh rotation, password reset, invite landing/accept)
+- [ ] AUTH.4 DB: migrations apply cleanly to fresh database + RLS fail-closed meta-test
+- [ ] AUTH.5 DB: seeds — platform plan catalog + dev fixtures (2 academies, all 6 personas) via tenant-scoped path
+- [ ] AUTH.6 Backend: identity module — login (membership resolution + TOTP challenge), refresh rotation + family-reuse revocation, switch, logout, logout-all, me
+- [ ] AUTH.7 Backend: password reset via Resend (single-use 1h token, 202-always, revoke-all) + platform TOTP setup/enable
+- [ ] AUTH.8 Backend: public invite endpoints — landing payload + atomic accept transaction (minor-requires-guardian)
+- [ ] AUTH.9 Backend: global guard chain (JWT+CLS, academy status + bypass decorator, default-deny roles, permissions) + permission-toggle endpoints
+- [ ] AUTH.10 Backend: impersonation (owner/support, audited mint, 1h session, actor claim) + audit interceptor + restrictions
+- [ ] AUTH.11 Backend: e2e suite green — RBAC matrix, refresh reuse, invite flows, reset single-use, suspension/read-only, guardian 404, impersonation audit, route-metadata meta-test
+- [ ] AUTH.12 Web: login page pixel-perfect per handoff (Lumira tokens, forgot-password, invite notice)
+- [ ] AUTH.13 Web: session bootstrap — memory access token, httpOnly refresh cookie, silent refresh, single-flight 401, cache clear on auth loss
+- [ ] AUTH.14 Web: route guards + post-login redirects for /admin and /plataforma + download-the-app landing for mobile-only personas
+- [ ] AUTH.15 Web: admin and plataforma empty shells — membership switcher, logout, impersonation banner with end action
+- [ ] AUTH.16 Web: convite flow shell — public landing with inherited academy/class/plan, stepped signup, logged-in success
+- [ ] AUTH.17 RN: login screen (splash → login per handoff) with password recovery entry
+- [ ] AUTH.18 RN: secure session — expo-secure-store refresh, memory access, silent cold-start refresh, single-flight 401, logout
+- [ ] AUTH.19 RN: role-gated navigation — one binary, aluno/professor/responsável shells, web-console screen for admin/platform
+- [ ] AUTH.20 RN: three authenticated empty shells rendering session context + suspension/read-only states
+- [ ] AUTH.21 Android: login screen per handoff wired to generated API client
+- [ ] AUTH.22 Android: session — Keystore-encrypted TokenStore, memory access, single-flight Authenticator, logout + session-expired
+- [ ] AUTH.23 Android: role gate — shell by role, blocking screens for suspended/web-only
+- [ ] AUTH.24 iOS: login screen per handoff wired through generated client + auth middleware
+- [ ] AUTH.25 iOS: session — Keychain refresh (this-device-only), refresh-coordinator actor, logout + session-expired
+- [ ] AUTH.26 iOS: role gate — shell by role, blocking screens for suspended/web-only
+
+_Next phases (check-in, agenda, graduation, billing, events, store, …) get their specs after Phase 2 ships._
