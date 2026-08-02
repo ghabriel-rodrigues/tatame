@@ -20,13 +20,17 @@ A locked Expo/React Native app architecture for all Tatame personas — workspac
 
 <!-- one line per closed ticket: gist + link -->
 
+- Plain `create-expo-app` at `apps/mobile-rn` (NOT `@nx/expo` — it lags at SDK 56 with no path to 57); Expo SDK 57, CNG/prebuild, pnpm default isolated linker (hoisted fallback documented), zero manual Metro config (`expo/metro-config` auto-detects the workspace), nx targets inferred from package.json scripts — `issues/01-expo-setup-under-nx.md`
+- Auth: access token in memory + refresh token in `expo-secure-store` (device-only, <2 KB); refresh via shared openapi-fetch middleware with single-flight 401 lock (matches web); splash → silent refresh → role-scoped home, else login; ONE binary for Aluno/Professor/Responsável switched by role claim (plataforma/admin = web-only in v1); suspension = blocking screen, delinquency = read-only flag; logout clears secure-store + `queryClient.clear()` → login — `issues/04-auth-session-storage.md`
+
 ## Not yet specified
 
 - Push notifications (Expo Notifications vs FCM/APNs direct, token registration, per-persona notification routing) — depends on backend notification design; sharpens once backend notification entities and the auth flow land.
 - Deep links / universal links for the invite flow (7-day invite links opening the stepped signup) — depends on the navigation decision and on how the public invite web flow and the app hand off to each other.
 - Store purchase flows in-app (Pix/boleto/card sheets, Stripe integration surface on mobile) — depends on backend billing design and Stripe sandbox wiring.
-- EAS build/submit pipeline and app-store delivery — sharpens after the Expo setup decision fixes SDK/workflow choices.
+- ~~EAS build/submit pipeline and app-store delivery~~ — graduated to `issues/08-eas-build-pipeline.md` after ticket 01 fixed SDK 57 + CNG.
 - Dark theme + white-label runtime theming mechanics in RN (the `applyPalette()` 3-color oklab derivation) — hangs on the design-system consumption decision and the design-system map's token pipeline.
+- Biometric unlock gating of the refresh token (`expo-secure-store` `requireAuthentication`) — deliberately out of v1 (ticket 04); the storage call site isolates the option so it can be flipped on later.
 
 ## Out of scope
 

@@ -19,12 +19,13 @@ Locked monorepo + docker + CI/deploy conventions: nx project layout with enforce
 
 <!-- one line per closed ticket: gist + link -->
 
+- nx layout locked: `apps/{api,web,mobile-rn}` as nx projects + `apps/{mobile-android,mobile-ios}` in-repo but outside the nx/pnpm graph (own Gradle/Xcode builds, no package.json); `packages/{design-system,shared}` under scope `@tatame/*`; boundary tags `scope:api|client|design|shared` with api→shared only, clients→shared+design, packages leaf; keep template's `@nx/js/typescript` plugin now, add `@nx/nest`/`@nx/react`+`@nx/vite`/`@nx/expo`/`@nx/eslint` at app generation; rename root scope `@org`→`@tatame` (incl. tsconfig `customConditions`) — [issues/01-nx-layout-boundaries.md](issues/01-nx-layout-boundaries.md)
+
 ## Not yet specified
 
 - Production hosting for the NestJS API and Postgres (Netlify covers web only; API host undecided) — needs its own research once CI and docker conventions land.
 - Mobile CI (Expo EAS builds, Kotlin/Gradle and Swift/Xcode build lanes) and app-store release pipelines — sharp once the CI pipeline choice lands and the mobile apps exist.
 - Staging/preview environments (API + DB per PR? Netlify deploy previews against what backend?) — depends on CI choice and API hosting.
-- How Kotlin and Swift projects sit inside (or beside) the nx workspace — graduates out of the nx-layout ticket if it can't be settled there.
 - Database migration execution in CI/deploy (hangs on the database map's migration tool choice and the CI pipeline here).
 
 ## Out of scope

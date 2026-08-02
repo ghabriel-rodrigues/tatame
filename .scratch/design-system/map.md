@@ -21,13 +21,14 @@ A locked architecture for `packages/design-system` — the single package consum
 
 <!-- one line per closed ticket: gist + link -->
 
+- Token pipeline: single DTCG `tokens.json` + `palette-recipe.json` in `packages/design-system/tokens/`, style-dictionary v4 builds CSS+TS (web), TS (RN), Compose object (Android), Swift enum (iOS); CSS file converted once then frozen; `--purple-ink`/`--pink-ink` and belt hexes promoted to first-class tokens; white-label derivation ships as per-platform `derivePalette()` code (color-mix on web, OKLab math elsewhere) driven by the shared recipe JSON; motion = ms numbers + bezier tuples — `issues/01-token-pipeline.md`
+- Component inventory: tokens shared, components per-platform (MUI wrap / RN / Compose / SwiftUI) driven by shared anatomy specs in `packages/design-system/docs/components/`; PascalCase no prefix except `TatameButton`; identical variant/size/prop vocabulary everywhere; admission rule = 2+ personas or auth path; P0 auth (TatameButton, FormField, Card, Toast, BrandLogo, ScreenHeader), P1 shell (GlassTabBar, BottomSheet, ListRow, Avatar, Chip, SegmentedControl, StatTile, Badge, IconButton, Switch, ProgressBar, BeltBar, InlineAlert, EmptyState), P2 feature (CalendarMonth, QRPanel, Timeline, MiniBarChart, Stepper, QuantityStepper, PlanCard, ProductCard, SuccessBurst, PaletteSwatch) — `issues/05-component-inventory-naming.md`
+
 ## Not yet specified
 
-- Motion/animation token delivery for natives — `rise`/`fadeUp`/`pop`, ease-out/spring curves, 120/200/320ms durations exist as CSS vars; how they translate to Reanimated, Compose, and SwiftUI hangs on the token pipeline decision.
-- Icon strategy across platforms — Lucide (stroke 2px, rounded) on web/RN is clear; Kotlin/Swift equivalents and whether the design-system package ships icon mappings hangs on pipeline + inventory decisions.
 - Package build/publish mechanics inside nx (tsup/vite lib mode, exports map, versioning between web and RN entry points) — sharpens after the token pipeline and MUI decisions land.
-- Component showcase/documentation (Storybook or similar) — whether and where; hangs on component inventory.
-- Asset handling (Tatame logo placeholder drawn in CSS, QR code lib, avatar-initials gradients) — sharpens after component inventory.
+
+(Graduated to tickets after 01+05 resolved: icon strategy → `issues/07-icon-strategy.md`; component showcase → `issues/08-component-showcase.md`; asset handling → `issues/09-asset-handling.md`.)
 
 ## Out of scope
 

@@ -19,10 +19,12 @@ A locked Postgres schema design for the full Tatame product — multi-tenant org
 
 <!-- one line per closed ticket: gist + link -->
 
+- ORM/migrations: **Drizzle ORM + drizzle-kit SQL migrations** (node-postgres, schema in `packages/db`, RLS policies declared alongside tables, `migrate()` in CI) — [issues/01-orm-migration-tool-choice.md](issues/01-orm-migration-tool-choice.md)
+- Tenant isolation: **single schema + `tenant_id` + Postgres RLS via transaction-local `app.tenant_id` (fail-closed), two DB roles/pools (`tatame_app` RLS-enforced, `tatame_platform` BYPASSRLS for platform module only); impersonation runs tenant-scoped over the app role; suspension/read-only enforced at app layer** — [issues/02-tenant-isolation-strategy.md](issues/02-tenant-isolation-strategy.md)
+
 ## Not yet specified
 
 - Indexing and query-performance strategy — depends on the locked entity model and the read patterns the dashboards (admin financial overview, platform MRR) impose.
-- Seed/fixture data strategy for local dev and tests — depends on the ORM/migration tool chosen.
 - Soft-delete vs hard-delete conventions per entity, and LGPD data-retention/erasure posture — depends on the core entity model and audit decisions.
 - Storage shape for white-label theming config (3-color palette per academy) and notification preferences — sharp once the core entity model settles org-level settings.
 - Migration rollout in CI (how migrations run across environments) — hangs on the migration tool choice here and the CI pipeline choice in the infra map.

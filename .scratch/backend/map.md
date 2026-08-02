@@ -19,6 +19,9 @@ A locked NestJS architecture spec: module/domain layout, authentication and auth
 
 <!-- one line per closed ticket: gist + link -->
 
+- Modular monolith, one Nest app: 10 domain feature modules under `src/modules/` (identity, tenancy, enrollment, attendance, graduation, billing, events, store, notifications, reports) + `common/` + `infra/`; flat module layout with repository seam (ORM-agnostic until database ticket 01); persona surfaces = persona-scoped controllers inside shared domain modules; cross-domain side effects via event-emitter, sync reads via exported query services only; client contracts generated from OpenAPI, `packages/shared` minimal — [issues/01-nestjs-module-layout.md](issues/01-nestjs-module-layout.md)
+- REST + OpenAPI 3.0.x generated from `@nestjs/swagger` (CLI plugin over class-validator DTOs, committed spec artifact); clients: openapi-typescript/openapi-fetch (web+RN), openapi-generator kotlin/jvm-retrofit2 (Android), apple/swift-openapi-generator (iOS); URI versioning `/v1`, RFC 9457 problem+json errors with stable `code` registry, offset pagination `{ data, meta:{page,limit,total} }` — [issues/04-api-contract-style.md](issues/04-api-contract-style.md)
+
 ## Not yet specified
 
 - Notification delivery pipeline detail (in-app feed vs push vs email fan-out, scheduling of automatic notifications) — sharp once module layout and Resend integration land.
@@ -26,7 +29,8 @@ A locked NestJS architecture spec: module/domain layout, authentication and auth
 - File/asset storage for event banners, academy logos, product photos, and rendered certificates — no provider decided; needs its own research once module seams exist.
 - Rate limiting, brute-force protection on login/check-in codes, and abuse controls — depends on the authn design.
 - Observability (structured logging, error tracking, request tracing) — depends on module layout and CI/deploy decisions in the infra map.
-- API versioning and client-compatibility policy across 4 client apps — sharp once the API contract style is chosen.
+- ~~API versioning and client-compatibility policy across 4 client apps~~ — versioning convention decided in ticket 04; remaining pipeline + compatibility policy graduated into `issues/08-openapi-codegen-pipeline.md`.
+- Realtime for the professor live-attendance screen — graduated into `issues/09-realtime-live-attendance.md` (REST decision made the gap sharp).
 
 ## Out of scope
 

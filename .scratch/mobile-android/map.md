@@ -23,13 +23,14 @@ A locked native Kotlin Android app architecture for Tatame — Gradle project la
 
 <!-- one line per closed ticket: gist + link -->
 
+- **01 — Project setup**: standalone Gradle project at `apps/mobile-android` (own wrapper, invisible to nx); AGP 9.0.1 + Gradle 9.1 + Kotlin 2.3.20 + JDK 17 + KSP 2.3.6 (built-in Kotlin, no `org.jetbrains.kotlin.android`, kapt banned); minSdk 26 / target+compileSdk 36; single `:app` module, package-by-feature (`br.com.tatame`, `core/` + `feature/`), split later; Jetpack Compose BOM + Material3 wrapped by `TatameTheme` (Lumira tokens via generated `LumiraTokens.kt` + `CompositionLocal` extensions for glass/belts/motion); `libs.versions.toml` catalog; kotlinx-collections-immutable 0.5.x (participial names); one APK, 3 personas by role; CI = separate path-filtered Gradle job. → `issues/01-project-setup-gradle-compose.md`
+
 ## Not yet specified
 
 - Push notifications (FCM setup, token registration, per-persona routing) — depends on backend notification design.
 - Deep links / App Links for the invite flow (7-day invite links opening stepped signup) — depends on how the public invite web flow and the app hand off.
 - Store purchase flows in-app (Pix/boleto/card sheets, Stripe surface on Android) — depends on backend billing design and Stripe sandbox wiring.
 - Dark theme + white-label runtime theming mechanics (3-color palette → derived scale at runtime in Compose) — hangs on the design tokens consumption decision and the design-system map's token pipeline.
-- CI for the Android build (where Gradle runs relative to the nx-driven pipeline) — sharpens after the project-setup decision.
 
 ## Out of scope
 
