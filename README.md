@@ -44,10 +44,10 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 > Runs in parallel with Phase 2's DB/backend slices; DS.1–DS.7 gate the web and RN login screens.
 
-- [ ] DS.1 Scaffold `packages/design-system` exports map (`.`, `./native`, `./tokens`, `./tokens/native`) + peerDependencies; web and RN resolve their entry points
-- [ ] DS.2 Convert Lumira `colors_and_type.css` into DTCG `tokens.json` (light + dark, ink tokens, `color.belt.*`); freeze CSS as reference
-- [ ] DS.3 style-dictionary v4 `design-system:tokens` target emitting 4 outputs: `tokens.css` + TS (web), RN TS module, `LumiraTokens.kt`, `LumiraTokens.swift`
-- [ ] DS.4 `palette-recipe.json` + canonical TS `derivePalette()` + `applyBrand()` + 4 presets + `palette-fixtures.json` golden tests passing
+- [x] DS.1 Scaffold `packages/design-system` exports map (`.`, `./native`, `./tokens`, `./tokens/native`) + peerDependencies; web and RN resolve their entry points
+- [x] DS.2 Convert Lumira `colors_and_type.css` into DTCG `tokens.json` (light + dark, ink tokens, `color.belt.*`); freeze CSS as reference
+- [x] DS.3 style-dictionary v4 `design-system:tokens` target emitting 4 outputs: `tokens.css` + TS (web), RN TS module, `LumiraTokens.kt`, `LumiraTokens.swift`
+- [x] DS.4 `palette-recipe.json` + canonical TS `derivePalette()` + `applyBrand()` + 4 presets + `palette-fixtures.json` golden tests passing
 - [ ] DS.5 `createTatameTheme()` (MUI v6, cssVariables, palette/typography/shape/shadows, component overrides, glass mixins) integrated into web shell
 - [ ] DS.6 Six P0 components web (TatameButton, FormField, Card, Toast, BrandLogo, ScreenHeader) reviewed against handoff screenshots
 - [ ] DS.7 Six P0 components RN under `./native` (+ ThemeProvider, Text primitive, fonts, motion presets) reviewed against handoff screenshots

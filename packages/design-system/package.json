@@ -11,10 +11,87 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./native": {
+      "types": "./src/native/index.ts",
+      "import": "./src/native/index.ts",
+      "default": "./src/native/index.ts"
+    },
+    "./tokens": {
+      "types": "./build/web/tokens.ts",
+      "import": "./build/web/tokens.ts",
+      "default": "./build/web/tokens.ts"
+    },
+    "./tokens/native": {
+      "types": "./build/native/tokens.ts",
+      "import": "./build/native/tokens.ts",
+      "default": "./build/native/tokens.ts"
+    },
     "./package.json": "./package.json"
   },
-  "nx": {
-    "name": "design-system"
+  "scripts": {
+    "tokens": "node tokens/build.mjs",
+    "tokens:fixtures": "node --experimental-strip-types scripts/generate-fixtures.mjs"
   },
-  "dependencies": {}
+  "peerDependencies": {
+    "@emotion/react": ">=11",
+    "@emotion/styled": ">=11",
+    "@mui/material": ">=6",
+    "expo-blur": "*",
+    "expo-linear-gradient": "*",
+    "lucide-react-native": "*",
+    "react": ">=19",
+    "react-native": "*",
+    "react-native-reanimated": "*",
+    "react-native-svg": "*"
+  },
+  "peerDependenciesMeta": {
+    "@emotion/react": {
+      "optional": true
+    },
+    "@emotion/styled": {
+      "optional": true
+    },
+    "@mui/material": {
+      "optional": true
+    },
+    "expo-blur": {
+      "optional": true
+    },
+    "expo-linear-gradient": {
+      "optional": true
+    },
+    "lucide-react-native": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    },
+    "react-native-reanimated": {
+      "optional": true
+    },
+    "react-native-svg": {
+      "optional": true
+    }
+  },
+  "nx": {
+    "name": "design-system",
+    "targets": {
+      "tokens": {
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/tokens/tokens.json",
+          "{projectRoot}/tokens/palette-recipe.json",
+          "{projectRoot}/tokens/build.mjs",
+          "{projectRoot}/tokens/lib/*.mjs"
+        ],
+        "outputs": [
+          "{projectRoot}/build",
+          "{projectRoot}/src/theme/palette-recipe.data.ts"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "style-dictionary": "^4.4.0"
+  }
 }

@@ -8,3 +8,9 @@ allowBuilds:
   '@parcel/watcher': true
   less: false
   esbuild: true
+  # testcontainers/tooling transitive deps — builds not needed (pure-JS fallbacks)
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
+  '@bundled-es-modules/glob': false
+  style-dictionary: false

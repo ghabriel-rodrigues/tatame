@@ -1,0 +1,44 @@
+{
+  "$description": "White-label palette derivation recipe. Transcribed from the handoff prototypes' applyPalette() (App Jiu-Jitsu - Aluno.dc.html:1007, App Jiu-Jitsu - Admin.dc.html:857). Each entry mixes `base` (a BrandInput slot) at `pct`% with `anchor` in OKLab space, matching CSS color-mix(in oklab, base pct%, anchor). `anchor` is a literal hex, another input slot name (deep|vibrant|accent), the symbolic \"W\" (resolved per mode via `anchors.W`), or null (pct 100, plain copy of `base`). Mode-conditional tokens use `modes.light` / `modes.dark` instead of a single rule. Entries marked `extrapolated` do not exist in the prototype recipe (the prototypes leave those CSS vars static); ratios follow the purple-scale progression (400=72, 300=46, 200=27) so the pink scale re-brands completely.",
+  "anchors": {
+    "W": {
+      "light": "#FFFFFF",
+      "dark": "#241E3A"
+    }
+  },
+  "entries": [
+    { "token": "purple-700", "base": "deep", "pct": 100, "anchor": null },
+    { "token": "purple-500", "base": "vibrant", "pct": 100, "anchor": null },
+    { "token": "pink-500", "base": "accent", "pct": 100, "anchor": null },
+    { "token": "purple-600", "base": "deep", "pct": 50, "anchor": "vibrant" },
+    { "token": "purple-800", "base": "deep", "pct": 72, "anchor": "#12061F" },
+    { "token": "purple-900", "base": "deep", "pct": 52, "anchor": "#0E0518" },
+    { "token": "purple-950", "base": "deep", "pct": 34, "anchor": "#0A0512" },
+    { "token": "purple-400", "base": "vibrant", "pct": 72, "anchor": "W" },
+    { "token": "purple-300", "base": "vibrant", "pct": 46, "anchor": "W" },
+    { "token": "purple-200", "base": "vibrant", "pct": 27, "anchor": "W" },
+    { "token": "purple-100", "base": "vibrant", "pct": 14, "anchor": "W" },
+    { "token": "purple-50", "base": "vibrant", "pct": 6, "anchor": "W" },
+    {
+      "token": "purple-ink",
+      "modes": {
+        "light": { "base": "deep", "pct": 100, "anchor": null },
+        "dark": { "base": "vibrant", "pct": 65, "anchor": "#FFFFFF" }
+      }
+    },
+    {
+      "token": "pink-ink",
+      "modes": {
+        "light": { "base": "accent", "pct": 64, "anchor": "#3B0A24" },
+        "dark": { "base": "accent", "pct": 60, "anchor": "#FFFFFF" }
+      }
+    },
+    { "token": "pink-700", "base": "accent", "pct": 64, "anchor": "#3B0A24" },
+    { "token": "pink-600", "base": "accent", "pct": 80, "anchor": "#3B0A24" },
+    { "token": "pink-400", "base": "accent", "pct": 72, "anchor": "W" },
+    { "token": "pink-300", "base": "accent", "pct": 46, "anchor": "W", "extrapolated": true },
+    { "token": "pink-200", "base": "accent", "pct": 27, "anchor": "W", "extrapolated": true },
+    { "token": "pink-100", "base": "accent", "pct": 13, "anchor": "W" },
+    { "token": "pink-50", "base": "accent", "pct": 6, "anchor": "W" }
+  ]
+}
