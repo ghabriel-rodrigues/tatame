@@ -14,3 +14,5 @@ allowBuilds:
   ssh2: false
   '@bundled-es-modules/glob': false
   style-dictionary: false
+  # MUI transitive telemetry — never run its install script
+  '@scarf/scarf': false

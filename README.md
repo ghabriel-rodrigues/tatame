@@ -48,8 +48,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] DS.2 Convert Lumira `colors_and_type.css` into DTCG `tokens.json` (light + dark, ink tokens, `color.belt.*`); freeze CSS as reference
 - [x] DS.3 style-dictionary v4 `design-system:tokens` target emitting 4 outputs: `tokens.css` + TS (web), RN TS module, `LumiraTokens.kt`, `LumiraTokens.swift`
 - [x] DS.4 `palette-recipe.json` + canonical TS `derivePalette()` + `applyBrand()` + 4 presets + `palette-fixtures.json` golden tests passing
-- [ ] DS.5 `createTatameTheme()` (MUI v6, cssVariables, palette/typography/shape/shadows, component overrides, glass mixins) integrated into web shell
-- [ ] DS.6 Six P0 components web (TatameButton, FormField, Card, Toast, BrandLogo, ScreenHeader) reviewed against handoff screenshots
+- [x] DS.5 `createTatameTheme()` (MUI v6, cssVariables, palette/typography/shape/shadows, component overrides, glass mixins) integrated into web shell
+- [x] DS.6 Six P0 components web (TatameButton, FormField, Card, Toast, BrandLogo, ScreenHeader) reviewed against handoff screenshots
 - [ ] DS.7 Six P0 components RN under `./native` (+ ThemeProvider, Text primitive, fonts, motion presets) reviewed against handoff screenshots
 - [ ] DS.8 Kotlin token export (`LumiraTokens.kt` + `DerivePalette.kt`) committed in Android project, golden tests passing
 - [ ] DS.9 Swift token export (`LumiraTokens.swift` + `DerivePalette.swift`) committed in iOS project, golden tests passing

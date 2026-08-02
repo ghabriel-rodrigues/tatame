@@ -6,8 +6,19 @@
  * convenience; they are also importable directly via
  * `@tatame/design-system/tokens`.
  *
- * MUI theme factory (createTatameTheme) lands with DS.5.
+ * MUI integration: createTatameTheme (DS.5) + the P0 web components (DS.6).
+ * These require the optional peers (@mui/material, @emotion/*).
  */
+
+export { createTatameTheme, buildShadowPlateau } from './theme/create-tatame-theme.ts';
+export {
+  glassSurface,
+  glowShadow,
+  hexToRgba,
+  type GlassVariant,
+  type CssMixin,
+} from './theme/glass.ts';
+export * from './components/web/index.ts';
 
 export {
   derivePalette,

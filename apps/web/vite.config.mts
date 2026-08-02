@@ -14,6 +14,13 @@ export default defineConfig(() => ({
     host: 'localhost',
   },
   plugins: [react()],
+  resolve: {
+    // pnpm resolves two @mui/@emotion instances (peer-hash split via a
+    // supports-color transitive) — one for the app, one for the linked
+    // design-system. Two instances mean two Emotion ThemeContexts and a
+    // silently ignored theme; force a single copy.
+    dedupe: ['react', 'react-dom', '@emotion/react', '@emotion/styled', '@mui/material'],
+  },
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [],

@@ -48,5 +48,6 @@ Tatame is a mobile-first SaaS for managing jiu-jitsu academies. Read `agents/bos
 ## Conventions
 
 - All shell commands through `rtk` prefix (token proxy).
+- Every web app consuming `@tatame/design-system` needs `resolve.dedupe` for `@mui/material` + `@emotion/react`/`@emotion/styled` in its vite config — pnpm peer-hash splits silently duplicate MUI and the theme stops applying.
 - Code, comments, commits, docs: English. Conversation with the user: Portuguese.
 - No hardcoded colors — all colors (belts included) come from design-system tokens.
