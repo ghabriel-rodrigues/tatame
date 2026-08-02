@@ -38,3 +38,5 @@ A locked architecture for `packages/design-system` — the single package consum
 - Chat/comunicados UI, multiunidades, non-BJJ martial arts UI — per handoff design backlog, not designed yet.
 - Building the actual package/components — this map locks the architecture; execution is a separate effort.
 - Backend, app-level routing, and screen implementations for any persona.
+
+- Extend `design-system:tokens` build to also emit `PaletteRecipe.swift` and the Kotlin recipe-data file so native recipe mirrors regenerate with the pipeline instead of being hand-synced (golden fixtures pin them meanwhile; surfaced by DS.9).

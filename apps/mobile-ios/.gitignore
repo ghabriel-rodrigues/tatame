@@ -1,0 +1,7 @@
+# Xcode project is generated from project.yml (XcodeGen) — never committed.
+*.xcodeproj/
+xcuserdata/
+DerivedData/
+.build/
+.swiftpm/
+*.xcresult

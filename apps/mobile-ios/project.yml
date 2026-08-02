@@ -1,0 +1,56 @@
+# XcodeGen manifest — committed source of truth (ticket 01, decision 3).
+# Tatame.xcodeproj is gitignored; regenerate with `rtk xcodegen generate`.
+name: Tatame
+options:
+  bundleIdPrefix: app.tatame
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    # Swift 6 language mode == strict concurrency by default; keep the flag
+    # explicit so it survives any language-mode fiddling (ticket 01, decision 2).
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+packages:
+  DesignSystem:
+    path: Packages/DesignSystem
+  TatameCore:
+    path: Packages/TatameCore
+  TatameAPI:
+    path: Packages/TatameAPI
+  Features:
+    path: Packages/Features
+
+targets:
+  Tatame:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Tatame
+    dependencies:
+      # Steady state (ticket 01, decision 4): app target -> Features only.
+      - package: Features
+        product: AuthFeature
+      # Scaffold-time exception: the token-swatch splash lives in the app
+      # target and imports DesignSystem directly; remove once the splash is
+      # replaced by the auth gate + persona shells.
+      - package: DesignSystem
+        product: DesignSystem
+    info:
+      path: Tatame/Info.plist
+      properties:
+        CFBundleDisplayName: Tatame
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.tatame.ios
+        TARGETED_DEVICE_FAMILY: "1"
+        # Simulator/CI builds need no signing; device signing is ticket 08+.
+        CODE_SIGNING_ALLOWED: NO
