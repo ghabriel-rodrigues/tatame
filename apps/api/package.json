@@ -57,6 +57,24 @@
         ],
         "executor": "nx:noop"
       },
+      "openapi": {
+        "dependsOn": [
+          "build"
+        ],
+        "cache": true,
+        "inputs": [
+          "production",
+          "^production"
+        ],
+        "outputs": [
+          "{workspaceRoot}/packages/shared/src/api/openapi.json"
+        ],
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "node dist/emit-openapi.cjs ../../packages/shared/src/api/openapi.json",
+          "cwd": "apps/api"
+        }
+      },
       "serve": {
         "continuous": true,
         "executor": "@nx/js:node",

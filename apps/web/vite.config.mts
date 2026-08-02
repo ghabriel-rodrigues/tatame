@@ -8,6 +8,13 @@ export default defineConfig(() => ({
   server: {
     port: 4200,
     host: 'localhost',
+    // Same-origin API in dev (web-01): the app always calls /v1/* on its own
+    // origin, keeping the httpOnly refresh cookie first-party. The backend
+    // serves URI-versioned routes (/v1) — web-01's "/api" prefix wording is
+    // superseded by the implemented cookie path (/v1/auth).
+    proxy: {
+      '/v1': 'http://localhost:3000',
+    },
   },
   preview: {
     port: 4200,
@@ -39,6 +46,7 @@ export default defineConfig(() => ({
     globals: true,
     environment: 'jsdom',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    setupFiles: ['src/test/setup.ts'],
     reporters: ['default'],
     coverage: {
       reportsDirectory: './test-output/vitest/coverage',

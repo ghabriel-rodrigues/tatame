@@ -16,3 +16,5 @@ allowBuilds:
   style-dictionary: false
   # MUI transitive telemetry — never run its install script
   '@scarf/scarf': false
+  # msw postinstall only provisions the browser worker asset (tests use the node server)
+  msw: false

@@ -1,18 +1,18 @@
 import { VersioningType, type INestApplication } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
-/**
- * App-level HTTP configuration shared by main.ts and the e2e harness so tests
- * exercise the exact production surface: URI versioning (/v1), cookies, and
- * the OpenAPI runtime routes (/docs + /docs-json, bearer scheme).
- */
-export function configureApp(app: INestApplication): void {
-  app.use(cookieParser());
+/** URI versioning (/v1) — must be enabled before the OpenAPI scan. */
+export function configureVersioning(app: INestApplication): void {
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
-  app.enableShutdownHooks();
+}
 
-  const document = SwaggerModule.createDocument(
+/**
+ * OpenAPI document for the identity surface. Shared by the runtime /docs
+ * routes and the headless `openapi` emit target (web-03 contract pipeline).
+ */
+export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
+  return SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
       .setTitle('Tatame API')
@@ -28,5 +28,18 @@ export function configureApp(app: INestApplication): void {
       .addTag('platform')
       .build(),
   );
+}
+
+/**
+ * App-level HTTP configuration shared by main.ts and the e2e harness so tests
+ * exercise the exact production surface: URI versioning (/v1), cookies, and
+ * the OpenAPI runtime routes (/docs + /docs-json, bearer scheme).
+ */
+export function configureApp(app: INestApplication): void {
+  app.use(cookieParser());
+  configureVersioning(app);
+  app.enableShutdownHooks();
+
+  const document = buildOpenApiDocument(app);
   SwaggerModule.setup('docs', app, document, { jsonDocumentUrl: 'docs-json' });
 }

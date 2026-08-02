@@ -1,10 +1,11 @@
 import { Body, Controller, HttpCode, Param, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { requireAuthContext } from '../../../common/auth-context.js';
 import { AnyRole, DenyImpersonated, RequiresPermission, Roles } from '../../../common/decorators.js';
 import { InviteService } from '../services/invite.service.js';
 import { CreateInviteDto } from '../dto/invite.dto.js';
+import { AttachInviteResponseDto, CreateInviteResponseDto } from '../dto/responses.dto.js';
 
 @ApiTags('invites')
 @ApiBearerAuth()
@@ -21,6 +22,7 @@ export class InvitesController {
   @Post()
   @HttpCode(201)
   @ApiOperation({ summary: 'Generate an invite link bound to the academy (7-day validity)' })
+  @ApiCreatedResponse({ type: CreateInviteResponseDto })
   async create(@Body() dto: CreateInviteDto) {
     return this.invitesService.create(requireAuthContext(this.cls), dto);
   }
@@ -34,6 +36,7 @@ export class InvitesController {
   @Post(':token/accept')
   @HttpCode(201)
   @ApiOperation({ summary: 'Attach the invite membership to the authenticated account' })
+  @ApiCreatedResponse({ type: AttachInviteResponseDto })
   async accept(@Param('token') token: string) {
     return this.invitesService.attachToCurrentUser(requireAuthContext(this.cls), token);
   }

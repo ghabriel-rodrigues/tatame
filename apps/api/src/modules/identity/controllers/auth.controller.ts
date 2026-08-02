@@ -7,7 +7,14 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiAcceptedResponse,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { requireAuthContext } from '../../../common/auth-context.js';
@@ -32,6 +39,16 @@ import {
   TotpLoginDto,
   type RefreshTransport,
 } from '../dto/auth.dto.js';
+import {
+  AuthSessionResponseDto,
+  ForgotPasswordResponseDto,
+  MeResponseDto,
+  MfaChallengeResponseDto,
+  SwitchMembershipResponseDto,
+  TokenPairResponseDto,
+  TotpEnableResponseDto,
+  TotpSetupResponseDto,
+} from '../dto/responses.dto.js';
 
 export const REFRESH_COOKIE = 'tatame_refresh';
 /** Path-scoped to the auth endpoints (ticket 02 cookie contract). */
@@ -99,6 +116,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'Credentials → token pair (or TOTP challenge) + memberships' })
+  @ApiOkResponse({ type: AuthSessionResponseDto })
+  @ApiResponse({ status: 202, type: MfaChallengeResponseDto, description: 'Platform 2FA challenge' })
   async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const result = await this.auth.login(dto.email, dto.password, meta(req));
     if (result.kind === 'mfa_required') {
@@ -112,6 +131,7 @@ export class AuthController {
   @Post('login/totp')
   @HttpCode(200)
   @ApiOperation({ summary: 'Complete platform 2FA login' })
+  @ApiOkResponse({ type: AuthSessionResponseDto })
   async loginTotp(
     @Body() dto: TotpLoginDto,
     @Req() req: Request,
@@ -125,6 +145,7 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(200)
   @ApiOperation({ summary: 'Rotate the refresh token (family-reuse detection)' })
+  @ApiOkResponse({ type: TokenPairResponseDto })
   async refresh(
     @Body() dto: RefreshDto,
     @Req() req: Request,
@@ -147,6 +168,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Re-issue the access token for another owned membership' })
+  @ApiOkResponse({ type: SwitchMembershipResponseDto })
   async switch(@Body() dto: SwitchMembershipDto) {
     return this.auth.switchMembership(requireAuthContext(this.cls), dto.membershipId);
   }
@@ -178,6 +200,7 @@ export class AuthController {
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Session bootstrap: user, memberships, context, toggles' })
+  @ApiOkResponse({ type: MeResponseDto })
   async me() {
     return this.auth.me(requireAuthContext(this.cls));
   }
@@ -186,6 +209,7 @@ export class AuthController {
   @Post('password/forgot')
   @HttpCode(202)
   @ApiOperation({ summary: 'Request a reset email — 202 always (no enumeration)' })
+  @ApiAcceptedResponse({ type: ForgotPasswordResponseDto })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     await this.resets.requestReset(dto.email);
     return { accepted: true };
@@ -205,6 +229,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Platform staff: generate the TOTP provisioning secret' })
+  @ApiOkResponse({ type: TotpSetupResponseDto })
   async totpSetup() {
     const ctx = requireAuthContext(this.cls);
     const { user } = await this.auth.me(ctx);
@@ -217,6 +242,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Platform staff: arm TOTP, returns one-time recovery codes' })
+  @ApiOkResponse({ type: TotpEnableResponseDto })
   async totpEnable(@Body() dto: TotpEnableDto) {
     return this.totp.enable(requireAuthContext(this.cls).userId, dto.code);
   }

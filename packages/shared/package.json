@@ -11,10 +11,67 @@
       "import": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./testing": {
+      "types": "./src/api/testing/index.ts",
+      "import": "./src/api/testing/index.ts",
+      "default": "./src/api/testing/index.ts"
+    },
     "./package.json": "./package.json"
   },
   "nx": {
-    "name": "shared"
+    "name": "shared",
+    "targets": {
+      "generate-api": {
+        "dependsOn": [
+          {
+            "projects": [
+              "api"
+            ],
+            "target": "openapi"
+          }
+        ],
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/src/api/openapi.json"
+        ],
+        "outputs": [
+          "{projectRoot}/src/api/schema.d.ts"
+        ],
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "openapi-typescript src/api/openapi.json -o src/api/schema.d.ts --default-non-nullable false",
+          "cwd": "packages/shared"
+        }
+      },
+      "check-api-drift": {
+        "dependsOn": [
+          {
+            "projects": [
+              "api"
+            ],
+            "target": "openapi"
+          }
+        ],
+        "executor": "nx:run-commands",
+        "options": {
+          "commands": [
+            "openapi-typescript src/api/openapi.json -o node_modules/.cache/schema-drift-check.d.ts --default-non-nullable false",
+            "diff -u src/api/schema.d.ts node_modules/.cache/schema-drift-check.d.ts"
+          ],
+          "parallel": false,
+          "cwd": "packages/shared"
+        }
+      }
+    }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@tanstack/react-query": "^5.101.4",
+    "openapi-fetch": "^0.17.0",
+    "openapi-react-query": "^0.5.4"
+  },
+  "devDependencies": {
+    "msw": "^2.15.0",
+    "openapi-msw": "^2.0.0",
+    "openapi-typescript": "^7.13.0"
+  }
 }

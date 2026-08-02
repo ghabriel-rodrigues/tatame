@@ -1,11 +1,12 @@
 import { Body, Controller, Get, HttpCode, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { requireAuthContext } from '../../../common/auth-context.js';
 import { Roles } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { PermissionsService } from '../services/permissions.service.js';
 import { UpdatePermissionsDto } from '../dto/permissions.dto.js';
+import { PermissionMatrixResponseDto } from '../dto/responses.dto.js';
 
 /** Admin-17 screen: per-role permission toggles for the active academy. */
 @ApiTags('admin')
@@ -28,6 +29,7 @@ export class AdminPermissionsController {
 
   @Get()
   @ApiOperation({ summary: 'Resolved toggle matrix (defaults overlaid with rows)' })
+  @ApiOkResponse({ type: PermissionMatrixResponseDto })
   async list() {
     return { permissions: await this.permissions.resolveAll(this.tenantId()) };
   }
@@ -35,6 +37,7 @@ export class AdminPermissionsController {
   @Put()
   @HttpCode(200)
   @ApiOperation({ summary: 'Upsert permission toggles (registry keys only)' })
+  @ApiOkResponse({ type: PermissionMatrixResponseDto })
   async update(@Body() dto: UpdatePermissionsDto) {
     const ctx = requireAuthContext(this.cls);
     return {

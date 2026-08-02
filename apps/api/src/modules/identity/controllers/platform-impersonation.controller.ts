@@ -1,10 +1,11 @@
 import { Controller, HttpCode, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { requireAuthContext } from '../../../common/auth-context.js';
 import { DenyImpersonated, Roles } from '../../../common/decorators.js';
 import { ImpersonationService } from '../services/impersonation.service.js';
+import { ImpersonationGrantResponseDto } from '../dto/responses.dto.js';
 
 @ApiTags('platform')
 @ApiBearerAuth()
@@ -21,6 +22,7 @@ export class PlatformImpersonationController {
   @Post(':id/impersonate')
   @HttpCode(201)
   @ApiOperation({ summary: 'Audited 1-hour impersonated admin session for the academy' })
+  @ApiCreatedResponse({ type: ImpersonationGrantResponseDto })
   async impersonate(@Param('id', ParseUUIDPipe) academyId: string, @Req() req: Request) {
     return this.impersonation.impersonate(requireAuthContext(this.cls), academyId, {
       ip: req.ip ?? null,

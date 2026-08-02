@@ -1,0 +1,59 @@
+/**
+ * problem+json normalization (web-03). The API's only intentional error shape
+ * is RFC 9457 `application/problem+json` with a stable machine `code`
+ * (`apps/api/src/common/problem.ts`); clients branch on `status` + `code`,
+ * never on human text. openapi-fetch parses non-2xx JSON bodies into `error`
+ * as `unknown` — these helpers narrow that into a typed problem.
+ */
+
+/** Client-side mirror of the API's stable error-code registry. */
+export const ApiErrorCodes = {
+  AUTH_INVALID_CREDENTIALS: 'auth.invalid_credentials',
+  AUTH_UNAUTHENTICATED: 'auth.unauthenticated',
+  AUTH_TOKEN_EXPIRED: 'auth.token_expired',
+  AUTH_REFRESH_REUSED: 'auth.refresh_reused',
+  AUTH_MFA_REQUIRED: 'auth.mfa_required',
+  AUTH_MFA_INVALID_CODE: 'auth.mfa_invalid_code',
+  INVITE_INVALID_OR_EXPIRED: 'invite.invalid_or_expired',
+  INVITE_MINOR_REQUIRES_GUARDIAN: 'invite.minor_requires_guardian',
+  INVITE_EMAIL_EXISTS: 'invite.email_exists',
+  INVITE_ALREADY_MEMBER: 'invite.already_member',
+  RESET_INVALID_OR_EXPIRED: 'reset.invalid_or_expired',
+  AUTHZ_FORBIDDEN_ROLE: 'authz.forbidden_role',
+  AUTHZ_PERMISSION_DISABLED: 'authz.permission_disabled',
+  AUTHZ_IMPERSONATION_RESTRICTED: 'authz.impersonation_restricted',
+  TENANT_SUSPENDED: 'tenant.suspended',
+  TENANT_READ_ONLY: 'tenant.read_only',
+  VALIDATION_FAILED: 'validation.failed',
+  NOT_FOUND: 'resource.not_found',
+  CONFLICT: 'resource.conflict',
+  INTERNAL: 'internal.error',
+} as const;
+
+export type ApiErrorCode = (typeof ApiErrorCodes)[keyof typeof ApiErrorCodes];
+
+/** RFC 9457 problem document as serialized by the API's global filter. */
+export interface ApiProblem {
+  type?: string;
+  title?: string;
+  status: number;
+  detail?: string;
+  instance?: string;
+  code: string;
+  /** Field-level validation errors (422 only). */
+  errors?: Array<{ field: string; messages: string[] }>;
+}
+
+/** Narrows an openapi-fetch `error` payload into a problem document. */
+export function parseProblem(error: unknown): ApiProblem | null {
+  if (typeof error !== 'object' || error === null) return null;
+  const candidate = error as Record<string, unknown>;
+  if (typeof candidate['code'] !== 'string') return null;
+  const status = typeof candidate['status'] === 'number' ? candidate['status'] : 0;
+  return { ...(candidate as object), status, code: candidate['code'] } as ApiProblem;
+}
+
+/** True when the error payload carries the given stable code. */
+export function isProblemCode(error: unknown, code: ApiErrorCode): boolean {
+  return parseProblem(error)?.code === code;
+}

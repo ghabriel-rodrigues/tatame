@@ -1,0 +1,1477 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponseDto"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Platform 2FA challenge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaChallengeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Credentials → token pair (or TOTP challenge) + memberships",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/login/totp": {
+      "post": {
+        "operationId": "AuthController_loginTotp_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Complete platform 2FA login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenPairResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rotate the refresh token (family-reuse detection)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/switch": {
+      "post": {
+        "operationId": "AuthController_switch_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchMembershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwitchMembershipResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Re-issue the access token for another owned membership",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke the current session (also ends impersonation)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout-all": {
+      "post": {
+        "operationId": "AuthController_logoutAll_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke ALL sessions of the account",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Session bootstrap: user, memberships, context, toggles",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/password/forgot": {
+      "post": {
+        "operationId": "AuthController_forgotPassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForgotPasswordResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request a reset email — 202 always (no enumeration)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/password/reset": {
+      "post": {
+        "operationId": "AuthController_resetPassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Consume the single-use token; revokes all sessions",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/totp/setup": {
+      "post": {
+        "operationId": "AuthController_totpSetup_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpSetupResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Platform staff: generate the TOTP provisioning secret",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/totp/enable": {
+      "post": {
+        "operationId": "AuthController_totpEnable_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpEnableDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpEnableResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Platform staff: arm TOTP, returns one-time recovery codes",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/public/invites/{token}": {
+      "get": {
+        "operationId": "PublicInvitesController_landing_v1",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteLandingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Invite landing: academy branding + inherited bindings",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/v1/public/invites/{token}/accept": {
+      "post": {
+        "operationId": "PublicInvitesController_accept_v1",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteAcceptResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The only signup: atomic accept, ends logged in",
+        "tags": [
+          "public"
+        ]
+      }
+    },
+    "/v1/invites": {
+      "post": {
+        "operationId": "InvitesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInviteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate an invite link bound to the academy (7-day validity)",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/v1/invites/{token}/accept": {
+      "post": {
+        "operationId": "InvitesController_accept_v1",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachInviteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Attach the invite membership to the authenticated account",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/v1/admin/permissions": {
+      "get": {
+        "operationId": "AdminPermissionsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionMatrixResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolved toggle matrix (defaults overlaid with rows)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "AdminPermissionsController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePermissionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionMatrixResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upsert permission toggles (registry keys only)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/platform/academies/{id}/impersonate": {
+      "post": {
+        "operationId": "PlatformImpersonationController_impersonate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImpersonationGrantResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Audited 1-hour impersonated admin session for the academy",
+        "tags": [
+          "platform"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Tatame API",
+    "description": "Identity surface (spec 001-auth). Errors are RFC 9457 application/problem+json with stable `code`s.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": ""
+    },
+    {
+      "name": "public",
+      "description": ""
+    },
+    {
+      "name": "invites",
+      "description": ""
+    },
+    {
+      "name": "admin",
+      "description": ""
+    },
+    {
+      "name": "platform",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@tatame.dev"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "cookie",
+              "body"
+            ],
+            "default": "cookie"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UserSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "fullName"
+        ]
+      },
+      "MembershipViewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "academy",
+              "platform"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "student",
+              "professor",
+              "admin",
+              "guardian",
+              "owner",
+              "support",
+              "finance"
+            ]
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "academyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "academySlug": {
+            "type": "string",
+            "nullable": true
+          },
+          "academyStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "role",
+          "tenantId",
+          "academyName",
+          "academySlug",
+          "academyStatus",
+          "status"
+        ]
+      },
+      "AuthSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserSummaryDto"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MembershipViewDto"
+            }
+          },
+          "activeMembershipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "accessExpiresIn": {
+            "type": "number",
+            "description": "Access token TTL in seconds"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Only for `body` transport; web gets the httpOnly cookie"
+          }
+        },
+        "required": [
+          "user",
+          "memberships",
+          "activeMembershipId",
+          "accessToken",
+          "accessExpiresIn"
+        ]
+      },
+      "MfaChallengeResponseDto": {
+        "type": "object",
+        "properties": {
+          "mfaRequired": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "challengeToken": {
+            "type": "string",
+            "description": "Short-lived token consumed by POST /auth/login/totp"
+          }
+        },
+        "required": [
+          "mfaRequired",
+          "challengeToken"
+        ]
+      },
+      "TotpLoginDto": {
+        "type": "object",
+        "properties": {
+          "challengeToken": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "TOTP code or single-use recovery code"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "cookie",
+              "body"
+            ],
+            "default": "cookie"
+          }
+        },
+        "required": [
+          "challengeToken",
+          "code"
+        ]
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "description": "Required for body transport; web uses the cookie"
+          },
+          "transport": {
+            "type": "string",
+            "enum": [
+              "cookie",
+              "body"
+            ],
+            "default": "cookie"
+          }
+        }
+      },
+      "TokenPairResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "accessExpiresIn": {
+            "type": "number",
+            "description": "Access token TTL in seconds"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Only for `body` transport; web gets the httpOnly cookie"
+          }
+        },
+        "required": [
+          "accessToken",
+          "accessExpiresIn"
+        ]
+      },
+      "SwitchMembershipDto": {
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "membershipId"
+        ]
+      },
+      "SwitchMembershipResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "accessExpiresIn": {
+            "type": "number",
+            "description": "Access token TTL in seconds"
+          },
+          "activeMembershipId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "accessToken",
+          "accessExpiresIn",
+          "activeMembershipId"
+        ]
+      },
+      "MeUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "locale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "fullName",
+          "phone",
+          "avatarUrl",
+          "locale"
+        ]
+      },
+      "MeAcademyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "theme": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "White-label 3-color brand input (deep/vibrant/accent) when configured"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "status",
+          "logoUrl",
+          "theme"
+        ]
+      },
+      "MeImpersonationDto": {
+        "type": "object",
+        "properties": {
+          "isImpersonated": {
+            "type": "boolean"
+          },
+          "impersonatorUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "isImpersonated"
+        ]
+      },
+      "MeResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/MeUserDto"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MembershipViewDto"
+            }
+          },
+          "activeMembershipId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null during impersonation"
+          },
+          "activeRole": {
+            "type": "string",
+            "enum": [
+              "student",
+              "professor",
+              "admin",
+              "guardian",
+              "owner",
+              "support",
+              "finance"
+            ]
+          },
+          "academy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MeAcademyDto"
+              }
+            ]
+          },
+          "permissions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
+          "impersonation": {
+            "$ref": "#/components/schemas/MeImpersonationDto"
+          }
+        },
+        "required": [
+          "user",
+          "memberships",
+          "activeMembershipId",
+          "activeRole",
+          "academy",
+          "permissions",
+          "impersonation"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ForgotPasswordResponseDto": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "accepted"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "TotpSetupResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "Base32 provisioning secret"
+          },
+          "otpauthUri": {
+            "type": "string",
+            "description": "otpauth:// URI for authenticator apps"
+          }
+        },
+        "required": [
+          "secret",
+          "otpauthUri"
+        ]
+      },
+      "TotpEnableDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code from the authenticator app"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "TotpEnableResponseDto": {
+        "type": "object",
+        "properties": {
+          "recoveryCodes": {
+            "description": "Single-use recovery codes — shown exactly once",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "recoveryCodes"
+        ]
+      },
+      "InviteAcademyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "theme": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "White-label 3-color brand input (deep/vibrant/accent) when configured"
+          }
+        },
+        "required": [
+          "name",
+          "slug",
+          "logoUrl",
+          "theme"
+        ]
+      },
+      "InviteLandingResponseDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "student",
+              "guardian"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "academy": {
+            "$ref": "#/components/schemas/InviteAcademyDto"
+          }
+        },
+        "required": [
+          "kind",
+          "expiresAt",
+          "classId",
+          "academyPlanId",
+          "academy"
+        ]
+      },
+      "DependentDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2015-04-20"
+          }
+        },
+        "required": [
+          "fullName",
+          "birthDate"
+        ]
+      },
+      "AcceptInviteDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "1996-02-11"
+          },
+          "dependents": {
+            "description": "Guardian (responsável) invites only: minor dependents enrolled with the guardian. Consumed by the enrollment slice.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DependentDto"
+            }
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "fullName"
+        ]
+      },
+      "InviteAcceptResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserSummaryDto"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MembershipViewDto"
+            }
+          },
+          "activeMembershipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "accessExpiresIn": {
+            "type": "number",
+            "description": "Access token TTL in seconds"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Always in the body — the client stores it per its platform contract"
+          }
+        },
+        "required": [
+          "user",
+          "memberships",
+          "activeMembershipId",
+          "accessToken",
+          "accessExpiresIn",
+          "refreshToken"
+        ]
+      },
+      "CreateInviteDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "student",
+              "guardian"
+            ]
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Turma binding (class slice)"
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Academy plan binding (billing slice)"
+          },
+          "maxUses": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Absent = unlimited until expiry"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "CreateInviteResponseDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Raw invite token — returned exactly once"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "student",
+              "guardian"
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt",
+          "kind"
+        ]
+      },
+      "AttachInviteResponseDto": {
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "student",
+              "professor",
+              "admin",
+              "guardian"
+            ]
+          }
+        },
+        "required": [
+          "membershipId",
+          "tenantId",
+          "role"
+        ]
+      },
+      "ResolvedPermissionDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "student",
+              "professor",
+              "admin",
+              "guardian"
+            ]
+          },
+          "key": {
+            "type": "string",
+            "description": "Registry key, e.g. `invites.create`"
+          },
+          "label": {
+            "type": "string",
+            "description": "PT-BR handoff label (admin screen copy)"
+          },
+          "defaultAllowed": {
+            "type": "boolean"
+          },
+          "allowed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "role",
+          "key",
+          "label",
+          "defaultAllowed",
+          "allowed"
+        ]
+      },
+      "PermissionMatrixResponseDto": {
+        "type": "object",
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResolvedPermissionDto"
+            }
+          }
+        },
+        "required": [
+          "permissions"
+        ]
+      },
+      "PermissionEntryDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "student",
+              "professor",
+              "admin",
+              "guardian"
+            ]
+          },
+          "key": {
+            "type": "string",
+            "example": "invites.create"
+          },
+          "allowed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "role",
+          "key",
+          "allowed"
+        ]
+      },
+      "UpdatePermissionsDto": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermissionEntryDto"
+            }
+          }
+        },
+        "required": [
+          "entries"
+        ]
+      },
+      "ImpersonationAcademyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "status"
+        ]
+      },
+      "ImpersonationGrantResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "accessExpiresIn": {
+            "type": "number",
+            "description": "Access token TTL in seconds"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Always in the body: the platform refresh cookie stays untouched"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "1-hour absolute cap"
+          },
+          "academy": {
+            "$ref": "#/components/schemas/ImpersonationAcademyDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "accessExpiresIn",
+          "refreshToken",
+          "expiresAt",
+          "academy"
+        ]
+      }
+    }
+  }
+}

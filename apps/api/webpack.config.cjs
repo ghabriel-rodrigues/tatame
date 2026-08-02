@@ -5,8 +5,11 @@ module.exports = {
   output: {
     path: join(__dirname, 'dist'),
     // The bundle is CommonJS but this package is "type": "module" — .cjs
-    // keeps `node dist/main.cjs` working.
-    filename: 'main.cjs',
+    // keeps `node dist/main.cjs` working. `[name]` because the OpenAPI emit
+    // script is a second entry (dist/emit-openapi.cjs).
+    filename: '[name].cjs',
+    // Shared chunks between the two entries must also be .cjs (see above).
+    chunkFilename: '[id].cjs',
     clean: true,
     ...(process.env.NODE_ENV !== 'production' && {
       devtoolModuleFilenameTemplate: '[absolute-resource-path]',
@@ -44,6 +47,10 @@ module.exports = {
       externalDependencies: 'all',
       mergeExternals: true,
       outputFileName: 'main.cjs',
+      // Headless OpenAPI emit entry (web-03): `nx run api:openapi`.
+      additionalEntryPoints: [
+        { entryName: 'emit-openapi', entryPath: './src/scripts/emit-openapi.ts' },
+      ],
     }),
   ],
 };
