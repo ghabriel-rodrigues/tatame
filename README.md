@@ -76,9 +76,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] AUTH.18 RN: secure session — expo-secure-store refresh, memory access, silent cold-start refresh, single-flight 401, logout
 - [ ] AUTH.19 RN: role-gated navigation — one binary, aluno/professor/responsável shells, web-console screen for admin/platform
 - [ ] AUTH.20 RN: three authenticated empty shells rendering session context + suspension/read-only states
-- [ ] AUTH.21 Android: login screen per handoff wired to generated API client
-- [ ] AUTH.22 Android: session — Keystore-encrypted TokenStore, memory access, single-flight Authenticator, logout + session-expired
-- [ ] AUTH.23 Android: role gate — shell by role, blocking screens for suspended/web-only
+- [x] AUTH.21 Android: login screen per handoff wired to generated API client
+- [x] AUTH.22 Android: session — Keystore-encrypted TokenStore, memory access, single-flight Authenticator, logout + session-expired
+- [x] AUTH.23 Android: role gate — shell by role, blocking screens for suspended/web-only
 - [ ] AUTH.24 iOS: login screen per handoff wired through generated client + auth middleware
 - [ ] AUTH.25 iOS: session — Keychain refresh (this-device-only), refresh-coordinator actor, logout + session-expired
 - [ ] AUTH.26 iOS: role gate — shell by role, blocking screens for suspended/web-only

@@ -1,7 +1,7 @@
 package br.com.tatame.core.di
 
+import br.com.tatame.feature.auth.di.authFeatureModule
 import org.koin.core.module.Module
-import org.koin.dsl.module
 
 /**
  * Flat list of all Koin modules (ticket mobile-android/06 conventions):
@@ -11,9 +11,8 @@ import org.koin.dsl.module
  * Scope conventions: `single` for stateless infra, `viewModel` for every
  * ViewModel, `factory` for per-use stateful helpers. No custom session scopes.
  */
-val coreModule: Module = module {
-    // Empty for now — networkModule (ticket 02) and sessionModule (ticket 04)
-    // land here when those slices ship.
-}
+val coreModules: List<Module> = listOf(networkModule, sessionModule)
 
-val appModules: List<Module> = listOf(coreModule)
+val featureModules: List<Module> = listOf(authFeatureModule)
+
+val appModules: List<Module> = coreModules + featureModules

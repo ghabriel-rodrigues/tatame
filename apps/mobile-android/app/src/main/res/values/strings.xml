@@ -1,4 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- UI copy is PT-BR (code/comments in English — project language rule). -->
 <resources>
     <string name="app_name">Tatame</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">Gestão para escolas de Jiu-Jitsu</string>
+
+    <!-- Login -->
+    <string name="login_title">Bem-vindo de volta</string>
+    <string name="login_subtitle">Entre para acompanhar seus treinos.</string>
+    <string name="login_email_placeholder">Email</string>
+    <string name="login_password_placeholder">Senha</string>
+    <string name="login_cta">Entrar</string>
+    <string name="login_forgot_password">Esqueci minha senha</string>
+    <string name="login_create_account">Criar conta</string>
+    <string name="login_invite_notice_prefix">Novo na academia? Peça ao seu professor o </string>
+    <string name="login_invite_notice_bold">link de convite</string>
+    <string name="login_invite_notice_suffix"> — seu cadastro já entra vinculado à turma certa.</string>
+    <string name="login_forgot_dialog_title">Recuperação de senha</string>
+    <string name="login_forgot_dialog_body">Em breve você poderá redefinir sua senha por email. Por enquanto, fale com o admin da sua academia.</string>
+    <string name="login_forgot_dialog_ok">Entendi</string>
+
+    <!-- Login errors / session messages -->
+    <string name="error_invalid_credentials">Email ou senha inválidos.</string>
+    <string name="error_network">Sem conexão. Verifique sua internet e tente novamente.</string>
+    <string name="error_timeout">O servidor demorou para responder. Tente novamente.</string>
+    <string name="error_mfa_web_only">Esta conta usa verificação em duas etapas. Entre pelo console web.</string>
+    <string name="error_validation">Preencha email e senha.</string>
+    <string name="error_generic">Algo deu errado. Tente novamente.</string>
+    <string name="session_expired_message">Sua sessão expirou. Entre novamente.</string>
+    <string name="session_offline_message">Não foi possível restaurar sua sessão. Verifique sua conexão e tente novamente.</string>
+
+    <!-- Membership chooser -->
+    <string name="membership_chooser_title">Escolha onde entrar</string>
+    <string name="membership_chooser_subtitle">Sua conta participa de mais de uma academia ou perfil.</string>
+    <string name="membership_platform_name">Plataforma Tatame</string>
+
+    <!-- Roles (PT-BR labels; enums stay English) -->
+    <string name="role_student">Aluno</string>
+    <string name="role_professor">Professor</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_guardian">Responsável</string>
+    <string name="role_owner">Owner</string>
+    <string name="role_support">Suporte</string>
+    <string name="role_finance">Financeiro</string>
+
+    <!-- Shells -->
+    <string name="shell_logout">Sair</string>
+    <string name="shell_greeting">Olá, %1$s</string>
+    <string name="shell_delinquent_banner">Academia com pagamento pendente — modo somente leitura.</string>
+    <string name="shell_placeholder_body">Esta área chega nas próximas etapas. Sua sessão está ativa.</string>
+
+    <!-- Aluno tabs (placeholder bottom bar) -->
+    <string name="tab_home">Início</string>
+    <string name="tab_agenda">Agenda</string>
+    <string name="tab_checkin">Check-in</string>
+    <string name="tab_wallet">Carteira</string>
+    <string name="tab_profile">Perfil</string>
+    <string name="tab_classes">Turmas</string>
+    <string name="tab_students">Alunos</string>
+    <string name="tab_dependents">Dependentes</string>
+    <string name="tab_payments">Pagamentos</string>
+
+    <!-- Web-only roles -->
+    <string name="web_only_title">Use o console web</string>
+    <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>
+
+    <!-- Suspended academy -->
+    <string name="suspended_title">Academia suspensa</string>
+    <string name="suspended_body">O acesso de %1$s está temporariamente suspenso. Fale com o responsável pela academia para regularizar.</string>
 </resources>

@@ -4,64 +4,60 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import br.com.tatame.core.designsystem.theme.PillShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.stringResource
+import br.com.tatame.R
+import br.com.tatame.core.designsystem.components.BeltLogo
 import com.tatame.designsystem.tokens.LumiraTokens
 
 /**
- * Splash-ish landing screen — proves TatameTheme compiles and renders token
- * swatches. Replaced by the real auth flow in the first feature slice.
+ * Splash per handoff aluno-01: full-bleed purple gradient (deep top → vibrant
+ * bottom), belt logo in a translucent rounded square, wordmark + tagline.
+ * Auto-advance (~1.9s, gated on session bootstrap) is owned by AppRoot.
  */
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        LumiraTokens.Colors.Purple900,
+                        LumiraTokens.Colors.Purple700,
+                        LumiraTokens.Colors.Purple500,
+                    ),
+                ),
+            ),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2),
         ) {
+            BeltLogo(
+                size = LumiraTokens.Space.S16,
+                containerColor = LumiraTokens.Colors.White.copy(alpha = 0.16f),
+                markColor = LumiraTokens.Colors.White,
+            )
+            Box(modifier = Modifier.height(LumiraTokens.Space.S2))
             Text(
-                text = "Tatame",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.primary,
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineLarge,
+                color = LumiraTokens.Colors.FgOnColor,
             )
             Text(
-                text = "Jiu-jitsu, organizado.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = stringResource(R.string.splash_tagline),
+                style = MaterialTheme.typography.labelSmall,
+                color = LumiraTokens.Colors.FgOnColor.copy(alpha = 0.72f),
             )
-            Row(
-                modifier = Modifier,
-                horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2),
-            ) {
-                TokenSwatch(LumiraTokens.Colors.Purple700)
-                TokenSwatch(LumiraTokens.Colors.Purple500)
-                TokenSwatch(LumiraTokens.Colors.Pink500)
-                TokenSwatch(LumiraTokens.Colors.Success500)
-                TokenSwatch(LumiraTokens.Colors.BeltBlue)
-                TokenSwatch(LumiraTokens.Colors.BeltPurple)
-            }
         }
     }
-}
-
-@Composable
-private fun TokenSwatch(color: Color) {
-    Box(
-        modifier = Modifier
-            .size(LumiraTokens.Space.S6)
-            .background(color = color, shape = PillShape),
-    )
 }

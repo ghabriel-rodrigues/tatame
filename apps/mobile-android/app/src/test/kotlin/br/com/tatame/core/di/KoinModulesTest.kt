@@ -7,14 +7,32 @@ import org.junit.Test
 /**
  * Mandatory Koin graph-safety gate (ticket mobile-android/06): every module in
  * [appModules] must pass `verify()` — the JVM-time equivalent of Hilt's
- * compile-time graph validation. Extend `extraTypes` as Android framework
- * types enter constructor signatures.
+ * compile-time graph validation. `extraTypes` lists (a) constructor parameter
+ * types produced inside definition lambdas (OkHttpClient.Builder, Json
+ * internals, Lazy) or fed from BuildConfig (String), and (b) types provided
+ * by a *sibling* module — verify() checks one module at a time, so
+ * cross-module edges (network ↔ session ↔ feature) must be declared here.
  */
 class KoinModulesTest {
 
     @OptIn(KoinExperimentalAPI::class)
     @Test
     fun `koin dependency graph verifies`() {
-        appModules.forEach { it.verify() }
+        val extraTypes = listOf(
+            // (a) lambda-internal / primitive inputs
+            kotlin.String::class,
+            kotlin.Lazy::class,
+            okhttp3.OkHttpClient.Builder::class,
+            kotlinx.serialization.json.JsonConfiguration::class,
+            kotlinx.serialization.modules.SerializersModule::class,
+            // (b) cross-module provisions
+            br.com.tatame.core.network.TokenStore::class,
+            br.com.tatame.core.network.AuthApi::class,
+            br.com.tatame.core.network.SessionTokenProvider::class,
+            br.com.tatame.core.network.AuthEvents::class,
+            kotlinx.serialization.json.Json::class,
+            br.com.tatame.core.auth.SessionManager::class,
+        )
+        appModules.forEach { it.verify(extraTypes = extraTypes) }
     }
 }

@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import br.com.tatame.core.designsystem.theme.TatameTheme
-import br.com.tatame.feature.splash.SplashScreen
+import br.com.tatame.core.navigation.AppRoot
 
 class MainActivity : ComponentActivity() {
 
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TatameTheme {
-                SplashScreen()
+                AppRoot()
             }
         }
     }
