@@ -33,18 +33,21 @@ targets:
     sources:
       - Tatame
     dependencies:
-      # Steady state (ticket 01, decision 4): app target -> Features only.
+      # Steady state (ticket 01, decision 4): app target -> Features (+ the
+      # packages Features re-exports through its products) only.
       - package: Features
-        product: AuthFeature
-      # Scaffold-time exception: the token-swatch splash lives in the app
-      # target and imports DesignSystem directly; remove once the splash is
-      # replaced by the auth gate + persona shells.
-      - package: DesignSystem
-        product: DesignSystem
+        product: AppShell
+      - package: TatameAPI
+        product: TatameAPI
+      - package: TatameCore
+        product: TatameCore
     info:
       path: Tatame/Info.plist
       properties:
         CFBundleDisplayName: Tatame
+        # Dev-only: the seeded backend runs on http://localhost:3000.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

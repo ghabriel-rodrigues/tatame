@@ -1,0 +1,13 @@
+# swift-openapi-generator build-plugin config (ticket 02).
+# Generated Swift lands in the build directory — never in git; the committed
+# artifact is the sibling openapi.json copy (scripts/sync-openapi.sh).
+generate:
+  - types
+  - client
+# Slice filtering: only the tags this app consumes today. Persona tags
+# (aluno/professor/responsavel) join here when their feature slices land;
+# admin/platform stay excluded (web-console-only personas on mobile).
+filter:
+  tags:
+    - auth
+    - public

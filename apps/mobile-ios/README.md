@@ -20,11 +20,17 @@ It builds only on a macOS machine with Xcode.
 cd apps/mobile-ios
 rtk xcodegen generate
 rtk xcodebuild -project Tatame.xcodeproj -scheme Tatame \
-  -destination 'generic/platform=iOS Simulator' build
+  -destination 'generic/platform=iOS Simulator' \
+  -skipPackagePluginValidation build
 ```
 
 To run in a simulator use a concrete destination, e.g.
 `-destination 'platform=iOS Simulator,name=iPhone 16'`.
+
+`-skipPackagePluginValidation` is required (CI and first local build alike)
+because `TatameAPI` runs the `swift-openapi-generator` **build plugin**; in
+Xcode you can instead click "Trust & Enable" once. Plain `swift build`/`swift
+test` need no flag.
 
 ## Test
 
@@ -34,20 +40,37 @@ SPM-level on the mac host — fast, no simulator boot:
 ```sh
 cd apps/mobile-ios/Packages/DesignSystem && rtk swift test
 cd apps/mobile-ios/Packages/TatameCore && rtk swift test
+cd apps/mobile-ios/Packages/TatameAPI && rtk swift test
+cd apps/mobile-ios/Packages/Features && rtk swift test
 ```
 
 ## Layout
 
-- `Tatame/` — thin app target: `@main`, later auth gate + persona-shell
-  router. Currently shows a token-swatch splash proving DesignSystem wiring.
+- `Tatame/` — thin app target: `@main` + composition root (Keychain store,
+  generated-client stack, `SessionStore`) rendering `RootView` (AppShell).
+  Dev server URL is `http://localhost:3000` (env-specific `.xcconfig` wiring
+  is ticket 08 territory).
 - `Packages/DesignSystem` — committed generated `LumiraTokens.swift`,
   `DerivePalette.swift` (Swift port of the canonical TS executor, recipe
   embedded as `Generated/PaletteRecipe.swift`), `TatameTheme` environment
   scaffold, golden-fixture tests against `palette-fixtures.json`.
-- `Packages/TatameCore` — domain scaffold (`SessionStore` placeholder).
-- `Packages/TatameAPI` — stub; networking stack lands per ticket 02.
-- `Packages/Features` — one library target per feature area (`AuthFeature`
-  stub now).
+- `Packages/TatameCore` — domain models + seams for the auth slice:
+  `ApiError` (stable problem+json codes), `AuthRepository` protocol,
+  `RefreshTokenStore`/`AccessTokenStore` seams with the Keychain
+  implementation (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`),
+  `SessionStore` (@MainActor @Observable state machine), `AppRoute` role
+  gate.
+- `Packages/TatameAPI` — swift-openapi-generator **build plugin** over the
+  committed spec copy (`Sources/TatameAPI/openapi.json` +
+  `openapi-generator-config.yaml`, tag-filtered to `auth`/`public`);
+  generated code stays in the build dir. Exposes `TatameClientFactory`
+  (URLSession transport + `AuthMiddleware` bearer/retry-once +
+  `TokenRefreshCoordinator` single-flight actor) returning the
+  `AuthRepository` implementation.
+- `Packages/Features` — `AuthFeature` (splash, login, membership chooser per
+  handoff aluno-01/02) and `AppShell` (`RootView` auth gate + persona shell
+  placeholders, web-console and suspended blocking screens, read-only
+  banner).
 
 ## Generated-file sync (committed-copy convention)
 
@@ -64,3 +87,13 @@ rtk cp packages/design-system/tokens/palette-fixtures.json \
 `Generated/PaletteRecipe.swift` mirrors `tokens/palette-recipe.json`; update
 it in the same diff on any intentional recipe change (the golden-fixture
 tests pin all three against the canonical TS executor).
+
+The API spec copy follows the same convention — refresh it whenever the
+backend contract changes:
+
+```sh
+rtk sh apps/mobile-ios/scripts/sync-openapi.sh
+# equivalent to:
+# rtk cp packages/shared/src/api/openapi.json \
+#   apps/mobile-ios/Packages/TatameAPI/Sources/TatameAPI/openapi.json
+```

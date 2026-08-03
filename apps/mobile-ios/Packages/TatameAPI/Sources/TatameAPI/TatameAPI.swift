@@ -1,14 +1,62 @@
-// TatameAPI — stub only (ticket 02 is resolved but NOT implemented yet).
-//
-// Ticket 02 (.scratch/mobile-ios/issues/02-networking-api-client.md) fixes
-// the stack: apple/swift-openapi-generator as SPM build plugin over the
-// committed spec copy, URLSession transport, repository implementations
-// conforming to protocols in TatameCore, AuthMiddleware + actor-based
-// TokenRefreshCoordinator, one typed ApiError. None of that lands until the
-// auth feature slice picks it up.
+// TatameClientFactory — the one place the generated Client is built (ticket
+// 02): URLSessionTransport + AuthMiddleware stack, server URL injected by
+// the app's composition root. Exports only TatameCore protocol conformances.
 
-/// Namespace placeholder so the package has a buildable target.
-public enum TatameAPI {
-    /// Scaffold marker; replaced by the generated-client wiring per ticket 02.
-    public static let isStub = true
+import Foundation
+import OpenAPIRuntime
+import OpenAPIURLSession
+import TatameCore
+
+/// The wired auth networking stack handed to the composition root.
+public struct AuthStack: Sendable {
+    /// Repository conforming to the TatameCore seam.
+    public let repository: any AuthRepository
+    /// The refresh coordinator in its `AccessTokenStore` role (SessionStore
+    /// writes the access token through this after login/switch).
+    public let accessTokenStore: any AccessTokenStore
+}
+
+public enum TatameClientFactory {
+    /// Builds the auth slice's networking stack.
+    ///
+    /// - Parameters:
+    ///   - serverURL: API origin (the spec's paths already carry `/v1`).
+    ///   - refreshTokenStore: Keychain-backed store (production) or a fake.
+    ///   - onSessionInvalidated: fired exactly once when a refresh fails
+    ///     with an auth error — wire it to `SessionStore.sessionExpired()`.
+    public static func makeAuthStack(
+        serverURL: URL,
+        refreshTokenStore: any RefreshTokenStore,
+        onSessionInvalidated: @escaping @Sendable () async -> Void
+    ) -> AuthStack {
+        // Bare client (no auth middleware) used exclusively by the refresh
+        // executor: refresh carries no bearer and must never recurse.
+        let bareClient = Client(serverURL: serverURL, transport: URLSessionTransport())
+        let coordinator = TokenRefreshCoordinator(
+            refreshTokenStore: refreshTokenStore,
+            refreshExecutor: { refreshToken in
+                try await ApiErrorMapper.run {
+                    let response = try await bareClient.AuthController_refresh_v1(
+                        .init(body: .json(.init(refreshToken: refreshToken, transport: .body)))
+                    )
+                    switch response {
+                    case .ok(let ok):
+                        return TokenPair(dto: try ok.body.json)
+                    case .undocumented(let statusCode, let payload):
+                        throw await ApiErrorMapper.map(status: statusCode, payload: payload)
+                    }
+                }
+            },
+            onSessionInvalidated: onSessionInvalidated
+        )
+        let client = Client(
+            serverURL: serverURL,
+            transport: URLSessionTransport(),
+            middlewares: [AuthMiddleware(coordinator: coordinator)]
+        )
+        return AuthStack(
+            repository: LiveAuthRepository(client: client, coordinator: coordinator),
+            accessTokenStore: coordinator
+        )
+    }
 }
