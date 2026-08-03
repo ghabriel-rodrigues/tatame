@@ -9,6 +9,8 @@ import { DownloadAppPage } from '../pages/DownloadAppPage';
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage';
 import { InvitePage } from '../pages/InvitePage';
 import { LoginPage } from '../pages/LoginPage';
+import { CadastrosPage } from '../pages/admin/CadastrosPage';
+import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
 
 export const appRoutes: RouteObject[] = [
   { path: '/', element: <RootRedirect /> },
@@ -24,6 +26,8 @@ export const appRoutes: RouteObject[] = [
         element: <ConsoleShell surface="/admin" />,
         children: [
           { index: true, element: <UnderConstruction surfaceLabel="Painel da academia" /> },
+          { path: 'cadastros', element: <CadastrosPage /> },
+          { path: 'turmas/:id', element: <TurmaDetailPage /> },
           { path: '*', element: <UnderConstruction surfaceLabel="Painel da academia" /> },
         ],
       },

@@ -23,7 +23,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { styled } from '@mui/material/styles';
 
-export type FormFieldType = 'text' | 'email' | 'password' | 'tel' | 'number';
+export type FormFieldType = 'text' | 'email' | 'password' | 'tel' | 'number' | 'date' | 'time';
 
 export interface FormFieldProps {
   label: string;

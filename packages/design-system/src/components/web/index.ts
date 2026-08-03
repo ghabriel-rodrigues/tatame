@@ -14,3 +14,14 @@ export { Card, type CardProps, type CardVariant } from './Card.tsx';
 export { Toast, type ToastProps } from './Toast.tsx';
 export { BrandLogo, type BrandLogoProps, type BrandLogoSize } from './BrandLogo.tsx';
 export { ScreenHeader, type ScreenHeaderProps } from './ScreenHeader.tsx';
+
+// P1 components (ds-05 inventory, enrollment path — ENR.13-16).
+export { Chip, type ChipProps, type ChipTone, type ChipSize } from './Chip.tsx';
+export {
+  SegmentedControl,
+  type SegmentedControlProps,
+  type SegmentedControlOption,
+} from './SegmentedControl.tsx';
+export { ListRow, type ListRowProps } from './ListRow.tsx';
+export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';
+export { EmptyState, type EmptyStateProps } from './EmptyState.tsx';

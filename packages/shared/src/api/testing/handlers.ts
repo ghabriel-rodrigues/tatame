@@ -10,6 +10,7 @@ import { createOpenApiHttp, type OpenApiHttpHandlers } from 'openapi-msw';
 import type { paths } from '../schema.js';
 import type { ApiProblem } from '../errors.js';
 import { makeAuthSession, makeMeResponse, type MeFixtureOptions, type SessionFixtureOptions } from './fixtures.js';
+import { makeEnrollmentRegistry, type EnrollmentRegistryFixture } from './enrollment-fixtures.js';
 
 /**
  * Single-source msw re-exports: consumers (web/RN test suites) must import
@@ -102,5 +103,38 @@ export function defaultHandlers(options: DefaultHandlerOptions = {}) {
       }),
     ),
     http.post('/v1/auth/logout', ({ response }) => response(204).empty()),
+  ];
+}
+
+/**
+ * Happy-path GET handlers for the admin enrollment registry (ENR.13-16).
+ * Pass a registry (or partial overrides over the screenshot-faithful default)
+ * for per-test data; mutations stay per-test via `server.use(...)`.
+ */
+export function enrollmentHandlers(
+  registry: Partial<EnrollmentRegistryFixture> = {},
+) {
+  const data: EnrollmentRegistryFixture = { ...makeEnrollmentRegistry(), ...registry };
+
+  return [
+    http.get('/v1/admin/students', ({ response }) =>
+      response(200).json({ students: data.students }),
+    ),
+    http.get('/v1/admin/guardians', ({ response }) =>
+      response(200).json({ guardians: data.guardians }),
+    ),
+    http.get('/v1/admin/professors', ({ response }) =>
+      response(200).json({ professors: data.professors }),
+    ),
+    http.get('/v1/admin/classes', ({ response }) =>
+      response(200).json({ classes: data.classes }),
+    ),
+    http.get('/v1/admin/classes/{id}', ({ params, response }) => {
+      const detail = data.classDetails[params.id];
+      if (!detail) {
+        return response.untyped(problemResponse(404, 'resource.not_found'));
+      }
+      return response(200).json({ class: detail });
+    }),
   ];
 }

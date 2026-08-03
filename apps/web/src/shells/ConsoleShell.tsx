@@ -10,7 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select, { type SelectChangeEvent } from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Outlet, useNavigate } from 'react-router';
+import { NavLink, Outlet, useNavigate } from 'react-router';
 import type { MeResponse, MembershipView } from '@tatame/shared';
 import { BrandLogo, Card, TatameButton } from '@tatame/design-system';
 import {
@@ -183,6 +183,31 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
           />
         </Stack>
       </Box>
+      {surface === '/admin' ? (
+        <Box
+          component="nav"
+          aria-label="Seções do painel"
+          sx={{
+            display: 'flex',
+            gap: '18px',
+            padding: '10px 20px',
+            background: 'var(--bg-surface)',
+            borderBottom: '1px solid var(--border-1)',
+            '& a': {
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--fg-3)',
+              textDecoration: 'none',
+            },
+            '& a.active': { color: 'var(--brand-1)' },
+          }}
+        >
+          <NavLink to="/admin" end>
+            Início
+          </NavLink>
+          <NavLink to="/admin/cadastros">Cadastros</NavLink>
+        </Box>
+      ) : null}
       <Box component="main" sx={{ padding: '24px 20px', maxWidth: 1080, margin: '0 auto' }}>
         <Outlet />
       </Box>

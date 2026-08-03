@@ -49,6 +49,14 @@ describe('route guards — /admin', () => {
     expect(router.state.location.pathname).toBe('/baixe-o-app');
   });
 
+  it('blocks a professor from the admin registry surface (ENR RBAC)', () => {
+    const professor = makeMembership({ role: 'professor' });
+    const { router } = renderRoute('/admin/cadastros', {
+      session: makeMeResponse({ memberships: [professor] }),
+    });
+    expect(router.state.location.pathname).toBe('/baixe-o-app');
+  });
+
   it('renders the non-dismissible impersonation banner for an impersonated session', async () => {
     const platform = makePlatformMembership();
     renderRoute('/admin', {
