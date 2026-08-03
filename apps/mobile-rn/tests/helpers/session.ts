@@ -33,6 +33,8 @@ export interface MeFixtureOptions {
   academyStatus?: string;
   memberships?: MembershipView[];
   fullName?: string;
+  /** Resolved toggle map from /auth/me (e.g. `dependents.register`). */
+  permissions?: Record<string, boolean>;
 }
 
 export function makeMe(options: MeFixtureOptions = {}): MeResponse {
@@ -63,7 +65,7 @@ export function makeMe(options: MeFixtureOptions = {}): MeResponse {
             theme: null,
           }
         : null,
-    permissions: {},
+    permissions: options.permissions ?? {},
     impersonation: { isImpersonated: false },
   };
 }
@@ -89,6 +91,8 @@ export function problem(status: number, code: string): Response {
 export interface MockedRequest {
   method: string;
   path: string;
+  /** URL query string including the leading `?` (empty when none). */
+  search: string;
   body: unknown;
   authorization: string | null;
 }
@@ -124,8 +128,9 @@ export function installFetchMock(handler: FetchHandler): jest.Mock {
         body = raw;
       }
     }
-    const path = new URL(url, 'http://localhost:3000').pathname;
-    const response = await handler({ method, path, body, authorization });
+    const parsed = new URL(url, 'http://localhost:3000');
+    const path = parsed.pathname;
+    const response = await handler({ method, path, search: parsed.search, body, authorization });
     if (!response) throw new Error(`Unhandled request: ${method} ${path}`);
     return response;
   });

@@ -25,3 +25,8 @@ export {
   type GlassTabBarProps,
   type GlassTabItem,
 } from './GlassTabBar.tsx';
+
+/* P1 components (enrollment path — same anatomy as the web executors). */
+export { Chip, type ChipProps, type ChipTone, type ChipSize } from './Chip.tsx';
+export { ListRow, type ListRowProps } from './ListRow.tsx';
+export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';

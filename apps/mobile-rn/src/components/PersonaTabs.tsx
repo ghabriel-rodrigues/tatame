@@ -25,6 +25,8 @@ export interface PersonaFabConfig {
   icon: ComponentType<{ color?: string; size?: number }>;
   /** Persona main action name — a11y label + placeholder toast copy. */
   label: string;
+  /** Real action when the slice lands; falls back to the "em breve" toast. */
+  onPress?: () => void;
 }
 
 /** Structural subset of react-navigation's BottomTabBarProps. */
@@ -80,7 +82,7 @@ export function PersonaTabs({ tabs, fab }: PersonaTabsProps) {
         fab={{
           accessibilityLabel: fab.label,
           icon: ({ color, size }) => <FabIcon color={color} size={size} />,
-          onPress: () => setFabToast(true),
+          onPress: fab.onPress ?? (() => setFabToast(true)),
         }}
       />
     );
