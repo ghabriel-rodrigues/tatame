@@ -40,7 +40,23 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       platform,
     );
   }
-  return resolve(context, moduleName, platform);
+  try {
+    return resolve(context, moduleName, platform);
+  } catch (error) {
+    // packages/shared is ESM-style TS source: relative imports carry the
+    // compiled `.js` extension while the files on disk are `.ts`. Map the
+    // extension before giving up (TypeScript's own resolution rule).
+    if (/\.js$/.test(moduleName)) {
+      for (const ext of ['.ts', '.tsx']) {
+        try {
+          return resolve(context, moduleName.replace(/\.js$/, ext), platform);
+        } catch {
+          // fall through to the original error
+        }
+      }
+    }
+    throw error;
+  }
 };
 
 module.exports = config;

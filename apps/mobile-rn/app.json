@@ -44,7 +44,8 @@
             "node_modules/@expo-google-fonts/quicksand/700Bold/Quicksand_700Bold.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

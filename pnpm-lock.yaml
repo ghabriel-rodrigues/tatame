@@ -244,9 +244,15 @@ importers:
       '@expo-google-fonts/quicksand':
         specifier: ^0.4.1
         version: 0.4.1
+      '@tanstack/react-query':
+        specifier: ^5.101.4
+        version: 5.101.4(react@19.2.3)
       '@tatame/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
+      '@tatame/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       expo:
         specifier: ~57.0.9
         version: 57.0.9(e7a58eb4d375793f02298ed02714d9e0)
@@ -268,6 +274,9 @@ importers:
       expo-router:
         specifier: ~57.0.9
         version: 57.0.9(7b54aaf5a8701d22a15a6ac062340b7b)
+      expo-secure-store:
+        specifier: ~57.0.1
+        version: 57.0.1(expo@57.0.9)
       expo-splash-screen:
         specifier: ~57.0.5
         version: 57.0.5(expo@57.0.9)(supports-color@10.2.2)(typescript@6.0.3)
@@ -6204,6 +6213,11 @@ packages:
         optional: true
       react-server-dom-webpack:
         optional: true
+
+  expo-secure-store@57.0.1:
+    resolution: {integrity: sha512-tLa1VmSadOq19mA/dwkl99RbHyjLE0T1qqBYMY3/OsguZTI+rlrDy/DDJjupqlVtmr95hD7o1pYqx5aL+B4YMA==}
+    peerDependencies:
+      expo: '*'
 
   expo-server@57.0.1:
     resolution: {integrity: sha512-sBfVDH6dmKVHZxqUxbfkzS00PZELMZt1IpnHKxcOTMZtR/t7CtRAFrbXcisG+EyzeqHSVDacZT+1tbYfZt5D8w==}
@@ -17778,6 +17792,10 @@ snapshots:
       - expo-font
       - react-native-worklets
       - supports-color
+
+  expo-secure-store@57.0.1(expo@57.0.9):
+    dependencies:
+      expo: 57.0.9(e7a58eb4d375793f02298ed02714d9e0)
 
   expo-server@57.0.1: {}
 

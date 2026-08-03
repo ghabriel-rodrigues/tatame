@@ -72,10 +72,10 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AUTH.14 Web: route guards + post-login redirects for /admin and /plataforma + download-the-app landing for mobile-only personas
 - [x] AUTH.15 Web: admin and plataforma empty shells — membership switcher, logout, impersonation banner with end action
 - [x] AUTH.16 Web: convite flow shell — public landing with inherited academy/class/plan, stepped signup, logged-in success
-- [ ] AUTH.17 RN: login screen (splash → login per handoff) with password recovery entry
-- [ ] AUTH.18 RN: secure session — expo-secure-store refresh, memory access, silent cold-start refresh, single-flight 401, logout
-- [ ] AUTH.19 RN: role-gated navigation — one binary, aluno/professor/responsável shells, web-console screen for admin/platform
-- [ ] AUTH.20 RN: three authenticated empty shells rendering session context + suspension/read-only states
+- [x] AUTH.17 RN: login screen (splash → login per handoff) with password recovery entry
+- [x] AUTH.18 RN: secure session — expo-secure-store refresh, memory access, silent cold-start refresh, single-flight 401, logout
+- [x] AUTH.19 RN: role-gated navigation — one binary, aluno/professor/responsável shells, web-console screen for admin/platform
+- [x] AUTH.20 RN: three authenticated empty shells rendering session context + suspension/read-only states
 - [x] AUTH.21 Android: login screen per handoff wired to generated API client
 - [x] AUTH.22 Android: session — Keystore-encrypted TokenStore, memory access, single-flight Authenticator, logout + session-expired
 - [x] AUTH.23 Android: role gate — shell by role, blocking screens for suspended/web-only
