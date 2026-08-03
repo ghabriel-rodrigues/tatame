@@ -85,11 +85,11 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 3 — Enrollment ([spec 003](docs/specs/003-enrollment.md))
 
-- [ ] ENR.1 DB: Drizzle schema for students, guardians, classes (+age range), class_schedules, enrollments — UUIDv7 PKs, composite tenant FKs, status enums, uniques per the entity model
-- [ ] ENR.2 DB: forced RLS with fail-closed tenant policies on all five new tables, extending the RLS meta-test
-- [ ] ENR.3 DB: migration hardening `invites.class_id` to a composite tenant FK onto classes, applying cleanly over Phase-2 data
-- [ ] ENR.4 DB: invite-accept SECURITY DEFINER seam extended to persist student/guardian + dependents + class enrollments atomically
-- [ ] ENR.5 DB: dev seeds — sample classes with schedules, enrollments, guardians with dependents per fixture academy, written through the tenant-scoped path
+- [x] ENR.1 DB: Drizzle schema for students, guardians, classes (+age range), class_schedules, enrollments — UUIDv7 PKs, composite tenant FKs, status enums, uniques per the entity model
+- [x] ENR.2 DB: forced RLS with fail-closed tenant policies on all five new tables, extending the RLS meta-test
+- [x] ENR.3 DB: migration hardening `invites.class_id` to a composite tenant FK onto classes, applying cleanly over Phase-2 data
+- [x] ENR.4 DB: invite-accept SECURITY DEFINER seam extended to persist student/guardian + dependents + class enrollments atomically
+- [x] ENR.5 DB: dev seeds — sample classes with schedules, enrollments, guardians with dependents per fixture academy, written through the tenant-scoped path
 - [ ] ENR.6 Backend: enrollment module registry CRUD — students/guardians create + list (segment filters, derived Ativo/Pendente), name-only edit, soft archive ending enrollments, minor-requires-guardian enforcement
 - [ ] ENR.7 Backend: professor registration — user reuse-or-create + professor membership + set-your-password email via the reset-token seam
 - [ ] ENR.8 Backend: classes — create recurring turma (weekday chips → schedule rows), list/detail with occupancy and Lotada, name-only edit, soft archive

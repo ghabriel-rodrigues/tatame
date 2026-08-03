@@ -1,15 +1,20 @@
 import { hash } from '@node-rs/argon2';
-import { eq, sql } from 'drizzle-orm';
-import type { Database } from '../lib/client.js';
+import { and, eq, sql } from 'drizzle-orm';
+import type { Database, DbTransaction } from '../lib/client.js';
 import { withPlatform, withTenant } from '../lib/client.js';
 import {
   academies,
   academySubscriptions,
+  classSchedules,
+  classes,
   credentials,
+  enrollments,
+  guardians,
   memberships,
   platformPlans,
   platformUsers,
   rolePermissions,
+  students,
   users,
   type membershipRole,
   type platformRole,
@@ -102,6 +107,8 @@ const DEV_USERS: DevUser[] = [
     memberships: [
       { academySlug: 'alpha-jj', role: 'professor' },
       { academySlug: 'bravo-bjj', role: 'admin' },
+      // Bravo's turmas need an in-tenant professor (ENR.5 fixtures).
+      { academySlug: 'bravo-bjj', role: 'professor' },
     ],
   },
   {
@@ -123,6 +130,86 @@ const DEV_USERS: DevUser[] = [
     platformRole: 'support',
   },
 ];
+
+/** Turma fixtures per academy (ENR.5). Weekday: 0 = Sunday … 6 = Saturday. */
+interface DevClassFixture {
+  name: string;
+  capacity: number;
+  ageMin?: number;
+  ageMax?: number;
+  schedules: Array<{ weekday: number; startTime: string; durationMinutes: number }>;
+}
+
+const DEV_CLASSES: DevClassFixture[] = [
+  {
+    // "Seg · Qua · Sex 19:00" — real recurrence, one row per weekday chip.
+    name: 'Adulto Gi',
+    capacity: 24,
+    schedules: [
+      { weekday: 1, startTime: '19:00', durationMinutes: 60 },
+      { weekday: 3, startTime: '19:00', durationMinutes: 60 },
+      { weekday: 5, startTime: '19:00', durationMinutes: 60 },
+    ],
+  },
+  {
+    // Kids with the age range behind the "4 a 12 anos" chip + suggestion rule.
+    name: 'Kids',
+    capacity: 15,
+    ageMin: 4,
+    ageMax: 12,
+    schedules: [
+      { weekday: 2, startTime: '18:00', durationMinutes: 45 },
+      { weekday: 4, startTime: '18:00', durationMinutes: 45 },
+    ],
+  },
+  {
+    // Seeded at capacity — exercises the "Lotada" badge and full-class paths.
+    name: 'Lotada',
+    capacity: 2,
+    schedules: [{ weekday: 6, startTime: '10:00', durationMinutes: 60 }],
+  },
+];
+
+/** Professor teaching the fixture turmas, per academy. */
+const DEV_CLASS_PROFESSOR: Record<string, string> = {
+  'alpha-jj': 'professor@tatame.dev',
+  'bravo-bjj': 'multi@tatame.dev',
+};
+
+/** Record-only adult students filling `Lotada` to capacity. */
+const DEV_FILLER_STUDENTS: Array<{ fullName: string; birthDate: string }> = [
+  { fullName: 'Fabio Fila', birthDate: '1995-02-11' },
+  { fullName: 'Flavia Fila', birthDate: '1993-08-23' },
+];
+
+/** Guardian (+2 minor dependents enrolled in Kids) per academy. */
+interface DevGuardianFixture {
+  fullName: string;
+  /** When set, the guardian record is claimed by this seeded login. */
+  userEmail?: string;
+  phone: string;
+  dependents: Array<{ fullName: string; birthDate: string }>;
+}
+
+const DEV_GUARDIANS: Record<string, DevGuardianFixture> = {
+  'alpha-jj': {
+    fullName: 'Renata Responsavel',
+    userEmail: 'responsavel@tatame.dev',
+    phone: '+55 11 91234-0001',
+    dependents: [
+      { fullName: 'Kiko Kids', birthDate: '2016-04-10' },
+      { fullName: 'Lara Kids', birthDate: '2018-09-05' },
+    ],
+  },
+  'bravo-bjj': {
+    fullName: 'Gustavo Guardiao',
+    phone: '+55 11 91234-0002',
+    dependents: [
+      { fullName: 'Bento Bravo Jr', birthDate: '2017-01-22' },
+      { fullName: 'Bia Bravo', birthDate: '2019-06-30' },
+    ],
+  },
+};
 
 /** Default permission-toggle rows per academy (absent row = code default). */
 const DEV_ROLE_PERMISSIONS: Array<{ role: MembershipRole; key: string; allowed: boolean }> = [
@@ -265,6 +352,157 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
             set: { allowed: p.allowed, updatedAt: new Date() },
           });
       }
+
+      // ENR.5 — enrollment fixtures: 3 turmas with schedules (Kids with age
+      // range, Lotada at capacity), enrollments, and a guardian with 2
+      // dependents. All written through the RLS-enforced tenant path.
+      const professorEmail = DEV_CLASS_PROFESSOR[a.slug];
+      if (!professorEmail) throw new Error(`Missing fixture professor for ${a.slug}`);
+      const professorUserId = userIdByEmail.get(professorEmail);
+      if (!professorUserId) throw new Error(`Missing user id for ${professorEmail}`);
+
+      const classIdByName = new Map<string, string>();
+      for (const c of DEV_CLASSES) {
+        const classId = await upsertClass(tx, tenantId, professorUserId, c);
+        classIdByName.set(c.name, classId);
+        for (const s of c.schedules) {
+          await tx
+            .insert(classSchedules)
+            .values({
+              tenantId,
+              classId,
+              weekday: s.weekday,
+              startTime: s.startTime,
+              durationMinutes: s.durationMinutes,
+            })
+            .onConflictDoNothing({
+              target: [
+                classSchedules.tenantId,
+                classSchedules.classId,
+                classSchedules.weekday,
+                classSchedules.startTime,
+              ],
+            });
+        }
+      }
+
+      const lotadaId = classIdByName.get('Lotada');
+      const kidsId = classIdByName.get('Kids');
+      const adultoId = classIdByName.get('Adulto Gi');
+      if (!lotadaId || !kidsId || !adultoId) throw new Error('Fixture classes missing');
+
+      // Record-only adults filling Lotada to its capacity of 2.
+      for (const f of DEV_FILLER_STUDENTS) {
+        const studentId = await upsertStudent(tx, tenantId, f);
+        await enroll(tx, tenantId, lotadaId, studentId);
+      }
+
+      // The claimed aluno login trains in Adulto Gi (alpha only — that is
+      // where the student membership lives).
+      if (a.slug === 'alpha-jj') {
+        const alunoUserId = userIdByEmail.get('aluno@tatame.dev');
+        if (!alunoUserId) throw new Error('Missing user id for aluno@tatame.dev');
+        const anaId = await upsertStudent(tx, tenantId, {
+          fullName: 'Ana Aluna',
+          birthDate: '2000-03-15',
+          userId: alunoUserId,
+        });
+        await enroll(tx, tenantId, adultoId, anaId);
+      }
+
+      // Guardian with 2 minor dependents, both enrolled in Kids.
+      const g = DEV_GUARDIANS[a.slug];
+      if (!g) throw new Error(`Missing fixture guardian for ${a.slug}`);
+      const guardianUserId = g.userEmail ? userIdByEmail.get(g.userEmail) : undefined;
+      if (g.userEmail && !guardianUserId) throw new Error(`Missing user id for ${g.userEmail}`);
+      const guardianId = await upsertGuardian(tx, tenantId, g, guardianUserId);
+      for (const d of g.dependents) {
+        const dependentId = await upsertStudent(tx, tenantId, { ...d, guardianId });
+        await enroll(tx, tenantId, kidsId, dependentId);
+      }
     });
   }
+}
+
+async function upsertClass(
+  tx: DbTransaction,
+  tenantId: string,
+  professorUserId: string,
+  c: DevClassFixture,
+): Promise<string> {
+  const found = await tx
+    .select({ id: classes.id })
+    .from(classes)
+    .where(and(eq(classes.tenantId, tenantId), eq(classes.name, c.name)));
+  if (found[0]) return found[0].id;
+  const [inserted] = await tx
+    .insert(classes)
+    .values({
+      tenantId,
+      name: c.name,
+      professorUserId,
+      capacity: c.capacity,
+      ageMin: c.ageMin,
+      ageMax: c.ageMax,
+    })
+    .returning({ id: classes.id });
+  if (!inserted) throw new Error(`Failed to insert class ${c.name}`);
+  return inserted.id;
+}
+
+async function upsertStudent(
+  tx: DbTransaction,
+  tenantId: string,
+  s: { fullName: string; birthDate: string; userId?: string; guardianId?: string },
+): Promise<string> {
+  const found = await tx
+    .select({ id: students.id })
+    .from(students)
+    .where(and(eq(students.tenantId, tenantId), eq(students.fullName, s.fullName)));
+  if (found[0]) return found[0].id;
+  const [inserted] = await tx
+    .insert(students)
+    .values({
+      tenantId,
+      fullName: s.fullName,
+      birthDate: s.birthDate,
+      userId: s.userId,
+      guardianId: s.guardianId,
+    })
+    .returning({ id: students.id });
+  if (!inserted) throw new Error(`Failed to insert student ${s.fullName}`);
+  return inserted.id;
+}
+
+async function upsertGuardian(
+  tx: DbTransaction,
+  tenantId: string,
+  g: DevGuardianFixture,
+  userId: string | undefined,
+): Promise<string> {
+  const found = await tx
+    .select({ id: guardians.id })
+    .from(guardians)
+    .where(and(eq(guardians.tenantId, tenantId), eq(guardians.fullName, g.fullName)));
+  if (found[0]) return found[0].id;
+  const [inserted] = await tx
+    .insert(guardians)
+    .values({ tenantId, fullName: g.fullName, phone: g.phone, userId })
+    .returning({ id: guardians.id });
+  if (!inserted) throw new Error(`Failed to insert guardian ${g.fullName}`);
+  return inserted.id;
+}
+
+async function enroll(
+  tx: DbTransaction,
+  tenantId: string,
+  classId: string,
+  studentId: string,
+): Promise<void> {
+  await tx
+    .insert(enrollments)
+    .values({ tenantId, classId, studentId })
+    .onConflictDoNothing({
+      target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
+    });
 }

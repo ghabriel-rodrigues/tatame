@@ -5,11 +5,16 @@ import { createAppDb, createPlatformDb, withPlatform, withTenant, type DbHandle 
 import {
   academies,
   academySubscriptions,
+  classSchedules,
+  classes,
   credentials,
+  enrollments,
+  guardians,
   memberships,
   platformPlans,
   platformUsers,
   rolePermissions,
+  students,
   users,
 } from '../schema/index.js';
 import { DEV_PASSWORD, seedDevFixtures, seedPlatformPlans } from '../seed/index.js';
@@ -142,6 +147,86 @@ describe('seeds', () => {
     ).toBe(true);
   });
 
+  it('seeds 3 turmas per academy with real recurrence and a Lotada class at capacity', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const rows = await withTenant(app.db, academy!.id, (tx) =>
+        tx.select().from(classes).orderBy(asc(classes.name)),
+      );
+      expect(rows.map((c) => c.name)).toEqual(['Adulto Gi', 'Kids', 'Lotada']);
+
+      // Kids carries the age range behind the "4 a 12 anos" chip.
+      const kids = rows.find((c) => c.name === 'Kids')!;
+      expect([kids.ageMin, kids.ageMax]).toEqual([4, 12]);
+
+      // Weekday chips became real schedule rows.
+      const schedules = await withTenant(app.db, academy!.id, (tx) =>
+        tx.select().from(classSchedules),
+      );
+      const bySlot = (classId: string) => schedules.filter((s) => s.classId === classId);
+      expect(bySlot(rows.find((c) => c.name === 'Adulto Gi')!.id)).toHaveLength(3);
+      expect(bySlot(kids.id)).toHaveLength(2);
+
+      // Lotada is seeded exactly at capacity (active enrollments == capacity).
+      const lotada = rows.find((c) => c.name === 'Lotada')!;
+      const active = await withTenant(app.db, academy!.id, (tx) =>
+        tx
+          .select()
+          .from(enrollments)
+          .where(sql`${enrollments.classId} = ${lotada.id} AND ${enrollments.status} = 'active'`),
+      );
+      expect(active).toHaveLength(lotada.capacity);
+    }
+  });
+
+  it('seeds a guardian with 2 dependents enrolled in Kids per academy', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const guardianRows = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(guardians),
+      );
+      expect(guardianRows).toHaveLength(1);
+      const guardian = guardianRows[0]!;
+
+      const dependents = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(students).where(eq(students.guardianId, guardian.id)),
+      );
+      expect(dependents).toHaveLength(2);
+      // Dependents are minors without logins (Pendente by derivation).
+      for (const d of dependents) {
+        expect(d.userId).toBeNull();
+      }
+
+      const [kids] = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(classes).where(eq(classes.name, 'Kids')),
+      );
+      const kidEnrollments = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(enrollments).where(eq(enrollments.classId, kids!.id)),
+      );
+      expect(kidEnrollments.map((e) => e.studentId).sort()).toEqual(
+        dependents.map((d) => d.id).sort(),
+      );
+    }
+
+    // The alpha guardian record is claimed by the responsavel login.
+    const [alpha] = await withPlatform(platform.db, (tx) =>
+      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, 'alpha-jj')),
+    );
+    const [claimed] = await withTenant(app.db, alpha!.id, (tx) =>
+      tx
+        .select({ email: users.email })
+        .from(guardians)
+        .innerJoin(users, eq(users.id, guardians.userId)),
+    );
+    expect(claimed?.email).toBe('responsavel@tatame.dev');
+  });
+
   it('is idempotent — re-running seeds changes no row counts', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
@@ -149,7 +234,12 @@ describe('seeds', () => {
         const [m] = await tx.select({ n: sql<number>`count(*)::int` }).from(memberships);
         const [p] = await tx.select({ n: sql<number>`count(*)::int` }).from(platformPlans);
         const [s] = await tx.select({ n: sql<number>`count(*)::int` }).from(academySubscriptions);
-        return [u!.n, m!.n, p!.n, s!.n];
+        const [c] = await tx.select({ n: sql<number>`count(*)::int` }).from(classes);
+        const [cs] = await tx.select({ n: sql<number>`count(*)::int` }).from(classSchedules);
+        const [st] = await tx.select({ n: sql<number>`count(*)::int` }).from(students);
+        const [g] = await tx.select({ n: sql<number>`count(*)::int` }).from(guardians);
+        const [e] = await tx.select({ n: sql<number>`count(*)::int` }).from(enrollments);
+        return [u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n];
       });
 
     const before = await count();

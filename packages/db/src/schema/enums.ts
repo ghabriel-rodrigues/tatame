@@ -20,6 +20,15 @@ export const membershipStatus = pgEnum('membership_status', ['active', 'suspende
 /** Invite variant: aluno (student) vs responsavel (guardian). */
 export const inviteKind = pgEnum('invite_kind', ['student', 'guardian']);
 
+/** Student (person record) lifecycle — "excluir" soft-archives to inactive. */
+export const studentStatus = pgEnum('student_status', ['active', 'inactive']);
+
+/** Turma lifecycle — "excluir" soft-archives; archived classes refuse enrollment. */
+export const classStatus = pgEnum('class_status', ['active', 'archived']);
+
+/** Enrollment lifecycle — removal flips to `removed`; re-adding reactivates the row. */
+export const enrollmentStatus = pgEnum('enrollment_status', ['active', 'removed']);
+
 /** Academy status: Trial / Ativa / Inadimplente / Suspensa. */
 export const academyStatus = pgEnum('academy_status', [
   'trial',

@@ -14,6 +14,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
 import { users } from './auth.js';
+import { classes } from './enrollment.js';
 import { inviteKind, membershipRole, membershipStatus } from './enums.js';
 import { id, timestamps } from './helpers.js';
 import { appRole } from './roles.js';
@@ -46,10 +47,7 @@ export const invites = pgTable(
     /** Opaque 256-bit URL token, sha256 hash stored. */
     tokenHash: text('token_hash').notNull().unique(),
     kind: inviteKind('kind').notNull(),
-    /**
-     * Turma binding. Plain uuid until `classes` lands with its feature slice;
-     * hardened to a composite tenant FK then.
-     */
+    /** Turma binding — composite tenant FK onto `classes` (ENR.3, 001 debt). */
     classId: uuid('class_id'),
     /**
      * Plan binding. Plain uuid until `academy_plans` lands with the billing
@@ -69,6 +67,11 @@ export const invites = pgTable(
   (t) => [
     unique('invites_tenant_id_id_uq').on(t.tenantId, t.id),
     index('invites_tenant_id_idx').on(t.tenantId),
+    foreignKey({
+      name: 'invites_class_fk',
+      columns: [t.tenantId, t.classId],
+      foreignColumns: [classes.tenantId, classes.id],
+    }),
     pgPolicy('invites_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
   ],
 );

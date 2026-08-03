@@ -43,6 +43,27 @@
       "when": 1785686437499,
       "tag": "0005_audit_tenant_select",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785796764666,
+      "tag": "0006_invites_class_id_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785796832102,
+      "tag": "0007_enrollment_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785796841312,
+      "tag": "0008_enrollment_hardening_seams",
+      "breakpoints": true
     }
   ]
 }
