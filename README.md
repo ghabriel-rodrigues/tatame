@@ -83,4 +83,33 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AUTH.25 iOS: session — Keychain refresh (this-device-only), refresh-coordinator actor, logout + session-expired
 - [x] AUTH.26 iOS: role gate — shell by role, blocking screens for suspended/web-only
 
-_Next phases (check-in, agenda, graduation, billing, events, store, …) get their specs after Phase 2 ships._
+### Phase 3 — Enrollment ([spec 003](docs/specs/003-enrollment.md))
+
+- [ ] ENR.1 DB: Drizzle schema for students, guardians, classes (+age range), class_schedules, enrollments — UUIDv7 PKs, composite tenant FKs, status enums, uniques per the entity model
+- [ ] ENR.2 DB: forced RLS with fail-closed tenant policies on all five new tables, extending the RLS meta-test
+- [ ] ENR.3 DB: migration hardening `invites.class_id` to a composite tenant FK onto classes, applying cleanly over Phase-2 data
+- [ ] ENR.4 DB: invite-accept SECURITY DEFINER seam extended to persist student/guardian + dependents + class enrollments atomically
+- [ ] ENR.5 DB: dev seeds — sample classes with schedules, enrollments, guardians with dependents per fixture academy, written through the tenant-scoped path
+- [ ] ENR.6 Backend: enrollment module registry CRUD — students/guardians create + list (segment filters, derived Ativo/Pendente), name-only edit, soft archive ending enrollments, minor-requires-guardian enforcement
+- [ ] ENR.7 Backend: professor registration — user reuse-or-create + professor membership + set-your-password email via the reset-token seam
+- [ ] ENR.8 Backend: classes — create recurring turma (weekday chips → schedule rows), list/detail with occupancy and Lotada, name-only edit, soft archive
+- [ ] ENR.9 Backend: enrollments — roster add/remove with row-locked capacity enforcement, reactivation upsert, archived-class rejection, atomic bulk move with all-or-nothing capacity check
+- [ ] ENR.10 Backend: professor surface — own-classes list/detail/roster endpoints with ownership filtering (foreign class → 404)
+- [ ] ENR.11 Backend: responsável surface — dependents list/detail (foreign id → 404), cadastrar filho behind the dependents.register toggle with auto guardian link, age-suggestion endpoint + auto-enrollment
+- [ ] ENR.12 Backend: e2e suite green — guardian 404 (001 debt closed), professor 404, capacity race, atomic move, invite dependents persisted, full-class invite fallback, toggle-off denial, archive semantics, RBAC + read-only + RLS coverage
+- [ ] ENR.13 Web: Cadastros screen per handoff — four segments, list rows with badges, FAB creation forms per type (minor⇒guardian validation)
+- [ ] ENR.14 Web: multi-select mode + Mover para turma sheet with destination picker, capacity feedback, and atomic result handling
+- [ ] ENR.15 Web: turma surfaces — nova turma recorrente form (chips, time+duration, professor, limit, optional age range) and turma detail with schedule, occupancy, attendance placeholder tiles, roster add/remove
+- [ ] ENR.16 Web: name-only edit and excluir (soft archive) flows with confirmation across all four segments
+- [ ] ENR.17 RN: professor Minhas turmas list + turma detail read views (schedules, occupancy, roster, placeholder tiles) per handoff
+- [ ] ENR.18 RN: professor Adicionar aluno picker + remove-from-roster action wired to the professor endpoints
+- [ ] ENR.19 RN: responsável dependents panel + child detail read views with class schedule
+- [ ] ENR.20 RN: responsável Cadastrar aluno sheet — name, birth date, age-suggested class chip, auto link + enrollment, toggle-off hidden state
+- [ ] ENR.21 Android: professor classes list + detail read views per handoff
+- [ ] ENR.22 Android: professor roster add/remove + responsável dependents panel read views
+- [ ] ENR.23 Android: responsável Cadastrar aluno sheet with age suggestion
+- [ ] ENR.24 iOS: professor classes list + detail read views per handoff
+- [ ] ENR.25 iOS: professor roster add/remove + responsável dependents panel read views
+- [ ] ENR.26 iOS: responsável Cadastrar aluno sheet with age suggestion
+
+_Next phases (check-in/attendance, agenda, graduation, billing, events, store, …) get their specs as each phase ships._
