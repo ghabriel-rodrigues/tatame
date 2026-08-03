@@ -107,8 +107,11 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
 
   it('lists all memberships for a multi-persona user and switches without re-login', async () => {
     const body = await t.login('multi@tatame.dev');
-    expect(body.memberships).toHaveLength(2);
-    const professorAlpha = body.memberships.find((m: any) => m.role === 'professor');
+    // ENR.5 fixtures: professor@alpha + admin@bravo + professor@bravo.
+    expect(body.memberships).toHaveLength(3);
+    const professorAlpha = body.memberships.find(
+      (m: any) => m.role === 'professor' && m.academySlug === 'alpha-jj',
+    );
     const adminBravo = body.memberships.find((m: any) => m.role === 'admin');
     expect(professorAlpha.academySlug).toBe('alpha-jj');
     expect(adminBravo.academySlug).toBe('bravo-bjj');

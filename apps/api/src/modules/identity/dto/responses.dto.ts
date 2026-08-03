@@ -233,6 +233,12 @@ export class InviteAcceptResponseDto {
 
   @ApiProperty({ description: 'Always in the body — the client stores it per its platform contract' })
   refreshToken!: string;
+
+  @ApiPropertyOptional({
+    description:
+      'True when the invite-bound class was full (or archived) at accept time: signup succeeded, the enrollment was skipped (spec 003, story 39)',
+  })
+  enrollmentSkipped?: boolean;
 }
 
 export class CreateInviteResponseDto {

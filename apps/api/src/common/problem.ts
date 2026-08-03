@@ -23,6 +23,11 @@ export const ErrorCodes = {
   AUTHZ_IMPERSONATION_RESTRICTED: 'authz.impersonation_restricted',
   TENANT_SUSPENDED: 'tenant.suspended',
   TENANT_READ_ONLY: 'tenant.read_only',
+  // enrollment (spec 003)
+  CLASS_FULL: 'class.full',
+  CLASS_ARCHIVED: 'class.archived',
+  CLASS_CAPACITY_EXCEEDED: 'class.capacity_exceeded',
+  ENROLLMENT_ALREADY_ENROLLED: 'enrollment.already_enrolled',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',
@@ -63,5 +68,9 @@ export class ProblemException extends HttpException {
   }
 }
 
-export const problem = (status: number, code: string, detail?: string) =>
-  new ProblemException(status, code, detail);
+export const problem = (
+  status: number,
+  code: string,
+  detail?: string,
+  errors?: ProblemBody['errors'],
+) => new ProblemException(status, code, detail, errors);

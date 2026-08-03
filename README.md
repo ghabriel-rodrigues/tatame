@@ -90,13 +90,13 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] ENR.3 DB: migration hardening `invites.class_id` to a composite tenant FK onto classes, applying cleanly over Phase-2 data
 - [x] ENR.4 DB: invite-accept SECURITY DEFINER seam extended to persist student/guardian + dependents + class enrollments atomically
 - [x] ENR.5 DB: dev seeds — sample classes with schedules, enrollments, guardians with dependents per fixture academy, written through the tenant-scoped path
-- [ ] ENR.6 Backend: enrollment module registry CRUD — students/guardians create + list (segment filters, derived Ativo/Pendente), name-only edit, soft archive ending enrollments, minor-requires-guardian enforcement
-- [ ] ENR.7 Backend: professor registration — user reuse-or-create + professor membership + set-your-password email via the reset-token seam
-- [ ] ENR.8 Backend: classes — create recurring turma (weekday chips → schedule rows), list/detail with occupancy and Lotada, name-only edit, soft archive
-- [ ] ENR.9 Backend: enrollments — roster add/remove with row-locked capacity enforcement, reactivation upsert, archived-class rejection, atomic bulk move with all-or-nothing capacity check
-- [ ] ENR.10 Backend: professor surface — own-classes list/detail/roster endpoints with ownership filtering (foreign class → 404)
-- [ ] ENR.11 Backend: responsável surface — dependents list/detail (foreign id → 404), cadastrar filho behind the dependents.register toggle with auto guardian link, age-suggestion endpoint + auto-enrollment
-- [ ] ENR.12 Backend: e2e suite green — guardian 404 (001 debt closed), professor 404, capacity race, atomic move, invite dependents persisted, full-class invite fallback, toggle-off denial, archive semantics, RBAC + read-only + RLS coverage
+- [x] ENR.6 Backend: enrollment module registry CRUD — students/guardians create + list (segment filters, derived Ativo/Pendente), name-only edit, soft archive ending enrollments, minor-requires-guardian enforcement
+- [x] ENR.7 Backend: professor registration — user reuse-or-create + professor membership + set-your-password email via the reset-token seam
+- [x] ENR.8 Backend: classes — create recurring turma (weekday chips → schedule rows), list/detail with occupancy and Lotada, name-only edit, soft archive
+- [x] ENR.9 Backend: enrollments — roster add/remove with row-locked capacity enforcement, reactivation upsert, archived-class rejection, atomic bulk move with all-or-nothing capacity check
+- [x] ENR.10 Backend: professor surface — own-classes list/detail/roster endpoints with ownership filtering (foreign class → 404)
+- [x] ENR.11 Backend: responsável surface — dependents list/detail (foreign id → 404), cadastrar filho behind the dependents.register toggle with auto guardian link, age-suggestion endpoint + auto-enrollment
+- [x] ENR.12 Backend: e2e suite green — guardian 404 (001 debt closed), professor 404, capacity race, atomic move, invite dependents persisted, full-class invite fallback, toggle-off denial, archive semantics, RBAC + read-only + RLS coverage
 - [ ] ENR.13 Web: Cadastros screen per handoff — four segments, list rows with badges, FAB creation forms per type (minor⇒guardian validation)
 - [ ] ENR.14 Web: multi-select mode + Mover para turma sheet with destination picker, capacity feedback, and atomic result handling
 - [ ] ENR.15 Web: turma surfaces — nova turma recorrente form (chips, time+duration, professor, limit, optional age range) and turma detail with schedule, occupancy, attendance placeholder tiles, roster add/remove

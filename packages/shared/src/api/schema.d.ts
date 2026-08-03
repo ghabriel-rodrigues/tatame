@@ -294,6 +294,335 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Student registry with derived Ativo/Pendente badges */
+        get: operations["AdminStudentsController_list_v1"];
+        put?: never;
+        /** Create a student record (minor ⇒ guardian required) */
+        post: operations["AdminStudentsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/students/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Atomic bulk move: whole selection or nothing (capacity-checked) */
+        post: operations["AdminStudentsController_move_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/students/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Name-only edit (design backlog: multi-field editing not designed) */
+        patch: operations["AdminStudentsController_rename_v1"];
+        trace?: never;
+    };
+    "/v1/admin/students/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Soft archive: inactive + active enrollments ended atomically */
+        post: operations["AdminStudentsController_archive_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guardians": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Guardian registry with dependent counts */
+        get: operations["AdminGuardiansController_list_v1"];
+        put?: never;
+        /** Create a guardian record without a login */
+        post: operations["AdminGuardiansController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guardians/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Name-only edit */
+        patch: operations["AdminGuardiansController_rename_v1"];
+        trace?: never;
+    };
+    "/v1/admin/professors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active professor memberships of the academy */
+        get: operations["AdminProfessorsController_list_v1"];
+        put?: never;
+        /** Register a professor: reuse-or-create user by email + membership + set-password email */
+        post: operations["AdminProfessorsController_register_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Turmas with schedules, occupancy and derived Lotada */
+        get: operations["AdminClassesController_list_v1"];
+        put?: never;
+        /** Create a recurring turma — weekday chips fan out into schedule rows */
+        post: operations["AdminClassesController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/classes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Turma detail: schedule, occupancy, roster */
+        get: operations["AdminClassesController_detail_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Name-only edit (schedule/professor/capacity editing deferred) */
+        patch: operations["AdminClassesController_rename_v1"];
+        trace?: never;
+    };
+    "/v1/admin/classes/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Soft archive: archived + active enrollments ended atomically */
+        post: operations["AdminClassesController_archive_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/classes/{id}/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add to roster (row-locked capacity; reactivates a removed row) */
+        post: operations["AdminClassesController_addStudent_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/classes/{id}/students/{studentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove from roster (soft: enrollment flips to removed) */
+        delete: operations["AdminClassesController_removeStudent_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Minhas turmas: days, times, occupancy */
+        get: operations["ProfessorClassesController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/classes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Own turma detail with roster (foreign class → 404) */
+        get: operations["ProfessorClassesController_detail_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/classes/{id}/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Adicionar aluno — same capacity rule that binds the admin */
+        post: operations["ProfessorClassesController_addStudent_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/classes/{id}/students/{studentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove from own roster */
+        delete: operations["ProfessorClassesController_removeStudent_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/dependents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My children with class and next scheduled slot */
+        get: operations["ResponsavelDependentsController_list_v1"];
+        put?: never;
+        /** Cadastrar filho: auto guardian link + enrollment into the accepted suggestion */
+        post: operations["ResponsavelDependentsController_register_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/dependents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Child detail (foreign dependent → 404, no existence leak) */
+        get: operations["ResponsavelDependentsController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/class-suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Age-suggested class for a birth date (null when no match/room) */
+        get: operations["ResponsavelDependentsController_suggestion_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -494,6 +823,8 @@ export interface components {
             accessExpiresIn: number;
             /** @description Always in the body — the client stores it per its platform contract */
             refreshToken: string;
+            /** @description True when the invite-bound class was full (or archived) at accept time: signup succeeded, the enrollment was skipped (spec 003, story 39) */
+            enrollmentSkipped?: boolean;
         };
         CreateInviteDto: {
             /** @enum {string} */
@@ -569,6 +900,269 @@ export interface components {
              */
             expiresAt: string;
             academy: components["schemas"]["ImpersonationAcademyDto"];
+        };
+        ClassRefDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        StudentListItemDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+            /** @example 2010-04-20 */
+            birthDate: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            /**
+             * @description Derived: pendente = record not yet claimed by a login
+             * @enum {string}
+             */
+            badge: "ativo" | "pendente";
+            /** Format: uuid */
+            guardianId: string | null;
+            /** Format: uuid */
+            userId: string | null;
+            /** @description Active enrollments */
+            classes: components["schemas"]["ClassRefDto"][];
+        };
+        StudentListResponseDto: {
+            students: components["schemas"]["StudentListItemDto"][];
+        };
+        CreateStudentDto: {
+            fullName: string;
+            /** @example 2010-04-20 */
+            birthDate: string;
+            /**
+             * Format: uuid
+             * @description Required when the student is a minor (minor ⇒ guardian rule)
+             */
+            guardianId?: string;
+        };
+        StudentResponseDto: {
+            student: components["schemas"]["StudentListItemDto"];
+        };
+        MoveStudentsDto: {
+            studentIds: string[];
+            /** Format: uuid */
+            destinationClassId: string;
+        };
+        MoveStudentsResponseDto: {
+            /** Format: uuid */
+            destinationClassId: string;
+            /** @description Every selected student — the move is atomic */
+            movedStudentIds: string[];
+        };
+        UpdateNameDto: {
+            fullName: string;
+        };
+        GuardianListItemDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+            phone: string | null;
+            email: string | null;
+            /** @enum {string} */
+            badge: "ativo" | "pendente";
+            /** Format: uuid */
+            userId: string | null;
+            dependentCount: number;
+        };
+        GuardianListResponseDto: {
+            guardians: components["schemas"]["GuardianListItemDto"][];
+        };
+        CreateGuardianDto: {
+            fullName: string;
+            phone?: string;
+            email?: string;
+        };
+        GuardianResponseDto: {
+            guardian: components["schemas"]["GuardianListItemDto"];
+        };
+        ProfessorListItemDto: {
+            /** Format: uuid */
+            membershipId: string;
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+            email: string;
+            /** @description Membership status */
+            status: string;
+        };
+        ProfessorListResponseDto: {
+            professors: components["schemas"]["ProfessorListItemDto"][];
+        };
+        RegisterProfessorDto: {
+            fullName: string;
+            /** @description Reused cross-tenant when an account already exists */
+            email: string;
+        };
+        RegisterProfessorResponseDto: {
+            /** Format: uuid */
+            userId: string;
+            /** Format: uuid */
+            membershipId: string;
+            /** @description False when an existing account was reused by email */
+            userCreated: boolean;
+            /** @description True when the set-your-password email was dispatched (no credential yet) */
+            passwordEmailSent: boolean;
+        };
+        ClassProfessorDto: {
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+        };
+        ScheduleSlotViewDto: {
+            /** @description 0 = Sunday … 6 = Saturday */
+            weekday: number;
+            /** @example 19:00 */
+            startTime: string;
+            durationMinutes: number;
+        };
+        ClassListItemDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            status: "active" | "archived";
+            capacity: number;
+            /** @description Active enrollment count — server-derived */
+            occupancy: number;
+            /** @description Derived: occupancy ≥ capacity */
+            lotada: boolean;
+            ageMin: number | null;
+            ageMax: number | null;
+            professor: components["schemas"]["ClassProfessorDto"];
+            schedules: components["schemas"]["ScheduleSlotViewDto"][];
+        };
+        ClassListResponseDto: {
+            classes: components["schemas"]["ClassListItemDto"][];
+        };
+        ScheduleSlotDto: {
+            /** @description 0 = Sunday … 6 = Saturday */
+            weekday: number;
+            /**
+             * @description HH:MM (24h)
+             * @example 19:00
+             */
+            startTime: string;
+            durationMinutes: number;
+        };
+        CreateClassDto: {
+            name: string;
+            /**
+             * Format: uuid
+             * @description Must hold an active professor membership
+             */
+            professorUserId: string;
+            /** @description Student limit — "Lotada" when reached */
+            capacity: number;
+            /** @description Optional age range (Kids chip) */
+            ageMin?: number;
+            ageMax?: number;
+            schedules: components["schemas"]["ScheduleSlotDto"][];
+        };
+        RosterStudentDto: {
+            /** Format: uuid */
+            studentId: string;
+            fullName: string;
+            /** @example 2010-04-20 */
+            birthDate: string;
+            /** @enum {string} */
+            badge: "ativo" | "pendente";
+        };
+        ClassDetailDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            status: "active" | "archived";
+            capacity: number;
+            /** @description Active enrollment count — server-derived */
+            occupancy: number;
+            /** @description Derived: occupancy ≥ capacity */
+            lotada: boolean;
+            ageMin: number | null;
+            ageMax: number | null;
+            professor: components["schemas"]["ClassProfessorDto"];
+            schedules: components["schemas"]["ScheduleSlotViewDto"][];
+            /** @description Active roster */
+            roster: components["schemas"]["RosterStudentDto"][];
+        };
+        ClassDetailResponseDto: {
+            class: components["schemas"]["ClassDetailDto"];
+        };
+        UpdateClassNameDto: {
+            name: string;
+        };
+        AddRosterStudentDto: {
+            /** Format: uuid */
+            studentId: string;
+        };
+        EnrollmentResultDto: {
+            /** Format: uuid */
+            classId: string;
+            /** Format: uuid */
+            studentId: string;
+            /** @enum {string} */
+            status: "active" | "removed";
+        };
+        EnrollmentResultResponseDto: {
+            enrollment: components["schemas"]["EnrollmentResultDto"];
+        };
+        DependentClassDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            schedules: components["schemas"]["ScheduleSlotViewDto"][];
+            /** @description Next scheduled slot, server-derived */
+            nextSlot: components["schemas"]["ScheduleSlotViewDto"] | null;
+        };
+        DependentDetailDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+            /** @example 2017-06-10 */
+            birthDate: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            /** @description Active class if enrolled */
+            class: components["schemas"]["DependentClassDto"] | null;
+        };
+        DependentListResponseDto: {
+            dependents: components["schemas"]["DependentDetailDto"][];
+        };
+        DependentResponseDto: {
+            dependent: components["schemas"]["DependentDetailDto"];
+        };
+        RegisterDependentDto: {
+            fullName: string;
+            /** @example 2017-06-10 */
+            birthDate: string;
+            /**
+             * Format: uuid
+             * @description Accepted age-suggested class. Registration succeeds even when it is full — the enrollment is skipped (story 34).
+             */
+            classId?: string;
+        };
+        RegisterDependentResponseDto: {
+            dependent: components["schemas"]["DependentDetailDto"];
+            /** @description False when no class was accepted or the accepted class was full (story 34) */
+            enrolled: boolean;
+        };
+        ClassSuggestionDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            ageMin: number | null;
+            ageMax: number | null;
+            capacity: number;
+            occupancy: number;
+            schedules: components["schemas"]["ScheduleSlotViewDto"][];
+        };
+        ClassSuggestionResponseDto: {
+            /** @description Null when no active age-matching class with a free slot exists */
+            suggestion?: components["schemas"]["ClassSuggestionDto"] | null;
         };
     };
     responses: never;
@@ -968,6 +1562,555 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImpersonationGrantResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStudentsController_list_v1: {
+        parameters: {
+            query?: {
+                /** @description Default `active` — archived records are hidden from active listings */
+                status?: "active" | "inactive" | "all";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStudentsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateStudentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStudentsController_move_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveStudentsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveStudentsResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStudentsController_rename_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNameDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudentResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStudentsController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminGuardiansController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuardianListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminGuardiansController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGuardianDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuardianResponseDto"];
+                };
+            };
+        };
+    };
+    AdminGuardiansController_rename_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNameDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuardianResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProfessorsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfessorListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminProfessorsController_register_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterProfessorDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterProfessorResponseDto"];
+                };
+            };
+        };
+    };
+    AdminClassesController_list_v1: {
+        parameters: {
+            query?: {
+                /** @description Default `active` — archived records are hidden from active listings */
+                status?: "active" | "inactive" | "all";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminClassesController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClassDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetailResponseDto"];
+                };
+            };
+        };
+    };
+    AdminClassesController_detail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetailResponseDto"];
+                };
+            };
+        };
+    };
+    AdminClassesController_rename_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateClassNameDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetailResponseDto"];
+                };
+            };
+        };
+    };
+    AdminClassesController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminClassesController_addStudent_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddRosterStudentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollmentResultResponseDto"];
+                };
+            };
+        };
+    };
+    AdminClassesController_removeStudent_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                studentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollmentResultResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorClassesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassListResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorClassesController_detail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassDetailResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorClassesController_addStudent_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddRosterStudentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollmentResultResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorClassesController_removeStudent_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                studentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollmentResultResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelDependentsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DependentListResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelDependentsController_register_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDependentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDependentResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelDependentsController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DependentResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelDependentsController_suggestion_v1: {
+        parameters: {
+            query: {
+                birthDate: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClassSuggestionResponseDto"];
                 };
             };
         };

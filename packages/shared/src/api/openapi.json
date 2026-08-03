@@ -574,11 +574,934 @@
           "platform"
         ]
       }
+    },
+    "/v1/admin/students": {
+      "get": {
+        "operationId": "AdminStudentsController_list_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Default `active` — archived records are hidden from active listings",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Student registry with derived Ativo/Pendente badges",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminStudentsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a student record (minor ⇒ guardian required)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/students/move": {
+      "post": {
+        "operationId": "AdminStudentsController_move_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveStudentsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MoveStudentsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atomic bulk move: whole selection or nothing (capacity-checked)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/students/{id}": {
+      "patch": {
+        "operationId": "AdminStudentsController_rename_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Name-only edit (design backlog: multi-field editing not designed)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/students/{id}/archive": {
+      "post": {
+        "operationId": "AdminStudentsController_archive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft archive: inactive + active enrollments ended atomically",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/guardians": {
+      "get": {
+        "operationId": "AdminGuardiansController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardianListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Guardian registry with dependent counts",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminGuardiansController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuardianDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardianResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a guardian record without a login",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/guardians/{id}": {
+      "patch": {
+        "operationId": "AdminGuardiansController_rename_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardianResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Name-only edit",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/professors": {
+      "get": {
+        "operationId": "AdminProfessorsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessorListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Active professor memberships of the academy",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminProfessorsController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterProfessorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterProfessorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register a professor: reuse-or-create user by email + membership + set-password email",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/classes": {
+      "get": {
+        "operationId": "AdminClassesController_list_v1",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Default `active` — archived records are hidden from active listings",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Turmas with schedules, occupancy and derived Lotada",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminClassesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClassDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a recurring turma — weekday chips fan out into schedule rows",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/classes/{id}": {
+      "get": {
+        "operationId": "AdminClassesController_detail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Turma detail: schedule, occupancy, roster",
+        "tags": [
+          "admin"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminClassesController_rename_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClassNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Name-only edit (schedule/professor/capacity editing deferred)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/classes/{id}/archive": {
+      "post": {
+        "operationId": "AdminClassesController_archive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft archive: archived + active enrollments ended atomically",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/classes/{id}/students": {
+      "post": {
+        "operationId": "AdminClassesController_addStudent_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddRosterStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add to roster (row-locked capacity; reactivates a removed row)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/classes/{id}/students/{studentId}": {
+      "delete": {
+        "operationId": "AdminClassesController_removeStudent_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "studentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove from roster (soft: enrollment flips to removed)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/professor/classes": {
+      "get": {
+        "operationId": "ProfessorClassesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Minhas turmas: days, times, occupancy",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/classes/{id}": {
+      "get": {
+        "operationId": "ProfessorClassesController_detail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Own turma detail with roster (foreign class → 404)",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/classes/{id}/students": {
+      "post": {
+        "operationId": "ProfessorClassesController_addStudent_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddRosterStudentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adicionar aluno — same capacity rule that binds the admin",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/classes/{id}/students/{studentId}": {
+      "delete": {
+        "operationId": "ProfessorClassesController_removeStudent_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "studentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollmentResultResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove from own roster",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/responsavel/dependents": {
+      "get": {
+        "operationId": "ResponsavelDependentsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DependentListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "My children with class and next scheduled slot",
+        "tags": [
+          "responsavel"
+        ]
+      },
+      "post": {
+        "operationId": "ResponsavelDependentsController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDependentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterDependentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cadastrar filho: auto guardian link + enrollment into the accepted suggestion",
+        "tags": [
+          "responsavel"
+        ]
+      }
+    },
+    "/v1/responsavel/dependents/{id}": {
+      "get": {
+        "operationId": "ResponsavelDependentsController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DependentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Child detail (foreign dependent → 404, no existence leak)",
+        "tags": [
+          "responsavel"
+        ]
+      }
+    },
+    "/v1/responsavel/class-suggestion": {
+      "get": {
+        "operationId": "ResponsavelDependentsController_suggestion_v1",
+        "parameters": [
+          {
+            "name": "birthDate",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2017-06-10",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassSuggestionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Age-suggested class for a birth date (null when no match/room)",
+        "tags": [
+          "responsavel"
+        ]
+      }
     }
   },
   "info": {
     "title": "Tatame API",
-    "description": "Identity surface (spec 001-auth). Errors are RFC 9457 application/problem+json with stable `code`s.",
+    "description": "Identity (spec 001-auth) and enrollment (spec 003) surfaces. Errors are RFC 9457 application/problem+json with stable `code`s.",
     "version": "1.0",
     "contact": {}
   },
@@ -597,6 +1520,14 @@
     },
     {
       "name": "admin",
+      "description": ""
+    },
+    {
+      "name": "professor",
+      "description": ""
+    },
+    {
+      "name": "responsavel",
       "description": ""
     },
     {
@@ -1235,6 +2166,10 @@
           "refreshToken": {
             "type": "string",
             "description": "Always in the body — the client stores it per its platform contract"
+          },
+          "enrollmentSkipped": {
+            "type": "boolean",
+            "description": "True when the invite-bound class was full (or archived) at accept time: signup succeeded, the enrollment was skipped (spec 003, story 39)"
           }
         },
         "required": [
@@ -1471,6 +2406,886 @@
           "expiresAt",
           "academy"
         ]
+      },
+      "ClassRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "StudentListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2010-04-20"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "badge": {
+            "type": "string",
+            "enum": [
+              "ativo",
+              "pendente"
+            ],
+            "description": "Derived: pendente = record not yet claimed by a login"
+          },
+          "guardianId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "classes": {
+            "description": "Active enrollments",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassRefDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "birthDate",
+          "status",
+          "badge",
+          "guardianId",
+          "userId",
+          "classes"
+        ]
+      },
+      "StudentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentListItemDto"
+            }
+          }
+        },
+        "required": [
+          "students"
+        ]
+      },
+      "CreateStudentDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2010-04-20"
+          },
+          "guardianId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when the student is a minor (minor ⇒ guardian rule)"
+          }
+        },
+        "required": [
+          "fullName",
+          "birthDate"
+        ]
+      },
+      "StudentResponseDto": {
+        "type": "object",
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/StudentListItemDto"
+          }
+        },
+        "required": [
+          "student"
+        ]
+      },
+      "MoveStudentsDto": {
+        "type": "object",
+        "properties": {
+          "studentIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "destinationClassId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "studentIds",
+          "destinationClassId"
+        ]
+      },
+      "MoveStudentsResponseDto": {
+        "type": "object",
+        "properties": {
+          "destinationClassId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "movedStudentIds": {
+            "description": "Every selected student — the move is atomic",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "destinationClassId",
+          "movedStudentIds"
+        ]
+      },
+      "UpdateNameDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName"
+        ]
+      },
+      "GuardianListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "badge": {
+            "type": "string",
+            "enum": [
+              "ativo",
+              "pendente"
+            ]
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "dependentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "phone",
+          "email",
+          "badge",
+          "userId",
+          "dependentCount"
+        ]
+      },
+      "GuardianListResponseDto": {
+        "type": "object",
+        "properties": {
+          "guardians": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuardianListItemDto"
+            }
+          }
+        },
+        "required": [
+          "guardians"
+        ]
+      },
+      "CreateGuardianDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName"
+        ]
+      },
+      "GuardianResponseDto": {
+        "type": "object",
+        "properties": {
+          "guardian": {
+            "$ref": "#/components/schemas/GuardianListItemDto"
+          }
+        },
+        "required": [
+          "guardian"
+        ]
+      },
+      "ProfessorListItemDto": {
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "Membership status"
+          }
+        },
+        "required": [
+          "membershipId",
+          "userId",
+          "fullName",
+          "email",
+          "status"
+        ]
+      },
+      "ProfessorListResponseDto": {
+        "type": "object",
+        "properties": {
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessorListItemDto"
+            }
+          }
+        },
+        "required": [
+          "professors"
+        ]
+      },
+      "RegisterProfessorDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "description": "Reused cross-tenant when an account already exists"
+          }
+        },
+        "required": [
+          "fullName",
+          "email"
+        ]
+      },
+      "RegisterProfessorResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "membershipId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userCreated": {
+            "type": "boolean",
+            "description": "False when an existing account was reused by email"
+          },
+          "passwordEmailSent": {
+            "type": "boolean",
+            "description": "True when the set-your-password email was dispatched (no credential yet)"
+          }
+        },
+        "required": [
+          "userId",
+          "membershipId",
+          "userCreated",
+          "passwordEmailSent"
+        ]
+      },
+      "ClassProfessorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "fullName"
+        ]
+      },
+      "ScheduleSlotViewDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 = Sunday … 6 = Saturday"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "19:00"
+          },
+          "durationMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "weekday",
+          "startTime",
+          "durationMinutes"
+        ]
+      },
+      "ClassListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "occupancy": {
+            "type": "number",
+            "description": "Active enrollment count — server-derived"
+          },
+          "lotada": {
+            "type": "boolean",
+            "description": "Derived: occupancy ≥ capacity"
+          },
+          "ageMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "ageMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "professor": {
+            "$ref": "#/components/schemas/ClassProfessorDto"
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotViewDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "capacity",
+          "occupancy",
+          "lotada",
+          "ageMin",
+          "ageMax",
+          "professor",
+          "schedules"
+        ]
+      },
+      "ClassListResponseDto": {
+        "type": "object",
+        "properties": {
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassListItemDto"
+            }
+          }
+        },
+        "required": [
+          "classes"
+        ]
+      },
+      "ScheduleSlotDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 = Sunday … 6 = Saturday"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "19:00",
+            "description": "HH:MM (24h)"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "weekday",
+          "startTime",
+          "durationMinutes"
+        ]
+      },
+      "CreateClassDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "professorUserId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Must hold an active professor membership"
+          },
+          "capacity": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Student limit — \"Lotada\" when reached"
+          },
+          "ageMin": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Optional age range (Kids chip)"
+          },
+          "ageMax": {
+            "type": "number",
+            "minimum": 0
+          },
+          "schedules": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotDto"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "professorUserId",
+          "capacity",
+          "schedules"
+        ]
+      },
+      "RosterStudentDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2010-04-20"
+          },
+          "badge": {
+            "type": "string",
+            "enum": [
+              "ativo",
+              "pendente"
+            ]
+          }
+        },
+        "required": [
+          "studentId",
+          "fullName",
+          "birthDate",
+          "badge"
+        ]
+      },
+      "ClassDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "occupancy": {
+            "type": "number",
+            "description": "Active enrollment count — server-derived"
+          },
+          "lotada": {
+            "type": "boolean",
+            "description": "Derived: occupancy ≥ capacity"
+          },
+          "ageMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "ageMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "professor": {
+            "$ref": "#/components/schemas/ClassProfessorDto"
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotViewDto"
+            }
+          },
+          "roster": {
+            "description": "Active roster",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RosterStudentDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "capacity",
+          "occupancy",
+          "lotada",
+          "ageMin",
+          "ageMax",
+          "professor",
+          "schedules",
+          "roster"
+        ]
+      },
+      "ClassDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "class": {
+            "$ref": "#/components/schemas/ClassDetailDto"
+          }
+        },
+        "required": [
+          "class"
+        ]
+      },
+      "UpdateClassNameDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AddRosterStudentDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "studentId"
+        ]
+      },
+      "EnrollmentResultDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "removed"
+            ]
+          }
+        },
+        "required": [
+          "classId",
+          "studentId",
+          "status"
+        ]
+      },
+      "EnrollmentResultResponseDto": {
+        "type": "object",
+        "properties": {
+          "enrollment": {
+            "$ref": "#/components/schemas/EnrollmentResultDto"
+          }
+        },
+        "required": [
+          "enrollment"
+        ]
+      },
+      "DependentClassDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotViewDto"
+            }
+          },
+          "nextSlot": {
+            "nullable": true,
+            "description": "Next scheduled slot, server-derived",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScheduleSlotViewDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "schedules",
+          "nextSlot"
+        ]
+      },
+      "DependentDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2017-06-10"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "class": {
+            "nullable": true,
+            "description": "Active class if enrolled",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DependentClassDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "birthDate",
+          "status",
+          "class"
+        ]
+      },
+      "DependentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "dependents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DependentDetailDto"
+            }
+          }
+        },
+        "required": [
+          "dependents"
+        ]
+      },
+      "DependentResponseDto": {
+        "type": "object",
+        "properties": {
+          "dependent": {
+            "$ref": "#/components/schemas/DependentDetailDto"
+          }
+        },
+        "required": [
+          "dependent"
+        ]
+      },
+      "RegisterDependentDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2017-06-10"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Accepted age-suggested class. Registration succeeds even when it is full — the enrollment is skipped (story 34)."
+          }
+        },
+        "required": [
+          "fullName",
+          "birthDate"
+        ]
+      },
+      "RegisterDependentResponseDto": {
+        "type": "object",
+        "properties": {
+          "dependent": {
+            "$ref": "#/components/schemas/DependentDetailDto"
+          },
+          "enrolled": {
+            "type": "boolean",
+            "description": "False when no class was accepted or the accepted class was full (story 34)"
+          }
+        },
+        "required": [
+          "dependent",
+          "enrolled"
+        ]
+      },
+      "ClassSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ageMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "ageMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "occupancy": {
+            "type": "number"
+          },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSlotViewDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "ageMin",
+          "ageMax",
+          "capacity",
+          "occupancy",
+          "schedules"
+        ]
+      },
+      "ClassSuggestionResponseDto": {
+        "type": "object",
+        "properties": {
+          "suggestion": {
+            "nullable": true,
+            "description": "Null when no active age-matching class with a free slot exists",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClassSuggestionDto"
+              }
+            ]
+          }
+        }
       }
     }
   }

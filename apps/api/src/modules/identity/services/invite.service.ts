@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
-import { invites, withTenant, type DbHandle } from '@tatame/db';
+import { classes, invites, withTenant, type DbHandle } from '@tatame/db';
+import { eq } from 'drizzle-orm';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
@@ -85,8 +86,23 @@ export class InviteService {
     }
     const raw = randomBytes(32).toString('base64url');
     const expiresAt = new Date(Date.now() + INVITE_TTL_MS);
-    await withTenant(this.appDb.db, { tenantId: ctx.tenantId, userId: ctx.userId }, (tx) =>
-      tx.insert(invites).values({
+    await withTenant(this.appDb.db, { tenantId: ctx.tenantId, userId: ctx.userId }, async (tx) => {
+      // Story 40: the composite tenant FK makes dead/foreign bindings
+      // impossible at the constraint level; this pre-check turns the
+      // violation into a clean problem instead of a 500.
+      if (input.classId) {
+        const bound = await tx
+          .select({ id: classes.id, status: classes.status })
+          .from(classes)
+          .where(eq(classes.id, input.classId));
+        if (!bound[0]) {
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found in this academy');
+        }
+        if (bound[0].status !== 'active') {
+          throw problem(409, ErrorCodes.CLASS_ARCHIVED, 'Cannot bind an invite to an archived class');
+        }
+      }
+      await tx.insert(invites).values({
         tenantId: ctx.tenantId as string,
         tokenHash: this.tokens.hashToken(raw),
         kind: input.kind,
@@ -95,8 +111,8 @@ export class InviteService {
         createdByUserId: ctx.userId,
         expiresAt,
         maxUses: input.maxUses ?? null,
-      }),
-    );
+      });
+    });
     return { token: raw, expiresAt, kind: input.kind };
   }
 
@@ -120,36 +136,51 @@ export class InviteService {
     };
   }
 
-  /** Atomic public signup; success ends logged in (full token pair). */
+  /**
+   * Atomic public signup; success ends logged in (full token pair). The v2
+   * seam (spec 003, ENR.4) persists in the same transaction what Phase 2 only
+   * validated: the students row (aluno kind) or the guardians row + dependent
+   * students (responsável kind), each enrolled into the invite-bound class
+   * when capacity allows. A full class never fails the signup — the skipped
+   * enrollment is surfaced via `enrollmentSkipped` (story 39).
+   */
   async publicAccept(
     rawToken: string,
     input: PublicAcceptInput,
     meta: RequestMeta,
-  ): Promise<AuthenticatedPayload> {
+  ): Promise<AuthenticatedPayload & { enrollmentSkipped: boolean }> {
     const secretHash = await this.passwords.hash(input.password);
+    const dependents = (input.dependents ?? []).map((dependent) => ({
+      full_name: dependent.fullName,
+      birth_date: dependent.birthDate,
+    }));
     const result = await this.appDb.db.execute(sql`
-      SELECT * FROM auth_accept_invite(
+      SELECT * FROM auth_accept_invite_v2(
         ${this.tokens.hashToken(rawToken)},
         ${input.email},
         ${input.fullName},
         ${input.phone ?? null},
         ${input.birthDate ?? null}::date,
-        ${secretHash}
+        ${secretHash},
+        ${JSON.stringify(dependents)}::jsonb
       )
     `);
     const row = result.rows[0] as {
       status: string;
       user_id: string | null;
       membership_id: string | null;
+      enrollment_skipped: boolean | null;
     };
 
     switch (row.status) {
-      case 'accepted':
-        return this.auth.establishSession(
+      case 'accepted': {
+        const payload = await this.auth.establishSession(
           { id: row.user_id as string, email: input.email.toLowerCase(), fullName: input.fullName },
           meta,
           row.membership_id ?? undefined,
         );
+        return { ...payload, enrollmentSkipped: row.enrollment_skipped === true };
+      }
       case 'email_exists':
         throw problem(
           409,
@@ -162,6 +193,14 @@ export class InviteService {
           ErrorCodes.INVITE_MINOR_REQUIRES_GUARDIAN,
           'Minors must be registered by a guardian (responsável invite)',
         );
+      case 'birth_date_required':
+        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Birth date is required', [
+          { field: 'birthDate', messages: ['Student signups require a birth date'] },
+        ]);
+      case 'invalid_dependent':
+        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Invalid dependent payload', [
+          { field: 'dependents', messages: ['Each dependent needs a full name and birth date'] },
+        ]);
       default:
         throwInviteProblem(row.status);
     }

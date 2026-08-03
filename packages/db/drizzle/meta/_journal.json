@@ -64,6 +64,13 @@
       "when": 1785796841312,
       "tag": "0008_enrollment_hardening_seams",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785990000000,
+      "tag": "0009_professor_registration_seam",
+      "breakpoints": true
     }
   ]
 }

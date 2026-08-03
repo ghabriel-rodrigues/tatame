@@ -17,7 +17,7 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
     new DocumentBuilder()
       .setTitle('Tatame API')
       .setDescription(
-        'Identity surface (spec 001-auth). Errors are RFC 9457 application/problem+json with stable `code`s.',
+        'Identity (spec 001-auth) and enrollment (spec 003) surfaces. Errors are RFC 9457 application/problem+json with stable `code`s.',
       )
       .setVersion('1.0')
       .addBearerAuth()
@@ -25,6 +25,8 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       .addTag('public')
       .addTag('invites')
       .addTag('admin')
+      .addTag('professor')
+      .addTag('responsavel')
       .addTag('platform')
       .build(),
   );

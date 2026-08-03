@@ -58,6 +58,14 @@ import { TotpService } from './services/totp.service.js';
     ImpersonationService,
     AuditService,
   ],
-  exports: [TokenService, AcademyStatusService, PermissionsService, AuditService],
+  exports: [
+    TokenService,
+    AcademyStatusService,
+    PermissionsService,
+    AuditService,
+    // Reset-token seam reused by enrollment's professor registration
+    // (set-your-password email — spec 003, ENR.7).
+    PasswordResetService,
+  ],
 })
 export class IdentityModule {}

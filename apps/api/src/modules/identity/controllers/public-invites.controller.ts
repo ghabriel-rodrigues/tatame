@@ -43,6 +43,9 @@ export class PublicInvitesController {
       accessToken: payload.tokens.accessToken,
       accessExpiresIn: payload.tokens.accessExpiresIn,
       refreshToken: payload.tokens.refreshToken,
+      // Story 39: a full invite-bound class never fails the signup — the
+      // skipped enrollment is surfaced (admin sees an unassigned student).
+      enrollmentSkipped: payload.enrollmentSkipped,
     };
   }
 }
