@@ -18,6 +18,9 @@ import br.com.tatame.core.network.dto.Roles
 import br.com.tatame.feature.auth.LoginScreen
 import br.com.tatame.feature.auth.MembershipChooserScreen
 import br.com.tatame.feature.auth.roleLabel
+import br.com.tatame.feature.enrollment.professor.TurmasTab
+import br.com.tatame.feature.enrollment.responsavel.DEPENDENTS_REGISTER_PERMISSION
+import br.com.tatame.feature.enrollment.responsavel.DependentsHomeTab
 import br.com.tatame.feature.shell.PersonaShellScreen
 import br.com.tatame.feature.shell.SuspendedAcademyScreen
 import br.com.tatame.feature.shell.WebOnlyRoleScreen
@@ -96,6 +99,8 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 R.string.tab_profile,
             ),
             onLogout = onLogout,
+            // ENR.21/22 — Turmas tab (index 1) is the real professor surface.
+            tabContent = mapOf(1 to { TurmasTab(academyName = me.academy?.name) }),
         )
 
         me.activeRole == Roles.GUARDIAN -> PersonaShellScreen(
@@ -107,6 +112,17 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 R.string.tab_profile,
             ),
             onLogout = onLogout,
+            // ENR.22/23 — home tab (index 0) is the dependents panel; the
+            // Cadastrar aluno CTA is hidden when dependents.register is off.
+            tabContent = mapOf(
+                0 to {
+                    DependentsHomeTab(
+                        guardianFirstName = me.user.fullName.substringBefore(' '),
+                        canRegisterDependents =
+                            me.permissions[DEPENDENTS_REGISTER_PERMISSION] ?: true,
+                    )
+                },
+            ),
         )
 
         // admin + platform roles (owner/support/finance) are web-console surfaces.

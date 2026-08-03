@@ -38,6 +38,12 @@ object ApiErrorCodes {
     const val NOT_FOUND = "resource.not_found"
     const val CONFLICT = "resource.conflict"
     const val INTERNAL = "internal.error"
+
+    // Enrollment slice (spec 003) additions to the shared registry.
+    const val CLASS_FULL = "class.full"
+    const val CLASS_ARCHIVED = "class.archived"
+    const val CLASS_CAPACITY_EXCEEDED = "class.capacity_exceeded"
+    const val ENROLLMENT_ALREADY_ENROLLED = "enrollment.already_enrolled"
 }
 
 /**
@@ -76,6 +82,18 @@ sealed interface ApiError {
 
         /** `tenant.read_only` — delinquency; surfaces as session state (banner). */
         data object ReadOnly : Tenant
+    }
+
+    /** Enrollment-slice stable codes (spec 003) the roster/registration UX maps to PT-BR copy. */
+    sealed interface Enrollment : ApiError {
+        /** `class.full` / `class.capacity_exceeded` — capacity rule rejection. */
+        data object ClassFull : Enrollment
+
+        /** `class.archived` — enrolling into an archived class. */
+        data object ClassArchived : Enrollment
+
+        /** `enrollment.already_enrolled` — student already active in the class. */
+        data object AlreadyEnrolled : Enrollment
     }
 
     /** 422 `validation.failed` with field-level errors. */

@@ -48,3 +48,5 @@ A locked NestJS architecture spec: module/domain layout, authentication and auth
 
 - NestJS module layout should not lock persistence-layer details before the database map's ORM choice (database ticket 01) resolves.
 - Stripe integration architecture consumes the money/billing model (database ticket 05).
+
+- Add `GET /v1/professor/students` (non-enrolled filter) — the Adicionar aluno picker on mobiles currently unions other-class rosters; surfaced by ENR.22 Android.

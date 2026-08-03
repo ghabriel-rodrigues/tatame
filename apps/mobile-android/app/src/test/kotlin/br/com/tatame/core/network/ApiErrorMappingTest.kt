@@ -65,6 +65,35 @@ class ApiErrorMappingTest {
     }
 
     @Test
+    fun `enrollment codes map to the dedicated errors`() {
+        assertEquals(
+            ApiError.Enrollment.ClassFull,
+            mapHttpError(409, """{"status":409,"code":"class.full"}"""),
+        )
+        assertEquals(
+            "bulk-move capacity shares the class-full surface",
+            ApiError.Enrollment.ClassFull,
+            mapHttpError(409, """{"status":409,"code":"class.capacity_exceeded"}"""),
+        )
+        assertEquals(
+            ApiError.Enrollment.ClassArchived,
+            mapHttpError(409, """{"status":409,"code":"class.archived"}"""),
+        )
+        assertEquals(
+            ApiError.Enrollment.AlreadyEnrolled,
+            mapHttpError(409, """{"status":409,"code":"enrollment.already_enrolled"}"""),
+        )
+    }
+
+    @Test
+    fun `enrollment codes never regress plain conflicts`() {
+        assertEquals(
+            ApiError.Conflict,
+            mapHttpError(409, """{"status":409,"code":"resource.conflict"}"""),
+        )
+    }
+
+    @Test
     fun `unknown code falls back to status buckets`() {
         assertEquals(
             ApiError.Auth.SessionExpired,

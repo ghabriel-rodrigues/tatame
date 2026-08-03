@@ -105,9 +105,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] ENR.18 RN: professor Adicionar aluno picker + remove-from-roster action wired to the professor endpoints
 - [ ] ENR.19 RN: responsável dependents panel + child detail read views with class schedule
 - [ ] ENR.20 RN: responsável Cadastrar aluno sheet — name, birth date, age-suggested class chip, auto link + enrollment, toggle-off hidden state
-- [ ] ENR.21 Android: professor classes list + detail read views per handoff
-- [ ] ENR.22 Android: professor roster add/remove + responsável dependents panel read views
-- [ ] ENR.23 Android: responsável Cadastrar aluno sheet with age suggestion
+- [x] ENR.21 Android: professor classes list + detail read views per handoff
+- [x] ENR.22 Android: professor roster add/remove + responsável dependents panel read views
+- [x] ENR.23 Android: responsável Cadastrar aluno sheet with age suggestion
 - [ ] ENR.24 iOS: professor classes list + detail read views per handoff
 - [ ] ENR.25 iOS: professor roster add/remove + responsável dependents panel read views
 - [ ] ENR.26 iOS: responsável Cadastrar aluno sheet with age suggestion

@@ -31,10 +31,11 @@ import br.com.tatame.feature.auth.roleLabel
 import com.tatame.designsystem.tokens.LumiraTokens
 
 /**
- * Authenticated empty shell per persona (AUTH.23): renders session context
- * (name, academy, role), the delinquency read-only banner, a logout action,
- * and a placeholder bottom bar (full GlassTabBar parity lands with the
- * feature slices).
+ * Authenticated shell per persona (AUTH.23): placeholder bottom bar (full
+ * GlassTabBar parity lands with later slices) + per-tab content. Tabs with an
+ * entry in [tabContent] render real feature surfaces (ENR.21+); the rest keep
+ * the session-context placeholder (name, academy, role, logout). The
+ * delinquency read-only banner always renders above content.
  */
 @Composable
 fun PersonaShellScreen(
@@ -42,6 +43,7 @@ fun PersonaShellScreen(
     tabLabels: List<Int>,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    tabContent: Map<Int, @Composable () -> Unit> = emptyMap(),
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -72,12 +74,18 @@ fun PersonaShellScreen(
                 .padding(innerPadding)
                 .padding(horizontal = LumiraTokens.Space.S6),
         ) {
-            Spacer(Modifier.height(LumiraTokens.Space.S6))
-
             if (me.academy?.status == AcademyStatus.DELINQUENT) {
+                Spacer(Modifier.height(LumiraTokens.Space.S6))
                 DelinquentBanner()
-                Spacer(Modifier.height(LumiraTokens.Space.S4))
             }
+
+            val content = tabContent[selectedTab]
+            if (content != null) {
+                content()
+                return@Column
+            }
+
+            Spacer(Modifier.height(LumiraTokens.Space.S6))
 
             Text(
                 text = stringResource(R.string.shell_greeting, me.user.fullName.substringBefore(' ')),

@@ -5,6 +5,7 @@ import br.com.tatame.core.network.ApiConfig
 import br.com.tatame.core.network.AuthApi
 import br.com.tatame.core.network.AuthEvents
 import br.com.tatame.core.network.AuthInterceptor
+import br.com.tatame.core.network.EnrollmentApi
 import br.com.tatame.core.network.ProblemJson
 import br.com.tatame.core.network.RefreshAuthenticator
 import br.com.tatame.core.network.SessionTokenProvider
@@ -65,6 +66,9 @@ val networkModule = module {
     }
     single<AuthApi> {
         buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(AuthApi::class.java)
+    }
+    single<EnrollmentApi> {
+        buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(EnrollmentApi::class.java)
     }
 }
 

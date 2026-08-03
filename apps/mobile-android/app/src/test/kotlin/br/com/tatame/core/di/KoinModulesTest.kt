@@ -21,6 +21,7 @@ class KoinModulesTest {
         val extraTypes = listOf(
             // (a) lambda-internal / primitive inputs
             kotlin.String::class,
+            kotlin.Boolean::class, // DependentsViewModel dependents.register runtime parameter
             kotlin.Lazy::class,
             okhttp3.OkHttpClient.Builder::class,
             kotlinx.serialization.json.JsonConfiguration::class,
@@ -28,6 +29,8 @@ class KoinModulesTest {
             // (b) cross-module provisions
             br.com.tatame.core.network.TokenStore::class,
             br.com.tatame.core.network.AuthApi::class,
+            br.com.tatame.core.network.EnrollmentApi::class,
+            br.com.tatame.core.enrollment.EnrollmentRepository::class,
             br.com.tatame.core.network.SessionTokenProvider::class,
             br.com.tatame.core.network.AuthEvents::class,
             kotlinx.serialization.json.Json::class,

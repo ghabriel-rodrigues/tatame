@@ -62,6 +62,63 @@
     <string name="tab_dependents">Dependentes</string>
     <string name="tab_payments">Pagamentos</string>
 
+    <!-- Professor turmas (ENR.21/22) -->
+    <string name="turmas_title">Minhas turmas</string>
+    <string name="turmas_empty">Nenhuma turma atribuída a você ainda.</string>
+    <string name="turmas_retry">Tentar novamente</string>
+    <string name="turma_occupancy_chip">%1$d de %2$d vagas</string>
+    <string name="turma_lotada">Lotada</string>
+    <string name="turma_age_chip">%1$d a %2$d anos</string>
+    <string name="turma_back">Voltar</string>
+    <string name="turma_stat_students">alunos</string>
+    <string name="turma_stat_frequency">Frequência</string>
+    <string name="turma_stat_frequency_placeholder">Fase 4</string>
+    <string name="turma_stat_occupancy">ocupação</string>
+    <string name="turma_roll_call_cta">Fazer chamada de hoje</string>
+    <string name="turma_roll_call_phase4">Chamada disponível na Fase 4.</string>
+    <string name="turma_roster_title">Alunos</string>
+    <string name="turma_add_student">Adicionar aluno</string>
+    <string name="turma_roster_empty">Nenhum aluno matriculado nesta turma.</string>
+    <string name="roster_badge_pendente">Pendente</string>
+    <string name="roster_remove_action">Remover %1$s</string>
+    <string name="roster_remove_title">Remover aluno</string>
+    <string name="roster_remove_body">Remover %1$s da turma %2$s?</string>
+    <string name="roster_remove_confirm">Remover</string>
+    <string name="roster_remove_cancel">Cancelar</string>
+    <string name="add_student_subtitle">Turma %1$s · gestão compartilhada com o admin</string>
+    <string name="add_student_action">+ adicionar</string>
+    <string name="add_student_empty">Nenhum aluno disponível para adicionar.</string>
+
+    <!-- Responsável dependents (ENR.22/23) -->
+    <string name="dependents_role_chip">Responsável</string>
+    <string name="dependents_empty">Nenhum aluno vinculado a você ainda.</string>
+    <string name="dependent_age_class">%1$d anos · %2$s</string>
+    <string name="dependent_no_class">Sem turma</string>
+    <string name="dependent_next_slot">%1$s · próxima aula</string>
+    <string name="dependents_register_cta">✛ Cadastrar aluno</string>
+    <string name="dependent_detail_birth">Nascimento: %1$s</string>
+    <string name="dependent_detail_schedule">Agenda da turma</string>
+    <string name="dependent_status_inactive">Inativo</string>
+    <string name="register_sheet_title">Cadastrar aluno</string>
+    <string name="register_sheet_subtitle">O cadastro nasce vinculado a você e à academia.</string>
+    <string name="register_name_placeholder">Nome completo</string>
+    <string name="register_birth_placeholder">Data de nascimento (dd/mm/aaaa)</string>
+    <string name="register_suggestion_label">Turma sugerida pela idade</string>
+    <string name="register_suggestion_none">Nenhuma turma com vagas para a idade informada. O cadastro segue sem matrícula.</string>
+    <string name="register_cta">Cadastrar</string>
+    <string name="register_validation">Preencha o nome completo e uma data de nascimento válida.</string>
+    <string name="register_success_enrolled">%1$s foi cadastrado(a) e já está matriculado(a) na turma.</string>
+    <string name="register_success_not_enrolled">%1$s foi cadastrado(a). A matrícula ficou pendente — turma sem vagas.</string>
+
+    <!-- Enrollment errors (stable codes → PT-BR copy) -->
+    <string name="error_class_full">A turma está lotada.</string>
+    <string name="error_class_archived">Esta turma foi arquivada.</string>
+    <string name="error_already_enrolled">Este aluno já está matriculado na turma.</string>
+    <string name="error_permission_disabled">Ação desativada pela academia.</string>
+    <string name="error_read_only">Academia em modo somente leitura — ação bloqueada.</string>
+    <string name="error_not_found">Registro não encontrado.</string>
+    <string name="error_form_invalid">Dados inválidos. Revise e tente novamente.</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>

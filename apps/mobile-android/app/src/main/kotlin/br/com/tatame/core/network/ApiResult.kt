@@ -66,6 +66,9 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     )
     ApiErrorCodes.NOT_FOUND -> ApiError.NotFound
     ApiErrorCodes.CONFLICT -> ApiError.Conflict
+    ApiErrorCodes.CLASS_FULL, ApiErrorCodes.CLASS_CAPACITY_EXCEEDED -> ApiError.Enrollment.ClassFull
+    ApiErrorCodes.CLASS_ARCHIVED -> ApiError.Enrollment.ClassArchived
+    ApiErrorCodes.ENROLLMENT_ALREADY_ENROLLED -> ApiError.Enrollment.AlreadyEnrolled
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden
