@@ -67,11 +67,11 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AUTH.9 Backend: global guard chain (JWT+CLS, academy status + bypass decorator, default-deny roles, permissions) + permission-toggle endpoints + `POST /v1/invites`
 - [x] AUTH.10 Backend: impersonation (owner/support, audited mint, 1h session, actor claim) + audit interceptor + restrictions
 - [x] AUTH.11 Backend: e2e suite green (39 e2e + 14 unit + 26 db) — RBAC matrix, refresh reuse, invite flows, reset single-use, suspension/read-only, impersonation audit, route-metadata meta-test; guardian-dependent 404 deferred to enrollment slice
-- [ ] AUTH.12 Web: login page pixel-perfect per handoff (Lumira tokens, forgot-password, invite notice)
-- [ ] AUTH.13 Web: session bootstrap — memory access token, httpOnly refresh cookie, silent refresh, single-flight 401, cache clear on auth loss
-- [ ] AUTH.14 Web: route guards + post-login redirects for /admin and /plataforma + download-the-app landing for mobile-only personas
-- [ ] AUTH.15 Web: admin and plataforma empty shells — membership switcher, logout, impersonation banner with end action
-- [ ] AUTH.16 Web: convite flow shell — public landing with inherited academy/class/plan, stepped signup, logged-in success
+- [x] AUTH.12 Web: login page pixel-perfect per handoff (Lumira tokens, forgot-password, invite notice)
+- [x] AUTH.13 Web: session bootstrap — memory access token, httpOnly refresh cookie, silent refresh, single-flight 401, cache clear on auth loss
+- [x] AUTH.14 Web: route guards + post-login redirects for /admin and /plataforma + download-the-app landing for mobile-only personas
+- [x] AUTH.15 Web: admin and plataforma empty shells — membership switcher, logout, impersonation banner with end action
+- [x] AUTH.16 Web: convite flow shell — public landing with inherited academy/class/plan, stepped signup, logged-in success
 - [ ] AUTH.17 RN: login screen (splash → login per handoff) with password recovery entry
 - [ ] AUTH.18 RN: secure session — expo-secure-store refresh, memory access, silent cold-start refresh, single-flight 401, logout
 - [ ] AUTH.19 RN: role-gated navigation — one binary, aluno/professor/responsável shells, web-console screen for admin/platform

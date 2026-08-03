@@ -36,8 +36,8 @@ export const appRoutes: RouteObject[] = [
       {
         element: <ConsoleShell surface="/plataforma" />,
         children: [
-          { index: true, element: <UnderConstruction surfaceLabel="Console da plataforma" /> },
-          { path: '*', element: <UnderConstruction surfaceLabel="Console da plataforma" /> },
+          { index: true, element: <UnderConstruction surfaceLabel="Visão geral" /> },
+          { path: '*', element: <UnderConstruction surfaceLabel="Visão geral" /> },
         ],
       },
     ],
