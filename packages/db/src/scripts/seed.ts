@@ -5,7 +5,7 @@
  * Usage: pnpm nx run db:seed   (or `pnpm --filter @tatame/db seed`)
  */
 import { createAppDb, createPlatformDb } from '../lib/client.js';
-import { seedDevFixtures, seedPlatformPlans } from '../seed/index.js';
+import { seedBeltCatalog, seedDevFixtures, seedPlatformPlans } from '../seed/index.js';
 
 const databaseUrl = process.env['DATABASE_URL'];
 if (!databaseUrl) {
@@ -19,6 +19,8 @@ const platform = createPlatformDb(databaseUrl);
 try {
   await seedPlatformPlans(platform.db);
   console.log('Platform plan catalog seeded.');
+  await seedBeltCatalog(platform.db);
+  console.log('Belt catalog seeded.');
   await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
   console.log('Dev fixtures seeded.');
 } catch (error) {

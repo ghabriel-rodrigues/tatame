@@ -16,6 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
 import { users } from './auth.js';
+import { belts } from './catalogs.js';
 import { classStatus, enrollmentStatus, studentStatus } from './enums.js';
 import { id, timestamps } from './helpers.js';
 import { appRole } from './roles.js';
@@ -110,8 +111,8 @@ export const students = pgTable(
  * Classes (turmas) — recurring weekly training groups. The professor is a
  * plain user reference; the professor-membership role is validated in the
  * service (no person table for professors). `age_min`/`age_max` power the
- * Kids chip and the age-suggestion rule; belt-range columns land with the
- * graduation slice.
+ * Kids chip and the age-suggestion rule; `min_belt_id`/`max_belt_id` power
+ * the turma belt-range chips (graduation slice).
  */
 export const classes = pgTable(
   'classes',
@@ -130,6 +131,12 @@ export const classes = pgTable(
     /** Optional age range (Kids: "4 a 12 anos"); NULL = no restriction. */
     ageMin: integer('age_min'),
     ageMax: integer('age_max'),
+    /**
+     * Optional belt range ("Branca a Azul" chips — spec 005 GRD.4 closing the
+     * Phase-3 deferral). Plain catalog FKs: belts are global.
+     */
+    minBeltId: uuid('min_belt_id').references(() => belts.id),
+    maxBeltId: uuid('max_belt_id').references(() => belts.id),
     status: classStatus('status').notNull().default('active'),
     ...timestamps,
   },

@@ -11,17 +11,22 @@ import {
   classes,
   credentials,
   enrollments,
+  graduationRules,
   guardians,
   memberships,
   platformPlans,
   platformUsers,
   rolePermissions,
+  studentGraduations,
+  studentNotes,
   students,
   users,
   type checkinMethod,
+  type graduationKind,
   type membershipRole,
   type platformRole,
 } from '../schema/index.js';
+import { findBeltId } from './belts.js';
 
 /** Known dev password for every seeded account. Never use outside dev. */
 export const DEV_PASSWORD = 'TatameDev!123';
@@ -227,6 +232,12 @@ const DEV_ROLE_PERMISSIONS: Array<{ role: MembershipRole; key: string; allowed: 
   { role: 'student', key: 'store.purchase', allowed: true },
 ];
 
+/** Student receiving the seeded graduation history, per academy (GRD.5). */
+const DEV_GRADUATION_STUDENT: Record<string, string> = {
+  'alpha-jj': 'Ana Aluna',
+  'bravo-bjj': 'Fabio Fila',
+};
+
 export interface SeedDevHandles {
   /** RLS-enforced pool (`tatame_app`) — tenant-scoped rows go through it. */
   appDb: Database;
@@ -242,6 +253,9 @@ export interface SeedDevHandles {
  * are provisioned via the platform pool; tenant-scoped rows (memberships,
  * role_permissions) are written through `withTenant` on the app pool so the
  * RLS WITH CHECK path stays honest. Idempotent.
+ *
+ * Requires `seedPlatformPlans` AND `seedBeltCatalog` to have run first (the
+ * graduation fixtures resolve belts from the shared catalog).
  */
 export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Promise<void> {
   const secretHash = await hashDevPassword(DEV_PASSWORD);
@@ -504,6 +518,53 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
         revokedByUserId: adminUserId,
         checkedInAt: minutesAfter(kidsSession.startsAt, 5),
       });
+
+      // GRD.5 — graduation fixtures: an immutable history for one student
+      // (belt award + degree awards + one revocation compensation pair, all
+      // audited in-transaction), a régua override (Azul 45 lessons), the
+      // Laranja kids toggle off (admin-16), and a persistent professor
+      // observação. All written through the RLS-enforced tenant path; belts
+      // resolved from the shared catalog (public SELECT).
+      const gradTargetName = DEV_GRADUATION_STUDENT[a.slug];
+      if (!gradTargetName) throw new Error(`Missing graduation fixture student for ${a.slug}`);
+      const gradStudentId = studentIdByName.get(gradTargetName);
+      if (!gradStudentId) throw new Error(`Fixture student ${gradTargetName} missing`);
+
+      const brancaId = await findBeltId(tx, 'adult', 'Branca');
+      const azulId = await findBeltId(tx, 'adult', 'Azul');
+      const pretaId = await findBeltId(tx, 'adult', 'Preta');
+      const laranjaId = await findBeltId(tx, 'kids', 'Laranja');
+
+      await upsertGraduationRule(tx, tenantId, azulId, { lessonsPerDegree: 45, enabled: true });
+      await upsertGraduationRule(tx, tenantId, laranjaId, { lessonsPerDegree: 40, enabled: false });
+
+      await ensureGraduationHistory(tx, tenantId, gradStudentId, {
+        beltId: azulId,
+        awardedByUserId: professorUserId,
+        revokedByUserId: adminUserId,
+      });
+
+      await ensureStudentNote(tx, tenantId, gradStudentId, {
+        authorUserId: professorUserId,
+        body: 'Boa evolução na guarda fechada. Preparar para o próximo exame.',
+      });
+
+      // Display-only professor rank ("Faixa preta · 2º dan") and the Adulto
+      // Gi belt range ("Branca a Azul" chips) — idempotent fixed values.
+      await tx
+        .update(memberships)
+        .set({ beltId: pretaId, beltDegree: 2 })
+        .where(
+          and(
+            eq(memberships.tenantId, tenantId),
+            eq(memberships.userId, professorUserId),
+            eq(memberships.role, 'professor'),
+          ),
+        );
+      await tx
+        .update(classes)
+        .set({ minBeltId: brancaId, maxBeltId: azulId })
+        .where(and(eq(classes.tenantId, tenantId), eq(classes.id, adultoId)));
     });
   }
 }
@@ -592,6 +653,135 @@ async function enroll(
 }
 
 type CheckinMethod = (typeof checkinMethod.enumValues)[number];
+type GraduationKind = (typeof graduationKind.enumValues)[number];
+
+const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 3600 * 1000);
+
+/** Upserts a per-academy graduation rule row on `(tenant_id, belt_id)`. */
+async function upsertGraduationRule(
+  tx: DbTransaction,
+  tenantId: string,
+  beltId: string,
+  rule: { lessonsPerDegree: number; enabled: boolean },
+): Promise<void> {
+  await tx
+    .insert(graduationRules)
+    .values({ tenantId, beltId, ...rule })
+    .onConflictDoUpdate({
+      target: [graduationRules.tenantId, graduationRules.beltId],
+      set: { ...rule, updatedAt: new Date() },
+    });
+}
+
+/**
+ * Inserts one graduation row and its audit entry in the same transaction —
+ * the resolved audit decision has no unaudited graduation mutations, seeds
+ * included (`graduation.awarded` / `graduation.revoked`).
+ */
+async function insertGraduation(
+  tx: DbTransaction,
+  row: {
+    tenantId: string;
+    studentId: string;
+    beltId: string;
+    kind: GraduationKind;
+    degree: number;
+    awardedByUserId: string;
+    awardedAt: Date;
+    notes?: string;
+    reversesGraduationId?: string;
+  },
+): Promise<string> {
+  const [inserted] = await tx
+    .insert(studentGraduations)
+    .values(row)
+    .returning({ id: studentGraduations.id });
+  if (!inserted) throw new Error('Failed to insert graduation row');
+  const isRevocation = row.kind === 'revocation';
+  const action = isRevocation ? 'graduation.revoked' : 'graduation.awarded';
+  const metadata = isRevocation
+    ? { reverses_graduation_id: row.reversesGraduationId, reason: row.notes ?? null }
+    : { belt_id: row.beltId, degree: row.degree, kind: row.kind };
+  await tx.execute(
+    sql`SELECT audit_append(${row.tenantId}::uuid, ${row.awardedByUserId}::uuid, NULL,
+          ${action}, ${'graduation'}, ${inserted.id}, ${JSON.stringify(metadata)}::jsonb)`,
+  );
+  return inserted.id;
+}
+
+/**
+ * The GRD.5 history, only when the student has no rows yet (append-only
+ * fixtures cannot upsert — skip-if-present keeps re-runs stable): Azul belt
+ * award + two valid degrees, then a third degree reversed by an admin
+ * `revocation` compensation row — the derived current state is Azul, 2 graus.
+ */
+async function ensureGraduationHistory(
+  tx: DbTransaction,
+  tenantId: string,
+  studentId: string,
+  opts: { beltId: string; awardedByUserId: string; revokedByUserId: string },
+): Promise<void> {
+  const existing = await tx
+    .select({ id: studentGraduations.id })
+    .from(studentGraduations)
+    .where(
+      and(eq(studentGraduations.tenantId, tenantId), eq(studentGraduations.studentId, studentId)),
+    );
+  if (existing.length > 0) return;
+
+  const base = { tenantId, studentId, beltId: opts.beltId, awardedByUserId: opts.awardedByUserId };
+  await insertGraduation(tx, {
+    ...base,
+    kind: 'belt',
+    degree: 0,
+    awardedAt: daysAgo(300),
+    notes: 'Exame de faixa — aprovado com distinção.',
+  });
+  await insertGraduation(tx, { ...base, kind: 'degree', degree: 1, awardedAt: daysAgo(200) });
+  await insertGraduation(tx, {
+    ...base,
+    kind: 'degree',
+    degree: 2,
+    awardedAt: daysAgo(100),
+    notes: 'Constância exemplar nos treinos.',
+  });
+  const wrongDegreeId = await insertGraduation(tx, {
+    ...base,
+    kind: 'degree',
+    degree: 3,
+    awardedAt: daysAgo(30),
+  });
+  await insertGraduation(tx, {
+    ...base,
+    kind: 'revocation',
+    degree: 0,
+    awardedByUserId: opts.revokedByUserId,
+    awardedAt: daysAgo(29),
+    notes: 'Grau lançado em duplicidade.',
+    reversesGraduationId: wrongDegreeId,
+  });
+}
+
+/** Inserts the persistent observação unless the author already left one. */
+async function ensureStudentNote(
+  tx: DbTransaction,
+  tenantId: string,
+  studentId: string,
+  note: { authorUserId: string; body: string },
+): Promise<void> {
+  const existing = await tx
+    .select({ id: studentNotes.id })
+    .from(studentNotes)
+    .where(
+      and(
+        eq(studentNotes.tenantId, tenantId),
+        eq(studentNotes.studentId, studentId),
+        eq(studentNotes.authorUserId, note.authorUserId),
+      ),
+    );
+  if (existing.length > 0) return;
+  await tx.insert(studentNotes).values({ tenantId, studentId, ...note });
+}
 
 /** Local YYYY-MM-DD for a Date (session_date is a tenant-local day). */
 function isoDate(d: Date): string {

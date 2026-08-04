@@ -9,14 +9,17 @@
  *  - the `forbid_mutation()` BEFORE UPDATE OR DELETE guard trigger —
  *
  * and, conversely, that every table carrying the guard trigger is declared
- * here. A future append-only table (e.g. `student_graduations`) joins the
- * sweep by adding its name and shipping the same hardening in its migration —
- * it cannot ship unguarded without failing the meta-test.
+ * here. A future append-only table joins the sweep by adding its name and
+ * shipping the same hardening in its migration — it cannot ship unguarded
+ * without failing the meta-test.
  *
  * `attendances` carries the trigger's single sanctioned exception: an UPDATE
  * whose only change is `revoked_at`/`revoked_by_user_id`/`revoke_reason`
  * going from NULL to non-NULL (the `attendance_revoke` void seam).
+ * `student_graduations` and `audit_logs` are unconditional — no UPDATE ever;
+ * graduation corrections are `kind='revocation'` compensation rows (spec 005
+ * GRD.3, resolved audit decision).
  */
-export const APPEND_ONLY_TABLES = ['attendances', 'audit_logs'] as const;
+export const APPEND_ONLY_TABLES = ['attendances', 'audit_logs', 'student_graduations'] as const;
 
 export type AppendOnlyTable = (typeof APPEND_ONLY_TABLES)[number];

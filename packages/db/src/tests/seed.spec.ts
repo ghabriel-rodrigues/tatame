@@ -7,20 +7,31 @@ import {
   academySubscriptions,
   attendances,
   auditLogs,
+  beltLadders,
+  belts,
   classSchedules,
   classSessions,
   classes,
   credentials,
   enrollments,
+  graduationRules,
   guardians,
+  martialArts,
   memberships,
   platformPlans,
   platformUsers,
   rolePermissions,
+  studentGraduations,
+  studentNotes,
   students,
   users,
 } from '../schema/index.js';
-import { DEV_PASSWORD, seedDevFixtures, seedPlatformPlans } from '../seed/index.js';
+import {
+  DEV_PASSWORD,
+  seedBeltCatalog,
+  seedDevFixtures,
+  seedPlatformPlans,
+} from '../seed/index.js';
 import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
 
 describe('seeds', () => {
@@ -33,6 +44,7 @@ describe('seeds', () => {
     app = createAppDb(fresh.url);
     platform = createPlatformDb(fresh.url);
     await seedPlatformPlans(platform.db);
+    await seedBeltCatalog(platform.db);
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
   });
 
@@ -308,6 +320,108 @@ describe('seeds', () => {
     }
   });
 
+  it('seeds the shared belt catalog in handoff ladder order (GRD.1)', async () => {
+    const arts = await withPlatform(platform.db, (tx) => tx.select().from(martialArts));
+    expect(arts.map((a) => a.key)).toEqual(['bjj']);
+
+    const rows = await withPlatform(platform.db, (tx) =>
+      tx
+        .select({ kind: beltLadders.kind, name: belts.name, maxDegrees: belts.maxDegrees })
+        .from(belts)
+        .innerJoin(beltLadders, eq(beltLadders.id, belts.ladderId))
+        .orderBy(asc(beltLadders.kind), asc(belts.position)),
+    );
+    expect(rows.filter((r) => r.kind === 'adult').map((r) => r.name)).toEqual([
+      'Branca',
+      'Azul',
+      'Roxa',
+      'Marrom',
+      'Preta',
+      'Vermelha',
+    ]);
+    // Kids ladder without a white row (spec 005 recorded delta).
+    expect(rows.filter((r) => r.kind === 'kids').map((r) => r.name)).toEqual([
+      'Cinza',
+      'Amarela',
+      'Laranja',
+      'Verde',
+    ]);
+    expect(rows.find((r) => r.name === 'Preta')!.maxDegrees).toBe(6);
+  });
+
+  it('seeds graduation fixtures per academy: history, rule override, kids toggle, note (GRD.5)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      // History: belt award + 3 degrees + 1 revocation, ordered by awarded_at.
+      const history = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(studentGraduations).orderBy(asc(studentGraduations.awardedAt)),
+      );
+      expect(history.map((g) => [g.kind, g.degree])).toEqual([
+        ['belt', 0],
+        ['degree', 1],
+        ['degree', 2],
+        ['degree', 3],
+        ['revocation', 0],
+      ]);
+      // One student's journey, immutably attributed.
+      expect(new Set(history.map((g) => g.studentId)).size).toBe(1);
+      expect(history.every((g) => g.awardedByUserId !== null)).toBe(true);
+      // The compensation pair: the revocation reverses exactly the 3rd degree.
+      const revocation = history.find((g) => g.kind === 'revocation')!;
+      const wrongDegree = history.find((g) => g.kind === 'degree' && g.degree === 3)!;
+      expect(revocation.reversesGraduationId).toBe(wrongDegree.id);
+
+      // Every seeded graduation mutation is audited in-transaction.
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ action: auditLogs.action, targetId: auditLogs.targetId })
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} IN ('graduation.awarded', 'graduation.revoked')`),
+      );
+      expect(audit.filter((a) => a.action === 'graduation.awarded')).toHaveLength(4);
+      expect(audit.filter((a) => a.action === 'graduation.revoked')).toHaveLength(1);
+      expect(audit.find((a) => a.action === 'graduation.revoked')!.targetId).toBe(revocation.id);
+
+      // Rules: Azul override (45) + Laranja kids toggle off (admin-16).
+      const rules = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ name: belts.name, lessons: graduationRules.lessonsPerDegree, enabled: graduationRules.enabled })
+          .from(graduationRules)
+          .innerJoin(belts, eq(belts.id, graduationRules.beltId))
+          .orderBy(asc(belts.name)),
+      );
+      expect(rules).toEqual([
+        { name: 'Azul', lessons: 45, enabled: true },
+        { name: 'Laranja', lessons: 40, enabled: false },
+      ]);
+
+      // Persistent observação authored by the fixture professor.
+      const notes = await withTenant(app.db, tenantId, (tx) => tx.select().from(studentNotes));
+      expect(notes).toHaveLength(1);
+      expect(notes[0]!.studentId).toBe(history[0]!.studentId);
+
+      // Display-only professor rank + Adulto Gi belt range landed.
+      const rankedProfessors = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select()
+          .from(memberships)
+          .where(sql`${memberships.role} = 'professor' AND ${memberships.beltId} IS NOT NULL`),
+      );
+      expect(rankedProfessors.length).toBeGreaterThanOrEqual(1);
+      expect(rankedProfessors[0]!.beltDegree).toBe(2);
+
+      const [adulto] = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(classes).where(eq(classes.name, 'Adulto Gi')),
+      );
+      expect(adulto!.minBeltId).not.toBeNull();
+      expect(adulto!.maxBeltId).not.toBeNull();
+    }
+  });
+
   it('is idempotent — re-running seeds changes no row counts', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
@@ -323,11 +437,19 @@ describe('seeds', () => {
         const [se] = await tx.select({ n: sql<number>`count(*)::int` }).from(classSessions);
         const [at] = await tx.select({ n: sql<number>`count(*)::int` }).from(attendances);
         const [al] = await tx.select({ n: sql<number>`count(*)::int` }).from(auditLogs);
-        return [u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n];
+        const [b] = await tx.select({ n: sql<number>`count(*)::int` }).from(belts);
+        const [gr] = await tx.select({ n: sql<number>`count(*)::int` }).from(graduationRules);
+        const [sg] = await tx.select({ n: sql<number>`count(*)::int` }).from(studentGraduations);
+        const [sn] = await tx.select({ n: sql<number>`count(*)::int` }).from(studentNotes);
+        return [
+          u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n,
+          b!.n, gr!.n, sg!.n, sn!.n,
+        ];
       });
 
     const before = await count();
     await seedPlatformPlans(platform.db);
+    await seedBeltCatalog(platform.db);
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);

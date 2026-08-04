@@ -29,6 +29,18 @@ const ENROLLMENT_TABLES = ['students', 'guardians', 'classes', 'class_schedules'
 
 const ATTENDANCE_TABLES = ['class_sessions', 'checkin_codes', 'attendances'];
 
+const GRADUATION_TABLES = [
+  // Shared catalogs (no tenant_id — the meta tenant sweep cannot see them,
+  // so they are asserted explicitly here).
+  'martial_arts',
+  'belt_ladders',
+  'belts',
+  // Tenant-scoped graduation tables.
+  'graduation_rules',
+  'student_graduations',
+  'student_notes',
+];
+
 const AUTH_FUNCTIONS = [
   'auth_login_lookup',
   'auth_user_memberships',
@@ -60,18 +72,28 @@ describe('migrations', () => {
     await expect(runMigrations(fresh.url)).resolves.toBeUndefined();
   });
 
-  it('creates all 12 auth-critical tables, the 5 enrollment tables and the 3 attendance tables', async () => {
+  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables and the 6 graduation tables', async () => {
     const res = await client.query(
       `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`,
     );
     const names = res.rows.map((r) => r.tablename);
-    for (const table of [...AUTH_TABLES, ...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES]) {
+    for (const table of [
+      ...AUTH_TABLES,
+      ...ENROLLMENT_TABLES,
+      ...ATTENDANCE_TABLES,
+      ...GRADUATION_TABLES,
+    ]) {
       expect(names).toContain(table);
     }
   });
 
-  it('has RLS enabled AND forced on every auth-critical, enrollment and attendance table', async () => {
-    const allTables = [...AUTH_TABLES, ...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES];
+  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance and graduation table', async () => {
+    const allTables = [
+      ...AUTH_TABLES,
+      ...ENROLLMENT_TABLES,
+      ...ATTENDANCE_TABLES,
+      ...GRADUATION_TABLES,
+    ];
     const res = await client.query(
       `SELECT relname, relrowsecurity, relforcerowsecurity
        FROM pg_class
@@ -190,6 +212,9 @@ describe('migrations', () => {
       'checkin_codes_session_fk',
       'attendances_session_fk',
       'attendances_student_fk',
+      'student_graduations_student_fk',
+      'student_graduations_reverses_fk', // revocation cannot target a foreign tenant's row
+      'student_notes_student_fk',
     ]) {
       expect(names, `composite FK ${fk}`).toContain(fk);
     }
@@ -201,6 +226,7 @@ describe('migrations', () => {
     // and the forbid_mutation() guard trigger.
     const tables = [...APPEND_ONLY_TABLES];
     expect(tables).toContain('attendances');
+    expect(tables).toContain('student_graduations'); // GRD.3 joins the sweep
 
     const grants = await client.query(
       `SELECT table_name, grantee, privilege_type

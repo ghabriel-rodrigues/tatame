@@ -141,11 +141,11 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 5 — Graduation ([spec 005](docs/specs/005-graduation.md))
 
-- [ ] GRD.1 DB: shared catalogs martial_arts, belt_ladders, belts (position, color_tokens slugs, max_degrees) — public-SELECT RLS, platform-only writes, BJJ adult+kids production seeds in handoff ladder order
-- [ ] GRD.2 DB: graduation_rules — lessons_per_degree (default 40, CHECK ≥ 10) + enabled kids toggle, UNIQUE (tenant_id, belt_id), forced tenant RLS
-- [ ] GRD.3 DB: student_graduations — kind degree/belt/revocation, reverses_graduation_id (CHECK + single-reversal partial unique, composite tenant self-FK), awarded_by/awarded_at/notes; append-only layers (SELECT+INSERT only, unconditional forbid_mutation) extending the registry meta-test
-- [ ] GRD.4 DB: student_notes table (tenant RLS) + nullable classes.min_belt_id/max_belt_id + memberships.belt_id/belt_degree display columns
-- [ ] GRD.5 DB: dev seeds — graduation histories per fixture academy (degree/belt/revocation rows), rule overrides, notes, written through the tenant-scoped path
+- [x] GRD.1 DB: shared catalogs martial_arts, belt_ladders, belts (position, color_tokens slugs, max_degrees) — public-SELECT RLS, platform-only writes, BJJ adult+kids production seeds in handoff ladder order
+- [x] GRD.2 DB: graduation_rules — lessons_per_degree (default 40, CHECK ≥ 10) + enabled kids toggle, UNIQUE (tenant_id, belt_id), forced tenant RLS
+- [x] GRD.3 DB: student_graduations — kind degree/belt/revocation, reverses_graduation_id (CHECK + single-reversal partial unique, composite tenant self-FK), awarded_by/awarded_at/notes; append-only layers (SELECT+INSERT only, unconditional forbid_mutation) extending the registry meta-test
+- [x] GRD.4 DB: student_notes table (tenant RLS) + nullable classes.min_belt_id/max_belt_id + memberships.belt_id/belt_degree display columns
+- [x] GRD.5 DB: dev seeds — graduation histories per fixture academy (degree/belt/revocation rows), rule overrides, notes, written through the tenant-scoped path
 - [ ] GRD.6 Backend: graduation module — current-belt derivation (latest non-reversed award, white default) exported and folded into registry rows, professor students/rosters, dependents, aluno home/profile responses
 - [ ] GRD.7 Backend: progress engine (active lessons since last award vs academy rule, Próximo grau / Próxima faixa) + GET /v1/aluno/graduation (hero, progress, timeline with certificate placeholder) + home card real target
 - [ ] GRD.8 Backend: awards — add degree (≤ max_degrees) / promote belt (enabled targets only, degrees reset), professor gated by graduations.update toggle, admin ungated, optional initial belt at student creation, graduation.awarded audit in-transaction

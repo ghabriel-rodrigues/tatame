@@ -43,6 +43,15 @@ export const classSessionStatus = pgEnum('class_session_status', [
 /** Check-in method — QR scan, 4-digit code, or manual (aluno or professor). */
 export const checkinMethod = pgEnum('checkin_method', ['qr', 'code', 'manual']);
 
+/** Belt ladder variant within a martial art — adult vs kids régua. */
+export const beltLadderKind = pgEnum('belt_ladder_kind', ['adult', 'kids']);
+
+/**
+ * Graduation row kind — `degree`/`belt` are awards; `revocation` is the
+ * admin-only compensation row reversing exactly one award (spec 005 GRD.3).
+ */
+export const graduationKind = pgEnum('graduation_kind', ['degree', 'belt', 'revocation']);
+
 /** Academy status: Trial / Ativa / Inadimplente / Suspensa. */
 export const academyStatus = pgEnum('academy_status', [
   'trial',

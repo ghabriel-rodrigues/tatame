@@ -7,6 +7,7 @@ import {
   integer,
   pgPolicy,
   pgTable,
+  smallint,
   text,
   timestamp,
   unique,
@@ -14,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
 import { users } from './auth.js';
+import { belts } from './catalogs.js';
 import { classes } from './enrollment.js';
 import { inviteKind, membershipRole, membershipStatus } from './enums.js';
 import { id, timestamps } from './helpers.js';
@@ -96,6 +98,13 @@ export const memberships = pgTable(
     status: membershipStatus('status').notNull().default('active'),
     /** Provenance: which invite created this membership. */
     inviteId: uuid('invite_id'),
+    /**
+     * Display-only rank for professor memberships ("Faixa preta · 2º dan",
+     * spec 005 GRD.4 recorded delta) — professors have no graduation history
+     * in v1; edited on the admin professor form. Plain catalog FK.
+     */
+    beltId: uuid('belt_id').references(() => belts.id),
+    beltDegree: smallint('belt_degree'),
     ...timestamps,
   },
   (t) => [
