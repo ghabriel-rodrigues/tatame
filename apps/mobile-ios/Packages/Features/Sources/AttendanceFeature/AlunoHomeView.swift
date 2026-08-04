@@ -1,0 +1,335 @@
+// Aluno Início (handoff aluno-03): date line + greeting, the purple hero
+// with "Fazer check-in" (flipping to the "Presença registrada" chip state
+// after check-in), real stat tiles (presença no mês, aulas seguidas when the
+// academy plays the streak game), the graduation card fed by the true lesson
+// count, and explicit placeholders for the later slices. PT-BR copy; Lumira
+// tokens only.
+
+import DesignSystem
+import SwiftUI
+import TatameCore
+
+public struct AlunoHomeView: View {
+    @State private var model: AlunoHomeModel
+
+    public init(repository: any AttendanceRepository) {
+        _model = State(initialValue: AlunoHomeModel(repository: repository))
+    }
+
+    public var body: some View {
+        AlunoHomeContent(model: model)
+    }
+}
+
+struct AlunoHomeContent: View {
+    @Bindable var model: AlunoHomeModel
+    @Environment(\.tatameTheme) private var theme
+    @Environment(\.attendanceRepository) private var repository
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
+                switch model.phase {
+                case .idle, .loading:
+                    loadingState
+                case .failed(let message):
+                    AttendanceErrorBanner(message: message) {
+                        Task { await model.load() }
+                    }
+                    .padding(.top, LumiraTokens.Space.s6)
+                case .loaded(let home):
+                    header(home)
+                    heroCard(home)
+                    statTiles(home.stats)
+                    graduationCard(home.stats)
+                    rankingPlaceholder
+                }
+            }
+            .padding(.horizontal, LumiraTokens.Space.s6)
+            .padding(.bottom, LumiraTokens.Space.s6)
+        }
+        .background(LumiraTokens.Colors.bgApp)
+        .task { await model.load() }
+        .refreshable { await model.load() }
+        .sheet(isPresented: $model.showCheckinSheet) {
+            if let todayClass = model.home?.todayClass {
+                CheckinSheet(
+                    model: CheckinModel(
+                        todayClass: todayClass,
+                        repository: repository,
+                        onResult: { model.applyCheckin($0) }
+                    )
+                )
+                .presentationDetents([.medium, .large])
+            }
+        }
+    }
+
+    private var loadingState: some View {
+        VStack(spacing: LumiraTokens.Space.s4) {
+            RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
+                .fill(LumiraTokens.Colors.bgSunken)
+                .frame(height: 148)
+            HStack(spacing: LumiraTokens.Space.s3) {
+                ForEach(0..<3, id: \.self) { _ in
+                    RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                        .fill(LumiraTokens.Colors.bgSunken)
+                        .frame(height: 76)
+                }
+            }
+        }
+        .redacted(reason: .placeholder)
+        .padding(.top, LumiraTokens.Space.s6)
+    }
+
+    // MARK: Header (aluno-03)
+
+    private func header(_ home: AlunoHome) -> some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(AttendanceFormatters.headerDatePTBR())
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                Text("Olá, \(AttendanceFormatters.firstName(home.studentName))")
+                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+            }
+            Spacer()
+            AttendanceAvatar(initials: NameInitials.from(home.studentName))
+        }
+        .padding(.top, LumiraTokens.Space.s6)
+    }
+
+    // MARK: Hero (stories 1, 10)
+
+    @ViewBuilder
+    private func heroCard(_ home: AlunoHome) -> some View {
+        VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
+            if let todayClass = home.todayClass {
+                heroChip(todayClass)
+                Text(todayClass.className)
+                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                Text("\(AttendanceFormatters.todayRangePTBR(slot: todayClass.slot)) · \(todayClass.slot.durationMinutes) min")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.75))
+
+                HStack(spacing: LumiraTokens.Space.s3) {
+                    if !todayClass.checkedIn {
+                        Button {
+                            model.showCheckinSheet = true
+                        } label: {
+                            HStack(spacing: LumiraTokens.Space.s2) {
+                                Image(systemName: "qrcode.viewfinder")
+                                Text("Fazer check-in")
+                            }
+                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                            .padding(.horizontal, LumiraTokens.Space.s4)
+                            .frame(height: 38)
+                            .background(LumiraTokens.Colors.white)
+                            .clipShape(Capsule())
+                        }
+                        .accessibilityIdentifier("fazer-checkin-button")
+                    }
+                    // "Ver agenda" belongs to the agenda slice — explicit
+                    // placeholder, never faked.
+                    Text("Ver agenda")
+                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.5))
+                }
+                .padding(.top, LumiraTokens.Space.s2)
+            } else {
+                Text("Sem aula hoje")
+                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                Text("Aproveite o descanso — seu próximo treino aparece aqui.")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.75))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(LumiraTokens.Space.s5)
+        .background(
+            LinearGradient(
+                colors: [
+                    theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
+                    theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func heroChip(_ todayClass: AlunoTodayClass) -> some View {
+        if todayClass.checkedIn {
+            HStack(spacing: LumiraTokens.Space.s1) {
+                Image(systemName: "checkmark")
+                Text("Presença registrada")
+            }
+            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .foregroundStyle(LumiraTokens.Colors.success500)
+            .padding(.horizontal, LumiraTokens.Space.s2)
+            .padding(.vertical, LumiraTokens.Space.s1)
+            .background(LumiraTokens.Colors.success100)
+            .clipShape(Capsule())
+            .accessibilityIdentifier("hero-checked-in-chip")
+        } else {
+            HStack(spacing: LumiraTokens.Space.s1) {
+                Image(systemName: "clock")
+                Text(AttendanceFormatters.todayChipPTBR(slot: todayClass.slot))
+            }
+            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+            .padding(.horizontal, LumiraTokens.Space.s2)
+            .padding(.vertical, LumiraTokens.Space.s1)
+            .background(LumiraTokens.Colors.white.opacity(0.18))
+            .clipShape(Capsule())
+        }
+    }
+
+    // MARK: Stat tiles (stories 13-16)
+
+    private func statTiles(_ stats: AlunoStats) -> some View {
+        HStack(spacing: LumiraTokens.Space.s3) {
+            AlunoStatTile(
+                value: AttendanceFormatters.percentLabel(stats.monthPresencePct),
+                label: "presença no mês"
+            )
+            if let streak = stats.streak {
+                AlunoStatTile(
+                    value: "🔥 \(streak)",
+                    label: "aulas seguidas",
+                    accent: true
+                )
+            }
+            // Graus na faixa is graduation-slice data — explicit placeholder.
+            AlunoStatTile(value: "—", label: "graus na faixa", footnote: "Fase 5")
+        }
+    }
+
+    // MARK: Graduation card (story 17 — real lesson count, placeholder target)
+
+    private func graduationCard(_ stats: AlunoStats) -> some View {
+        VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
+            HStack {
+                Text("Sua graduação")
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
+                    .foregroundStyle(LumiraTokens.Colors.fg4)
+            }
+            HStack {
+                // Belt + degree rendering belongs to the graduation slice.
+                Text("Aulas registradas")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                Spacer()
+                Text("\(stats.totalLessons) de \(Self.placeholderTarget) aulas")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .accessibilityIdentifier("graduation-lesson-count")
+            }
+            ProgressBar(fraction: min(1, Double(stats.totalLessons) / Double(Self.placeholderTarget)))
+            Text("Meta por graduação chega com as regras de graduação · Fase 5")
+                .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                .foregroundStyle(LumiraTokens.Colors.fg4)
+        }
+        .padding(LumiraTokens.Space.s4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(LumiraTokens.Colors.bgSurface)
+        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+        )
+    }
+
+    /// The handoff's "26 de 40 aulas" — 40 stays a placeholder until the
+    /// graduation rules slice ships the real per-academy target.
+    private static let placeholderTarget = 40
+
+    private var rankingPlaceholder: some View {
+        HStack(spacing: LumiraTokens.Space.s3) {
+            Image(systemName: "chart.bar.fill")
+                .foregroundStyle(LumiraTokens.Colors.inkPink)
+                .frame(width: 36, height: 36)
+                .background(LumiraTokens.Colors.pink100)
+                .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Ranking do mês")
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                Text("Chega com os relatórios de presença")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg4)
+            }
+            Spacer()
+        }
+        .padding(LumiraTokens.Space.s4)
+        .background(LumiraTokens.Colors.bgSurface)
+        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+        )
+        .opacity(0.7)
+    }
+}
+
+/// Aluno home stat tile (handoff aluno-03; the streak one gets the pink
+/// accent treatment).
+struct AlunoStatTile: View {
+    let value: String
+    let label: String
+    var footnote: String?
+    var accent = false
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .foregroundStyle(accent ? LumiraTokens.Colors.inkPink : LumiraTokens.Colors.fg1)
+            Text(label)
+                .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .multilineTextAlignment(.center)
+            if let footnote {
+                Text(footnote)
+                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg4)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, LumiraTokens.Space.s3)
+        .background(accent ? LumiraTokens.Colors.pink50 : LumiraTokens.Colors.bgSurface)
+        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                .strokeBorder(accent ? LumiraTokens.Colors.pink200 : LumiraTokens.Colors.border1, lineWidth: 1)
+        )
+    }
+}
+
+/// Thin progress bar (graduation card).
+struct ProgressBar: View {
+    let fraction: Double
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(LumiraTokens.Colors.bgSunken)
+                Capsule()
+                    .fill(LumiraTokens.Colors.brandAccent)
+                    .frame(width: max(0, proxy.size.width * fraction))
+            }
+        }
+        .frame(height: 5)
+    }
+}

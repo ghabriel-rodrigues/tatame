@@ -53,6 +53,12 @@ enum ApiErrorMapper {
         case 409:
             return .conflict(code: code ?? ApiErrorCode.conflict)
         case 422:
+            // Business-rule 422s carry a stable non-validation code (e.g.
+            // checkin.no_session_today, checkin.outside_window — spec 004);
+            // clients branch on the code, so it must survive the mapping.
+            if let code, code != ApiErrorCode.validationFailed {
+                return .conflict(code: code)
+            }
             let fields = (problem?.errors ?? []).map { FieldError(field: $0.field, messages: $0.messages) }
             return .validation(fields: fields)
         case 400 where code == ApiErrorCode.validationFailed:

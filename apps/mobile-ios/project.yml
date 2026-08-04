@@ -39,6 +39,8 @@ targets:
         product: AppShell
       - package: Features
         product: EnrollmentFeature
+      - package: Features
+        product: AttendanceFeature
       - package: TatameAPI
         product: TatameAPI
       - package: TatameCore
@@ -50,6 +52,10 @@ targets:
         # Dev-only: the seeded backend runs on http://localhost:3000.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+        # QR check-in scanner (spec 004, ATT.22 — VisionKit DataScanner).
+        NSCameraUsageDescription: >-
+          O Tatame usa a câmera para ler o QR Code de check-in exibido pelo
+          professor.
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

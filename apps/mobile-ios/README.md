@@ -54,23 +54,32 @@ cd apps/mobile-ios/Packages/Features && rtk swift test
   `DerivePalette.swift` (Swift port of the canonical TS executor, recipe
   embedded as `Generated/PaletteRecipe.swift`), `TatameTheme` environment
   scaffold, golden-fixture tests against `palette-fixtures.json`.
-- `Packages/TatameCore` — domain models + seams for the auth slice:
-  `ApiError` (stable problem+json codes), `AuthRepository` protocol,
-  `RefreshTokenStore`/`AccessTokenStore` seams with the Keychain
-  implementation (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`),
-  `SessionStore` (@MainActor @Observable state machine), `AppRoute` role
-  gate.
+- `Packages/TatameCore` — domain models + seams per slice: `ApiError`
+  (stable problem+json codes), `AuthRepository` / `EnrollmentRepository` /
+  `AttendanceRepository` protocols, `RefreshTokenStore`/`AccessTokenStore`
+  seams with the Keychain implementation
+  (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`), `SessionStore`
+  (@MainActor @Observable state machine), `AppRoute` role gate, PT-BR
+  display formatters.
 - `Packages/TatameAPI` — swift-openapi-generator **build plugin** over the
   committed spec copy (`Sources/TatameAPI/openapi.json` +
-  `openapi-generator-config.yaml`, tag-filtered to `auth`/`public`);
-  generated code stays in the build dir. Exposes `TatameClientFactory`
-  (URLSession transport + `AuthMiddleware` bearer/retry-once +
-  `TokenRefreshCoordinator` single-flight actor) returning the
-  `AuthRepository` implementation.
+  `openapi-generator-config.yaml`, tag-filtered to
+  `auth`/`public`/`professor`/`responsavel`/`aluno`); generated code stays
+  in the build dir. Exposes `TatameClientFactory` (URLSession transport +
+  `AuthMiddleware` bearer/retry-once + `TokenRefreshCoordinator`
+  single-flight actor) returning the repository implementations. The
+  live-chamada SSE stream (spec 004) is the one documented OpenAPI
+  exception: hand-rolled `URLSession.bytes` + `SSEParser` (named
+  checkin/revoke events, heartbeat comments ignored, signed ticket in
+  query), with snapshot polling as the client fallback.
 - `Packages/Features` — `AuthFeature` (splash, login, membership chooser per
-  handoff aluno-01/02) and `AppShell` (`RootView` auth gate + persona shell
-  placeholders, web-console and suspended blocking screens, read-only
-  banner).
+  handoff aluno-01/02), `EnrollmentFeature` (professor turmas + responsável
+  dependents, spec 003), `AttendanceFeature` (spec 004: aluno Início +
+  check-in sheet with QR scan via VisionKit DataScanner — gracefully
+  degraded off-camera —, professor chamada ao vivo with CoreImage QR +
+  SSE counter and manual roll call, professor dashboard), and `AppShell`
+  (`RootView` auth gate + persona shells, web-console and suspended
+  blocking screens, read-only banner).
 
 ## Generated-file sync (committed-copy convention)
 

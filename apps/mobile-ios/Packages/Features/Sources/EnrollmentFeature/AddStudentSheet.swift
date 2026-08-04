@@ -1,6 +1,7 @@
 // "Adicionar aluno" bottom sheet (handoff professor-09): candidate rows
-// with avatar initials and a "+ adicionar" action. Candidates come from the
-// professor-visible pool (see TurmaDetailModel's API-gap note).
+// with avatar initials and a "+ adicionar" action. Candidates come from
+// GET /professor/students?notEnrolledInClassId= (spec 004 closed the old
+// roster-union workaround).
 
 import DesignSystem
 import SwiftUI

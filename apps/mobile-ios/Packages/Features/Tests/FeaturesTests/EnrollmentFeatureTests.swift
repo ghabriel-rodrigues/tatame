@@ -331,47 +331,47 @@ struct TurmaDetailModelTests {
         #expect(model.detail?.roster.count == 1)
     }
 
-    @Test("candidates = union of other rosters minus the current one (API-gap workaround)")
-    func candidatePool() async {
+    @Test("candidates come from GET /professor/students with the not-enrolled filter (spec 004, story 37)")
+    func candidatesFromStudentsEndpoint() async {
         let repository = FakeEnrollmentRepository()
-        let shared = EnrollmentFixtures.student(name: "Marina Costa")
-        let onlyOther = EnrollmentFixtures.student(name: "Pedro Silveira")
-        let enrolledHere = EnrollmentFixtures.student(name: "Lucas Almeida")
-        repository.classesResult = .success([
-            EnrollmentFixtures.summary(),
-            EnrollmentFixtures.summary(id: EnrollmentFixtures.avancadaId, name: "Avançada"),
+        let attendanceRepository = FakeAttendanceRepository()
+        repository.detailResults[EnrollmentFixtures.fundamentosId] = .success(EnrollmentFixtures.detail())
+        attendanceRepository.studentsResult = .success([
+            AttendanceFixtures.student(name: "Pedro Silveira"),
+            AttendanceFixtures.student(name: "Marina Costa"),
         ])
-        repository.detailResults[EnrollmentFixtures.fundamentosId] = .success(
-            EnrollmentFixtures.detail(roster: [enrolledHere, shared])
+        let model = TurmaDetailModel(
+            classId: EnrollmentFixtures.fundamentosId,
+            repository: repository,
+            attendanceRepository: attendanceRepository
         )
-        repository.detailResults[EnrollmentFixtures.avancadaId] = .success(
-            EnrollmentFixtures.detail(
-                summary: EnrollmentFixtures.summary(id: EnrollmentFixtures.avancadaId, name: "Avançada"),
-                roster: [shared, onlyOther]
-            )
-        )
-        let model = TurmaDetailModel(classId: EnrollmentFixtures.fundamentosId, repository: repository)
         await model.load()
 
         await model.loadCandidates()
 
+        #expect(attendanceRepository.studentsCalls == [EnrollmentFixtures.fundamentosId])
         guard case .loaded(let candidates) = model.candidatesPhase else {
             Issue.record("expected loaded candidates, got \(model.candidatesPhase)")
             return
         }
-        #expect(candidates.map(\.fullName) == ["Pedro Silveira"])
+        #expect(candidates.map(\.fullName) == ["Marina Costa", "Pedro Silveira"])
     }
 
     @Test("add success drops the candidate and reloads the detail")
     func addSuccess() async {
         let repository = FakeEnrollmentRepository()
+        let attendanceRepository = FakeAttendanceRepository()
         let candidate = EnrollmentFixtures.student(name: "Marina Costa")
-        repository.classesResult = .success([EnrollmentFixtures.summary()])
         repository.detailResults[EnrollmentFixtures.fundamentosId] = .success(EnrollmentFixtures.detail(roster: []))
+        attendanceRepository.studentsResult = .success([candidate])
         repository.addResult = .success(
             EnrollmentResult(classId: EnrollmentFixtures.fundamentosId, studentId: candidate.studentId, status: .active)
         )
-        let model = TurmaDetailModel(classId: EnrollmentFixtures.fundamentosId, repository: repository)
+        let model = TurmaDetailModel(
+            classId: EnrollmentFixtures.fundamentosId,
+            repository: repository,
+            attendanceRepository: attendanceRepository
+        )
         await model.load()
         await model.loadCandidates()
 

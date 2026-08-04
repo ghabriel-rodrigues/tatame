@@ -135,8 +135,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] ATT.19 Android: aluno check-in sheet, success pop + streak, duplicate state, Início stat tiles per handoff
 - [ ] ATT.20 Android: professor chamada ao vivo with OkHttp SSE wrapper + polling fallback, encerrar/reopen
 - [ ] ATT.21 Android: professor manual chamada + dashboard tiles + Adicionar aluno picker rewired
-- [ ] ATT.22 iOS: aluno check-in sheet, success pop + streak, duplicate state, Início stat tiles per handoff
-- [ ] ATT.23 iOS: professor chamada ao vivo with URLSession SSE parser + polling fallback, encerrar/reopen
-- [ ] ATT.24 iOS: professor manual chamada + dashboard tiles + Adicionar aluno picker rewired
+- [x] ATT.22 iOS: aluno check-in sheet, success pop + streak, duplicate state, Início stat tiles per handoff
+- [x] ATT.23 iOS: professor chamada ao vivo with URLSession SSE parser + polling fallback, encerrar/reopen
+- [x] ATT.24 iOS: professor manual chamada + dashboard tiles + Adicionar aluno picker rewired
 
 _Next phases (agenda, graduation, billing, events, store, …) get their specs as each phase ships._

@@ -1,8 +1,10 @@
-// Persona shells (AUTH.26 scaffold + spec 003 tabs): professor gets the
-// real Turmas tab and responsável the dependents panel (ENR.24-26); the
-// remaining tabs stay placeholders until their slices land. The glass pill
-// tab bar remains recorded parity debt.
+// Persona shells (AUTH.26 scaffold + spec 003/004 tabs): aluno gets the real
+// Início (check-in + stat tiles, ATT.22), professor the dashboard Início
+// (ATT.24) and the Turmas tab, responsável the dependents panel (ENR.24-26);
+// the remaining tabs stay placeholders until their slices land. The glass
+// pill tab bar remains recorded parity debt.
 
+import AttendanceFeature
 import DesignSystem
 import EnrollmentFeature
 import SwiftUI
@@ -31,26 +33,46 @@ enum Persona {
 }
 
 struct PersonaShellView: View {
+    enum Tab: Hashable {
+        case inicio
+        case turmas
+        case perfil
+    }
+
     let persona: Persona
     let context: SessionContext
     let readOnly: Bool
 
+    @State private var selection: Tab = .inicio
     @Environment(SessionStore.self) private var session
     @Environment(\.enrollmentRepository) private var enrollmentRepository
+    @Environment(\.attendanceRepository) private var attendanceRepository
 
     var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             switch persona {
             case .aluno:
-                shellTab(title: "Início", icon: persona.homeIcon)
+                featureTab(title: "Início", icon: persona.homeIcon) {
+                    AlunoHomeView(repository: attendanceRepository)
+                }
+                .tag(Tab.inicio)
             case .professor:
-                shellTab(title: "Início", icon: persona.homeIcon)
+                featureTab(title: "Início", icon: persona.homeIcon) {
+                    ProfessorDashboardView(
+                        repository: attendanceRepository,
+                        professorName: context.user.fullName,
+                        professorUserId: context.user.id,
+                        onVerTurmas: { selection = .turmas }
+                    )
+                }
+                .tag(Tab.inicio)
                 featureTab(title: "Turmas", icon: "person.3") {
                     ProfessorTurmasView(
                         repository: enrollmentRepository,
                         academyName: context.activeMembership.academyName
                     )
                 }
+                .tag(Tab.turmas)
             case .responsavel:
                 featureTab(title: "Alunos", icon: persona.homeIcon) {
                     ResponsavelHomeView(
@@ -59,8 +81,10 @@ struct PersonaShellView: View {
                         context: context
                     )
                 }
+                .tag(Tab.inicio)
             }
             shellTab(title: "Perfil", icon: "person.crop.circle")
+                .tag(Tab.perfil)
         }
         .tint(LumiraTokens.Colors.inkPurple)
     }

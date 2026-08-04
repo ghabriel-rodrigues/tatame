@@ -1,14 +1,16 @@
 // Professor turma detail (handoff professor-08): stat tiles (alunos count,
-// frequência as an explicit Fase-4 placeholder, ocupação), the disabled
-// "Fazer chamada de hoje" placeholder, and the roster with Adicionar aluno
-// and remove-with-confirm. PT-BR copy; Lumira tokens only.
+// frequência as an explicit Fase-4 placeholder, ocupação), the live/manual
+// chamada entry points (spec 004), and the roster with Adicionar aluno and
+// remove-with-confirm. PT-BR copy; Lumira tokens only.
 
+import AttendanceFeature
 import DesignSystem
 import SwiftUI
 import TatameCore
 
 public struct TurmaDetailView: View {
     @Environment(\.enrollmentRepository) private var repository
+    @Environment(\.attendanceRepository) private var attendanceRepository
     @State private var model: TurmaDetailModel?
     private let classId: UUID
 
@@ -26,7 +28,11 @@ public struct TurmaDetailView: View {
         }
         .task {
             if model == nil {
-                let created = TurmaDetailModel(classId: classId, repository: repository)
+                let created = TurmaDetailModel(
+                    classId: classId,
+                    repository: repository,
+                    attendanceRepository: attendanceRepository
+                )
                 model = created
                 await created.load()
             }
@@ -37,6 +43,7 @@ public struct TurmaDetailView: View {
 struct TurmaDetailContent: View {
     @Bindable var model: TurmaDetailModel
     @Environment(\.tatameTheme) private var theme
+    @Environment(\.attendanceRepository) private var attendanceRepository
 
     var body: some View {
         ScrollView {
@@ -54,7 +61,7 @@ struct TurmaDetailContent: View {
                 case .loaded(let detail):
                     header(detail.summary)
                     statTiles(detail)
-                    chamadaPlaceholder
+                    chamadaActions
                     if let actionError = model.actionError {
                         actionErrorBanner(actionError)
                     }
@@ -74,6 +81,14 @@ struct TurmaDetailContent: View {
                 AddStudentSheet(model: model, turmaName: detail.summary.name)
                     .presentationDetents([.medium, .large])
             }
+        }
+        .sheet(isPresented: $model.showLiveChamada) {
+            LiveChamadaSheet(classId: model.classId, repository: attendanceRepository)
+                .presentationDetents([.large])
+        }
+        .sheet(isPresented: $model.showRollCall) {
+            RollCallSheet(classId: model.classId, repository: attendanceRepository)
+                .presentationDetents([.large])
         }
         .confirmationDialog(
             "Remover aluno",
@@ -109,12 +124,13 @@ struct TurmaDetailContent: View {
         .padding(.top, LumiraTokens.Space.s2)
     }
 
-    // MARK: Stat tiles (handoff professor-08; frequência = Fase-4 placeholder)
+    // MARK: Stat tiles (handoff professor-08; per-turma frequência belongs
+    // to the reports slice — explicit placeholder)
 
     private func statTiles(_ detail: ClassDetail) -> some View {
         HStack(spacing: LumiraTokens.Space.s3) {
             StatTile(value: "\(detail.summary.occupancy)", label: "alunos")
-            StatTile(value: "—", label: "frequência", footnote: "Fase 4")
+            StatTile(value: "—", label: "frequência", footnote: "Relatórios")
             StatTile(value: occupancyPercent(detail.summary), label: "ocupação")
         }
     }
@@ -124,33 +140,45 @@ struct TurmaDetailContent: View {
         return "\(Int((Double(summary.occupancy) / Double(summary.capacity) * 100).rounded()))%"
     }
 
-    /// "Fazer chamada de hoje" is attendance (Phase 4) — explicit placeholder,
-    /// never faked (spec 003 client scope).
-    private var chamadaPlaceholder: some View {
-        Text("Fazer chamada de hoje")
-            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
-            .frame(maxWidth: .infinity)
-            .frame(height: 44)
-            .background(
-                LinearGradient(
-                    colors: [
-                        theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
-                        theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .clipShape(Capsule())
-            .opacity(0.4)
-            .overlay(alignment: .trailing) {
-                Text("Fase 4")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
-                    .padding(.trailing, LumiraTokens.Space.s4)
+    /// Chamada entry points (spec 004, ATT.23/24): live code/QR chamada and
+    /// the manual roll call.
+    private var chamadaActions: some View {
+        VStack(spacing: LumiraTokens.Space.s2) {
+            Button {
+                model.showLiveChamada = true
+            } label: {
+                Text("Fazer chamada de hoje")
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
+                                theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .clipShape(Capsule())
             }
-            .accessibilityIdentifier("chamada-placeholder")
+            .accessibilityIdentifier("chamada-ao-vivo-button")
+
+            Button {
+                model.showRollCall = true
+            } label: {
+                Text("Chamada manual")
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(LumiraTokens.Colors.purple100)
+                    .clipShape(Capsule())
+            }
+            .accessibilityIdentifier("chamada-manual-button")
+        }
     }
 
     private func actionErrorBanner(_ message: String) -> some View {

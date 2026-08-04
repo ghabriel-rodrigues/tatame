@@ -1,11 +1,10 @@
 // Professor turma detail model (spec 003, ENR.24/25 — stories 25-27, 29):
 // detail + roster, remove-with-confirm, and the Adicionar aluno picker.
 //
-// Candidate pool note (recorded API-gap workaround): the contract has no
-// professor students-list endpoint, so the picker's candidates are the union
-// of the rosters of the professor's OTHER classes (everything the professor
-// role can read) minus the current roster. A dedicated
-// GET /professor/students endpoint is an open backend issue.
+// Spec 004 (ATT.24) closed the recorded API gap: the picker now calls
+// GET /professor/students?notEnrolledInClassId= instead of unioning other
+// rosters, and the disabled chamada placeholder became the real live/manual
+// chamada entry points.
 
 import Foundation
 import Observation
@@ -36,13 +35,23 @@ public final class TurmaDetailModel {
     public private(set) var actionError: String?
     /// Adicionar aluno sheet visibility.
     public var showAddSheet = false
+    /// Chamada ao vivo sheet visibility (spec 004).
+    public var showLiveChamada = false
+    /// Chamada manual sheet visibility (spec 004).
+    public var showRollCall = false
     public private(set) var candidatesPhase: CandidatesPhase = .idle
 
     @ObservationIgnored private let repository: any EnrollmentRepository
+    @ObservationIgnored private let attendanceRepository: any AttendanceRepository
 
-    public init(classId: UUID, repository: any EnrollmentRepository) {
+    public init(
+        classId: UUID,
+        repository: any EnrollmentRepository,
+        attendanceRepository: any AttendanceRepository = UnimplementedAttendanceRepository()
+    ) {
         self.classId = classId
         self.repository = repository
+        self.attendanceRepository = attendanceRepository
     }
 
     public var detail: ClassDetail? {
@@ -96,21 +105,13 @@ public final class TurmaDetailModel {
         showAddSheet = true
     }
 
-    /// Loads the picker candidates (see the API-gap note above).
+    /// Loads the picker candidates from GET /professor/students with the
+    /// not-enrolled filter (spec 004, ATT.24 — story 37).
     public func loadCandidates() async {
         candidatesPhase = .loading
         do {
-            let classes = try await repository.professorClasses()
-            var pool: [UUID: RosterStudent] = [:]
-            for summary in classes where summary.id != classId {
-                let other = try await repository.professorClassDetail(classId: summary.id)
-                for student in other.roster {
-                    pool[student.studentId] = student
-                }
-            }
-            let enrolled = Set((detail?.roster ?? []).map(\.studentId))
-            let candidates = pool.values
-                .filter { !enrolled.contains($0.studentId) }
+            let candidates = try await attendanceRepository
+                .students(notEnrolledInClassId: classId)
                 .sorted { $0.fullName.localizedCompare($1.fullName) == .orderedAscending }
             candidatesPhase = .loaded(candidates)
         } catch let error as ApiError {

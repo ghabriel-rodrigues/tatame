@@ -16,6 +16,9 @@ public struct AuthStack: Sendable {
     public let accessTokenStore: any AccessTokenStore
     /// Enrollment slice repository (spec 003) — same authenticated client.
     public let enrollmentRepository: any EnrollmentRepository
+    /// Attendance slice repository (spec 004) — same authenticated client
+    /// plus the hand-rolled SSE stream (issue 09).
+    public let attendanceRepository: any AttendanceRepository
 }
 
 public enum TatameClientFactory {
@@ -53,13 +56,15 @@ public enum TatameClientFactory {
         )
         let client = Client(
             serverURL: serverURL,
+            configuration: TatameClientDefaults.configuration,
             transport: URLSessionTransport(),
             middlewares: [AuthMiddleware(coordinator: coordinator)]
         )
         return AuthStack(
             repository: LiveAuthRepository(client: client, coordinator: coordinator),
             accessTokenStore: coordinator,
-            enrollmentRepository: LiveEnrollmentRepository(client: client)
+            enrollmentRepository: LiveEnrollmentRepository(client: client),
+            attendanceRepository: LiveAttendanceRepository(client: client, serverURL: serverURL)
         )
     }
 }

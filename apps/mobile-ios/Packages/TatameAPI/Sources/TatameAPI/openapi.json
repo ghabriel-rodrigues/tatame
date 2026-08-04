@@ -1497,11 +1497,556 @@
           "responsavel"
         ]
       }
+    },
+    "/v1/aluno/checkins": {
+      "post": {
+        "description": "One validated INSERT for all three methods. A duplicate attempt returns status `already_checked_in` (200) — never an error and never a second row.",
+        "operationId": "AlunoAttendanceController_checkIn_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckinRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckinResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fazer check-in (qr / code / manual)",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/aluno/home": {
+      "get": {
+        "description": "Streak is null when the academy disabled the gamification.streak toggle.",
+        "operationId": "AlunoAttendanceController_home_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoHomeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Início: today-class hero, presença %, streak, graduation lesson count",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/professor/classes/{id}/live-codes": {
+      "post": {
+        "description": "Idempotent: an already-open chamada benignly returns its active code. Reopening after encerrar mints a fresh code for the same session (one active per session).",
+        "operationId": "ProfessorLiveController_open_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveCodeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Iniciar chamada — materialize today's session + mint code/QR",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/live-codes/{id}/close": {
+      "post": {
+        "operationId": "ProfessorLiveController_close_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveCodeResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Encerrar chamada — invalidate code + QR, session → done",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/live-codes/{id}/attendances": {
+      "get": {
+        "description": "Active attendances only; revokes decrement the count.",
+        "operationId": "ProfessorLiveController_snapshot_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveSnapshotResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Live snapshot — also the 5 s polling fallback target",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/live-codes/{id}/stream-ticket": {
+      "post": {
+        "description": "Normal bearer REST. The HMAC-signed ticket binds { liveCode, user, tenant } and is accepted only on the stream route — it is never a session credential. Reconnect after expiry mints a new one.",
+        "operationId": "ProfessorLiveController_mintTicket_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamTicketResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mint the ~60 s single-purpose SSE ticket",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/live-codes/{id}/stream": {
+      "get": {
+        "description": "Server-Sent Events, not JSON. Protocol: fetch the snapshot first, then attach (no replay; Last-Event-ID unused in v1). `event: checkin` carries LiveStreamCheckinEventDto, `event: revoke` carries LiveStreamRevokeEventDto; a `heartbeat` event fires every 20 s. Events are emitted post-commit — only accepted check-ins ever appear. Fall back to polling the snapshot endpoint every 5 s when the stream fails to connect or drops twice.",
+        "operationId": "ProfessorLiveController_stream_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ticket",
+            "required": true,
+            "in": "query",
+            "description": "Ticket from POST /professor/live-codes/{id}/stream-ticket",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/LiveStreamCheckinEventDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LiveStreamRevokeEventDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "SSE stream: checkin / revoke events + 20 s heartbeat (contract exception)",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/classes/{id}/roll-call": {
+      "post": {
+        "description": "Self check-ins (QR/code/manual) appear pre-toggled — one truth for both modes.",
+        "operationId": "ProfessorRollCallController_open_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RollCallResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Abrir chamada manual — materialize session + roster with states",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/sessions/{id}/attendances": {
+      "post": {
+        "description": "A student already present returns status `already_checked_in` (benign).",
+        "operationId": "ProfessorRollCallController_mark_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkAttendanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle on — professor-recorded manual presence (audited in-transaction)",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/attendances/{id}/revoke": {
+      "post": {
+        "description": "After the session's day closes this returns 403 attendance.revoke_window_closed — late corrections go through the admin endpoint.",
+        "operationId": "ProfessorRollCallController_revoke_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeAttendanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle off — same-day revoke through the audited void seam",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/dashboard": {
+      "get": {
+        "operationId": "ProfessorDashboardController_dashboard_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessorDashboardResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard: alunos hoje, presença média, next-class hero, today's classes",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/students": {
+      "get": {
+        "description": "notEnrolledInClassId must reference a class the caller teaches (else 404).",
+        "operationId": "ProfessorDashboardController_students_v1",
+        "parameters": [
+          {
+            "name": "notEnrolledInClassId",
+            "required": false,
+            "in": "query",
+            "description": "Return only students NOT actively enrolled in this class (must be taught by the caller — the \"Adicionar aluno\" picker)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessorStudentsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Academy students — optional filter: not enrolled in one of my classes",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/admin/attendances/{id}/revoke": {
+      "post": {
+        "operationId": "AdminAttendanceController_revoke_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeAttendanceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Any-time audited revoke (window same_day | admin_late in the audit row)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/classes/{id}/sessions": {
+      "get": {
+        "operationId": "AdminAttendanceController_sessions_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSessionListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Turma sessions with active attendance counts (replaces Phase-3 placeholders)",
+        "tags": [
+          "admin"
+        ]
+      }
     }
   },
   "info": {
     "title": "Tatame API",
-    "description": "Identity (spec 001-auth) and enrollment (spec 003) surfaces. Errors are RFC 9457 application/problem+json with stable `code`s.",
+    "description": "Identity (spec 001-auth), enrollment (spec 003) and attendance (spec 004) surfaces. Errors are RFC 9457 application/problem+json with stable `code`s. The live-chamada SSE stream is a documented exception to the generated REST contract: its event payloads are component schemas, but clients wire their own streaming primitive.",
     "version": "1.0",
     "contact": {}
   },
@@ -1524,6 +2069,10 @@
     },
     {
       "name": "professor",
+      "description": ""
+    },
+    {
+      "name": "aluno",
       "description": ""
     },
     {
@@ -3286,6 +3835,826 @@
             ]
           }
         }
+      },
+      "CheckinRequestDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "code",
+              "manual"
+            ]
+          },
+          "qrToken": {
+            "type": "string",
+            "description": "Opaque token scanned from the QR (method=qr)"
+          },
+          "code": {
+            "type": "string",
+            "example": "4821",
+            "description": "4-digit live code (method=code)"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Class to check into (method=manual — location step is a client stub)"
+          }
+        },
+        "required": [
+          "method"
+        ]
+      },
+      "AttendanceRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "code",
+              "manual"
+            ]
+          },
+          "checkedInAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "classSessionId",
+          "method",
+          "checkedInAt"
+        ]
+      },
+      "CheckinSessionRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "sessionDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          }
+        },
+        "required": [
+          "id",
+          "classId",
+          "className",
+          "sessionDate"
+        ]
+      },
+      "AlunoStatsDto": {
+        "type": "object",
+        "properties": {
+          "monthPresencePct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Presença no mês (%)"
+          },
+          "monthAttendedSessions": {
+            "type": "number"
+          },
+          "monthTotalSessions": {
+            "type": "number",
+            "description": "Materialized sessions of enrolled classes, month-to-date"
+          },
+          "streak": {
+            "type": "number",
+            "nullable": true,
+            "description": "Aulas seguidas — null when the academy disabled gamification.streak"
+          },
+          "totalLessons": {
+            "type": "number",
+            "description": "Lifetime active attendances (graduation progress numerator)"
+          }
+        },
+        "required": [
+          "monthPresencePct",
+          "monthAttendedSessions",
+          "monthTotalSessions",
+          "streak",
+          "totalLessons"
+        ]
+      },
+      "CheckinResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "checked_in",
+              "already_checked_in"
+            ],
+            "description": "Stable duplicate state — clients render \"Presença registrada\", never an error"
+          },
+          "attendance": {
+            "$ref": "#/components/schemas/AttendanceRefDto"
+          },
+          "session": {
+            "$ref": "#/components/schemas/CheckinSessionRefDto"
+          },
+          "stats": {
+            "description": "Fresh stats — one round trip updates the pop and the tiles",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlunoStatsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "attendance",
+          "session",
+          "stats"
+        ]
+      },
+      "AlunoStudentRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fullName"
+        ]
+      },
+      "AlunoTodayClassDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "slot": {
+            "$ref": "#/components/schemas/ScheduleSlotViewDto"
+          },
+          "checkedIn": {
+            "type": "boolean",
+            "description": "Hero flips to \"Presença registrada\" when true"
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "slot",
+          "checkedIn"
+        ]
+      },
+      "AlunoHomeResponseDto": {
+        "type": "object",
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/AlunoStudentRefDto"
+          },
+          "todayClass": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlunoTodayClassDto"
+              }
+            ]
+          },
+          "stats": {
+            "$ref": "#/components/schemas/AlunoStatsDto"
+          }
+        },
+        "required": [
+          "student",
+          "stats"
+        ]
+      },
+      "LiveSessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "sessionDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "done",
+              "canceled"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "classId",
+          "className",
+          "sessionDate",
+          "startsAt",
+          "status"
+        ]
+      },
+      "LiveCodeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "example": "4821",
+            "description": "The 4-digit human code"
+          },
+          "qrToken": {
+            "type": "string",
+            "description": "Opaque token the QR encodes — never the digits"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Slot end + 15 min grace (fallback: +60 min)"
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "session": {
+            "$ref": "#/components/schemas/LiveSessionDto"
+          },
+          "presentCount": {
+            "type": "number",
+            "description": "Active attendances on the session"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "qrToken",
+          "expiresAt",
+          "revokedAt",
+          "session",
+          "presentCount"
+        ]
+      },
+      "SnapshotCodeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "expiresAt",
+          "revokedAt"
+        ]
+      },
+      "SnapshotAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "code",
+              "manual"
+            ]
+          },
+          "checkedInAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "studentId",
+          "studentName",
+          "method",
+          "checkedInAt"
+        ]
+      },
+      "LiveSnapshotResponseDto": {
+        "type": "object",
+        "properties": {
+          "presentCount": {
+            "type": "number"
+          },
+          "code": {
+            "$ref": "#/components/schemas/SnapshotCodeDto"
+          },
+          "attendances": {
+            "description": "Active rows only, oldest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SnapshotAttendanceDto"
+            }
+          }
+        },
+        "required": [
+          "presentCount",
+          "code",
+          "attendances"
+        ]
+      },
+      "StreamTicketResponseDto": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string",
+            "description": "HMAC-signed single-purpose ticket — pass as ?ticket= on the stream route only"
+          },
+          "expiresInSeconds": {
+            "type": "number",
+            "example": 60
+          }
+        },
+        "required": [
+          "ticket",
+          "expiresInSeconds"
+        ]
+      },
+      "LiveStreamCheckinEventDto": {
+        "type": "object",
+        "properties": {
+          "attendanceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "code",
+              "manual"
+            ]
+          },
+          "checkedInAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "presentCount": {
+            "type": "number",
+            "description": "Active attendances after this event"
+          }
+        },
+        "required": [
+          "attendanceId",
+          "studentId",
+          "studentName",
+          "method",
+          "checkedInAt",
+          "presentCount"
+        ]
+      },
+      "LiveStreamRevokeEventDto": {
+        "type": "object",
+        "properties": {
+          "attendanceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "presentCount": {
+            "type": "number",
+            "description": "Active attendances after this event"
+          }
+        },
+        "required": [
+          "attendanceId",
+          "presentCount"
+        ]
+      },
+      "RosterAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "qr",
+              "code",
+              "manual"
+            ]
+          },
+          "checkedInAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "recordedByUserId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "NULL = self check-in; set = professor-recorded manual row"
+          }
+        },
+        "required": [
+          "id",
+          "method",
+          "checkedInAt",
+          "recordedByUserId"
+        ]
+      },
+      "RosterRowDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "attendance": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RosterAttendanceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "studentId",
+          "fullName"
+        ]
+      },
+      "RollCallResponseDto": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/LiveSessionDto"
+          },
+          "presentCount": {
+            "type": "number",
+            "description": "\"N presentes de M\" numerator"
+          },
+          "roster": {
+            "description": "Self check-ins appear pre-toggled",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RosterRowDto"
+            }
+          }
+        },
+        "required": [
+          "session",
+          "presentCount",
+          "roster"
+        ]
+      },
+      "MarkAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "studentId"
+        ]
+      },
+      "MarkAttendanceResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classSessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "checkedInAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "classSessionId",
+          "studentId",
+          "checkedInAt"
+        ]
+      },
+      "MarkAttendanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "checked_in",
+              "already_checked_in"
+            ]
+          },
+          "attendance": {
+            "$ref": "#/components/schemas/MarkAttendanceResultDto"
+          },
+          "presentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "attendance",
+          "presentCount"
+        ]
+      },
+      "RevokeAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Free-text audit reason"
+          }
+        }
+      },
+      "RevokeAttendanceResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "revoked",
+              "already_revoked"
+            ],
+            "description": "A second toggle-off is benign"
+          },
+          "attendanceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "presentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "attendanceId",
+          "presentCount"
+        ]
+      },
+      "ProfessorNextClassDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "slot": {
+            "$ref": "#/components/schemas/ScheduleSlotViewDto"
+          },
+          "checkedInCount": {
+            "type": "number",
+            "description": "Today's session check-in count when one exists, else 0"
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "slot",
+          "checkedInCount"
+        ]
+      },
+      "ProfessorTodayClassDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "slot": {
+            "$ref": "#/components/schemas/ScheduleSlotViewDto"
+          },
+          "checkedInCount": {
+            "type": "number",
+            "description": "Today's session check-in count when one exists, else 0"
+          },
+          "enrolledCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "slot",
+          "checkedInCount",
+          "enrolledCount"
+        ]
+      },
+      "ProfessorDashboardResponseDto": {
+        "type": "object",
+        "properties": {
+          "alunosHoje": {
+            "type": "number",
+            "description": "Distinct students with an active check-in today across own classes"
+          },
+          "presencaMediaPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "nextClass": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfessorNextClassDto"
+              }
+            ]
+          },
+          "todayClasses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessorTodayClassDto"
+            }
+          }
+        },
+        "required": [
+          "alunosHoje",
+          "presencaMediaPct",
+          "todayClasses"
+        ]
+      },
+      "ProfessorStudentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2010-04-20"
+          },
+          "badge": {
+            "type": "string",
+            "enum": [
+              "ativo",
+              "pendente"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "birthDate",
+          "badge"
+        ]
+      },
+      "ProfessorStudentsResponseDto": {
+        "type": "object",
+        "properties": {
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessorStudentDto"
+            }
+          }
+        },
+        "required": [
+          "students"
+        ]
+      },
+      "AdminSessionRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionDate": {
+            "type": "string",
+            "example": "2026-08-03"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "done",
+              "canceled"
+            ]
+          },
+          "presentCount": {
+            "type": "number",
+            "description": "Active (non-revoked) attendance count"
+          }
+        },
+        "required": [
+          "id",
+          "sessionDate",
+          "startsAt",
+          "status",
+          "presentCount"
+        ]
+      },
+      "AdminSessionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "description": "Newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminSessionRowDto"
+            }
+          }
+        },
+        "required": [
+          "sessions"
+        ]
       }
     }
   }
