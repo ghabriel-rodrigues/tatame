@@ -5,7 +5,10 @@ import { createAppDb, createPlatformDb, withPlatform, withTenant, type DbHandle 
 import {
   academies,
   academySubscriptions,
+  attendances,
+  auditLogs,
   classSchedules,
+  classSessions,
   classes,
   credentials,
   enrollments,
@@ -227,6 +230,84 @@ describe('seeds', () => {
     expect(claimed?.email).toBe('responsavel@tatame.dev');
   });
 
+  it('seeds this week\'s materialized sessions across the 3 turmas (ATT.5)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const sessions = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({
+            className: classes.name,
+            sessionDate: classSessions.sessionDate,
+            startsAt: classSessions.startsAt,
+          })
+          .from(classSessions)
+          .innerJoin(classes, eq(classes.id, classSessions.classId)),
+      );
+
+      // One session per schedule slot: Adulto Gi 3 + Kids 2 + Lotada 1.
+      const byClass = new Map<string, number>();
+      for (const s of sessions) byClass.set(s.className, (byClass.get(s.className) ?? 0) + 1);
+      expect(byClass.get('Adulto Gi')).toBe(3);
+      expect(byClass.get('Kids')).toBe(2);
+      expect(byClass.get('Lotada')).toBe(1);
+
+      // Lazy semantics: only days that already happened are materialized.
+      const now = Date.now();
+      for (const s of sessions) {
+        expect(s.startsAt).not.toBeNull();
+        const age = now - new Date(`${s.sessionDate}T00:00:00`).getTime();
+        expect(age).toBeGreaterThanOrEqual(0);
+        expect(age).toBeLessThan(8 * 24 * 3600 * 1000);
+      }
+    }
+  });
+
+  it('seeds mixed-method attendances with an audited revoked + re-checked-in pair (ATT.5)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const rows = await withTenant(app.db, tenantId, (tx) => tx.select().from(attendances));
+
+      // All three methods appear; manual rows carry the recording professor.
+      const methods = new Set(rows.map((r) => r.method));
+      expect(methods.has('qr')).toBe(true);
+      expect(methods.has('code')).toBe(true);
+      expect(methods.has('manual')).toBe(true);
+      expect(rows.some((r) => r.method === 'manual' && r.recordedByUserId !== null)).toBe(true);
+      expect(rows.some((r) => r.method === 'qr' && r.recordedByUserId === null)).toBe(true);
+
+      // Exactly one revoked row — annotated, and its pair re-checked-in.
+      const revoked = rows.filter((r) => r.revokedAt !== null);
+      expect(revoked).toHaveLength(1);
+      expect(revoked[0]!.revokedByUserId).not.toBeNull();
+      expect(revoked[0]!.revokeReason).toBe('seed: roll-call correction');
+      const recheck = rows.filter(
+        (r) =>
+          r.classSessionId === revoked[0]!.classSessionId &&
+          r.studentId === revoked[0]!.studentId &&
+          r.revokedAt === null,
+      );
+      expect(recheck).toHaveLength(1);
+
+      // The revoke went through the seam: audited in the same transaction.
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select()
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} = 'attendance.revoked'`),
+      );
+      expect(audit).toHaveLength(1);
+      expect(audit[0]!.targetId).toBe(revoked[0]!.id);
+    }
+  });
+
   it('is idempotent — re-running seeds changes no row counts', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
@@ -239,7 +320,10 @@ describe('seeds', () => {
         const [st] = await tx.select({ n: sql<number>`count(*)::int` }).from(students);
         const [g] = await tx.select({ n: sql<number>`count(*)::int` }).from(guardians);
         const [e] = await tx.select({ n: sql<number>`count(*)::int` }).from(enrollments);
-        return [u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n];
+        const [se] = await tx.select({ n: sql<number>`count(*)::int` }).from(classSessions);
+        const [at] = await tx.select({ n: sql<number>`count(*)::int` }).from(attendances);
+        const [al] = await tx.select({ n: sql<number>`count(*)::int` }).from(auditLogs);
+        return [u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n];
       });
 
     const before = await count();

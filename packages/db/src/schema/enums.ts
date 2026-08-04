@@ -29,6 +29,20 @@ export const classStatus = pgEnum('class_status', ['active', 'archived']);
 /** Enrollment lifecycle — removal flips to `removed`; re-adding reactivates the row. */
 export const enrollmentStatus = pgEnum('enrollment_status', ['active', 'removed']);
 
+/**
+ * Materialized class occurrence lifecycle — "Encerrar chamada" sets `done`;
+ * past dates are treated as done for derived stats regardless of the column
+ * (lazy semantics). `canceled` is reserved, no cancel surface in this slice.
+ */
+export const classSessionStatus = pgEnum('class_session_status', [
+  'scheduled',
+  'done',
+  'canceled',
+]);
+
+/** Check-in method — QR scan, 4-digit code, or manual (aluno or professor). */
+export const checkinMethod = pgEnum('checkin_method', ['qr', 'code', 'manual']);
+
 /** Academy status: Trial / Ativa / Inadimplente / Suspensa. */
 export const academyStatus = pgEnum('academy_status', [
   'trial',

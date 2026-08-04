@@ -7,6 +7,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { migrationsFolder, runMigrations } from '../lib/migrate.js';
+import { APPEND_ONLY_TABLES } from '../schema/index.js';
 import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
 
 const AUTH_TABLES = [
@@ -25,6 +26,8 @@ const AUTH_TABLES = [
 ];
 
 const ENROLLMENT_TABLES = ['students', 'guardians', 'classes', 'class_schedules', 'enrollments'];
+
+const ATTENDANCE_TABLES = ['class_sessions', 'checkin_codes', 'attendances'];
 
 const AUTH_FUNCTIONS = [
   'auth_login_lookup',
@@ -57,18 +60,18 @@ describe('migrations', () => {
     await expect(runMigrations(fresh.url)).resolves.toBeUndefined();
   });
 
-  it('creates all 12 auth-critical tables and the 5 enrollment tables', async () => {
+  it('creates all 12 auth-critical tables, the 5 enrollment tables and the 3 attendance tables', async () => {
     const res = await client.query(
       `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`,
     );
     const names = res.rows.map((r) => r.tablename);
-    for (const table of [...AUTH_TABLES, ...ENROLLMENT_TABLES]) {
+    for (const table of [...AUTH_TABLES, ...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES]) {
       expect(names).toContain(table);
     }
   });
 
-  it('has RLS enabled AND forced on every auth-critical and enrollment table', async () => {
-    const allTables = [...AUTH_TABLES, ...ENROLLMENT_TABLES];
+  it('has RLS enabled AND forced on every auth-critical, enrollment and attendance table', async () => {
+    const allTables = [...AUTH_TABLES, ...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES];
     const res = await client.query(
       `SELECT relname, relrowsecurity, relforcerowsecurity
        FROM pg_class
@@ -99,10 +102,10 @@ describe('migrations', () => {
       JOIN pg_namespace n ON n.oid = cl.relnamespace AND n.nspname = 'public'
       WHERE c.table_schema = 'public' AND c.column_name = 'tenant_id'
     `);
-    expect(res.rows.length).toBeGreaterThanOrEqual(8); // 3 auth + 5 enrollment
-    // The catalog-driven sweep must pick the enrollment tables up on its own.
+    expect(res.rows.length).toBeGreaterThanOrEqual(11); // 3 auth + 5 enrollment + 3 attendance
+    // The catalog-driven sweep must pick the new slices' tables up on its own.
     const names = res.rows.map((r) => r.table_name);
-    for (const table of ENROLLMENT_TABLES) {
+    for (const table of [...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES]) {
       expect(names, `meta-test must cover ${table}`).toContain(table);
     }
     for (const row of res.rows) {
@@ -183,9 +186,78 @@ describe('migrations', () => {
       'enrollments_class_fk',
       'enrollments_student_fk',
       'invites_class_fk', // ENR.3 — the 001 debt closed
+      'class_sessions_class_fk',
+      'checkin_codes_session_fk',
+      'attendances_session_fk',
+      'attendances_student_fk',
     ]) {
       expect(names, `composite FK ${fk}`).toContain(fk);
     }
+  });
+
+  it('meta: every registered append-only table is guarded at all three layers', async () => {
+    // Registry-driven (ATT.3): each declared table must have NO update/delete
+    // grants for either runtime role, NO update/delete-capable RLS policy,
+    // and the forbid_mutation() guard trigger.
+    const tables = [...APPEND_ONLY_TABLES];
+    expect(tables).toContain('attendances');
+
+    const grants = await client.query(
+      `SELECT table_name, grantee, privilege_type
+       FROM information_schema.role_table_grants
+       WHERE table_schema = 'public'
+         AND table_name = ANY($1)
+         AND grantee IN ('tatame_app', 'tatame_platform')
+         AND privilege_type IN ('UPDATE', 'DELETE')`,
+      [tables],
+    );
+    expect(
+      grants.rows.map((r) => `${r.table_name}:${r.grantee}:${r.privilege_type}`),
+      'append-only tables must carry no UPDATE/DELETE grants',
+    ).toEqual([]);
+
+    const policies = await client.query(
+      `SELECT tablename, policyname, cmd FROM pg_policies
+       WHERE schemaname = 'public'
+         AND tablename = ANY($1)
+         AND cmd IN ('UPDATE', 'DELETE', 'ALL')`,
+      [tables],
+    );
+    expect(
+      policies.rows.map((r) => `${r.tablename}:${r.policyname}:${r.cmd}`),
+      'append-only tables must have no update/delete-capable policies',
+    ).toEqual([]);
+
+    // Catalog sweep: the set of tables wearing the guard trigger must be
+    // exactly the registry — a declared table cannot ship without the
+    // trigger, and a triggered table cannot stay undeclared.
+    const triggered = await client.query(
+      `SELECT c.relname
+       FROM pg_trigger t
+       JOIN pg_class c ON c.oid = t.tgrelid
+       JOIN pg_proc p ON p.oid = t.tgfoid
+       WHERE NOT t.tgisinternal AND p.proname = 'forbid_mutation'`,
+    );
+    expect(triggered.rows.map((r) => r.relname).sort()).toEqual([...tables].sort());
+  });
+
+  it('creates the attendance_revoke void seam, executable by tatame_app only', async () => {
+    const res = await client.query(
+      `SELECT proname, prosecdef FROM pg_proc p
+       JOIN pg_namespace n ON n.oid = p.pronamespace AND n.nspname = 'public'
+       WHERE proname = 'attendance_revoke'`,
+    );
+    expect(res.rows).toHaveLength(1);
+    expect(res.rows[0].prosecdef, 'attendance_revoke must be SECURITY DEFINER').toBe(true);
+
+    const sig = 'attendance_revoke(uuid, uuid, uuid, text, uuid)';
+    const priv = await client.query(
+      `SELECT
+         has_function_privilege('tatame_app', '${sig}', 'EXECUTE') AS app_can,
+         has_function_privilege('tatame_platform', '${sig}', 'EXECUTE') AS platform_can`,
+    );
+    expect(priv.rows[0].app_can).toBe(true);
+    expect(priv.rows[0].platform_can).toBe(false);
   });
 
   it('hardens invites.class_id over Phase-2 data (dangling bindings nulled, FK added)', async () => {

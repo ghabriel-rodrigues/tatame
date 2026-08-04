@@ -5,7 +5,9 @@ import { withPlatform, withTenant } from '../lib/client.js';
 import {
   academies,
   academySubscriptions,
+  attendances,
   classSchedules,
+  classSessions,
   classes,
   credentials,
   enrollments,
@@ -16,6 +18,7 @@ import {
   rolePermissions,
   students,
   users,
+  type checkinMethod,
   type membershipRole,
   type platformRole,
 } from '../schema/index.js';
@@ -174,6 +177,12 @@ const DEV_CLASSES: DevClassFixture[] = [
 const DEV_CLASS_PROFESSOR: Record<string, string> = {
   'alpha-jj': 'professor@tatame.dev',
   'bravo-bjj': 'multi@tatame.dev',
+};
+
+/** Admin actor for the seeded any-time revoke (ATT.5), per academy. */
+const DEV_ACADEMY_ADMIN: Record<string, string> = {
+  'alpha-jj': 'admin@tatame.dev',
+  'bravo-bjj': 'admin.bravo@tatame.dev',
 };
 
 /** Record-only adult students filling `Lotada` to capacity. */
@@ -392,8 +401,10 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       if (!lotadaId || !kidsId || !adultoId) throw new Error('Fixture classes missing');
 
       // Record-only adults filling Lotada to its capacity of 2.
+      const studentIdByName = new Map<string, string>();
       for (const f of DEV_FILLER_STUDENTS) {
         const studentId = await upsertStudent(tx, tenantId, f);
+        studentIdByName.set(f.fullName, studentId);
         await enroll(tx, tenantId, lotadaId, studentId);
       }
 
@@ -407,6 +418,7 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
           birthDate: '2000-03-15',
           userId: alunoUserId,
         });
+        studentIdByName.set('Ana Aluna', anaId);
         await enroll(tx, tenantId, adultoId, anaId);
       }
 
@@ -418,8 +430,80 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       const guardianId = await upsertGuardian(tx, tenantId, g, guardianUserId);
       for (const d of g.dependents) {
         const dependentId = await upsertStudent(tx, tenantId, { ...d, guardianId });
+        studentIdByName.set(d.fullName, dependentId);
         await enroll(tx, tenantId, kidsId, dependentId);
       }
+
+      // ATT.5 — attendance fixtures: this week's materialized sessions (the
+      // most recent occurrence of every schedule slot, on or before today)
+      // and mixed-method attendances, including one revoked-then-re-checked-in
+      // pair voided through the audited attendance_revoke seam (admin actor,
+      // any-time window). All written through the RLS-enforced tenant path.
+      const adminEmail = DEV_ACADEMY_ADMIN[a.slug];
+      if (!adminEmail) throw new Error(`Missing fixture admin for ${a.slug}`);
+      const adminUserId = userIdByEmail.get(adminEmail);
+      if (!adminUserId) throw new Error(`Missing user id for ${adminEmail}`);
+
+      const latestSessionByClass = new Map<string, { id: string; startsAt: Date }>();
+      for (const c of DEV_CLASSES) {
+        const classId = classIdByName.get(c.name);
+        if (!classId) throw new Error(`Fixture class ${c.name} missing`);
+        for (const s of c.schedules) {
+          const startsAt = lastOccurrenceOnOrBefore(s.weekday, s.startTime);
+          const sessionId = await upsertSession(tx, tenantId, classId, startsAt);
+          const latest = latestSessionByClass.get(c.name);
+          if (!latest || startsAt > latest.startsAt) {
+            latestSessionByClass.set(c.name, { id: sessionId, startsAt });
+          }
+        }
+      }
+
+      const lotadaSession = latestSessionByClass.get('Lotada');
+      const kidsSession = latestSessionByClass.get('Kids');
+      const adultoSession = latestSessionByClass.get('Adulto Gi');
+      if (!lotadaSession || !kidsSession || !adultoSession) {
+        throw new Error('Fixture sessions missing');
+      }
+      const minutesAfter = (base: Date, minutes: number) =>
+        new Date(base.getTime() + minutes * 60_000);
+
+      // Self check-ins on Lotada: one per method the aluno sheet offers.
+      const fabioId = studentIdByName.get('Fabio Fila');
+      const flaviaId = studentIdByName.get('Flavia Fila');
+      if (!fabioId || !flaviaId) throw new Error('Fixture filler students missing');
+      await ensureActiveAttendance(tx, tenantId, lotadaSession.id, fabioId, {
+        method: 'qr',
+        checkedInAt: minutesAfter(lotadaSession.startsAt, 2),
+      });
+      await ensureActiveAttendance(tx, tenantId, lotadaSession.id, flaviaId, {
+        method: 'code',
+        checkedInAt: minutesAfter(lotadaSession.startsAt, 4),
+      });
+
+      // Ana self-checks-in by QR on the latest Adulto Gi session (alpha only).
+      const anaId = studentIdByName.get('Ana Aluna');
+      if (anaId) {
+        await ensureActiveAttendance(tx, tenantId, adultoSession.id, anaId, {
+          method: 'qr',
+          checkedInAt: minutesAfter(adultoSession.startsAt, 1),
+        });
+      }
+
+      // Kids roll call is manual, recorded by the professor. The first
+      // dependent's row is revoked through the seam and re-inserted — the
+      // sanctioned correction pattern (partial unique allows the re-check-in).
+      const [dep0, dep1] = g.dependents.map((d) => studentIdByName.get(d.fullName));
+      if (!dep0 || !dep1) throw new Error('Fixture dependents missing');
+      await ensureActiveAttendance(tx, tenantId, kidsSession.id, dep1, {
+        method: 'manual',
+        recordedByUserId: professorUserId,
+        checkedInAt: minutesAfter(kidsSession.startsAt, 3),
+      });
+      await ensureRevokedRecheckedAttendance(tx, tenantId, kidsSession.id, dep0, {
+        recordedByUserId: professorUserId,
+        revokedByUserId: adminUserId,
+        checkedInAt: minutesAfter(kidsSession.startsAt, 5),
+      });
     });
   }
 }
@@ -505,4 +589,134 @@ async function enroll(
     .onConflictDoNothing({
       target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
     });
+}
+
+type CheckinMethod = (typeof checkinMethod.enumValues)[number];
+
+/** Local YYYY-MM-DD for a Date (session_date is a tenant-local day). */
+function isoDate(d: Date): string {
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${month}-${day}`;
+}
+
+/**
+ * Most recent occurrence of a weekly slot on or before today — "this week's"
+ * materialized session for that slot (lazy semantics: only days that
+ * happened get rows). Weekday: 0 = Sunday … 6 = Saturday.
+ */
+function lastOccurrenceOnOrBefore(weekday: number, startTime: string): Date {
+  const d = new Date();
+  d.setDate(d.getDate() - ((d.getDay() - weekday + 7) % 7));
+  const [hours = 0, minutes = 0] = startTime.split(':').map(Number);
+  d.setHours(hours, minutes, 0, 0);
+  return d;
+}
+
+/** Idempotent session materialization on `(tenant, class, session_date)`. */
+async function upsertSession(
+  tx: DbTransaction,
+  tenantId: string,
+  classId: string,
+  startsAt: Date,
+): Promise<string> {
+  const sessionDate = isoDate(startsAt);
+  const found = await tx
+    .select({ id: classSessions.id })
+    .from(classSessions)
+    .where(
+      and(
+        eq(classSessions.tenantId, tenantId),
+        eq(classSessions.classId, classId),
+        eq(classSessions.sessionDate, sessionDate),
+      ),
+    );
+  if (found[0]) return found[0].id;
+  const [inserted] = await tx
+    .insert(classSessions)
+    .values({ tenantId, classId, sessionDate, startsAt })
+    .returning({ id: classSessions.id });
+  if (!inserted) throw new Error(`Failed to insert session ${classId}@${sessionDate}`);
+  return inserted.id;
+}
+
+/** Inserts an attendance unless the pair already has an active one. */
+async function ensureActiveAttendance(
+  tx: DbTransaction,
+  tenantId: string,
+  classSessionId: string,
+  studentId: string,
+  opts: { method: CheckinMethod; checkedInAt: Date; recordedByUserId?: string },
+): Promise<void> {
+  const active = await tx
+    .select({ id: attendances.id })
+    .from(attendances)
+    .where(
+      and(
+        eq(attendances.tenantId, tenantId),
+        eq(attendances.classSessionId, classSessionId),
+        eq(attendances.studentId, studentId),
+        sql`${attendances.revokedAt} IS NULL`,
+      ),
+    );
+  if (active[0]) return;
+  await tx.insert(attendances).values({
+    tenantId,
+    classSessionId,
+    studentId,
+    method: opts.method,
+    checkedInAt: opts.checkedInAt,
+    recordedByUserId: opts.recordedByUserId,
+  });
+}
+
+/**
+ * The sanctioned correction pattern as a fixture: a professor-recorded manual
+ * row, voided through the audited `attendance_revoke` seam (admin actor —
+ * any-time window, audit row written in the same transaction), then a fresh
+ * active re-check-in for the same pair. On re-runs the pair already has rows
+ * and only a missing active row is repaired — counts stay stable.
+ */
+async function ensureRevokedRecheckedAttendance(
+  tx: DbTransaction,
+  tenantId: string,
+  classSessionId: string,
+  studentId: string,
+  opts: { recordedByUserId: string; revokedByUserId: string; checkedInAt: Date },
+): Promise<void> {
+  const existing = await tx
+    .select({ id: attendances.id, revokedAt: attendances.revokedAt })
+    .from(attendances)
+    .where(
+      and(
+        eq(attendances.tenantId, tenantId),
+        eq(attendances.classSessionId, classSessionId),
+        eq(attendances.studentId, studentId),
+      ),
+    );
+  if (existing.length === 0) {
+    const [first] = await tx
+      .insert(attendances)
+      .values({
+        tenantId,
+        classSessionId,
+        studentId,
+        method: 'manual',
+        checkedInAt: opts.checkedInAt,
+        recordedByUserId: opts.recordedByUserId,
+      })
+      .returning({ id: attendances.id });
+    if (!first) throw new Error('Failed to insert revocable attendance');
+    const revoked = await tx.execute(
+      sql`SELECT status FROM attendance_revoke(${tenantId}::uuid, ${first.id}::uuid, ${opts.revokedByUserId}::uuid, ${'seed: roll-call correction'})`,
+    );
+    if (revoked.rows[0]?.['status'] !== 'revoked') {
+      throw new Error(`Seed revoke failed: ${String(revoked.rows[0]?.['status'])}`);
+    }
+  }
+  await ensureActiveAttendance(tx, tenantId, classSessionId, studentId, {
+    method: 'manual',
+    checkedInAt: new Date(opts.checkedInAt.getTime() + 60_000),
+    recordedByUserId: opts.recordedByUserId,
+  });
 }

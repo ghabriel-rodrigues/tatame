@@ -114,11 +114,11 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 4 — Attendance / check-in ([spec 004](docs/specs/004-attendance.md))
 
-- [ ] ATT.1 DB: Drizzle schema for class_sessions, checkin_codes (+qr_token, opened_by), attendances (+revoked cols) — UUIDv7 PKs, composite tenant FKs, method/status enums, session unique per class per day, partial unique active check-in
-- [ ] ATT.2 DB: forced RLS fail-closed tenant policies on all three tables (SELECT+INSERT only on attendances), extending the RLS meta-test
-- [ ] ATT.3 DB: append-only layer — no UPDATE/DELETE grants or policies on attendances, forbid_mutation trigger with the revoke-columns-only exception, append-only registry meta-test
-- [ ] ATT.4 DB: attendance_revoke SECURITY DEFINER seam — tenant-validated, professor same-day window, admin any-time, audit rows (attendance.revoked, attendance.recorded_manual) in-transaction
-- [ ] ATT.5 DB: dev seeds — materialized sessions with mixed-method attendances (some revoked) per fixture academy, written through the tenant-scoped path
+- [x] ATT.1 DB: Drizzle schema for class_sessions, checkin_codes (+qr_token, opened_by), attendances (+revoked cols) — UUIDv7 PKs, composite tenant FKs, method/status enums, session unique per class per day, partial unique active check-in
+- [x] ATT.2 DB: forced RLS fail-closed tenant policies on all three tables (SELECT+INSERT only on attendances), extending the RLS meta-test
+- [x] ATT.3 DB: append-only layer — no UPDATE/DELETE grants or policies on attendances, forbid_mutation trigger with the revoke-columns-only exception, append-only registry meta-test
+- [x] ATT.4 DB: attendance_revoke SECURITY DEFINER seam — tenant-validated, professor same-day window, admin any-time, audit rows (attendance.revoked, attendance.recorded_manual) in-transaction
+- [x] ATT.5 DB: dev seeds — materialized sessions with mixed-method attendances (some revoked) per fixture academy, written through the tenant-scoped path
 - [ ] ATT.6 Backend: attendance module — idempotent session materialization, open/close/reopen chamada with code+QR mint, TTL (slot end + 15 min grace), one active code per session
 - [ ] ATT.7 Backend: aluno check-in endpoint — qr/code/manual resolution to one validated INSERT, enrollment + today + window checks, duplicate → already-checked-in state, race-safe, fresh stats in response
 - [ ] ATT.8 Backend: professor manual roll call — roster with attendance states (self check-ins pre-toggled), per-row mark (manual, recorded_by) and same-day revoke endpoints
