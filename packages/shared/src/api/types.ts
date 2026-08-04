@@ -31,6 +31,26 @@ export type MoveStudentsResponse = ApiSchemas['MoveStudentsResponseDto'];
 export type AdminSessionRow = ApiSchemas['AdminSessionRowDto'];
 export type AdminSessionListResponse = ApiSchemas['AdminSessionListResponseDto'];
 
+// Attendance mobile surface (ATT.15-18).
+export type CheckinRequest = ApiSchemas['CheckinRequestDto'];
+export type CheckinResponse = ApiSchemas['CheckinResponseDto'];
+export type AlunoStats = ApiSchemas['AlunoStatsDto'];
+export type AlunoTodayClass = ApiSchemas['AlunoTodayClassDto'];
+export type AlunoHomeResponse = ApiSchemas['AlunoHomeResponseDto'];
+export type LiveCodeResponse = ApiSchemas['LiveCodeResponseDto'];
+export type LiveSnapshotResponse = ApiSchemas['LiveSnapshotResponseDto'];
+export type SnapshotAttendance = ApiSchemas['SnapshotAttendanceDto'];
+export type StreamTicketResponse = ApiSchemas['StreamTicketResponseDto'];
+export type LiveStreamCheckinEvent = ApiSchemas['LiveStreamCheckinEventDto'];
+export type LiveStreamRevokeEvent = ApiSchemas['LiveStreamRevokeEventDto'];
+export type RollCallResponse = ApiSchemas['RollCallResponseDto'];
+export type RollCallRosterRow = ApiSchemas['RosterRowDto'];
+export type RosterAttendance = ApiSchemas['RosterAttendanceDto'];
+export type MarkAttendanceResponse = ApiSchemas['MarkAttendanceResponseDto'];
+export type RevokeAttendanceResponse = ApiSchemas['RevokeAttendanceResponseDto'];
+export type ProfessorDashboardResponse = ApiSchemas['ProfessorDashboardResponseDto'];
+export type ProfessorStudent = ApiSchemas['ProfessorStudentDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

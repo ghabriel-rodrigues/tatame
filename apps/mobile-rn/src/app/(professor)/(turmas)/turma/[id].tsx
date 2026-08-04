@@ -1,10 +1,12 @@
 /**
- * Professor turma detail (ENR.17/18, professor-08): stats tiles (attendance
- * is an explicit "Fase 4" placeholder — never faked), schedule and the FULL
- * roster (the handoff screenshot's 3-of-24 roster is a known prototype bug;
- * this screen renders the real server roster). Roster mutations (ENR.18):
- * Adicionar aluno sheet + remove with confirmation, both against the
- * professor endpoints (foreign class → 404 server-side).
+ * Professor turma detail (ENR.17/18 + ATT.17/18, professor-08): stats tiles
+ * (per-turma frequência stays an honest placeholder — the professor
+ * contract exposes no per-class month rate; reports slice owns it),
+ * schedule and the FULL roster (the handoff screenshot's 3-of-24 roster is
+ * a known prototype bug). "Fazer chamada de hoje" opens the ATT.17 live
+ * chamada; "Chamada manual" opens the ATT.18 roll call. Roster mutations
+ * (ENR.18): Adicionar aluno sheet (ATT.18: rewired to GET
+ * /v1/professor/students?notEnrolledInClassId) + remove with confirmation.
  */
 
 import { useState } from 'react';
@@ -94,7 +96,7 @@ export default function ProfessorTurmaDetailScreen() {
 
                 <View style={{ flexDirection: 'row', gap: theme.space['3'] }}>
                   <StatTile value={`${turma.occupancy}`} label="alunos" />
-                  <StatTile value="—" label="frequência" note="Fase 4" />
+                  <StatTile value="—" label="frequência" note="Relatórios" />
                   <StatTile
                     value={`${occupancyPercent(turma.occupancy, turma.capacity)}%`}
                     label="ocupação"
@@ -104,7 +106,13 @@ export default function ProfessorTurmaDetailScreen() {
                 <TatameButton
                   fullWidth
                   label="Fazer chamada de hoje"
-                  onPress={() => setToast('Em breve: chamada (Fase 4).')}
+                  onPress={() => router.push(`/chamada/${turma.id}`)}
+                />
+                <TatameButton
+                  fullWidth
+                  variant="secondary"
+                  label="Chamada manual"
+                  onPress={() => router.push(`/chamada-manual/${turma.id}`)}
                 />
 
                 <View
@@ -175,7 +183,6 @@ export default function ProfessorTurmaDetailScreen() {
           onClose={() => setAddOpen(false)}
           classId={turma.id}
           className={turma.name}
-          roster={turma.roster}
           onAdded={(name) => setToast(`${name} agora faz parte da turma.`)}
         />
       ) : null}

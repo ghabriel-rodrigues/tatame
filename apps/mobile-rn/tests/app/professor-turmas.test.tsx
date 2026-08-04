@@ -1,8 +1,9 @@
 /**
- * Professor turmas (ENR.17/18): Minhas turmas list per professor-07
- * (schedule line, occupancy chip + bar, Lotada), turma detail per
- * professor-08 (real roster — not the prototype's 3-of-24 bug — and the
- * Fase 4 attendance placeholder), Adicionar aluno picker per professor-09
+ * Professor turmas (ENR.17/18 + ATT.18): Minhas turmas list per
+ * professor-07 (schedule line, occupancy chip + bar, Lotada), turma detail
+ * per professor-08 (real roster — not the prototype's 3-of-24 bug — and the
+ * honest frequência placeholder), Adicionar aluno picker per professor-09 —
+ * now rewired to GET /v1/professor/students?notEnrolledInClassId (ATT.18) —
  * and remove-with-confirm, with PT-BR problem+json mapping.
  */
 
@@ -12,12 +13,12 @@ import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
 import { installFetchMock, json, makeMe, problem, type FetchHandler } from '../helpers/session';
 import {
-  AVANCADA_ROSTER,
   FUNDAMENTOS_ID,
   FUNDAMENTOS_ROSTER,
   makeProfessorClassDetails,
   makeProfessorClasses,
 } from '../helpers/enrollment';
+import { makeProfessorStudents } from '../helpers/attendance';
 
 jest.useFakeTimers();
 
@@ -26,6 +27,7 @@ const secure = SecureStore as unknown as { __reset: () => void };
 interface HandlerLog {
   addBodies: unknown[];
   removedPaths: string[];
+  studentsSearches: string[];
 }
 
 /** Happy-path professor enrollment API; overrides run first. */
@@ -38,6 +40,10 @@ function professorHandlers(log: HandlerLog, override?: FetchHandler): FetchHandl
     const { method, path, body } = request;
     if (method === 'GET' && path === '/v1/professor/classes') {
       return json(200, { classes });
+    }
+    if (method === 'GET' && path === '/v1/professor/students') {
+      log.studentsSearches.push(request.search);
+      return json(200, { students: makeProfessorStudents() });
     }
     const detailMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)$/.exec(path);
     if (method === 'GET' && detailMatch) {
@@ -69,7 +75,7 @@ function professorHandlers(log: HandlerLog, override?: FetchHandler): FetchHandl
 }
 
 function renderProfessor(override?: FetchHandler): HandlerLog {
-  const log: HandlerLog = { addBodies: [], removedPaths: [] };
+  const log: HandlerLog = { addBodies: [], removedPaths: [], studentsSearches: [] };
   installFetchMock(professorHandlers(log, override));
   sessionTestApi.seed({
     status: 'authed',
@@ -123,10 +129,11 @@ describe('professor turmas (ENR.17/18)', () => {
     renderProfessor();
     await openFundamentosDetail();
 
-    // Stat tiles: real occupancy + honest attendance placeholder.
+    // Stat tiles: real occupancy + honest per-turma frequency placeholder
+    // (the professor contract has no per-class month rate — reports slice).
     expect(screen.getByText('3')).toBeTruthy();
     expect(screen.getByText('alunos')).toBeTruthy();
-    expect(screen.getByText('Fase 4')).toBeTruthy();
+    expect(screen.getByText('Relatórios')).toBeTruthy();
     expect(screen.getByText('13%')).toBeTruthy(); // 3 / 24
 
     // Real roster — every enrolled student, not the prototype's excerpt.
@@ -136,27 +143,28 @@ describe('professor turmas (ENR.17/18)', () => {
     expect(screen.getByText('Pendente')).toBeTruthy();
   });
 
-  it('adds a student from the Adicionar aluno picker', async () => {
+  it('adds a student from the picker fed by /professor/students (ATT.18)', async () => {
     const log = renderProfessor();
     await openFundamentosDetail();
 
     await act(async () => {
       fireEvent.press(screen.getByText('Adicionar aluno'));
     });
-    // Candidates: students the professor sees that are not on this roster.
+    // Real candidates from the dedicated endpoint, filtered server-side.
     await waitFor(() => expect(screen.getByText('Marina Costa')).toBeTruthy());
     expect(screen.getByText('Pedro Silveira')).toBeTruthy();
     expect(screen.getByText('Bia Andrade')).toBeTruthy();
     expect(screen.getByText(/gestão compartilhada com o admin/)).toBeTruthy();
+    expect(log.studentsSearches).toContainEqual(
+      `?notEnrolledInClassId=${FUNDAMENTOS_ID}`,
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Adicionar Marina Costa'));
     });
 
-    const marina = AVANCADA_ROSTER[0]!;
-    await waitFor(() =>
-      expect(log.addBodies).toContainEqual({ studentId: marina.studentId }),
-    );
+    const marina = makeProfessorStudents()[0]!;
+    await waitFor(() => expect(log.addBodies).toContainEqual({ studentId: marina.id }));
     await waitFor(() =>
       expect(screen.getByText('Marina Costa agora faz parte da turma.')).toBeTruthy(),
     );

@@ -45,7 +45,13 @@
           ]
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Tatame usa a câmera para ler o QR Code do check-in."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

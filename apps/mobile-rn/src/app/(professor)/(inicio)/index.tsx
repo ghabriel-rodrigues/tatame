@@ -1,7 +1,153 @@
-/** professor home (AUTH.20): session context in DS Cards. */
+/**
+ * Professor dashboard (ATT.18, professor-02): live tiles from
+ * GET /v1/professor/dashboard — alunos hoje, presença média and the
+ * eventos placeholder — plus the next-class hero with its checked-in count
+ * and "Iniciar chamada" (→ ATT.17 live chamada). The remaining sections
+ * (próximos da graduação, pagamentos) stay explicit placeholders owned by
+ * their slices.
+ */
 
-import { PersonaHome } from '../../../components/PersonaHome';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
+import {
+  Card,
+  ScreenHeader,
+  TatameButton,
+  Text,
+  fadeUp,
+  useTheme,
+} from '@tatame/design-system/native';
+import { api } from '../../../api/query';
+import { greetingPt } from '../../../features/attendance/format';
+import { longDatePt } from '../../../features/enrollment/format';
+import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollment/ui';
+import { isReadOnly, useSession } from '../../../session/session-store';
 
 export default function ProfessorInicioScreen() {
-  return <PersonaHome />;
+  const theme = useTheme();
+  const router = useRouter();
+  const { session } = useSession();
+  const dashboardQuery = api.useQuery('get', '/v1/professor/dashboard');
+
+  if (!session) return null;
+  const firstName = session.user.fullName.split(' ')[0] ?? session.user.fullName;
+  const readOnly = isReadOnly(session);
+  const dashboard = dashboardQuery.data;
+  const nextClass = dashboard?.nextClass ?? null;
+
+  return (
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+        <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
+          <ScreenHeader
+            eyebrow={longDatePt()}
+            title={`${greetingPt()}, ${firstName}`}
+            trailing={<InitialsAvatar name={session.user.fullName} size={38} />}
+          />
+
+          {readOnly ? (
+            <Card variant="tinted" testID="readonly-banner" padding={theme.space['4']}>
+              <View style={{ gap: 4 }}>
+                <Text variant="label" color={theme.color.warning['500']}>
+                  Modo somente leitura
+                </Text>
+                <Text variant="caption">
+                  A academia está com pagamentos pendentes. Alterações ficam desabilitadas
+                  até a regularização.
+                </Text>
+              </View>
+            </Card>
+          ) : null}
+
+          <QueryState loading={dashboardQuery.isPending} error={dashboardQuery.isError}>
+            {dashboard ? (
+              <>
+                <View style={{ flexDirection: 'row', gap: theme.space['3'] }}>
+                  <StatTile
+                    testID="tile-alunos-hoje"
+                    value={`${dashboard.alunosHoje}`}
+                    label="alunos hoje"
+                  />
+                  <StatTile
+                    testID="tile-presenca-media"
+                    value={`${dashboard.presencaMediaPct}%`}
+                    label="presença média"
+                  />
+                  <StatTile testID="tile-eventos" value="—" label="eventos futuros" note="Em breve" />
+                </View>
+
+                <Card variant="hero" testID="professor-hero">
+                  <View style={{ gap: theme.space['3'] }}>
+                    {nextClass ? (
+                      <>
+                        <View style={{ flexDirection: 'row' }}>
+                          <View
+                            style={{
+                              backgroundColor: 'rgba(255,255,255,0.18)',
+                              borderRadius: theme.radius.pill,
+                              paddingVertical: 4,
+                              paddingHorizontal: 12,
+                            }}
+                          >
+                            <Text
+                              variant="caption"
+                              weight="bold"
+                              color={theme.color.fg.onColor}
+                              style={{ fontSize: 11 }}
+                            >
+                              Próxima aula · hoje {nextClass.slot.startTime}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={{ gap: 2 }}>
+                          <Text variant="title" color={theme.color.fg.onColor}>
+                            {nextClass.className}
+                          </Text>
+                          <Text variant="caption" color="rgba(255,255,255,0.8)">
+                            {nextClass.checkedInCount} confirmados
+                          </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
+                          <TatameButton
+                            size="sm"
+                            variant="secondary"
+                            label="Iniciar chamada"
+                            onPress={() => router.push(`/chamada/${nextClass.classId}`)}
+                          />
+                          <TatameButton
+                            size="sm"
+                            variant="ghost"
+                            label="Ver turmas"
+                            onPress={() => router.push('/turmas')}
+                          />
+                        </View>
+                      </>
+                    ) : (
+                      <View style={{ gap: 2 }}>
+                        <Text variant="title" color={theme.color.fg.onColor}>
+                          Sem próxima aula hoje
+                        </Text>
+                        <Text variant="caption" color="rgba(255,255,255,0.8)">
+                          Suas turmas mostram os horários da semana.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </Card>
+
+                <Card>
+                  <View style={{ gap: 4 }}>
+                    <Text variant="label">Próximos da graduação</Text>
+                    <Text variant="caption">Em breve — chega com a fase de graduação.</Text>
+                  </View>
+                </Card>
+              </>
+            ) : null}
+          </QueryState>
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }

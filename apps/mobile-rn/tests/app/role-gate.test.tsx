@@ -49,7 +49,8 @@ describe('role gate', () => {
       status: 'authed',
       session: makeMe({ role: 'professor', fullName: 'Rafa Mendes' }),
     });
-    expect(screen.getByText('Olá, Rafa')).toBeTruthy();
+    // Dashboard greeting is time-of-day aware ("Bom dia/Boa tarde/Boa noite").
+    expect(screen.getByText(/, Rafa$/)).toBeTruthy();
     expect(screen.getByLabelText('Chamada')).toBeTruthy();
     expect(screen.getByLabelText('Turmas')).toBeTruthy();
   });

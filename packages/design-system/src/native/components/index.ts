@@ -28,5 +28,10 @@ export {
 
 /* P1 components (enrollment path — same anatomy as the web executors). */
 export { Chip, type ChipProps, type ChipTone, type ChipSize } from './Chip.tsx';
+export {
+  SegmentedControl,
+  type SegmentedControlProps,
+  type SegmentedControlOption,
+} from './SegmentedControl.tsx';
 export { ListRow, type ListRowProps } from './ListRow.tsx';
 export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';

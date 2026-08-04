@@ -1,7 +1,7 @@
 /**
- * Authenticated shells (AUTH.20): session context rendered in DS Cards,
- * the delinquency read-only banner, the glass tab bar with the persona
- * FAB, and the perfil logout flow back to login.
+ * Authenticated shells (AUTH.20, homes upgraded by ATT.16/18): persona
+ * home mounts, the delinquency read-only banner, the glass tab bar with
+ * the persona FAB, and the perfil logout flow back to login.
  */
 
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
@@ -10,6 +10,7 @@ import { queryClient } from '../../src/session/api';
 import { sessionTestApi, type SessionState } from '../../src/session/session-store';
 import { setRefreshToken } from '../../src/session/token-store';
 import { installFetchMock, json, makeMe } from '../helpers/session';
+import { makeAlunoHome } from '../helpers/attendance';
 
 jest.useFakeTimers();
 
@@ -29,18 +30,15 @@ describe('authenticated shells', () => {
     secure.__reset();
     sessionTestApi.reset();
     queryClient.clear();
-    installFetchMock(() => null);
+    installFetchMock(({ method, path }) =>
+      method === 'GET' && path === '/v1/aluno/home' ? json(200, makeAlunoHome()) : null,
+    );
   });
 
-  it('aluno home renders the session context cards', () => {
+  it('aluno shell renders the real Início home (ATT.16)', async () => {
     renderApp({ status: 'authed', session: makeMe({ role: 'student' }) });
     expect(screen.getByText('Olá, Lucas')).toBeTruthy();
-    expect(screen.getByText('Sessão')).toBeTruthy();
-    expect(screen.getByText('Lucas Almeida')).toBeTruthy();
-    expect(screen.getByText('aluno@tatame.dev')).toBeTruthy();
-    expect(screen.getAllByText('Aluno').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Alpha Jiu-Jitsu').length).toBeGreaterThan(0);
-    expect(screen.getByText('Completo')).toBeTruthy();
+    await waitFor(() => expect(screen.getByText('Open mat')).toBeTruthy());
     expect(screen.queryByTestId('readonly-banner')).toBeNull();
   });
 
@@ -51,7 +49,6 @@ describe('authenticated shells', () => {
     });
     expect(screen.getByTestId('readonly-banner')).toBeTruthy();
     expect(screen.getByText('Modo somente leitura')).toBeTruthy();
-    expect(screen.getByText('Somente leitura')).toBeTruthy();
   });
 
   it('tab bar exposes the four tabs and the persona FAB', () => {
