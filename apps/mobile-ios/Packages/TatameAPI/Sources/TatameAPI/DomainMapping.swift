@@ -91,6 +91,11 @@ extension SessionContext {
         else {
             throw ApiError.decoding(description: "active membership missing from /auth/me")
         }
-        self.init(user: user, memberships: memberships, activeMembership: active)
+        self.init(
+            user: user,
+            memberships: memberships,
+            activeMembership: active,
+            permissions: dto.permissions.additionalProperties
+        )
     }
 }

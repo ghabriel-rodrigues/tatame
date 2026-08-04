@@ -1,8 +1,10 @@
-// Persona shell scaffolds (AUTH.26): empty TabView placeholders rendering
-// the session context + logout. The glass pill tab bar and the real feature
-// tabs land with their own slices (recorded parity debt).
+// Persona shells (AUTH.26 scaffold + spec 003 tabs): professor gets the
+// real Turmas tab and responsável the dependents panel (ENR.24-26); the
+// remaining tabs stay placeholders until their slices land. The glass pill
+// tab bar remains recorded parity debt.
 
 import DesignSystem
+import EnrollmentFeature
 import SwiftUI
 import TatameCore
 
@@ -33,12 +35,52 @@ struct PersonaShellView: View {
     let context: SessionContext
     let readOnly: Bool
 
+    @Environment(SessionStore.self) private var session
+    @Environment(\.enrollmentRepository) private var enrollmentRepository
+
     var body: some View {
         TabView {
-            shellTab(title: "Início", icon: persona.homeIcon)
+            switch persona {
+            case .aluno:
+                shellTab(title: "Início", icon: persona.homeIcon)
+            case .professor:
+                shellTab(title: "Início", icon: persona.homeIcon)
+                featureTab(title: "Turmas", icon: "person.3") {
+                    ProfessorTurmasView(
+                        repository: enrollmentRepository,
+                        academyName: context.activeMembership.academyName
+                    )
+                }
+            case .responsavel:
+                featureTab(title: "Alunos", icon: persona.homeIcon) {
+                    ResponsavelHomeView(
+                        repository: enrollmentRepository,
+                        session: session,
+                        context: context
+                    )
+                }
+            }
             shellTab(title: "Perfil", icon: "person.crop.circle")
         }
         .tint(LumiraTokens.Colors.inkPurple)
+    }
+
+    /// Real feature tab with the shared read-only banner slot.
+    private func featureTab(
+        title: String,
+        icon: String,
+        @ViewBuilder content: () -> some View
+    ) -> some View {
+        VStack(spacing: 0) {
+            if readOnly {
+                ReadOnlyBanner()
+            }
+            content()
+        }
+        .background(LumiraTokens.Colors.bgApp)
+        .tabItem {
+            Label(title, systemImage: icon)
+        }
     }
 
     private func shellTab(title: String, icon: String) -> some View {

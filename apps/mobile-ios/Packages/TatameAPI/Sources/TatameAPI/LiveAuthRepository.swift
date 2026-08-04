@@ -55,6 +55,18 @@ struct LiveAuthRepository: AuthRepository {
         }
     }
 
+    func me() async throws -> SessionContext {
+        try await ApiErrorMapper.run {
+            let response = try await client.AuthController_me_v1(.init())
+            switch response {
+            case .ok(let ok):
+                return try SessionContext(dto: try ok.body.json)
+            case .undocumented(let statusCode, let payload):
+                throw await ApiErrorMapper.map(status: statusCode, payload: payload)
+            }
+        }
+    }
+
     func logout() async throws {
         try await ApiErrorMapper.run {
             let response = try await client.AuthController_logout_v1(.init())

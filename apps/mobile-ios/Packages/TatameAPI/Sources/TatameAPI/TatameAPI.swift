@@ -7,13 +7,15 @@ import OpenAPIRuntime
 import OpenAPIURLSession
 import TatameCore
 
-/// The wired auth networking stack handed to the composition root.
+/// The wired networking stack handed to the composition root.
 public struct AuthStack: Sendable {
     /// Repository conforming to the TatameCore seam.
     public let repository: any AuthRepository
     /// The refresh coordinator in its `AccessTokenStore` role (SessionStore
     /// writes the access token through this after login/switch).
     public let accessTokenStore: any AccessTokenStore
+    /// Enrollment slice repository (spec 003) — same authenticated client.
+    public let enrollmentRepository: any EnrollmentRepository
 }
 
 public enum TatameClientFactory {
@@ -56,7 +58,8 @@ public enum TatameClientFactory {
         )
         return AuthStack(
             repository: LiveAuthRepository(client: client, coordinator: coordinator),
-            accessTokenStore: coordinator
+            accessTokenStore: coordinator,
+            enrollmentRepository: LiveEnrollmentRepository(client: client)
         )
     }
 }

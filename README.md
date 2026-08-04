@@ -108,8 +108,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] ENR.21 Android: professor classes list + detail read views per handoff
 - [x] ENR.22 Android: professor roster add/remove + responsável dependents panel read views
 - [x] ENR.23 Android: responsável Cadastrar aluno sheet with age suggestion
-- [ ] ENR.24 iOS: professor classes list + detail read views per handoff
-- [ ] ENR.25 iOS: professor roster add/remove + responsável dependents panel read views
-- [ ] ENR.26 iOS: responsável Cadastrar aluno sheet with age suggestion
+- [x] ENR.24 iOS: professor classes list + detail read views per handoff
+- [x] ENR.25 iOS: professor roster add/remove + responsável dependents panel read views
+- [x] ENR.26 iOS: responsável Cadastrar aluno sheet with age suggestion
 
 _Next phases (check-in/attendance, agenda, graduation, billing, events, store, …) get their specs as each phase ships._

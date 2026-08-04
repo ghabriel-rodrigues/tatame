@@ -37,6 +37,8 @@ targets:
       # packages Features re-exports through its products) only.
       - package: Features
         product: AppShell
+      - package: Features
+        product: EnrollmentFeature
       - package: TatameAPI
         product: TatameAPI
       - package: TatameCore

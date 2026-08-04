@@ -108,6 +108,19 @@ public final class SessionStore {
         state = .signedIn(context)
     }
 
+    // MARK: Context re-hydration
+
+    /// Re-fetches /auth/me to hydrate the toggleable `permissions` map (empty
+    /// right after a fresh login). Best effort: failures keep the current
+    /// context — the server enforces every permission regardless (spec 003).
+    public func refreshPermissions() async {
+        guard case .signedIn = state else { return }
+        guard let context = try? await repository.me() else { return }
+        if case .signedIn = state {
+            state = .signedIn(context)
+        }
+    }
+
     // MARK: Logout & expiry
 
     /// Revokes server-side (best effort — local logout always completes,

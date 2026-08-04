@@ -5,6 +5,7 @@
 // (ticket 06, decision 5); views never build networking themselves.
 
 import AppShell
+import EnrollmentFeature
 import SwiftUI
 import TatameAPI
 import TatameCore
@@ -17,6 +18,7 @@ struct TatameApp: App {
         WindowGroup {
             RootView()
                 .environment(composition.sessionStore)
+                .environment(\.enrollmentRepository, composition.enrollmentRepository)
         }
     }
 }
@@ -39,6 +41,7 @@ private final class SessionExpiryRelay {
 @MainActor
 final class AppComposition {
     let sessionStore: SessionStore
+    let enrollmentRepository: any EnrollmentRepository
 
     init() {
         // Dev server URL. Environment-specific .xcconfig wiring is ticket 08
@@ -59,5 +62,6 @@ final class AppComposition {
         )
         relay.store = store
         sessionStore = store
+        enrollmentRepository = stack.enrollmentRepository
     }
 }

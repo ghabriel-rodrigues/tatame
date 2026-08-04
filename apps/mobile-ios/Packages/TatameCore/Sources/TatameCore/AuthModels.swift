@@ -123,16 +123,32 @@ public struct SwitchedMembership: Sendable, Equatable {
     }
 }
 
+/// Permission-map keys shared with the backend (`/auth/me` `permissions`).
+public enum PermissionKey {
+    /// Guardian "cadastrar dependentes" toggle (default on, spec 003).
+    public static let dependentsRegister = "dependents.register"
+}
+
 /// The signed-in context the root router renders from.
 public struct SessionContext: Sendable, Equatable {
     public let user: UserSummary
     public let memberships: [Membership]
     public let activeMembership: Membership
+    /// Toggleable permission map from `/auth/me`. Empty right after a fresh
+    /// login (the login payload carries none) until the next `/auth/me`
+    /// hydration — absent keys resolve to their server-side default.
+    public let permissions: [String: Bool]
 
-    public init(user: UserSummary, memberships: [Membership], activeMembership: Membership) {
+    public init(
+        user: UserSummary,
+        memberships: [Membership],
+        activeMembership: Membership,
+        permissions: [String: Bool] = [:]
+    ) {
         self.user = user
         self.memberships = memberships
         self.activeMembership = activeMembership
+        self.permissions = permissions
     }
 
     /// Builds the context from a login session and the chosen membership id.
@@ -142,5 +158,11 @@ public struct SessionContext: Sendable, Equatable {
             return nil
         }
         self.init(user: session.user, memberships: session.memberships, activeMembership: active)
+    }
+
+    /// Resolves a toggleable permission, falling back to its default when the
+    /// map has not been hydrated (client-side UX only — the server enforces).
+    public func permission(_ key: String, default defaultValue: Bool) -> Bool {
+        permissions[key] ?? defaultValue
     }
 }

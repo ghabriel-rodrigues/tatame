@@ -19,6 +19,19 @@ public protocol AuthRepository: Sendable {
 
     /// POST /auth/logout — revoke the current session server-side.
     func logout() async throws
+
+    /// GET /auth/me without a refresh round-trip — re-hydrates the session
+    /// context (notably the toggleable `permissions` map, spec 003). Throws
+    /// `ApiError`.
+    func me() async throws -> SessionContext
+}
+
+public extension AuthRepository {
+    /// Back-compat default: fakes that predate the permissions map fall back
+    /// to the restore path (same payload shape via /auth/me).
+    func me() async throws -> SessionContext {
+        try await restoreSession()
+    }
 }
 
 /// Default used by environment entries / previews; every call traps.
