@@ -18,6 +18,11 @@ export {
   ROLES_KEY,
 } from './common/decorators.js';
 export { PERMISSION_REGISTRY } from './modules/identity/services/permission-registry.js';
+export {
+  StreamTicketService,
+  STREAM_TICKET_TTL_SECONDS,
+} from './modules/attendance/realtime/stream-ticket.service.js';
+export { LiveRoomRegistry } from './modules/attendance/realtime/live-room.registry.js';
 export { REFRESH_COOKIE } from './modules/identity/controllers/auth.controller.js';
 export { AcademyStatusService } from './modules/identity/services/academy-status.service.js';
 export { PermissionsService } from './modules/identity/services/permissions.service.js';

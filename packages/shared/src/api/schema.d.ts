@@ -623,6 +623,274 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/aluno/checkins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fazer check-in (qr / code / manual)
+         * @description One validated INSERT for all three methods. A duplicate attempt returns status `already_checked_in` (200) — never an error and never a second row.
+         */
+        post: operations["AlunoAttendanceController_checkIn_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Início: today-class hero, presença %, streak, graduation lesson count
+         * @description Streak is null when the academy disabled the gamification.streak toggle.
+         */
+        get: operations["AlunoAttendanceController_home_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/classes/{id}/live-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Iniciar chamada — materialize today's session + mint code/QR
+         * @description Idempotent: an already-open chamada benignly returns its active code. Reopening after encerrar mints a fresh code for the same session (one active per session).
+         */
+        post: operations["ProfessorLiveController_open_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/live-codes/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Encerrar chamada — invalidate code + QR, session → done */
+        post: operations["ProfessorLiveController_close_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/live-codes/{id}/attendances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live snapshot — also the 5 s polling fallback target
+         * @description Active attendances only; revokes decrement the count.
+         */
+        get: operations["ProfessorLiveController_snapshot_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/live-codes/{id}/stream-ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mint the ~60 s single-purpose SSE ticket
+         * @description Normal bearer REST. The HMAC-signed ticket binds { liveCode, user, tenant } and is accepted only on the stream route — it is never a session credential. Reconnect after expiry mints a new one.
+         */
+        post: operations["ProfessorLiveController_mintTicket_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/live-codes/{id}/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * SSE stream: checkin / revoke events + 20 s heartbeat (contract exception)
+         * @description Server-Sent Events, not JSON. Protocol: fetch the snapshot first, then attach (no replay; Last-Event-ID unused in v1). `event: checkin` carries LiveStreamCheckinEventDto, `event: revoke` carries LiveStreamRevokeEventDto; a `heartbeat` event fires every 20 s. Events are emitted post-commit — only accepted check-ins ever appear. Fall back to polling the snapshot endpoint every 5 s when the stream fails to connect or drops twice.
+         */
+        get: operations["ProfessorLiveController_stream_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/classes/{id}/roll-call": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Abrir chamada manual — materialize session + roster with states
+         * @description Self check-ins (QR/code/manual) appear pre-toggled — one truth for both modes.
+         */
+        post: operations["ProfessorRollCallController_open_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/sessions/{id}/attendances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Toggle on — professor-recorded manual presence (audited in-transaction)
+         * @description A student already present returns status `already_checked_in` (benign).
+         */
+        post: operations["ProfessorRollCallController_mark_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/attendances/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Toggle off — same-day revoke through the audited void seam
+         * @description After the session's day closes this returns 403 attendance.revoke_window_closed — late corrections go through the admin endpoint.
+         */
+        post: operations["ProfessorRollCallController_revoke_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dashboard: alunos hoje, presença média, next-class hero, today's classes */
+        get: operations["ProfessorDashboardController_dashboard_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Academy students — optional filter: not enrolled in one of my classes
+         * @description notEnrolledInClassId must reference a class the caller teaches (else 404).
+         */
+        get: operations["ProfessorDashboardController_students_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/attendances/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Any-time audited revoke (window same_day | admin_late in the audit row) */
+        post: operations["AdminAttendanceController_revoke_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/classes/{id}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Turma sessions with active attendance counts (replaces Phase-3 placeholders) */
+        get: operations["AdminAttendanceController_sessions_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1163,6 +1431,277 @@ export interface components {
         ClassSuggestionResponseDto: {
             /** @description Null when no active age-matching class with a free slot exists */
             suggestion?: components["schemas"]["ClassSuggestionDto"] | null;
+        };
+        CheckinRequestDto: {
+            /** @enum {string} */
+            method: "qr" | "code" | "manual";
+            /** @description Opaque token scanned from the QR (method=qr) */
+            qrToken?: string;
+            /**
+             * @description 4-digit live code (method=code)
+             * @example 4821
+             */
+            code?: string;
+            /**
+             * Format: uuid
+             * @description Class to check into (method=manual — location step is a client stub)
+             */
+            classId?: string;
+        };
+        AttendanceRefDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            classSessionId: string;
+            /** @enum {string} */
+            method: "qr" | "code" | "manual";
+            /** Format: date-time */
+            checkedInAt: string;
+        };
+        CheckinSessionRefDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @example 2026-08-03 */
+            sessionDate: string;
+        };
+        AlunoStatsDto: {
+            /** @description Presença no mês (%) */
+            monthPresencePct: number;
+            monthAttendedSessions: number;
+            /** @description Materialized sessions of enrolled classes, month-to-date */
+            monthTotalSessions: number;
+            /** @description Aulas seguidas — null when the academy disabled gamification.streak */
+            streak: number | null;
+            /** @description Lifetime active attendances (graduation progress numerator) */
+            totalLessons: number;
+        };
+        CheckinResponseDto: {
+            /**
+             * @description Stable duplicate state — clients render "Presença registrada", never an error
+             * @enum {string}
+             */
+            status: "checked_in" | "already_checked_in";
+            attendance: components["schemas"]["AttendanceRefDto"];
+            session: components["schemas"]["CheckinSessionRefDto"];
+            /** @description Fresh stats — one round trip updates the pop and the tiles */
+            stats: components["schemas"]["AlunoStatsDto"];
+        };
+        AlunoStudentRefDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+        };
+        AlunoTodayClassDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            slot: components["schemas"]["ScheduleSlotViewDto"];
+            /** @description Hero flips to "Presença registrada" when true */
+            checkedIn: boolean;
+        };
+        AlunoHomeResponseDto: {
+            student: components["schemas"]["AlunoStudentRefDto"];
+            todayClass?: components["schemas"]["AlunoTodayClassDto"] | null;
+            stats: components["schemas"]["AlunoStatsDto"];
+        };
+        LiveSessionDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @example 2026-08-03 */
+            sessionDate: string;
+            /** Format: date-time */
+            startsAt: string | null;
+            /** @enum {string} */
+            status: "scheduled" | "done" | "canceled";
+        };
+        LiveCodeResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description The 4-digit human code
+             * @example 4821
+             */
+            code: string;
+            /** @description Opaque token the QR encodes — never the digits */
+            qrToken: string;
+            /**
+             * Format: date-time
+             * @description Slot end + 15 min grace (fallback: +60 min)
+             */
+            expiresAt: string;
+            /** Format: date-time */
+            revokedAt: string | null;
+            session: components["schemas"]["LiveSessionDto"];
+            /** @description Active attendances on the session */
+            presentCount: number;
+        };
+        SnapshotCodeDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: date-time */
+            revokedAt: string | null;
+        };
+        SnapshotAttendanceDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            studentId: string;
+            studentName: string;
+            /** @enum {string} */
+            method: "qr" | "code" | "manual";
+            /** Format: date-time */
+            checkedInAt: string;
+        };
+        LiveSnapshotResponseDto: {
+            presentCount: number;
+            code: components["schemas"]["SnapshotCodeDto"];
+            /** @description Active rows only, oldest first */
+            attendances: components["schemas"]["SnapshotAttendanceDto"][];
+        };
+        StreamTicketResponseDto: {
+            /** @description HMAC-signed single-purpose ticket — pass as ?ticket= on the stream route only */
+            ticket: string;
+            /** @example 60 */
+            expiresInSeconds: number;
+        };
+        LiveStreamCheckinEventDto: {
+            /** Format: uuid */
+            attendanceId: string;
+            /** Format: uuid */
+            studentId: string;
+            studentName: string;
+            /** @enum {string} */
+            method: "qr" | "code" | "manual";
+            /** Format: date-time */
+            checkedInAt: string;
+            /** @description Active attendances after this event */
+            presentCount: number;
+        };
+        LiveStreamRevokeEventDto: {
+            /** Format: uuid */
+            attendanceId: string;
+            /** @description Active attendances after this event */
+            presentCount: number;
+        };
+        RosterAttendanceDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            method: "qr" | "code" | "manual";
+            /** Format: date-time */
+            checkedInAt: string;
+            /**
+             * Format: uuid
+             * @description NULL = self check-in; set = professor-recorded manual row
+             */
+            recordedByUserId: string | null;
+        };
+        RosterRowDto: {
+            /** Format: uuid */
+            studentId: string;
+            fullName: string;
+            attendance?: components["schemas"]["RosterAttendanceDto"] | null;
+        };
+        RollCallResponseDto: {
+            session: components["schemas"]["LiveSessionDto"];
+            /** @description "N presentes de M" numerator */
+            presentCount: number;
+            /** @description Self check-ins appear pre-toggled */
+            roster: components["schemas"]["RosterRowDto"][];
+        };
+        MarkAttendanceDto: {
+            /** Format: uuid */
+            studentId: string;
+        };
+        MarkAttendanceResultDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            classSessionId: string;
+            /** Format: uuid */
+            studentId: string;
+            /** Format: date-time */
+            checkedInAt: string;
+        };
+        MarkAttendanceResponseDto: {
+            /** @enum {string} */
+            status: "checked_in" | "already_checked_in";
+            attendance: components["schemas"]["MarkAttendanceResultDto"];
+            presentCount: number;
+        };
+        RevokeAttendanceDto: {
+            /** @description Free-text audit reason */
+            reason?: string;
+        };
+        RevokeAttendanceResponseDto: {
+            /**
+             * @description A second toggle-off is benign
+             * @enum {string}
+             */
+            status: "revoked" | "already_revoked";
+            /** Format: uuid */
+            attendanceId: string;
+            presentCount: number;
+        };
+        ProfessorNextClassDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            slot: components["schemas"]["ScheduleSlotViewDto"];
+            /** @description Today's session check-in count when one exists, else 0 */
+            checkedInCount: number;
+        };
+        ProfessorTodayClassDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            slot: components["schemas"]["ScheduleSlotViewDto"];
+            /** @description Today's session check-in count when one exists, else 0 */
+            checkedInCount: number;
+            enrolledCount: number;
+        };
+        ProfessorDashboardResponseDto: {
+            /** @description Distinct students with an active check-in today across own classes */
+            alunosHoje: number;
+            presencaMediaPct: number;
+            nextClass?: components["schemas"]["ProfessorNextClassDto"] | null;
+            todayClasses: components["schemas"]["ProfessorTodayClassDto"][];
+        };
+        ProfessorStudentDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+            /** @example 2010-04-20 */
+            birthDate: string;
+            /** @enum {string} */
+            badge: "ativo" | "pendente";
+        };
+        ProfessorStudentsResponseDto: {
+            students: components["schemas"]["ProfessorStudentDto"][];
+        };
+        AdminSessionRowDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 2026-08-03 */
+            sessionDate: string;
+            /** Format: date-time */
+            startsAt: string | null;
+            /** @enum {string} */
+            status: "scheduled" | "done" | "canceled";
+            /** @description Active (non-revoked) attendance count */
+            presentCount: number;
+        };
+        AdminSessionListResponseDto: {
+            /** @description Newest first */
+            sessions: components["schemas"]["AdminSessionRowDto"][];
         };
     };
     responses: never;
@@ -2111,6 +2650,315 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClassSuggestionResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoAttendanceController_checkIn_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckinRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckinResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoAttendanceController_home_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlunoHomeResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorLiveController_open_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveCodeResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorLiveController_close_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveCodeResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorLiveController_snapshot_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveSnapshotResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorLiveController_mintTicket_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StreamTicketResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorLiveController_stream_v1: {
+        parameters: {
+            query: {
+                /** @description Ticket from POST /professor/live-codes/{id}/stream-ticket */
+                ticket: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Event stream */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["LiveStreamCheckinEventDto"] | components["schemas"]["LiveStreamRevokeEventDto"];
+                };
+            };
+        };
+    };
+    ProfessorRollCallController_open_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RollCallResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorRollCallController_mark_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkAttendanceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkAttendanceResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorRollCallController_revoke_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeAttendanceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevokeAttendanceResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorDashboardController_dashboard_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfessorDashboardResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorDashboardController_students_v1: {
+        parameters: {
+            query?: {
+                /** @description Return only students NOT actively enrolled in this class (must be taught by the caller — the "Adicionar aluno" picker) */
+                notEnrolledInClassId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfessorStudentsResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAttendanceController_revoke_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeAttendanceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevokeAttendanceResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAttendanceController_sessions_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSessionListResponseDto"];
                 };
             };
         };

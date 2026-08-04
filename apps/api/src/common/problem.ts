@@ -28,6 +28,13 @@ export const ErrorCodes = {
   CLASS_ARCHIVED: 'class.archived',
   CLASS_CAPACITY_EXCEEDED: 'class.capacity_exceeded',
   ENROLLMENT_ALREADY_ENROLLED: 'enrollment.already_enrolled',
+  // attendance (spec 004)
+  CHECKIN_CODE_INVALID: 'checkin.code_invalid',
+  CHECKIN_NOT_ENROLLED: 'checkin.not_enrolled',
+  CHECKIN_NO_SESSION_TODAY: 'checkin.no_session_today',
+  CHECKIN_OUTSIDE_WINDOW: 'checkin.outside_window',
+  ATTENDANCE_REVOKE_WINDOW_CLOSED: 'attendance.revoke_window_closed',
+  STREAM_TICKET_INVALID: 'stream.ticket_invalid',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',

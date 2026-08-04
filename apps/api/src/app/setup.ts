@@ -17,7 +17,10 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
     new DocumentBuilder()
       .setTitle('Tatame API')
       .setDescription(
-        'Identity (spec 001-auth) and enrollment (spec 003) surfaces. Errors are RFC 9457 application/problem+json with stable `code`s.',
+        'Identity (spec 001-auth), enrollment (spec 003) and attendance (spec 004) surfaces. ' +
+          'Errors are RFC 9457 application/problem+json with stable `code`s. The live-chamada ' +
+          'SSE stream is a documented exception to the generated REST contract: its event ' +
+          'payloads are component schemas, but clients wire their own streaming primitive.',
       )
       .setVersion('1.0')
       .addBearerAuth()
@@ -26,6 +29,7 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       .addTag('invites')
       .addTag('admin')
       .addTag('professor')
+      .addTag('aluno')
       .addTag('responsavel')
       .addTag('platform')
       .build(),

@@ -21,6 +21,9 @@ export const PERMISSION_REGISTRY: readonly PermissionDefinition[] = [
   { role: 'professor', key: 'invites.create', label: 'gerar convite', defaultAllowed: true },
   { role: 'professor', key: 'events.create', label: 'criar eventos', defaultAllowed: false },
   { role: 'student', key: 'checkin.self', label: 'check-in', defaultAllowed: true },
+  // Display toggle only (spec 004): when off the API omits streak values and
+  // clients hide the streak tile + success-pop line. Attendance data unaffected.
+  { role: 'student', key: 'gamification.streak', label: 'gamificação de aulas seguidas', defaultAllowed: true },
   { role: 'student', key: 'agenda.view', label: 'agenda', defaultAllowed: true },
   { role: 'student', key: 'store.access', label: 'loja', defaultAllowed: true },
   { role: 'student', key: 'store.purchase', label: 'comprar na loja', defaultAllowed: true },

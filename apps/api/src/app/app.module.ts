@@ -1,5 +1,6 @@
 import { Module, ValidationPipe, type ValidationError } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ClsModule } from 'nestjs-cls';
 import { ProblemJsonFilter } from '../common/filters/problem-json.filter.js';
 import { AcademyStatusGuard } from '../common/guards/academy-status.guard.js';
@@ -11,6 +12,7 @@ import { ErrorCodes, ProblemException } from '../common/problem.js';
 import { AppConfigModule } from '../infra/config/config.module.js';
 import { DbModule } from '../infra/db/db.module.js';
 import { NotificationsModule } from '../infra/notifications/notifications.module.js';
+import { AttendanceModule } from '../modules/attendance/attendance.module.js';
 import { EnrollmentModule } from '../modules/enrollment/enrollment.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
 
@@ -39,10 +41,14 @@ function flattenValidationErrors(
       global: true,
       middleware: { mount: true },
     }),
+    // Domain-event bus (be-01): side effects ride events. Attendance emits
+    // its check-in/revoke events post-commit for the SSE bridge (be-09).
+    EventEmitterModule.forRoot(),
     DbModule,
     NotificationsModule,
     IdentityModule,
     EnrollmentModule,
+    AttendanceModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
