@@ -86,6 +86,30 @@ class ApiErrorMappingTest {
     }
 
     @Test
+    fun `attendance codes map to the dedicated errors`() {
+        assertEquals(
+            ApiError.Attendance.CodeInvalid,
+            mapHttpError(422, """{"status":422,"code":"checkin.code_invalid"}"""),
+        )
+        assertEquals(
+            ApiError.Attendance.NotEnrolled,
+            mapHttpError(403, """{"status":403,"code":"checkin.not_enrolled"}"""),
+        )
+        assertEquals(
+            ApiError.Attendance.NoSessionToday,
+            mapHttpError(422, """{"status":422,"code":"checkin.no_session_today"}"""),
+        )
+        assertEquals(
+            ApiError.Attendance.OutsideWindow,
+            mapHttpError(422, """{"status":422,"code":"checkin.outside_window"}"""),
+        )
+        assertEquals(
+            ApiError.Attendance.RevokeWindowClosed,
+            mapHttpError(403, """{"status":403,"code":"attendance.revoke_window_closed"}"""),
+        )
+    }
+
+    @Test
     fun `enrollment codes never regress plain conflicts`() {
         assertEquals(
             ApiError.Conflict,

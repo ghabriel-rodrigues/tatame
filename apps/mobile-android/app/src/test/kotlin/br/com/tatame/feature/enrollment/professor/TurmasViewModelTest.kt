@@ -4,10 +4,12 @@ import br.com.tatame.R
 import br.com.tatame.core.network.ApiError
 import br.com.tatame.core.network.ApiResult
 import br.com.tatame.core.network.dto.EnrollmentResult
+import br.com.tatame.testutil.FakeAttendanceRepository
 import br.com.tatame.testutil.FakeEnrollmentRepository
 import br.com.tatame.testutil.MainDispatcherRule
 import br.com.tatame.testutil.classDetail
 import br.com.tatame.testutil.classItem
+import br.com.tatame.testutil.professorStudent
 import br.com.tatame.testutil.rosterStudent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -18,23 +20,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-/** ENR.21/22 — professor turmas state machine over the fake repository (JVM). */
+/**
+ * ENR.21/22 + ATT.21 — professor turmas state machine over the fake
+ * repositories (JVM). The Adicionar aluno picker reads GET /professor/students
+ * with the notEnrolledInClassId filter (rewired from the other-rosters union).
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TurmasViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private fun harness(): Pair<FakeEnrollmentRepository, TurmasViewModel> {
+    private fun harness(): Triple<FakeEnrollmentRepository, FakeAttendanceRepository, TurmasViewModel> {
         val repository = FakeEnrollmentRepository()
-        return repository to TurmasViewModel(repository)
+        val attendanceRepository = FakeAttendanceRepository()
+        return Triple(repository, attendanceRepository, TurmasViewModel(repository, attendanceRepository))
     }
 
     // ---- list (ENR.21) --------------------------------------------------
 
     @Test
     fun `list loads classes with server-derived occupancy`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, _, viewModel) = harness()
         repository.classesResult = ApiResult.Success(
             listOf(classItem("c1", occupancy = 24, capacity = 24, lotada = true)),
         )
@@ -50,7 +57,7 @@ class TurmasViewModelTest {
 
     @Test
     fun `list failure surfaces mapped PT-BR copy`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, _, viewModel) = harness()
         repository.classesResult = ApiResult.Failure(ApiError.Network)
         viewModel.refresh()
         advanceUntilIdle()
@@ -65,7 +72,7 @@ class TurmasViewModelTest {
 
     @Test
     fun `opening a turma loads its detail and closing returns to the list`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, _, viewModel) = harness()
         repository.classesResult = ApiResult.Success(listOf(classItem("c1")))
         repository.detailResults["c1"] =
             ApiResult.Success(classDetail("c1", roster = listOf(rosterStudent("s1"))))
@@ -84,7 +91,7 @@ class TurmasViewModelTest {
 
     @Test
     fun `foreign class 404 surfaces as detail error`() = runTest {
-        val (_, viewModel) = harness()
+        val (_, _, viewModel) = harness()
         viewModel.openTurma("not-mine")
         advanceUntilIdle()
 
@@ -94,25 +101,15 @@ class TurmasViewModelTest {
         )
     }
 
-    // ---- adicionar aluno (ENR.22) ---------------------------------------
+    // ---- adicionar aluno (ENR.22 picker, rewired by ATT.21) --------------
 
     private suspend fun kotlinx.coroutines.test.TestScope.openedTurma(
         repository: FakeEnrollmentRepository,
         viewModel: TurmasViewModel,
     ) {
-        repository.classesResult = ApiResult.Success(listOf(classItem("c1"), classItem("c2")))
+        repository.classesResult = ApiResult.Success(listOf(classItem("c1")))
         repository.detailResults["c1"] =
             ApiResult.Success(classDetail("c1", roster = listOf(rosterStudent("s1"))))
-        repository.detailResults["c2"] = ApiResult.Success(
-            classDetail(
-                "c2",
-                roster = listOf(
-                    rosterStudent("s1", name = "Ana"),
-                    rosterStudent("s2", name = "Marina Costa"),
-                    rosterStudent("s3", name = "Bia Andrade"),
-                ),
-            ),
-        )
         viewModel.refresh()
         advanceUntilIdle()
         viewModel.openTurma("c1")
@@ -120,22 +117,52 @@ class TurmasViewModelTest {
     }
 
     @Test
-    fun `add sheet offers other rosters minus already-enrolled, sorted`() = runTest {
-        val (repository, viewModel) = harness()
+    fun `add sheet lists academy students not enrolled in the class, sorted`() = runTest {
+        val (repository, attendanceRepository, viewModel) = harness()
         openedTurma(repository, viewModel)
+        attendanceRepository.studentsResult = ApiResult.Success(
+            listOf(
+                professorStudent("s2", name = "Marina Costa"),
+                professorStudent("s3", name = "Bia Andrade", badge = "pendente"),
+            ),
+        )
+
+        viewModel.openAddSheet()
+        advanceUntilIdle()
+
+        // The server applies the not-enrolled filter — the client only passes it.
+        assertEquals(listOf<String?>("c1"), attendanceRepository.studentsCalls)
+        val sheet = viewModel.uiState.value.addSheet
+        assertTrue(sheet.visible)
+        assertEquals(listOf("s3", "s2"), sheet.candidates.map { it.studentId }) // Bia < Marina
+        assertEquals("pendente", sheet.candidates.first().badge)
+    }
+
+    @Test
+    fun `add sheet failure surfaces the picker error copy`() = runTest {
+        val (repository, attendanceRepository, viewModel) = harness()
+        openedTurma(repository, viewModel)
+        attendanceRepository.studentsResult = ApiResult.Failure(ApiError.Network)
 
         viewModel.openAddSheet()
         advanceUntilIdle()
 
         val sheet = viewModel.uiState.value.addSheet
         assertTrue(sheet.visible)
-        assertEquals(listOf("s3", "s2"), sheet.candidates.map { it.studentId }) // Bia < Marina
+        assertEquals(R.string.add_student_error, sheet.errorRes)
+        assertTrue(sheet.candidates.isEmpty())
     }
 
     @Test
     fun `adding a student refetches the detail and drops the candidate`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, attendanceRepository, viewModel) = harness()
         openedTurma(repository, viewModel)
+        attendanceRepository.studentsResult = ApiResult.Success(
+            listOf(
+                professorStudent("s2", name = "Marina Costa"),
+                professorStudent("s3", name = "Bia Andrade"),
+            ),
+        )
         viewModel.openAddSheet()
         advanceUntilIdle()
         repository.addResult =
@@ -153,8 +180,10 @@ class TurmasViewModelTest {
 
     @Test
     fun `adding to a full class surfaces the class-full copy in the sheet`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, attendanceRepository, viewModel) = harness()
         openedTurma(repository, viewModel)
+        attendanceRepository.studentsResult =
+            ApiResult.Success(listOf(professorStudent("s2", name = "Marina Costa")))
         viewModel.openAddSheet()
         advanceUntilIdle()
         repository.addResult = ApiResult.Failure(ApiError.Enrollment.ClassFull)
@@ -167,8 +196,10 @@ class TurmasViewModelTest {
 
     @Test
     fun `already enrolled maps to its own copy`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, attendanceRepository, viewModel) = harness()
         openedTurma(repository, viewModel)
+        attendanceRepository.studentsResult =
+            ApiResult.Success(listOf(professorStudent("s2", name = "Marina Costa")))
         viewModel.openAddSheet()
         advanceUntilIdle()
         repository.addResult = ApiResult.Failure(ApiError.Enrollment.AlreadyEnrolled)
@@ -183,7 +214,7 @@ class TurmasViewModelTest {
 
     @Test
     fun `remove asks for confirmation before calling the API`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, _, viewModel) = harness()
         openedTurma(repository, viewModel)
         val student = rosterStudent("s1")
 
@@ -198,7 +229,7 @@ class TurmasViewModelTest {
 
     @Test
     fun `confirming remove calls the API and refetches the detail`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, _, viewModel) = harness()
         openedTurma(repository, viewModel)
         repository.removeResult =
             ApiResult.Success(EnrollmentResult(classId = "c1", studentId = "s1", status = "removed"))
@@ -215,7 +246,7 @@ class TurmasViewModelTest {
 
     @Test
     fun `remove failure surfaces the action error notice`() = runTest {
-        val (repository, viewModel) = harness()
+        val (repository, _, viewModel) = harness()
         openedTurma(repository, viewModel)
         repository.removeResult = ApiResult.Failure(ApiError.Tenant.ReadOnly)
 

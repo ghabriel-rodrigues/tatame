@@ -44,6 +44,13 @@ object ApiErrorCodes {
     const val CLASS_ARCHIVED = "class.archived"
     const val CLASS_CAPACITY_EXCEEDED = "class.capacity_exceeded"
     const val ENROLLMENT_ALREADY_ENROLLED = "enrollment.already_enrolled"
+
+    // Attendance slice (spec 004) additions.
+    const val CHECKIN_CODE_INVALID = "checkin.code_invalid"
+    const val CHECKIN_NOT_ENROLLED = "checkin.not_enrolled"
+    const val CHECKIN_NO_SESSION_TODAY = "checkin.no_session_today"
+    const val CHECKIN_OUTSIDE_WINDOW = "checkin.outside_window"
+    const val ATTENDANCE_REVOKE_WINDOW_CLOSED = "attendance.revoke_window_closed"
 }
 
 /**
@@ -94,6 +101,24 @@ sealed interface ApiError {
 
         /** `enrollment.already_enrolled` — student already active in the class. */
         data object AlreadyEnrolled : Enrollment
+    }
+
+    /** Attendance-slice stable codes (spec 004) mapped to PT-BR copy by the check-in/chamada UX. */
+    sealed interface Attendance : ApiError {
+        /** `checkin.code_invalid` — wrong, expired, or revoked code/QR (foreign codes look identical). */
+        data object CodeInvalid : Attendance
+
+        /** `checkin.not_enrolled` — caller has no active enrollment in the session's class. */
+        data object NotEnrolled : Attendance
+
+        /** `checkin.no_session_today` — the class has no schedule slot today (manual method). */
+        data object NoSessionToday : Attendance
+
+        /** `checkin.outside_window` — manual check-in outside slot-30min … slot end + grace. */
+        data object OutsideWindow : Attendance
+
+        /** `attendance.revoke_window_closed` — professor revoke after day close (admin-only path). */
+        data object RevokeWindowClosed : Attendance
     }
 
     /** 422 `validation.failed` with field-level errors. */

@@ -15,6 +15,8 @@ import br.com.tatame.core.auth.SessionState
 import br.com.tatame.core.network.dto.AcademyStatus
 import br.com.tatame.core.network.dto.MeResponse
 import br.com.tatame.core.network.dto.Roles
+import br.com.tatame.feature.attendance.aluno.AlunoHomeTab
+import br.com.tatame.feature.attendance.professor.ProfessorHomeTab
 import br.com.tatame.feature.auth.LoginScreen
 import br.com.tatame.feature.auth.MembershipChooserScreen
 import br.com.tatame.feature.auth.roleLabel
@@ -88,6 +90,19 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 R.string.tab_profile,
             ),
             onLogout = onLogout,
+            // ATT.19 — Início (index 0) is the real aluno surface; the central
+            // Check-in tab (index 2) routes there with the sheet already open.
+            tabContent = mapOf(
+                0 to { _ ->
+                    AlunoHomeTab(firstName = me.user.fullName.substringBefore(' '))
+                },
+                2 to { _ ->
+                    AlunoHomeTab(
+                        firstName = me.user.fullName.substringBefore(' '),
+                        openCheckinOnEnter = true,
+                    )
+                },
+            ),
         )
 
         me.activeRole == Roles.PROFESSOR -> PersonaShellScreen(
@@ -99,8 +114,16 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 R.string.tab_profile,
             ),
             onLogout = onLogout,
-            // ENR.21/22 — Turmas tab (index 1) is the real professor surface.
-            tabContent = mapOf(1 to { TurmasTab(academyName = me.academy?.name) }),
+            // ENR.21/22 — Turmas tab (index 1); ATT.20/21 — dashboard (index 0).
+            tabContent = mapOf(
+                0 to { selectTab ->
+                    ProfessorHomeTab(
+                        firstName = me.user.fullName.substringBefore(' '),
+                        onVerTurmas = { selectTab(1) },
+                    )
+                },
+                1 to { _ -> TurmasTab(academyName = me.academy?.name) },
+            ),
         )
 
         me.activeRole == Roles.GUARDIAN -> PersonaShellScreen(
@@ -115,7 +138,7 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             // ENR.22/23 — home tab (index 0) is the dependents panel; the
             // Cadastrar aluno CTA is hidden when dependents.register is off.
             tabContent = mapOf(
-                0 to {
+                0 to { _ ->
                     DependentsHomeTab(
                         guardianFirstName = me.user.fullName.substringBefore(' '),
                         canRegisterDependents =

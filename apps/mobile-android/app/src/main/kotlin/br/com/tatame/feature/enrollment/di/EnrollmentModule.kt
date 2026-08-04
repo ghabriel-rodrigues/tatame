@@ -14,6 +14,8 @@ import org.koin.dsl.module
  */
 val enrollmentFeatureModule = module {
     single<EnrollmentRepository> { EnrollmentRepositoryImpl(get(), get()) }
-    viewModel { TurmasViewModel(get()) }
+    // ATT.21 — the Adicionar aluno picker reads GET /professor/students
+    // through the attendance repository (second dependency).
+    viewModel { TurmasViewModel(get(), get()) }
     viewModel { params -> DependentsViewModel(get(), canRegisterDependents = params.get()) }
 }

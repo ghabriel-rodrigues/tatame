@@ -34,8 +34,10 @@ import com.tatame.designsystem.tokens.LumiraTokens
  * Authenticated shell per persona (AUTH.23): placeholder bottom bar (full
  * GlassTabBar parity lands with later slices) + per-tab content. Tabs with an
  * entry in [tabContent] render real feature surfaces (ENR.21+); the rest keep
- * the session-context placeholder (name, academy, role, logout). The
- * delinquency read-only banner always renders above content.
+ * the session-context placeholder (name, academy, role, logout). Content
+ * receives a `selectTab` callback for in-shell navigation (e.g. dashboard
+ * "Ver turmas" → Turmas tab). The delinquency read-only banner always renders
+ * above content.
  */
 @Composable
 fun PersonaShellScreen(
@@ -43,7 +45,7 @@ fun PersonaShellScreen(
     tabLabels: List<Int>,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
-    tabContent: Map<Int, @Composable () -> Unit> = emptyMap(),
+    tabContent: Map<Int, @Composable (selectTab: (Int) -> Unit) -> Unit> = emptyMap(),
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -81,7 +83,7 @@ fun PersonaShellScreen(
 
             val content = tabContent[selectedTab]
             if (content != null) {
-                content()
+                content { index -> selectedTab = index }
                 return@Column
             }
 

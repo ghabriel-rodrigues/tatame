@@ -72,10 +72,10 @@
     <string name="turma_back">Voltar</string>
     <string name="turma_stat_students">alunos</string>
     <string name="turma_stat_frequency">Frequência</string>
-    <string name="turma_stat_frequency_placeholder">Fase 4</string>
+    <!-- Per-turma frequency is served by the reports slice; tile stays an honest placeholder. -->
+    <string name="turma_stat_frequency_placeholder">Em breve</string>
     <string name="turma_stat_occupancy">ocupação</string>
     <string name="turma_roll_call_cta">Fazer chamada de hoje</string>
-    <string name="turma_roll_call_phase4">Chamada disponível na Fase 4.</string>
     <string name="turma_roster_title">Alunos</string>
     <string name="turma_add_student">Adicionar aluno</string>
     <string name="turma_roster_empty">Nenhum aluno matriculado nesta turma.</string>
@@ -118,6 +118,93 @@
     <string name="error_read_only">Academia em modo somente leitura — ação bloqueada.</string>
     <string name="error_not_found">Registro não encontrado.</string>
     <string name="error_form_invalid">Dados inválidos. Revise e tente novamente.</string>
+
+    <!-- Aluno Início + check-in (ATT.19, aluno-03/04/05) -->
+    <string name="aluno_home_greeting">Olá, %1$s</string>
+    <string name="aluno_hero_today_chip">Hoje às %1$s</string>
+    <string name="aluno_hero_checked_in_chip">✓ Presença registrada</string>
+    <string name="aluno_hero_no_class_title">Sem aula hoje</string>
+    <string name="aluno_hero_no_class_body">Aproveite o descanso — seu próximo treino aparece aqui.</string>
+    <string name="aluno_hero_subtitle">%1$s · %2$d min</string>
+    <string name="aluno_hero_checkin_cta">Fazer check-in</string>
+    <string name="aluno_hero_agenda_cta">Ver agenda</string>
+    <string name="aluno_stat_presence_value">%1$d%%</string>
+    <string name="aluno_stat_presence_label">presença no mês</string>
+    <string name="aluno_stat_streak_label">aulas seguidas</string>
+    <string name="aluno_stat_graduation_label">graus na faixa</string>
+    <string name="aluno_stat_graduation_placeholder">Em breve</string>
+    <string name="aluno_graduation_title">Sua graduação</string>
+    <string name="aluno_graduation_lessons">%1$d aulas registradas</string>
+    <string name="aluno_graduation_placeholder">Linha do tempo de graduação chega em fase futura.</string>
+    <string name="checkin_sheet_title">Check-in · %1$s</string>
+    <string name="checkin_sheet_subtitle">Hoje, %1$s</string>
+    <string name="checkin_method_qr">QR Code</string>
+    <string name="checkin_method_code">Código</string>
+    <string name="checkin_method_manual">Manual</string>
+    <string name="checkin_qr_hint">Aponte para o QR Code fixado na entrada do tatame.</string>
+    <string name="checkin_qr_permission_body">Para escanear o QR, permita o acesso à câmera.</string>
+    <string name="checkin_qr_permission_cta">Permitir câmera</string>
+    <string name="checkin_qr_unavailable">Câmera indisponível. Use o código ou o método manual.</string>
+    <string name="checkin_code_hint">Digite o código de 4 dígitos mostrado pelo professor.</string>
+    <string name="checkin_code_cta">Confirmar código</string>
+    <string name="checkin_manual_hint">Registra sua presença na aula de hoje. A verificação de localização chega em breve.</string>
+    <string name="checkin_manual_cta">Registrar presença</string>
+    <string name="checkin_no_class_today">Nenhuma aula sua hoje — check-in disponível apenas no dia da aula.</string>
+    <string name="checkin_success_title">Presença registrada</string>
+    <string name="checkin_success_streak">Essa é a sua %1$dª aula seguida. Bom treino!</string>
+    <string name="checkin_success_no_streak">Bom treino!</string>
+    <string name="checkin_already_title">Presença já registrada</string>
+    <string name="checkin_already_body">Seu check-in de hoje já estava garantido.</string>
+    <string name="checkin_close">Fechar</string>
+
+    <!-- Check-in errors (stable codes → PT-BR copy) -->
+    <string name="error_checkin_code_invalid">Código inválido ou expirado. Confira com o professor o código atual.</string>
+    <string name="error_checkin_not_enrolled">Você não está matriculado nesta turma.</string>
+    <string name="error_checkin_no_session_today">Esta turma não tem aula hoje.</string>
+    <string name="error_checkin_outside_window">Fora da janela de check-in desta aula.</string>
+    <string name="error_revoke_window_closed">O prazo para desfazer presenças deste dia acabou. Fale com o admin.</string>
+
+    <!-- Professor chamada ao vivo (ATT.20, professor-03) -->
+    <string name="live_chamada_title">Chamada aberta · %1$s</string>
+    <string name="live_chamada_subtitle">Os alunos podem entrar com o código ou lendo o QR.</string>
+    <string name="live_chamada_expires">Expira em %1$s · sem presenças duplicadas</string>
+    <string name="live_chamada_expired">Código expirado — reabra a chamada para gerar um novo.</string>
+    <string name="live_chamada_count">%1$d alunos já registraram presença</string>
+    <string name="live_chamada_count_one">1 aluno já registrou presença</string>
+    <string name="live_chamada_polling">Atualizando a cada 5 s</string>
+    <string name="live_chamada_close_cta">Encerrar chamada</string>
+    <string name="live_chamada_closed_title">Chamada encerrada</string>
+    <string name="live_chamada_closed_body">%1$d presenças registradas. O código e o QR foram invalidados.</string>
+    <string name="live_chamada_reopen_cta">Reabrir chamada</string>
+    <string name="live_chamada_method_manual">manual</string>
+
+    <!-- Professor chamada manual (ATT.21, professor-10 active behavior) -->
+    <string name="roll_call_title">Chamada · %1$s</string>
+    <string name="roll_call_count">%1$d presentes de %2$d</string>
+    <string name="roll_call_save_cta">Salvar chamada</string>
+    <string name="roll_call_empty">Nenhum aluno matriculado nesta turma.</string>
+    <string name="roll_call_toggle_action">Alternar presença de %1$s</string>
+    <string name="roll_call_manual_marker">manual</string>
+
+    <!-- Professor dashboard (ATT.20/21, professor-02) -->
+    <string name="dashboard_greeting">Olá, %1$s</string>
+    <string name="dashboard_stat_students_today">alunos hoje</string>
+    <string name="dashboard_stat_avg_presence">presença média</string>
+    <string name="dashboard_stat_events_label">eventos futuros</string>
+    <string name="dashboard_stat_events_placeholder">Em breve</string>
+    <string name="dashboard_hero_chip">Próxima aula · hoje %1$s</string>
+    <string name="dashboard_hero_confirmed">%1$d confirmados</string>
+    <string name="dashboard_hero_start_chamada">Iniciar chamada</string>
+    <string name="dashboard_hero_view_turmas">Ver turmas</string>
+    <string name="dashboard_no_class">Nenhuma aula sua hoje.</string>
+    <string name="dashboard_today_classes_title">Aulas de hoje</string>
+    <string name="dashboard_today_checked">%1$d de %2$d presentes</string>
+
+    <!-- Turma detail chamada entries (replaces the Fase-4 placeholder) -->
+    <string name="turma_roll_call_manual_cta">Chamada manual</string>
+
+    <!-- Adicionar aluno picker (rewired to /professor/students) -->
+    <string name="add_student_error">Não foi possível carregar os alunos da academia.</string>
 
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>

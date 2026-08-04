@@ -101,6 +101,20 @@ dependencies {
     implementation(libs.okhttp)
     // On the main classpath (referenced by NetworkModule) but only *installed* when BuildConfig.DEBUG.
     implementation(libs.okhttp.logging.interceptor)
+    // ATT.20 — professor live-chamada stream (SSE per .scratch/backend/issues/09).
+    implementation(libs.okhttp.sse)
+
+    // ATT.19 — QR check-in scanning: CameraX + ML Kit barcode (bundled model) per
+    // ticket mobile-android/05. UI-only; JVM tests never touch the camera stack.
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.mlkit.vision)
+    implementation(libs.mlkit.barcode.scanning)
+    // ATT.20 — QR *rendering* for the live code: ZXing core (pure-JVM encoder, no
+    // Android deps — the matrix builder is unit-testable; drawn by a Compose canvas).
+    implementation(libs.zxing.core)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)

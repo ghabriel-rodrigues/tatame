@@ -1,5 +1,6 @@
 package br.com.tatame.core.di
 
+import br.com.tatame.feature.attendance.di.attendanceFeatureModule
 import br.com.tatame.feature.auth.di.authFeatureModule
 import br.com.tatame.feature.enrollment.di.enrollmentFeatureModule
 import org.koin.core.module.Module
@@ -14,6 +15,7 @@ import org.koin.core.module.Module
  */
 val coreModules: List<Module> = listOf(networkModule, sessionModule)
 
-val featureModules: List<Module> = listOf(authFeatureModule, enrollmentFeatureModule)
+val featureModules: List<Module> =
+    listOf(authFeatureModule, enrollmentFeatureModule, attendanceFeatureModule)
 
 val appModules: List<Module> = coreModules + featureModules

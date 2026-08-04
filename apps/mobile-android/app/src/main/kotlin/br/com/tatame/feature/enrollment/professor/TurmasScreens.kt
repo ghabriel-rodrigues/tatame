@@ -37,6 +37,12 @@ import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.ClassDetail
 import br.com.tatame.core.network.dto.ClassListItem
 import br.com.tatame.core.network.dto.RosterStudent
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import br.com.tatame.feature.attendance.professor.LiveChamadaSheet
+import br.com.tatame.feature.attendance.professor.RollCallScreen
 import br.com.tatame.feature.enrollment.AvatarBubble
 import br.com.tatame.feature.enrollment.EnrollmentChip
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
@@ -46,10 +52,10 @@ import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
 /**
- * Professor "Turmas" tab (ENR.21/22, professor-07…09): Minhas turmas list →
- * turma detail (stat tiles with the Fase-4 attendance placeholder, roster
- * add/remove) → Adicionar aluno sheet. State-driven, no nav library (same
- * convention as AppRoot).
+ * Professor "Turmas" tab (ENR.21/22 + ATT.20/21, professor-07…10): Minhas
+ * turmas list → turma detail (roster add/remove, chamada entries) →
+ * Adicionar aluno sheet / chamada ao vivo sheet / chamada manual screen.
+ * State-driven, no nav library (same convention as AppRoot).
  */
 @Composable
 fun TurmasTab(
@@ -58,6 +64,20 @@ fun TurmasTab(
     viewModel: TurmasViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    var liveChamadaOpen by remember { mutableStateOf(false) }
+    var rollCallOpen by remember { mutableStateOf(false) }
+    val openDetail = (state.detail as? TurmaDetailState.Loaded)?.detail
+
+    // Chamada manual replaces the detail surface (professor-10).
+    if (rollCallOpen && openDetail != null) {
+        RollCallScreen(
+            classId = openDetail.id,
+            className = openDetail.name,
+            onClose = { rollCallOpen = false },
+            modifier = modifier,
+        )
+        return
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val detail = state.detail) {
@@ -79,8 +99,18 @@ fun TurmasTab(
                 onAddStudent = viewModel::openAddSheet,
                 onRequestRemove = viewModel::requestRemove,
                 onDismissActionError = viewModel::dismissActionError,
+                onLiveChamada = { liveChamadaOpen = true },
+                onManualChamada = { rollCallOpen = true },
             )
         }
+    }
+
+    if (liveChamadaOpen && openDetail != null) {
+        LiveChamadaSheet(
+            classId = openDetail.id,
+            className = openDetail.name,
+            onDismiss = { liveChamadaOpen = false },
+        )
     }
 
     if (state.addSheet.visible) {
@@ -244,6 +274,8 @@ private fun TurmaDetailScreen(
     onAddStudent: () -> Unit,
     onRequestRemove: (RosterStudent) -> Unit,
     onDismissActionError: () -> Unit,
+    onLiveChamada: () -> Unit,
+    onManualChamada: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(LumiraTokens.Space.S6))
@@ -276,21 +308,21 @@ private fun TurmaDetailScreen(
         }
         Spacer(Modifier.height(LumiraTokens.Space.S4))
 
-        // "Fazer chamada de hoje" belongs to Phase 4 — rendered disabled, never faked.
+        // ATT.20/21 — chamada is real now: live code sheet + manual roll call.
         Button(
-            onClick = {},
-            enabled = false,
+            onClick = onLiveChamada,
             shape = PillShape,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.turma_roll_call_cta))
         }
-        Text(
-            text = stringResource(R.string.turma_roll_call_phase4),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = LumiraTokens.Space.S1),
-        )
+        OutlinedButton(
+            onClick = onManualChamada,
+            shape = PillShape,
+            modifier = Modifier.fillMaxWidth().padding(top = LumiraTokens.Space.S2),
+        ) {
+            Text(stringResource(R.string.turma_roll_call_manual_cta))
+        }
 
         actionErrorRes?.let {
             Spacer(Modifier.height(LumiraTokens.Space.S3))

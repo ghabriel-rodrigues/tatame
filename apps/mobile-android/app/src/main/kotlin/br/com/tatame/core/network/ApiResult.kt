@@ -69,6 +69,11 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     ApiErrorCodes.CLASS_FULL, ApiErrorCodes.CLASS_CAPACITY_EXCEEDED -> ApiError.Enrollment.ClassFull
     ApiErrorCodes.CLASS_ARCHIVED -> ApiError.Enrollment.ClassArchived
     ApiErrorCodes.ENROLLMENT_ALREADY_ENROLLED -> ApiError.Enrollment.AlreadyEnrolled
+    ApiErrorCodes.CHECKIN_CODE_INVALID -> ApiError.Attendance.CodeInvalid
+    ApiErrorCodes.CHECKIN_NOT_ENROLLED -> ApiError.Attendance.NotEnrolled
+    ApiErrorCodes.CHECKIN_NO_SESSION_TODAY -> ApiError.Attendance.NoSessionToday
+    ApiErrorCodes.CHECKIN_OUTSIDE_WINDOW -> ApiError.Attendance.OutsideWindow
+    ApiErrorCodes.ATTENDANCE_REVOKE_WINDOW_CLOSED -> ApiError.Attendance.RevokeWindowClosed
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden

@@ -3,6 +3,8 @@ package br.com.tatame.feature.enrollment.professor
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.tatame.R
+import br.com.tatame.core.attendance.AttendanceRepository
 import br.com.tatame.core.enrollment.EnrollmentRepository
 import br.com.tatame.core.network.ApiResult
 import br.com.tatame.core.network.dto.ClassDetail
@@ -55,16 +57,18 @@ data class TurmasUiState(
 )
 
 /**
- * Professor turmas state machine (ENR.21/22): list → detail → roster
- * add/remove. Occupancy and Lotada are server-derived — every mutation
- * refetches the detail instead of recomputing.
+ * Professor turmas state machine (ENR.21/22 + ATT.20/21): list → detail →
+ * roster add/remove, plus the chamada entries. Occupancy and Lotada are
+ * server-derived — every mutation refetches the detail instead of recomputing.
  *
- * Candidate picker note: the contract has no professor endpoint listing all
- * academy students, so "Adicionar aluno" offers students the professor can
- * already see — the union of their other classes' rosters minus the current
- * roster (API gap recorded in the delivery report).
+ * "Adicionar aluno" candidates come from GET /v1/professor/students with the
+ * `notEnrolledInClassId` filter (ATT.21 — closes the spec-003 API gap that
+ * forced the other-rosters union workaround).
  */
-class TurmasViewModel(private val repository: EnrollmentRepository) : ViewModel() {
+class TurmasViewModel(
+    private val repository: EnrollmentRepository,
+    private val attendanceRepository: AttendanceRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TurmasUiState())
     val uiState: StateFlow<TurmasUiState> = _uiState.asStateFlow()
@@ -108,28 +112,35 @@ class TurmasViewModel(private val repository: EnrollmentRepository) : ViewModel(
 
     fun openAddSheet() {
         val classId = openClassId ?: return
-        val currentDetail = (_uiState.value.detail as? TurmaDetailState.Loaded)?.detail ?: return
+        if (_uiState.value.detail !is TurmaDetailState.Loaded) return
         _uiState.update { it.copy(addSheet = AddStudentSheetState(visible = true, loading = true)) }
         viewModelScope.launch {
-            val otherClassIds = (_uiState.value.list as? TurmasListState.Loaded)
-                ?.classes.orEmpty()
-                .map { it.id }
-                .filter { it != classId }
-            val enrolledIds = currentDetail.roster.map { it.studentId }.toSet()
-            val candidates = mutableListOf<RosterStudent>()
-            for (otherId in otherClassIds) {
-                when (val detail = repository.professorClassDetail(otherId)) {
-                    is ApiResult.Success -> candidates += detail.value.roster
-                    is ApiResult.Failure -> Unit // best-effort union; skip unreachable classes
-                }
-            }
-            val picker = candidates
-                .distinctBy { it.studentId }
-                .filterNot { it.studentId in enrolledIds }
-                .sortedBy { it.fullName }
+            val result = attendanceRepository.students(notEnrolledInClassId = classId)
             _uiState.update { state ->
-                if (!state.addSheet.visible) state // dismissed mid-flight
-                else state.copy(addSheet = state.addSheet.copy(loading = false, candidates = picker))
+                if (!state.addSheet.visible) return@update state // dismissed mid-flight
+                when (result) {
+                    is ApiResult.Success -> state.copy(
+                        addSheet = state.addSheet.copy(
+                            loading = false,
+                            candidates = result.value
+                                .map { candidate ->
+                                    RosterStudent(
+                                        studentId = candidate.id,
+                                        fullName = candidate.fullName,
+                                        birthDate = candidate.birthDate,
+                                        badge = candidate.badge,
+                                    )
+                                }
+                                .sortedBy { it.fullName },
+                        ),
+                    )
+                    is ApiResult.Failure -> state.copy(
+                        addSheet = state.addSheet.copy(
+                            loading = false,
+                            errorRes = R.string.add_student_error,
+                        ),
+                    )
+                }
             }
         }
     }
