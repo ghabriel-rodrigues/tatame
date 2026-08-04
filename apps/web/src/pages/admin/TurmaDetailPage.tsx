@@ -1,7 +1,9 @@
 /**
- * Turma detail (ENR.15-16, admin-11): recurring schedule, server-derived
- * occupancy, attendance placeholder tiles (Phase 4 — never faked), roster
- * with add/remove, name edit and archive with the ended-enrollments warning.
+ * Turma detail (ENR.15-16, ATT.14, admin-11): recurring schedule,
+ * server-derived occupancy, real session list with per-session attendance
+ * counts and the derived frequência média tile (replacing the Phase-4
+ * placeholders), roster with add/remove, name edit and archive with the
+ * ended-enrollments warning.
  */
 import { useState } from 'react';
 import Box from '@mui/material/Box';
@@ -21,7 +23,14 @@ import {
 } from '@tatame/design-system';
 import { $api, queryClient } from '../../api/api';
 import { InitialsAvatar, enrollmentErrorMessage, useToastState } from './common';
-import { WEEKDAY_CHIP_ORDER, WEEKDAY_SHORT, scheduleTimeRange } from './format';
+import {
+  WEEKDAY_CHIP_ORDER,
+  WEEKDAY_SHORT,
+  presencesLabel,
+  scheduleTimeRange,
+  sessionDateLabel,
+  sessionTimeLabel,
+} from './format';
 import { EditRecordSheet } from './EditRecordSheet';
 
 function StatTile({ value, label, hint }: { value: string; label: string; hint?: string }) {
@@ -66,6 +75,9 @@ export function TurmaDetailPage() {
   const detail = $api.useQuery('get', '/v1/admin/classes/{id}', {
     params: { path: { id } },
   });
+  const sessionsQuery = $api.useQuery('get', '/v1/admin/classes/{id}/sessions', {
+    params: { path: { id } },
+  });
   const students = $api.useQuery('get', '/v1/admin/students', undefined, { enabled: adding });
   const addStudent = $api.useMutation('post', '/v1/admin/classes/{id}/students');
   const removeStudent = $api.useMutation('delete', '/v1/admin/classes/{id}/students/{studentId}');
@@ -97,6 +109,12 @@ export function TurmaDetailPage() {
 
   const activeDays = new Set(turma.schedules.map((slot) => slot.weekday));
   const firstSlot = turma.schedules[0];
+  const sessions = sessionsQuery.data?.sessions ?? [];
+  // Derived on read from the listed sessions — never cached, never faked.
+  const averagePresent =
+    sessions.length > 0
+      ? sessions.reduce((sum, session) => sum + session.presentCount, 0) / sessions.length
+      : null;
   const rosterIds = new Set(turma.roster.map((row) => row.studentId));
   const candidates = (students.data?.students ?? []).filter(
     (student) => !rosterIds.has(student.id),
@@ -152,8 +170,40 @@ export function TurmaDetailPage() {
             label="ocupação"
             {...(turma.lotada ? { hint: 'Lotada' } : {})}
           />
-          <StatTile value="—" label="frequência média" hint="Disponível na Fase 4 (chamadas)" />
+          <StatTile
+            value={
+              averagePresent === null
+                ? '—'
+                : averagePresent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+            }
+            label="frequência média"
+            hint={
+              averagePresent === null ? 'Sem chamadas registradas' : 'presenças por aula'
+            }
+          />
         </Box>
+
+        <Stack spacing="8px">
+          <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+            Chamadas
+          </Typography>
+          <Card padding={4}>
+            {sessions.length === 0 && !sessionsQuery.isLoading ? (
+              <EmptyState
+                title="Nenhuma chamada registrada ainda"
+                description="As presenças aparecem aqui quando o professor abrir a chamada."
+              />
+            ) : null}
+            {sessions.map((session) => (
+              <ListRow
+                key={session.id}
+                title={sessionDateLabel(session.sessionDate)}
+                {...(session.startsAt ? { subtitle: sessionTimeLabel(session.startsAt) } : {})}
+                trailing={<Chip label={presencesLabel(session.presentCount)} />}
+              />
+            ))}
+          </Card>
+        </Stack>
 
         <Stack spacing="8px">
           <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>

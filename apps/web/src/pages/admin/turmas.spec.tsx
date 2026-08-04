@@ -1,13 +1,15 @@
 /**
- * ENR.15 — turmas list (admin-10), nova turma recorrente (admin-12) and
- * turma detail (admin-11): schedule chips, server-derived occupancy,
- * attendance placeholder (Phase 4), roster add/remove with capacity errors.
+ * ENR.15 + ATT.14 — turmas list (admin-10), nova turma recorrente (admin-12)
+ * and turma detail (admin-11): schedule chips, server-derived occupancy,
+ * session list with attendance counts and the frequência média tile,
+ * roster add/remove with capacity errors.
  */
 import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   enrollmentHandlers,
   http,
+  makeAdminSession,
   makeClassDetail,
   makeEnrollmentRegistry,
   makeMeResponse,
@@ -103,7 +105,7 @@ describe('turmas list + nova turma (ENR.15)', () => {
 });
 
 describe('turma detail (ENR.15)', () => {
-  it('renders schedule chips, occupancy, the Phase-4 placeholder tile and the roster', async () => {
+  it('renders schedule chips, occupancy, the sessions empty state and the roster', async () => {
     const registry = makeEnrollmentRegistry();
     server.use(...enrollmentHandlers(registry));
     const fundamentos = registry.classes[0]!;
@@ -118,14 +120,49 @@ describe('turma detail (ENR.15)', () => {
     // Selected weekday chips (Seg/Qua/Sex) vs idle (Ter) — read-only display.
     expect(screen.getByText('Seg')).toHaveClass('Chip-selected');
     expect(screen.getByText('Ter')).not.toHaveClass('Chip-selected');
-    // Server-derived occupancy + Phase-4 attendance placeholder, never faked.
+    // Server-derived occupancy; no sessions ⇒ frequência stays honest ("—").
     expect(screen.getByText('3 de 24')).toBeInTheDocument();
     expect(screen.getByText('frequência média')).toBeInTheDocument();
-    expect(screen.getByText('Disponível na Fase 4 (chamadas)')).toBeInTheDocument();
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText('Sem chamadas registradas')).toBeInTheDocument();
+    // Session list empty state (ATT.14).
+    expect(screen.getByText('Chamadas')).toBeInTheDocument();
+    expect(await screen.findByText('Nenhuma chamada registrada ainda')).toBeInTheDocument();
     // Roster rows.
     expect(screen.getByText('Alunos da turma')).toBeInTheDocument();
     expect(screen.getByText('Lucas Almeida')).toBeInTheDocument();
     expect(screen.getByText('João Ferraz')).toBeInTheDocument();
+  });
+
+  it('lists sessions with per-session counts and the derived frequência média (ATT.14)', async () => {
+    const registry = makeEnrollmentRegistry();
+    const fundamentos = registry.classes[0]!;
+    registry.sessions[fundamentos.id] = [
+      makeAdminSession({
+        sessionDate: '2026-08-03',
+        startsAt: '2026-08-03T19:00:00',
+        presentCount: 12,
+      }),
+      makeAdminSession({
+        sessionDate: '2026-08-01',
+        startsAt: '2026-08-01T19:00:00',
+        presentCount: 1,
+      }),
+    ];
+    server.use(...enrollmentHandlers(registry));
+    renderRoute(`/admin/turmas/${fundamentos.id}`, {
+      session: makeMeResponse({ memberships: [admin()] }),
+    });
+
+    // Session rows: weekday-dated, timed, with active attendance counts.
+    expect(await screen.findByText('Seg · 03/08/2026')).toBeInTheDocument();
+    expect(screen.getByText('12 presenças')).toBeInTheDocument();
+    expect(screen.getByText('Sáb · 01/08/2026')).toBeInTheDocument();
+    expect(screen.getByText('1 presença')).toBeInTheDocument();
+    // Frequência média = mean of listed session counts ((12 + 1) / 2 = 6,5).
+    expect(screen.getByText('6,5')).toBeInTheDocument();
+    expect(screen.getByText('presenças por aula')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhuma chamada registrada ainda')).not.toBeInTheDocument();
   });
 
   it('removes a student from the roster with a single tap', async () => {

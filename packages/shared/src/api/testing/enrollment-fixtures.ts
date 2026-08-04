@@ -5,6 +5,7 @@
  * Fundamentos (Lotada 24/24), Avançada 16/20, Kids 14/16.
  */
 import type {
+  AdminSessionRow,
   ClassDetail,
   ClassListItem,
   GuardianListItem,
@@ -87,6 +88,20 @@ export function makeClassDetail(overrides: Partial<ClassDetail> = {}): ClassDeta
   return { ...makeClass(), roster: [], ...overrides };
 }
 
+let sessionCounter = 0;
+/** Materialized session row for the admin turma detail (ATT.14). */
+export function makeAdminSession(overrides: Partial<AdminSessionRow> = {}): AdminSessionRow {
+  sessionCounter += 1;
+  return {
+    id: uuid('8006', sessionCounter),
+    sessionDate: '2026-08-03',
+    startsAt: '2026-08-03T19:00:00',
+    status: 'done',
+    presentCount: 0,
+    ...overrides,
+  };
+}
+
 export function makeRosterStudent(overrides: Partial<RosterStudent> = {}): RosterStudent {
   const student = makeStudent();
   return {
@@ -105,6 +120,8 @@ export interface EnrollmentRegistryFixture {
   professors: ProfessorListItem[];
   classes: ClassListItem[];
   classDetails: Record<string, ClassDetail>;
+  /** Sessions per class id for GET /admin/classes/:id/sessions (ATT.14). */
+  sessions: Record<string, AdminSessionRow[]>;
 }
 
 /** Screenshot-faithful registry (admin-07…12) with stable ids. */
@@ -199,5 +216,6 @@ export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
       [avancada.id]: { ...avancada, roster: [] },
       [kids.id]: { ...kids, roster: [] },
     },
+    sessions: {},
   };
 }

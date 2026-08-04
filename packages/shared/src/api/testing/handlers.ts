@@ -136,5 +136,8 @@ export function enrollmentHandlers(
       }
       return response(200).json({ class: detail });
     }),
+    http.get('/v1/admin/classes/{id}/sessions', ({ params, response }) =>
+      response(200).json({ sessions: data.sessions[params.id] ?? [] }),
+    ),
   ];
 }

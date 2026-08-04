@@ -35,6 +35,27 @@ export function classSubtitle(turma: ClassListItem): string {
   return `${scheduleSummary(turma.schedules)} · Prof. ${turma.professor.fullName} · ${turma.occupancy}/${turma.capacity}`;
 }
 
+/** "Seg · 03/08/2026" from an ISO session date (ATT.14 session list). */
+export function sessionDateLabel(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${WEEKDAY_SHORT[date.getDay()]} · ${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
+/** "19:00" from the session's startsAt datetime (empty when absent). */
+export function sessionTimeLabel(isoDateTime: string): string {
+  const date = new Date(isoDateTime);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** "1 presença" / "12 presenças" — per-session attendance count chip. */
+export function presencesLabel(count: number): string {
+  return `${count} ${count === 1 ? 'presença' : 'presenças'}`;
+}
+
 /** Two-letter monogram for the leading avatar ("Lucas Almeida" → "LA"). */
 export function initials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/);

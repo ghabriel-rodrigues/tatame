@@ -27,6 +27,10 @@ export type ClassDetail = ApiSchemas['ClassDetailDto'];
 export type RosterStudent = ApiSchemas['RosterStudentDto'];
 export type MoveStudentsResponse = ApiSchemas['MoveStudentsResponseDto'];
 
+// Attendance admin visibility (ATT.14 web surface).
+export type AdminSessionRow = ApiSchemas['AdminSessionRowDto'];
+export type AdminSessionListResponse = ApiSchemas['AdminSessionListResponseDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

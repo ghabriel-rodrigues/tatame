@@ -127,7 +127,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] ATT.11 Backend: derived stats — aluno home (presença % month, streak, graduation lesson count, gamification.streak toggle honored) and professor dashboard (alunos hoje, presença média, hero check-in count)
 - [x] ATT.12 Backend: GET /v1/professor/students with non-enrolled-in-class filter (closes the Adicionar aluno picker debt)
 - [x] ATT.13 Backend: e2e suite green — immutability layers, revoke windows, re-check-in after revoke, duplicate race, code expiry/close/reopen, foreign-tenant 404s, SSE ticket auth + event delivery, stats fixtures, gamification toggle, read-only block, RBAC + RLS coverage
-- [ ] ATT.14 Web: turma detail session list with per-session attendance counts replacing the Phase-3 placeholder tiles (empty state included)
+- [x] ATT.14 Web: turma detail session list with per-session attendance counts replacing the Phase-3 placeholder tiles (empty state included)
 - [ ] ATT.15 RN: aluno check-in bottom sheet — 3-method segmented control (QR scan, 4-digit code, manual with location stub) wired to the check-in endpoint
 - [ ] ATT.16 RN: aluno success pop with streak line, already-registered state, hero flip to Presença registrada, live stat tiles + graduation progress bar on Início
 - [ ] ATT.17 RN: professor chamada ao vivo — code/QR/expiry screen with SSE counter+list (react-native-sse wrapper, snapshot-then-stream, 5 s polling fallback), encerrar/reopen
