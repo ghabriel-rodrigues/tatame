@@ -139,4 +139,30 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] ATT.23 iOS: professor chamada ao vivo with URLSession SSE parser + polling fallback, encerrar/reopen
 - [x] ATT.24 iOS: professor manual chamada + dashboard tiles + Adicionar aluno picker rewired
 
-_Next phases (agenda, graduation, billing, events, store, …) get their specs as each phase ships._
+### Phase 5 — Graduation ([spec 005](docs/specs/005-graduation.md))
+
+- [ ] GRD.1 DB: shared catalogs martial_arts, belt_ladders, belts (position, color_tokens slugs, max_degrees) — public-SELECT RLS, platform-only writes, BJJ adult+kids production seeds in handoff ladder order
+- [ ] GRD.2 DB: graduation_rules — lessons_per_degree (default 40, CHECK ≥ 10) + enabled kids toggle, UNIQUE (tenant_id, belt_id), forced tenant RLS
+- [ ] GRD.3 DB: student_graduations — kind degree/belt/revocation, reverses_graduation_id (CHECK + single-reversal partial unique, composite tenant self-FK), awarded_by/awarded_at/notes; append-only layers (SELECT+INSERT only, unconditional forbid_mutation) extending the registry meta-test
+- [ ] GRD.4 DB: student_notes table (tenant RLS) + nullable classes.min_belt_id/max_belt_id + memberships.belt_id/belt_degree display columns
+- [ ] GRD.5 DB: dev seeds — graduation histories per fixture academy (degree/belt/revocation rows), rule overrides, notes, written through the tenant-scoped path
+- [ ] GRD.6 Backend: graduation module — current-belt derivation (latest non-reversed award, white default) exported and folded into registry rows, professor students/rosters, dependents, aluno home/profile responses
+- [ ] GRD.7 Backend: progress engine (active lessons since last award vs academy rule, Próximo grau / Próxima faixa) + GET /v1/aluno/graduation (hero, progress, timeline with certificate placeholder) + home card real target
+- [ ] GRD.8 Backend: awards — add degree (≤ max_degrees) / promote belt (enabled targets only, degrees reset), professor gated by graduations.update toggle, admin ungated, optional initial belt at student creation, graduation.awarded audit in-transaction
+- [ ] GRD.9 Backend: admin — graduation-rules GET/PUT (defaults merged, ≥ 10, kids-only toggles), per-student history, revoke endpoint (compensation row, single reversal, graduation.revoked audit)
+- [ ] GRD.10 Backend: student notes create/list + GET /v1/professor/students/:id/profile (belt, progress, attendance tiles, notes) + GET /v1/professor/profile (own belt chip, graduações válidas)
+- [ ] GRD.11 Backend: e2e suite green — append-only layers, revocation semantics, award validations + permission toggle, rules validation, derivation/progress fixtures, belt exposure in list responses, read-only block, RBAC + RLS + catalog write-protection
+- [ ] GRD.12 Web: BeltBar in the design system per the resolved anatomy (sizes, ponteira, degree stripes, outline, black-dan red tip, gray fallback) + belt chip variant
+- [ ] GRD.13 Web: admin Regras de graduação screen — merged ladder rows with swatch and máx-graus note, ±5 stepper (default 40, min 10), kids toggles, Salvar bulk upsert
+- [ ] GRD.14 Web: belt chips on registry student rows + initial-belt select on student form + turma belt-range fields with "Branca a Azul" card chips + student graduation-history drawer with audited Revogar
+- [ ] GRD.15 RN: BeltBar native component in the design system (same anatomy and fallback rules)
+- [ ] GRD.16 RN: aluno Graduação screen (hero card, progress bar, evolution timeline, Ver certificado placeholder) + real home graduation card + profile belt
+- [ ] GRD.17 RN: professor perfil do aluno (BeltBar, progress, Adicionar grau / Promover faixa gated by toggle, observações) + professor profile graduações válidas + responsável dependent-card belts
+- [ ] GRD.18 Android: BeltBar Compose component (same anatomy and fallback rules)
+- [ ] GRD.19 Android: aluno Graduação screen + real home graduation card + profile belt
+- [ ] GRD.20 Android: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts
+- [ ] GRD.21 iOS: BeltBar SwiftUI component (same anatomy and fallback rules)
+- [ ] GRD.22 iOS: aluno Graduação screen + real home graduation card + profile belt
+- [ ] GRD.23 iOS: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts
+
+_Next phases (agenda, billing, events, store, …) get their specs as each phase ships._
