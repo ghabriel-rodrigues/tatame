@@ -112,4 +112,31 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] ENR.25 iOS: professor roster add/remove + responsável dependents panel read views
 - [x] ENR.26 iOS: responsável Cadastrar aluno sheet with age suggestion
 
-_Next phases (check-in/attendance, agenda, graduation, billing, events, store, …) get their specs as each phase ships._
+### Phase 4 — Attendance / check-in ([spec 004](docs/specs/004-attendance.md))
+
+- [ ] ATT.1 DB: Drizzle schema for class_sessions, checkin_codes (+qr_token, opened_by), attendances (+revoked cols) — UUIDv7 PKs, composite tenant FKs, method/status enums, session unique per class per day, partial unique active check-in
+- [ ] ATT.2 DB: forced RLS fail-closed tenant policies on all three tables (SELECT+INSERT only on attendances), extending the RLS meta-test
+- [ ] ATT.3 DB: append-only layer — no UPDATE/DELETE grants or policies on attendances, forbid_mutation trigger with the revoke-columns-only exception, append-only registry meta-test
+- [ ] ATT.4 DB: attendance_revoke SECURITY DEFINER seam — tenant-validated, professor same-day window, admin any-time, audit rows (attendance.revoked, attendance.recorded_manual) in-transaction
+- [ ] ATT.5 DB: dev seeds — materialized sessions with mixed-method attendances (some revoked) per fixture academy, written through the tenant-scoped path
+- [ ] ATT.6 Backend: attendance module — idempotent session materialization, open/close/reopen chamada with code+QR mint, TTL (slot end + 15 min grace), one active code per session
+- [ ] ATT.7 Backend: aluno check-in endpoint — qr/code/manual resolution to one validated INSERT, enrollment + today + window checks, duplicate → already-checked-in state, race-safe, fresh stats in response
+- [ ] ATT.8 Backend: professor manual roll call — roster with attendance states (self check-ins pre-toggled), per-row mark (manual, recorded_by) and same-day revoke endpoints
+- [ ] ATT.9 Backend: admin surface — any-time audited revoke endpoint and turma sessions list with attendance counts
+- [ ] ATT.10 Backend: realtime — stream-ticket mint (HMAC, ~60 s, single-purpose), SSE stream with checkin/revoke events + 20 s heartbeat via post-commit event bridge and per-room registry, snapshot/polling endpoint, OpenAPI-documented exception
+- [ ] ATT.11 Backend: derived stats — aluno home (presença % month, streak, graduation lesson count, gamification.streak toggle honored) and professor dashboard (alunos hoje, presença média, hero check-in count)
+- [ ] ATT.12 Backend: GET /v1/professor/students with non-enrolled-in-class filter (closes the Adicionar aluno picker debt)
+- [ ] ATT.13 Backend: e2e suite green — immutability layers, revoke windows, re-check-in after revoke, duplicate race, code expiry/close/reopen, foreign-tenant 404s, SSE ticket auth + event delivery, stats fixtures, gamification toggle, read-only block, RBAC + RLS coverage
+- [ ] ATT.14 Web: turma detail session list with per-session attendance counts replacing the Phase-3 placeholder tiles (empty state included)
+- [ ] ATT.15 RN: aluno check-in bottom sheet — 3-method segmented control (QR scan, 4-digit code, manual with location stub) wired to the check-in endpoint
+- [ ] ATT.16 RN: aluno success pop with streak line, already-registered state, hero flip to Presença registrada, live stat tiles + graduation progress bar on Início
+- [ ] ATT.17 RN: professor chamada ao vivo — code/QR/expiry screen with SSE counter+list (react-native-sse wrapper, snapshot-then-stream, 5 s polling fallback), encerrar/reopen
+- [ ] ATT.18 RN: professor manual chamada (immediate toggles, N presentes header, manual markers) + dashboard tiles + Adicionar aluno picker rewired to /professor/students
+- [ ] ATT.19 Android: aluno check-in sheet, success pop + streak, duplicate state, Início stat tiles per handoff
+- [ ] ATT.20 Android: professor chamada ao vivo with OkHttp SSE wrapper + polling fallback, encerrar/reopen
+- [ ] ATT.21 Android: professor manual chamada + dashboard tiles + Adicionar aluno picker rewired
+- [ ] ATT.22 iOS: aluno check-in sheet, success pop + streak, duplicate state, Início stat tiles per handoff
+- [ ] ATT.23 iOS: professor chamada ao vivo with URLSession SSE parser + polling fallback, encerrar/reopen
+- [ ] ATT.24 iOS: professor manual chamada + dashboard tiles + Adicionar aluno picker rewired
+
+_Next phases (agenda, graduation, billing, events, store, …) get their specs as each phase ships._
