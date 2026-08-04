@@ -14,6 +14,8 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
+import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
+import type { BeltView } from '../../graduation/graduation.types.js';
 import { ageOn, nextSlot, normalizeTime, type ScheduleSlotView } from '../lib/derive.js';
 import { EnrollmentService } from './enrollment.service.js';
 
@@ -30,6 +32,8 @@ export interface DependentDetail {
   birthDate: string;
   status: 'active' | 'inactive';
   class: DependentClassView | null;
+  /** Derived current belt (GRD.6, story 34) — the dependent card's BeltBar. */
+  belt: BeltView;
 }
 
 const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
@@ -44,6 +48,7 @@ export class DependentsService {
   constructor(
     @Inject(APP_DB) private readonly appDb: DbHandle,
     private readonly enrollmentService: EnrollmentService,
+    private readonly graduationQuery: GraduationQueryService,
   ) {}
 
   async list(ctx: AuthContext): Promise<DependentDetail[]> {
@@ -232,12 +237,17 @@ export class DependentsService {
       });
     }
 
+    const beltByStudent = await this.graduationQuery.currentBeltMap(
+      tx,
+      rows.map((r) => r.id),
+    );
     return rows.map((row) => ({
       id: row.id,
       fullName: row.fullName,
       birthDate: row.birthDate,
       status: row.status,
       class: classByStudent.get(row.id) ?? null,
+      belt: beltByStudent.get(row.id) as BeltView,
     }));
   }
 }

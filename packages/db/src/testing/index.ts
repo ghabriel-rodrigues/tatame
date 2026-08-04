@@ -5,6 +5,7 @@ export { createFreshDb, testAdminUrl, type FreshDb } from './test-db.js';
 export {
   DEV_PASSWORD,
   hashDevPassword,
+  seedBeltCatalog,
   seedDevFixtures,
   seedPlatformPlans,
   PLATFORM_PLAN_CATALOG,

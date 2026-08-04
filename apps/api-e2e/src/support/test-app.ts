@@ -17,6 +17,7 @@ import {
 import {
   createFreshDb,
   DEV_PASSWORD,
+  seedBeltCatalog,
   seedDevFixtures,
   seedPlatformPlans,
   testAdminUrl,
@@ -57,6 +58,9 @@ export async function createTestApp(): Promise<TestApp> {
   const appDb = createAppDb(fresh.url);
   const platformDb = createPlatformDb(fresh.url);
   await seedPlatformPlans(platformDb.db);
+  // Shared belt catalog before the tenant fixtures — the GRD.5 graduation
+  // histories resolve belts from it (spec 005).
+  await seedBeltCatalog(platformDb.db);
   await seedDevFixtures({ appDb: appDb.db, platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;

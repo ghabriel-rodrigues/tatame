@@ -14,6 +14,8 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
+import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
+import type { BeltRef, BeltView } from '../../graduation/graduation.types.js';
 import { ageOn, badgeFor, normalizeTime, type ScheduleSlotView } from '../lib/derive.js';
 
 export interface ClassListItem {
@@ -25,6 +27,9 @@ export interface ClassListItem {
   lotada: boolean;
   ageMin: number | null;
   ageMax: number | null;
+  /** Turma belt range ("Branca a Azul" chips, GRD.6 — Phase-3 deferral). */
+  minBelt: BeltRef | null;
+  maxBelt: BeltRef | null;
   professor: { userId: string; fullName: string };
   schedules: ScheduleSlotView[];
 }
@@ -35,6 +40,8 @@ export interface ClassDetail extends ClassListItem {
     fullName: string;
     birthDate: string;
     badge: 'ativo' | 'pendente';
+    /** Derived current belt (GRD.6). */
+    belt: BeltView;
   }>;
 }
 
@@ -54,6 +61,9 @@ export interface CreateClassInput {
   capacity: number;
   ageMin?: number;
   ageMax?: number;
+  /** Optional belt range — plain catalog FKs, rendered as range chips. */
+  minBeltId?: string;
+  maxBeltId?: string;
   schedules: ScheduleSlotView[];
 }
 
@@ -72,7 +82,10 @@ const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.u
  */
 @Injectable()
 export class ClassService {
-  constructor(@Inject(APP_DB) private readonly appDb: DbHandle) {}
+  constructor(
+    @Inject(APP_DB) private readonly appDb: DbHandle,
+    private readonly graduationQuery: GraduationQueryService,
+  ) {}
 
   async create(ctx: AuthContext, input: CreateClassInput): Promise<ClassDetail> {
     if (input.ageMin != null && input.ageMax != null && input.ageMin > input.ageMax) {
@@ -92,6 +105,29 @@ export class ClassService {
     }
 
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
+      // Optional belt range: both ends must be catalog belts, ordered by the
+      // merged régua (min may not come after max).
+      if (input.minBeltId || input.maxBeltId) {
+        const merged = await this.graduationQuery.mergedCatalog(tx);
+        const indexOf = (beltId: string | undefined): number | null => {
+          if (!beltId) return null;
+          const index = merged.findIndex((b) => b.beltId === beltId);
+          if (index < 0) {
+            throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Unknown belt in the range', [
+              { field: 'minBeltId', messages: ['Belt range must reference catalog belts'] },
+            ]);
+          }
+          return index;
+        };
+        const minIndex = indexOf(input.minBeltId);
+        const maxIndex = indexOf(input.maxBeltId);
+        if (minIndex != null && maxIndex != null && minIndex > maxIndex) {
+          throw problem(422, ErrorCodes.VALIDATION_FAILED, 'minBelt cannot come after maxBelt', [
+            { field: 'minBeltId', messages: ['minBelt cannot come after maxBelt in ladder order'] },
+          ]);
+        }
+      }
+
       const professor = await tx
         .select({ id: memberships.id })
         .from(memberships)
@@ -120,6 +156,8 @@ export class ClassService {
           capacity: input.capacity,
           ageMin: input.ageMin ?? null,
           ageMax: input.ageMax ?? null,
+          minBeltId: input.minBeltId ?? null,
+          maxBeltId: input.maxBeltId ?? null,
         })
         .returning();
       if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Class insert returned no row');
@@ -160,13 +198,14 @@ export class ClassService {
       if (rows.length === 0) return [];
 
       const ids = rows.map((r) => r.id);
-      const [scheduleMap, occupancyMap, professorMap] = await Promise.all([
+      const [scheduleMap, occupancyMap, professorMap, catalog] = await Promise.all([
         this.schedulesByClass(tx, ids),
         this.occupancyByClass(tx, ids),
         this.professorsByUserId(tx, [...new Set(rows.map((r) => r.professorUserId))]),
+        this.graduationQuery.catalogById(tx),
       ]);
       return rows.map((row) =>
-        this.toListItem(row, scheduleMap, occupancyMap, professorMap),
+        this.toListItem(row, scheduleMap, occupancyMap, professorMap, catalog),
       );
     });
   }
@@ -270,13 +309,14 @@ export class ClassService {
     // Ownership is service-level filtering: foreign class = 404, never 403.
     if (scope.professorUserId && row.professorUserId !== scope.professorUserId) return null;
 
-    const [scheduleMap, occupancyMap, professorMap, roster] = await Promise.all([
+    const [scheduleMap, occupancyMap, professorMap, roster, catalog] = await Promise.all([
       this.schedulesByClass(tx, [id]),
       this.occupancyByClass(tx, [id]),
       this.professorsByUserId(tx, [row.professorUserId]),
       this.rosterOf(tx, id),
+      this.graduationQuery.catalogById(tx),
     ]);
-    return { ...this.toListItem(row, scheduleMap, occupancyMap, professorMap), roster };
+    return { ...this.toListItem(row, scheduleMap, occupancyMap, professorMap, catalog), roster };
   }
 
   private toListItem(
@@ -284,8 +324,21 @@ export class ClassService {
     scheduleMap: Map<string, ScheduleSlotView[]>,
     occupancyMap: Map<string, number>,
     professorMap: Map<string, string>,
+    catalog: Map<string, BeltRef>,
   ): ClassListItem {
     const occupancy = occupancyMap.get(row.id) ?? 0;
+    const beltRef = (beltId: string | null): BeltRef | null => {
+      if (!beltId) return null;
+      const belt = catalog.get(beltId);
+      if (!belt) return null;
+      return {
+        beltId: belt.beltId,
+        name: belt.name,
+        colorSlug: belt.colorSlug,
+        tipColorSlug: belt.tipColorSlug,
+        maxDegrees: belt.maxDegrees,
+      };
+    };
     return {
       id: row.id,
       name: row.name,
@@ -295,6 +348,8 @@ export class ClassService {
       lotada: occupancy >= row.capacity,
       ageMin: row.ageMin,
       ageMax: row.ageMax,
+      minBelt: beltRef(row.minBeltId),
+      maxBelt: beltRef(row.maxBeltId),
       professor: {
         userId: row.professorUserId,
         fullName: professorMap.get(row.professorUserId) ?? '',
@@ -370,11 +425,16 @@ export class ClassService {
       )
       .where(and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')))
       .orderBy(asc(students.fullName));
+    const beltByStudent = await this.graduationQuery.currentBeltMap(
+      tx,
+      rows.map((r) => r.studentId),
+    );
     return rows.map((row) => ({
       studentId: row.studentId,
       fullName: row.fullName,
       birthDate: row.birthDate,
       badge: badgeFor(row.userId),
+      belt: beltByStudent.get(row.studentId) as BeltView,
     }));
   }
 }

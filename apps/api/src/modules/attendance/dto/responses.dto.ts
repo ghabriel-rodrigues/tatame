@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ScheduleSlotViewDto } from '../../enrollment/dto/responses.dto.js';
+import { BeltViewDto, GraduationProgressDto } from '../../graduation/dto/belt.dto.js';
 
 /**
  * Response DTOs — OpenAPI documentation classes only (web-03 pipeline).
@@ -95,6 +96,15 @@ export class AlunoStudentRefDto {
   fullName!: string;
 }
 
+/** Home graduation card (GRD.7) — the real rule target, not the 40 placeholder. */
+export class AlunoHomeGraduationDto {
+  @ApiProperty({ type: BeltViewDto })
+  belt!: BeltViewDto;
+
+  @ApiProperty({ type: GraduationProgressDto })
+  progress!: GraduationProgressDto;
+}
+
 export class AlunoHomeResponseDto {
   @ApiProperty({ type: AlunoStudentRefDto })
   student!: AlunoStudentRefDto;
@@ -104,6 +114,12 @@ export class AlunoHomeResponseDto {
 
   @ApiProperty({ type: AlunoStatsDto })
   stats!: AlunoStatsDto;
+
+  @ApiPropertyOptional({
+    type: AlunoHomeGraduationDto,
+    description: 'Derived belt + progress against the academy rule (GRD.7)',
+  })
+  graduation?: AlunoHomeGraduationDto;
 }
 
 export class LiveSessionDto {
@@ -256,6 +272,9 @@ export class RosterRowDto {
   @ApiProperty()
   fullName!: string;
 
+  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  belt?: BeltViewDto;
+
   @ApiPropertyOptional({ type: RosterAttendanceDto, nullable: true })
   attendance!: RosterAttendanceDto | null;
 }
@@ -352,6 +371,9 @@ export class ProfessorStudentDto {
 
   @ApiProperty({ enum: ['ativo', 'pendente'] })
   badge!: 'ativo' | 'pendente';
+
+  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  belt?: BeltViewDto;
 }
 
 export class ProfessorStudentsResponseDto {

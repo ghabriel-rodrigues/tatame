@@ -35,6 +35,12 @@ export const ErrorCodes = {
   CHECKIN_OUTSIDE_WINDOW: 'checkin.outside_window',
   ATTENDANCE_REVOKE_WINDOW_CLOSED: 'attendance.revoke_window_closed',
   STREAM_TICKET_INVALID: 'stream.ticket_invalid',
+  // graduation (spec 005)
+  GRADUATION_DEGREE_AT_MAX: 'graduation.degree_at_max',
+  GRADUATION_BELT_INVALID_TARGET: 'graduation.belt_invalid_target',
+  GRADUATION_ALREADY_REVERSED: 'graduation.already_reversed',
+  GRADUATION_LESSONS_BELOW_MINIMUM: 'graduation.lessons_below_minimum',
+  GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT: 'graduation.cannot_disable_non_kids_belt',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',

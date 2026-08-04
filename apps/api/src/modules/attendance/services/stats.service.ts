@@ -15,6 +15,9 @@ import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { PermissionsService } from '../../identity/services/permissions.service.js';
+import { GraduationProgressService } from '../../graduation/services/graduation-progress.service.js';
+import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
+import type { BeltView, ProgressView } from '../../graduation/graduation.types.js';
 import { nextSlot, normalizeTime, type ScheduleSlotView } from '../../enrollment/lib/derive.js';
 import { localDate, localMonthStart, localWeekday } from '../lib/time.js';
 import { SessionService } from './session.service.js';
@@ -40,6 +43,12 @@ export interface AlunoHome {
     checkedIn: boolean;
   } | null;
   stats: AlunoStats;
+  /**
+   * Home graduation card (GRD.7): the real rule target and derived belt —
+   * supersedes Phase 4's lifetime-count placeholder (recorded semantic
+   * change; `stats.totalLessons` stays for the lifetime tile).
+   */
+  graduation: { belt: BeltView; progress: ProgressView };
 }
 
 export interface ProfessorDashboard {
@@ -76,6 +85,8 @@ export class StatsService {
     @Inject(APP_DB) private readonly appDb: DbHandle,
     private readonly permissions: PermissionsService,
     private readonly sessions: SessionService,
+    private readonly graduationQuery: GraduationQueryService,
+    private readonly graduationProgress: GraduationProgressService,
   ) {}
 
   /**
@@ -269,7 +280,14 @@ export class StatsService {
       }
 
       const stats = await this.alunoStats(tx, ctx.tenantId, student.id, now);
-      return { student, todayClass, stats };
+      // Real graduation card (GRD.7): derived belt + progress against the
+      // academy rule — same snapshot as the stat tiles.
+      const state = await this.graduationQuery.currentState(tx, student.id);
+      const graduation = {
+        belt: state.belt,
+        progress: await this.graduationProgress.progressFor(tx, student.id, state),
+      };
+      return { student, todayClass, stats, graduation };
     });
     home.stats = await this.applyGamificationToggle(ctx.tenantId, home.stats);
     return home;

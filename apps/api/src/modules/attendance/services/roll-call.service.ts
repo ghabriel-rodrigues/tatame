@@ -14,6 +14,8 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
+import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
+import type { BeltView } from '../../graduation/graduation.types.js';
 import {
   ATTENDANCE_CHECKIN_RECORDED,
   ATTENDANCE_REVOKED,
@@ -25,6 +27,8 @@ import { SessionService } from './session.service.js';
 export interface RosterRow {
   studentId: string;
   fullName: string;
+  /** Derived current belt (GRD.6) — roll-call rows carry the belt chip. */
+  belt: BeltView;
   attendance: {
     id: string;
     method: 'qr' | 'code' | 'manual';
@@ -75,6 +79,7 @@ export class RollCallService {
     @Inject(APP_DB) private readonly appDb: DbHandle,
     private readonly sessions: SessionService,
     private readonly events: EventEmitter2,
+    private readonly graduationQuery: GraduationQueryService,
   ) {}
 
   /** POST /professor/classes/:id/roll-call — materialize + roster (stories 27/30). */
@@ -346,9 +351,14 @@ export class RollCallService {
       .where(and(eq(enrollments.classId, session.classId), eq(enrollments.status, 'active')))
       .orderBy(asc(students.fullName));
 
+    const beltByStudent = await this.graduationQuery.currentBeltMap(
+      tx,
+      rows.map((r) => r.studentId),
+    );
     const roster: RosterRow[] = rows.map((row) => ({
       studentId: row.studentId,
       fullName: row.fullName,
+      belt: beltByStudent.get(row.studentId) as BeltView,
       attendance:
         row.attendanceId && row.method && row.checkedInAt
           ? {

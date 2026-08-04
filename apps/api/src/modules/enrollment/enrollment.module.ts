@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../../infra/db/db.module.js';
+import { GraduationCoreModule } from '../graduation/graduation-core.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AdminClassesController } from './controllers/admin-classes.controller.js';
 import { AdminGuardiansController } from './controllers/admin-guardians.controller.js';
@@ -21,7 +22,7 @@ import { RegistryService } from './services/registry.service.js';
  * runs inside identity's SECURITY DEFINER seam, not through this module.
  */
 @Module({
-  imports: [DbModule, IdentityModule],
+  imports: [DbModule, IdentityModule, GraduationCoreModule],
   controllers: [
     AdminStudentsController,
     AdminGuardiansController,

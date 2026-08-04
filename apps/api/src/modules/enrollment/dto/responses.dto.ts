@@ -1,9 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { BeltRefDto, BeltViewDto } from '../../graduation/dto/belt.dto.js';
 
 /**
  * Response DTOs — OpenAPI documentation classes only (web-03 pipeline). The
  * controllers return the service objects untouched; these classes keep
  * `/docs-json` truthful so the generated client contract stays drift-free.
+ *
+ * The GRD.6 belt fields are documented as optional so pre-graduation client
+ * mocks stay type-compatible; the services always populate them.
  */
 
 export class ClassRefDto {
@@ -41,6 +45,9 @@ export class StudentListItemDto {
 
   @ApiProperty({ type: [ClassRefDto], description: 'Active enrollments' })
   classes!: ClassRefDto[];
+
+  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  belt?: BeltViewDto;
 }
 
 export class StudentListResponseDto {
@@ -168,6 +175,16 @@ export class ClassListItemDto {
   @ApiProperty({ nullable: true, type: Number })
   ageMax!: number | null;
 
+  @ApiPropertyOptional({
+    type: BeltRefDto,
+    nullable: true,
+    description: 'Turma belt range floor ("Branca a Azul" chips, GRD.6)',
+  })
+  minBelt?: BeltRefDto | null;
+
+  @ApiPropertyOptional({ type: BeltRefDto, nullable: true, description: 'Turma belt range ceiling' })
+  maxBelt?: BeltRefDto | null;
+
   @ApiProperty({ type: ClassProfessorDto })
   professor!: ClassProfessorDto;
 
@@ -192,6 +209,9 @@ export class RosterStudentDto {
 
   @ApiProperty({ enum: ['ativo', 'pendente'] })
   badge!: 'ativo' | 'pendente';
+
+  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  belt?: BeltViewDto;
 }
 
 export class ClassDetailDto extends ClassListItemDto {
@@ -261,6 +281,12 @@ export class DependentDetailDto {
 
   @ApiProperty({ type: DependentClassDto, nullable: true, description: 'Active class if enrolled' })
   class!: DependentClassDto | null;
+
+  @ApiPropertyOptional({
+    type: BeltViewDto,
+    description: 'Derived current belt (GRD.6, story 34) — the dependent-card BeltBar',
+  })
+  belt?: BeltViewDto;
 }
 
 export class DependentListResponseDto {

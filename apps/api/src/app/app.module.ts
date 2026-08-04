@@ -14,6 +14,7 @@ import { DbModule } from '../infra/db/db.module.js';
 import { NotificationsModule } from '../infra/notifications/notifications.module.js';
 import { AttendanceModule } from '../modules/attendance/attendance.module.js';
 import { EnrollmentModule } from '../modules/enrollment/enrollment.module.js';
+import { GraduationModule } from '../modules/graduation/graduation.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
 
 function flattenValidationErrors(
@@ -49,6 +50,7 @@ function flattenValidationErrors(
     IdentityModule,
     EnrollmentModule,
     AttendanceModule,
+    GraduationModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

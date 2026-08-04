@@ -46,6 +46,16 @@ export class CreateStudentDto {
   @IsOptional()
   @IsUUID()
   guardianId?: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Optional initial belt (transfer students, story 32): seeds one audited belt award. ' +
+      'Left empty, the student starts white. Must be an enabled catalog belt.',
+  })
+  @IsOptional()
+  @IsUUID()
+  initialBeltId?: string;
 }
 
 export class CreateGuardianDto {
@@ -137,6 +147,19 @@ export class CreateClassDto {
   @IsInt()
   @Min(0)
   ageMax?: number;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Turma belt range floor — catalog belt ("Branca a Azul" chips, GRD.6)',
+  })
+  @IsOptional()
+  @IsUUID()
+  minBeltId?: string;
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'Turma belt range ceiling — catalog belt' })
+  @IsOptional()
+  @IsUUID()
+  maxBeltId?: string;
 
   @ApiProperty({ type: [ScheduleSlotDto], minItems: 1 })
   @IsArray()

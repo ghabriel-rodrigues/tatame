@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../../infra/db/db.module.js';
+import { GraduationCoreModule } from '../graduation/graduation-core.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AdminAttendanceController } from './controllers/admin-attendance.controller.js';
 import { AlunoAttendanceController } from './controllers/aluno-attendance.controller.js';
@@ -25,7 +26,7 @@ import { StatsService } from './services/stats.service.js';
  * in-process live rooms (realtime decision be-09).
  */
 @Module({
-  imports: [DbModule, IdentityModule],
+  imports: [DbModule, IdentityModule, GraduationCoreModule],
   controllers: [
     AlunoAttendanceController,
     ProfessorLiveController,
@@ -44,6 +45,8 @@ import { StatsService } from './services/stats.service.js';
     LiveRoomRegistry,
     AttendanceEventsBridge,
   ],
-  exports: [StreamTicketService],
+  // StatsService is exported for graduation's professor-11 stat tiles
+  // (GRD.10) — the reuse seam of the resolved module-layout decision.
+  exports: [StreamTicketService, StatsService],
 })
 export class AttendanceModule {}

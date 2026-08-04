@@ -12,6 +12,9 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
+import { GraduationAwardService } from '../../graduation/services/graduation-award.service.js';
+import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
+import type { BeltView } from '../../graduation/graduation.types.js';
 import { badgeFor, isMinor } from '../lib/derive.js';
 
 export interface StudentListItem {
@@ -23,6 +26,8 @@ export interface StudentListItem {
   guardianId: string | null;
   userId: string | null;
   classes: Array<{ id: string; name: string }>;
+  /** Derived current belt (GRD.6) — the Phase-3 belt-chip deferral closed. */
+  belt: BeltView;
 }
 
 export interface GuardianListItem {
@@ -46,7 +51,11 @@ const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.u
  */
 @Injectable()
 export class RegistryService {
-  constructor(@Inject(APP_DB) private readonly appDb: DbHandle) {}
+  constructor(
+    @Inject(APP_DB) private readonly appDb: DbHandle,
+    private readonly graduationQuery: GraduationQueryService,
+    private readonly graduationAwards: GraduationAwardService,
+  ) {}
 
   async listStudents(ctx: AuthContext, filter: StatusFilter = 'active'): Promise<StudentListItem[]> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
@@ -56,17 +65,20 @@ export class RegistryService {
         .where(filter === 'all' ? undefined : eq(students.status, filter))
         .orderBy(asc(students.fullName));
       if (rows.length === 0) return [];
-      const classesByStudent = await this.activeClassesByStudent(
-        tx,
-        rows.map((r) => r.id),
+      const ids = rows.map((r) => r.id);
+      const [classesByStudent, beltByStudent] = await Promise.all([
+        this.activeClassesByStudent(tx, ids),
+        this.graduationQuery.currentBeltMap(tx, ids),
+      ]);
+      return rows.map((row) =>
+        this.toStudentItem(row, classesByStudent.get(row.id) ?? [], beltByStudent.get(row.id)),
       );
-      return rows.map((row) => this.toStudentItem(row, classesByStudent.get(row.id) ?? []));
     });
   }
 
   async createStudent(
     ctx: AuthContext,
-    input: { fullName: string; birthDate: string; guardianId?: string },
+    input: { fullName: string; birthDate: string; guardianId?: string; initialBeltId?: string },
   ): Promise<StudentListItem> {
     // Minor ⇒ guardian rule, enforced in every creation path (age is
     // time-dependent, so this stays app-level — spec 003 schema decision).
@@ -97,7 +109,19 @@ export class RegistryService {
         })
         .returning();
       if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Student insert returned no row');
-      return this.toStudentItem(row, []);
+      // Optional initial belt (story 32): a transfer student starts at their
+      // real belt via one audited kind='belt' award row — left empty, they
+      // start white with no synthetic row.
+      if (input.initialBeltId) {
+        await this.graduationAwards.seedInitialBeltInTx(
+          tx,
+          ctx as AuthContext & { tenantId: string },
+          row.id,
+          input.initialBeltId,
+        );
+      }
+      const belt = await this.graduationQuery.currentBelt(tx, row.id);
+      return this.toStudentItem(row, [], belt);
     });
   }
 
@@ -109,8 +133,11 @@ export class RegistryService {
         .where(eq(students.id, id))
         .returning();
       if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
-      const classesByStudent = await this.activeClassesByStudent(tx, [row.id]);
-      return this.toStudentItem(row, classesByStudent.get(row.id) ?? []);
+      const [classesByStudent, belt] = await Promise.all([
+        this.activeClassesByStudent(tx, [row.id]),
+        this.graduationQuery.currentBelt(tx, row.id),
+      ]);
+      return this.toStudentItem(row, classesByStudent.get(row.id) ?? [], belt);
     });
   }
 
@@ -239,7 +266,9 @@ export class RegistryService {
   private toStudentItem(
     row: typeof students.$inferSelect,
     classList: Array<{ id: string; name: string }>,
+    belt: BeltView | undefined,
   ): StudentListItem {
+    if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Belt derivation returned no entry');
     return {
       id: row.id,
       fullName: row.fullName,
@@ -249,6 +278,7 @@ export class RegistryService {
       guardianId: row.guardianId,
       userId: row.userId,
       classes: classList,
+      belt,
     };
   }
 }

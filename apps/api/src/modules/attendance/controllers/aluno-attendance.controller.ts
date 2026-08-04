@@ -46,8 +46,10 @@ export class AlunoAttendanceController {
 
   @Get('home')
   @ApiOperation({
-    summary: 'Início: today-class hero, presença %, streak, graduation lesson count',
-    description: 'Streak is null when the academy disabled the gamification.streak toggle.',
+    summary: 'Início: today-class hero, presença %, streak, real graduation card',
+    description:
+      'Streak is null when the academy disabled the gamification.streak toggle. The graduation ' +
+      'card carries the derived belt and the progress against the academy rule (GRD.7).',
   })
   @ApiOkResponse({ type: AlunoHomeResponseDto })
   async home() {

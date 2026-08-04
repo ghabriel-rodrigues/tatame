@@ -1538,7 +1538,7 @@
     },
     "/v1/aluno/home": {
       "get": {
-        "description": "Streak is null when the academy disabled the gamification.streak toggle.",
+        "description": "Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7).",
         "operationId": "AlunoAttendanceController_home_v1",
         "parameters": [],
         "responses": {
@@ -1558,7 +1558,7 @@
             "bearer": []
           }
         ],
-        "summary": "Início: today-class hero, presença %, streak, graduation lesson count",
+        "summary": "Início: today-class hero, presença %, streak, real graduation card",
         "tags": [
           "aluno"
         ]
@@ -2038,6 +2038,495 @@
           }
         ],
         "summary": "Turma sessions with active attendance counts (replaces Phase-3 placeholders)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/aluno/graduation": {
+      "get": {
+        "description": "Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only \"Ver certificado\" placeholder flag.",
+        "operationId": "AlunoGraduationController_graduation_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoGraduationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Graduação: belt hero, progress to the next milestone, evolution timeline",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/professor/profile": {
+      "get": {
+        "operationId": "ProfessorGraduationController_profile_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfessorProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Own profile: belt chip + Graduações válidas (merged régua)",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/students/{id}/profile": {
+      "get": {
+        "description": "Any student of the academy (grading day works across turmas); foreign id → 404.",
+        "operationId": "ProfessorGraduationController_studentProfile_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Perfil do aluno: belt, progress, Phase-4 stat tiles, observações",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/students/{id}/graduations": {
+      "post": {
+        "description": "degree: current + 1 on the current belt, rejected at max. belt: any enabled non-current catalog belt, degrees reset. Audited in-transaction (graduation.awarded).",
+        "operationId": "ProfessorGraduationController_award_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AwardGraduationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AwardGraduationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adicionar grau / Promover faixa (gated by the graduation.update toggle)",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/professor/students/{id}/notes": {
+      "get": {
+        "operationId": "ProfessorGraduationController_listNotes_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentNotesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Observações history (staff-visible only), newest first",
+        "tags": [
+          "professor"
+        ]
+      },
+      "post": {
+        "operationId": "ProfessorGraduationController_createNote_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudentNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentNoteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Persist an observação (coaching notes outlive graduations)",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/admin/graduation-rules": {
+      "get": {
+        "operationId": "AdminGraduationController_getRules_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraduationRulesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Regras de graduação: merged ladder (defaults + overrides) in régua order",
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "description": "Changed rules immediately re-aim every progress bar in the academy (story 27).",
+        "operationId": "AdminGraduationController_putRules_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGraduationRulesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraduationRulesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Salvar: bulk upsert (≥ 10 lessons; only kids belts can be disabled)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/students/{id}/graduations": {
+      "get": {
+        "operationId": "AdminGraduationController_history_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraduationHistoryResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Full graduation history including revocations, newest first",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminGraduationController_award_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AwardGraduationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AwardGraduationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Award (no toggle gates the admin — role-fixed, story 28)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/graduations/{id}/revoke": {
+      "post": {
+        "description": "Never an edit — history stays immutable. Each award is revocable at most once (409 on a second attempt); audited with who and why (graduation.revoked).",
+        "operationId": "AdminGraduationController_revoke_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeGraduationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeGraduationResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revogar: append a compensation row restoring the previous belt/degree",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/students/{id}/notes": {
+      "get": {
+        "operationId": "AdminGraduationController_listNotes_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentNotesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Observações history — the staff shares one memory (story 19)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminGraduationController_createNote_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStudentNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentNoteResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Persist an observação as the admin",
         "tags": [
           "admin"
         ]
@@ -2972,6 +3461,47 @@
           "name"
         ]
       },
+      "BeltViewDto": {
+        "type": "object",
+        "properties": {
+          "beltId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Azul",
+            "description": "PT-BR display name (client copy)"
+          },
+          "colorSlug": {
+            "type": "string",
+            "example": "belt.blue",
+            "description": "Design-token slug — never hex"
+          },
+          "tipColorSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "belt.red",
+            "description": "Ponteira override slug; null = default belt.tip"
+          },
+          "maxDegrees": {
+            "type": "number",
+            "description": "0 = no degree stripes (red belt in v1)"
+          },
+          "degrees": {
+            "type": "number",
+            "description": "Current degrees on this belt (0 after a belt promotion)"
+          }
+        },
+        "required": [
+          "beltId",
+          "name",
+          "colorSlug",
+          "tipColorSlug",
+          "maxDegrees",
+          "degrees"
+        ]
+      },
       "StudentListItemDto": {
         "type": "object",
         "properties": {
@@ -3017,6 +3547,14 @@
             "items": {
               "$ref": "#/components/schemas/ClassRefDto"
             }
+          },
+          "belt": {
+            "description": "Derived current belt (GRD.6)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
           }
         },
         "required": [
@@ -3058,6 +3596,11 @@
             "type": "string",
             "format": "uuid",
             "description": "Required when the student is a minor (minor ⇒ guardian rule)"
+          },
+          "initialBeltId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional initial belt (transfer students, story 32): seeds one audited belt award. Left empty, the student starts white. Must be an enabled catalog belt."
           }
         },
         "required": [
@@ -3301,6 +3844,42 @@
           "passwordEmailSent"
         ]
       },
+      "BeltRefDto": {
+        "type": "object",
+        "properties": {
+          "beltId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Azul",
+            "description": "PT-BR display name (client copy)"
+          },
+          "colorSlug": {
+            "type": "string",
+            "example": "belt.blue",
+            "description": "Design-token slug — never hex"
+          },
+          "tipColorSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "belt.red",
+            "description": "Ponteira override slug; null = default belt.tip"
+          },
+          "maxDegrees": {
+            "type": "number",
+            "description": "0 = no degree stripes (red belt in v1)"
+          }
+        },
+        "required": [
+          "beltId",
+          "name",
+          "colorSlug",
+          "tipColorSlug",
+          "maxDegrees"
+        ]
+      },
       "ClassProfessorDto": {
         "type": "object",
         "properties": {
@@ -3375,6 +3954,26 @@
           "ageMax": {
             "type": "number",
             "nullable": true
+          },
+          "minBelt": {
+            "nullable": true,
+            "description": "Turma belt range floor (\"Branca a Azul\" chips, GRD.6)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltRefDto"
+              }
+            ]
+          },
+          "maxBelt": {
+            "nullable": true,
+            "description": "Turma belt range ceiling",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltRefDto"
+              }
+            ]
           },
           "professor": {
             "$ref": "#/components/schemas/ClassProfessorDto"
@@ -3463,6 +4062,16 @@
             "type": "number",
             "minimum": 0
           },
+          "minBeltId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Turma belt range floor — catalog belt (\"Branca a Azul\" chips, GRD.6)"
+          },
+          "maxBeltId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Turma belt range ceiling — catalog belt"
+          },
           "schedules": {
             "minItems": 1,
             "type": "array",
@@ -3497,6 +4106,14 @@
             "enum": [
               "ativo",
               "pendente"
+            ]
+          },
+          "belt": {
+            "description": "Derived current belt (GRD.6)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
             ]
           }
         },
@@ -3542,6 +4159,26 @@
           "ageMax": {
             "type": "number",
             "nullable": true
+          },
+          "minBelt": {
+            "nullable": true,
+            "description": "Turma belt range floor (\"Branca a Azul\" chips, GRD.6)",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltRefDto"
+              }
+            ]
+          },
+          "maxBelt": {
+            "nullable": true,
+            "description": "Turma belt range ceiling",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltRefDto"
+              }
+            ]
           },
           "professor": {
             "$ref": "#/components/schemas/ClassProfessorDto"
@@ -3706,6 +4343,14 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/DependentClassDto"
+              }
+            ]
+          },
+          "belt": {
+            "description": "Derived current belt (GRD.6, story 34) — the dependent-card BeltBar",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
               }
             ]
           }
@@ -4031,6 +4676,69 @@
           "checkedIn"
         ]
       },
+      "NextMilestoneDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "degree",
+              "belt"
+            ]
+          },
+          "degree": {
+            "type": "number",
+            "nullable": true,
+            "description": "The degree the bar points at; null when the milestone is the next belt"
+          }
+        },
+        "required": [
+          "kind",
+          "degree"
+        ]
+      },
+      "GraduationProgressDto": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "number",
+            "description": "Active lessons since the last award (lifetime when none)"
+          },
+          "target": {
+            "type": "number",
+            "description": "The academy's lessons_per_degree for the current belt"
+          },
+          "label": {
+            "type": "string",
+            "example": "Próximo 3º grau",
+            "description": "PT-BR convenience label"
+          },
+          "nextMilestone": {
+            "$ref": "#/components/schemas/NextMilestoneDto"
+          }
+        },
+        "required": [
+          "current",
+          "target",
+          "label",
+          "nextMilestone"
+        ]
+      },
+      "AlunoHomeGraduationDto": {
+        "type": "object",
+        "properties": {
+          "belt": {
+            "$ref": "#/components/schemas/BeltViewDto"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/GraduationProgressDto"
+          }
+        },
+        "required": [
+          "belt",
+          "progress"
+        ]
+      },
       "AlunoHomeResponseDto": {
         "type": "object",
         "properties": {
@@ -4048,6 +4756,14 @@
           },
           "stats": {
             "$ref": "#/components/schemas/AlunoStatsDto"
+          },
+          "graduation": {
+            "description": "Derived belt + progress against the academy rule (GRD.7)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlunoHomeGraduationDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4338,6 +5054,14 @@
           "fullName": {
             "type": "string"
           },
+          "belt": {
+            "description": "Derived current belt (GRD.6)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
+          },
           "attendance": {
             "nullable": true,
             "type": "object",
@@ -4581,6 +5305,14 @@
               "ativo",
               "pendente"
             ]
+          },
+          "belt": {
+            "description": "Derived current belt (GRD.6)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
           }
         },
         "required": [
@@ -4654,6 +5386,540 @@
         },
         "required": [
           "sessions"
+        ]
+      },
+      "GraduationActorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "fullName"
+        ]
+      },
+      "GraduationEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "degree",
+              "belt",
+              "revocation"
+            ]
+          },
+          "belt": {
+            "$ref": "#/components/schemas/BeltRefDto"
+          },
+          "degree": {
+            "type": "number",
+            "description": "0 on belt promotions and revocations"
+          },
+          "awardedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "awardedBy": {
+            "$ref": "#/components/schemas/GraduationActorDto"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "reversed": {
+            "type": "boolean",
+            "description": "Award reversed by a later revocation compensation row"
+          },
+          "reversesGraduationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Set on revocation rows"
+          },
+          "certificateAvailable": {
+            "type": "boolean",
+            "description": "Render-only \"Ver certificado\" placeholder — non-reversed belt awards only"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "belt",
+          "degree",
+          "awardedAt",
+          "awardedBy",
+          "notes",
+          "reversed",
+          "reversesGraduationId",
+          "certificateAvailable"
+        ]
+      },
+      "AlunoGraduationResponseDto": {
+        "type": "object",
+        "properties": {
+          "belt": {
+            "description": "FAIXA ATUAL hero payload",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
+          },
+          "progress": {
+            "$ref": "#/components/schemas/GraduationProgressDto"
+          },
+          "timeline": {
+            "description": "Histórico de evolução, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraduationEntryDto"
+            }
+          }
+        },
+        "required": [
+          "belt",
+          "progress",
+          "timeline"
+        ]
+      },
+      "ValidGraduationDto": {
+        "type": "object",
+        "properties": {
+          "beltId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Azul",
+            "description": "PT-BR display name (client copy)"
+          },
+          "colorSlug": {
+            "type": "string",
+            "example": "belt.blue",
+            "description": "Design-token slug — never hex"
+          },
+          "tipColorSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "belt.red",
+            "description": "Ponteira override slug; null = default belt.tip"
+          },
+          "maxDegrees": {
+            "type": "number",
+            "description": "0 = no degree stripes (red belt in v1)"
+          },
+          "ladderKind": {
+            "type": "string",
+            "enum": [
+              "adult",
+              "kids"
+            ]
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Kids belts reflect the admin toggles (dimmed when false)"
+          }
+        },
+        "required": [
+          "beltId",
+          "name",
+          "colorSlug",
+          "tipColorSlug",
+          "maxDegrees",
+          "ladderKind",
+          "enabled"
+        ]
+      },
+      "ProfessorProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "professor": {
+            "$ref": "#/components/schemas/GraduationActorDto"
+          },
+          "belt": {
+            "nullable": true,
+            "description": "Display-only membership rank chip — null when unset",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
+          },
+          "validGraduations": {
+            "description": "Graduações válidas (merged régua)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidGraduationDto"
+            }
+          }
+        },
+        "required": [
+          "professor",
+          "validGraduations"
+        ]
+      },
+      "ProfileStudentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "2000-03-15"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          },
+          "badge": {
+            "type": "string",
+            "enum": [
+              "ativo",
+              "pendente"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "fullName",
+          "birthDate",
+          "status",
+          "badge"
+        ]
+      },
+      "StudentNoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "body": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/GraduationActorDto"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "createdAt",
+          "author"
+        ]
+      },
+      "StudentProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/ProfileStudentDto"
+          },
+          "belt": {
+            "$ref": "#/components/schemas/BeltViewDto"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/GraduationProgressDto"
+          },
+          "stats": {
+            "description": "Phase-4 attendance stat tiles",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlunoStatsDto"
+              }
+            ]
+          },
+          "notes": {
+            "description": "Observações, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentNoteDto"
+            }
+          }
+        },
+        "required": [
+          "student",
+          "belt",
+          "progress",
+          "stats",
+          "notes"
+        ]
+      },
+      "AwardGraduationDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "degree",
+              "belt"
+            ],
+            "description": "degree = one more stripe on the current belt; belt = promotion (degrees reset)"
+          },
+          "beltId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Target belt — required for kind=belt (any enabled, non-current catalog belt)"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Observação carried on the timeline entry"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "AwardGraduationResponseDto": {
+        "type": "object",
+        "properties": {
+          "graduation": {
+            "$ref": "#/components/schemas/GraduationEntryDto"
+          },
+          "belt": {
+            "description": "Freshly derived current belt after the award",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "graduation",
+          "belt"
+        ]
+      },
+      "StudentNotesResponseDto": {
+        "type": "object",
+        "properties": {
+          "notes": {
+            "description": "Newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentNoteDto"
+            }
+          }
+        },
+        "required": [
+          "notes"
+        ]
+      },
+      "CreateStudentNoteDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "example": "Exame de faixa — aprovado com distinção."
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "StudentNoteResponseDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "$ref": "#/components/schemas/StudentNoteDto"
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "GraduationRuleRowDto": {
+        "type": "object",
+        "properties": {
+          "beltId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Azul",
+            "description": "PT-BR display name (client copy)"
+          },
+          "colorSlug": {
+            "type": "string",
+            "example": "belt.blue",
+            "description": "Design-token slug — never hex"
+          },
+          "tipColorSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "belt.red",
+            "description": "Ponteira override slug; null = default belt.tip"
+          },
+          "maxDegrees": {
+            "type": "number",
+            "description": "0 = no degree stripes (red belt in v1)"
+          },
+          "ladderKind": {
+            "type": "string",
+            "enum": [
+              "adult",
+              "kids"
+            ]
+          },
+          "lessonsPerDegree": {
+            "type": "number",
+            "description": "Aulas por grau — default 40 when no override row exists"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "toggleable": {
+            "type": "boolean",
+            "description": "Only kids-ladder belts render a toggle"
+          }
+        },
+        "required": [
+          "beltId",
+          "name",
+          "colorSlug",
+          "tipColorSlug",
+          "maxDegrees",
+          "ladderKind",
+          "lessonsPerDegree",
+          "enabled",
+          "toggleable"
+        ]
+      },
+      "GraduationRulesResponseDto": {
+        "type": "object",
+        "properties": {
+          "rules": {
+            "description": "Merged ladder in the handoff régua display order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraduationRuleRowDto"
+            }
+          }
+        },
+        "required": [
+          "rules"
+        ]
+      },
+      "GraduationRuleEntryDto": {
+        "type": "object",
+        "properties": {
+          "beltId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lessonsPerDegree": {
+            "type": "number",
+            "minimum": 10,
+            "description": "Aulas por grau — service rejects values below 10 with a stable code"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "false is accepted only for kids-ladder belts"
+          }
+        },
+        "required": [
+          "beltId",
+          "lessonsPerDegree",
+          "enabled"
+        ]
+      },
+      "UpdateGraduationRulesDto": {
+        "type": "object",
+        "properties": {
+          "rules": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraduationRuleEntryDto"
+            }
+          }
+        },
+        "required": [
+          "rules"
+        ]
+      },
+      "GraduationHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "graduations": {
+            "description": "Full history incl. revocations",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraduationEntryDto"
+            }
+          }
+        },
+        "required": [
+          "graduations"
+        ]
+      },
+      "RevokeGraduationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Audited reason (\"who and why\", story 31)"
+          }
+        }
+      },
+      "RevokeGraduationResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "revoked"
+            ]
+          },
+          "graduationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The reversed award row"
+          },
+          "revocationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The appended compensation row"
+          },
+          "belt": {
+            "description": "Restored current belt after the reversal",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "graduationId",
+          "revocationId",
+          "belt"
         ]
       }
     }

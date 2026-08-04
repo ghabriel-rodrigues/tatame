@@ -12,6 +12,8 @@ import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { badgeFor } from '../../enrollment/lib/derive.js';
+import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
+import type { BeltView } from '../../graduation/graduation.types.js';
 import { SessionService } from './session.service.js';
 
 export interface AdminSessionRow {
@@ -27,6 +29,8 @@ export interface ProfessorStudentRow {
   fullName: string;
   birthDate: string;
   badge: 'ativo' | 'pendente';
+  /** Derived current belt (GRD.6). */
+  belt: BeltView;
 }
 
 const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
@@ -42,6 +46,7 @@ export class DirectoryService {
   constructor(
     @Inject(APP_DB) private readonly appDb: DbHandle,
     private readonly sessions: SessionService,
+    private readonly graduationQuery: GraduationQueryService,
   ) {}
 
   /** GET /admin/classes/:id/sessions — newest first, active counts only. */
@@ -115,12 +120,21 @@ export class DirectoryService {
         .from(students)
         .where(and(...conditions))
         .orderBy(asc(students.fullName));
-      return rows.map((row) => ({
-        id: row.id,
-        fullName: row.fullName,
-        birthDate: row.birthDate,
-        badge: badgeFor(row.userId),
-      }));
+      const beltByStudent = await this.graduationQuery.currentBeltMap(
+        tx,
+        rows.map((r) => r.id),
+      );
+      return rows.map((row) => {
+        const belt = beltByStudent.get(row.id);
+        if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Belt derivation returned no entry');
+        return {
+          id: row.id,
+          fullName: row.fullName,
+          birthDate: row.birthDate,
+          badge: badgeFor(row.userId),
+          belt,
+        };
+      });
     });
   }
 }
