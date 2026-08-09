@@ -182,9 +182,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] BIL.13 Web: admin Visão financeira per admin-02 replacing the index shell — hero receita card (mês, no ano, previsão, inadimplência %), 6-month bar chart, próximos vencimentos, inadimplência list
 - [x] BIL.14 Web: admin Planos de mensalidade in Configurações per admin-15 — list + Novo plano/edit sheet (nome, valor, recorrência chips, vencimento chips 5/10/15), archive, student-form plan select
 - [x] BIL.15 Web: plataforma Faturamento e repasses per plataforma-09 — SaaS totals tiles + per-academy repasse list with Repassado/Em trânsito/Retido from the read model
-- [ ] BIL.16 RN: aluno Carteira per aluno-12 (mensalidade card with Em aberto/Paga chip, plan header, recurrence banner, histórico, empty state) replacing the shell + real home mensalidade alert with Carteira deep link
-- [ ] BIL.17 RN: payment sheets per aluno-13/14/15 — Pix QR + copia-e-cola + Simular pagamento (gated), boleto linha digitável + barcode + Simular compensação, cartão form + recurrence toggle — success pop, Ver comprovante
-- [ ] BIL.18 RN: responsável Pagamentos per responsavel-04/05 — per-dependent charge cards with plan subtitle, Pix per dependent, Ver comprovante, consolidated histórico + dependent-card alerts
+- [x] BIL.16 RN: aluno Carteira per aluno-12 (mensalidade card with Em aberto/Paga chip, plan header, recurrence banner, histórico, empty state) replacing the shell + real home mensalidade alert with Carteira deep link
+- [x] BIL.17 RN: payment sheets per aluno-13/14/15 — Pix QR + copia-e-cola + Simular pagamento (gated), boleto linha digitável + barcode + Simular compensação, cartão form + recurrence toggle — success pop, Ver comprovante
+- [x] BIL.18 RN: responsável Pagamentos per responsavel-04/05 — per-dependent charge cards with plan subtitle, Pix per dependent, Ver comprovante, consolidated histórico + dependent-card alerts
 - [x] BIL.19 Android: aluno Carteira + real home mensalidade alert
 - [x] BIL.20 Android: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
 - [x] BIL.21 Android: responsável Pagamentos + Pix per dependent + consolidated histórico

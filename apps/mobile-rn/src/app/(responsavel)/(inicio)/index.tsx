@@ -23,6 +23,7 @@ import {
   useTheme,
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
+import { formatBRL, longDayMonthPt } from '../../../features/billing/format';
 import { ageFromBirthDate, longDatePt, slotLabel } from '../../../features/enrollment/format';
 import { canRegisterDependents } from '../../../features/enrollment/permissions';
 import { openRegisterDependentSheet } from '../../../features/enrollment/register-sheet-store';
@@ -35,6 +36,8 @@ function DependentCard({ dependent }: { dependent: DependentDetail }) {
   const router = useRouter();
   const age = ageFromBirthDate(dependent.birthDate);
   const nextSlot = dependent.class?.nextSlot ?? null;
+  // Real per-dependent mensalidade alert (BIL.18, story 22) — server-derived.
+  const mensalidade = dependent.mensalidade ?? null;
   return (
     <Pressable
       accessibilityRole="button"
@@ -62,6 +65,36 @@ function DependentCard({ dependent }: { dependent: DependentDetail }) {
               size="sm"
               testID={`dependent-belt-${dependent.id}`}
             />
+          ) : null}
+          {mensalidade ? (
+            <View
+              testID={`dependent-mensalidade-${dependent.id}`}
+              style={{
+                borderRadius: theme.radius.md,
+                backgroundColor: mensalidade.overdue
+                  ? theme.color.danger['100']
+                  : theme.color.warning['100'],
+                paddingVertical: 6,
+                paddingHorizontal: 10,
+              }}
+            >
+              <Text
+                variant="caption"
+                weight="bold"
+                color={
+                  mensalidade.overdue
+                    ? theme.color.danger['500']
+                    : theme.color.warning['500']
+                }
+                numberOfLines={1}
+                style={{ fontSize: 11.5 }}
+              >
+                {mensalidade.overdue
+                  ? `Mensalidade em atraso · venceu em ${longDayMonthPt(mensalidade.dueDate)}`
+                  : `Mensalidade em aberto · vence em ${longDayMonthPt(mensalidade.dueDate)}`}{' '}
+                · {formatBRL(mensalidade.amountCents)}
+              </Text>
+            </View>
           ) : null}
           <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
             <StatTile value="—" label="frequência" note="Fase 4" />

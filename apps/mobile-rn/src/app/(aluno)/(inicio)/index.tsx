@@ -26,6 +26,7 @@ import {
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { openCheckinSheet } from '../../../features/attendance/checkin-sheet-store';
+import { dueLabel, formatBRL, longDayMonthPt } from '../../../features/billing/format';
 import { longDatePt, scheduleTimeRange } from '../../../features/enrollment/format';
 import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../features/enrollment/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
@@ -44,6 +45,7 @@ export default function AlunoInicioScreen() {
   const todayClass = home?.todayClass ?? null;
   const stats = home?.stats;
   const graduation = home?.graduation ?? null;
+  const mensalidade = home?.mensalidade ?? null;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -70,6 +72,51 @@ export default function AlunoInicioScreen() {
           ) : null}
 
           <QueryState loading={homeQuery.isPending} error={homeQuery.isError}>
+            {mensalidade ? (
+              // Real "mensalidade em aberto" alert (BIL.16, story 7) —
+              // server-derived charge data, deep-linking into the Carteira.
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  mensalidade.overdue ? 'Mensalidade em atraso' : 'Mensalidade em aberto'
+                }
+                testID="mensalidade-alert"
+                onPress={() => router.push('/carteira')}
+              >
+                <Card variant="tinted" padding={theme.space['4']}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: theme.space['3'],
+                    }}
+                  >
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text
+                        variant="label"
+                        color={
+                          mensalidade.overdue
+                            ? theme.color.danger['500']
+                            : theme.color.warning['500']
+                        }
+                      >
+                        {mensalidade.overdue
+                          ? 'Mensalidade em atraso'
+                          : 'Mensalidade em aberto'}
+                      </Text>
+                      <Text variant="caption">
+                        {formatBRL(mensalidade.amountCents)} ·{' '}
+                        {mensalidade.overdue
+                          ? `Venceu em ${longDayMonthPt(mensalidade.dueDate)}`
+                          : dueLabel(mensalidade.dueDate)}
+                      </Text>
+                    </View>
+                    <ChevronRight size={16} color={theme.color.fg['4']} />
+                  </View>
+                </Card>
+              </Pressable>
+            ) : null}
+
             <Card variant="hero" testID="aluno-hero">
               <View style={{ gap: theme.space['3'] }}>
                 {todayClass ? (

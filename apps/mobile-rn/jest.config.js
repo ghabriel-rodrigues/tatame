@@ -37,6 +37,7 @@ module.exports = {
     '^expo-linear-gradient$': '<rootDir>/tests/mocks/expo-linear-gradient.js',
     '^expo-secure-store$': '<rootDir>/tests/mocks/expo-secure-store.js',
     '^expo-camera$': '<rootDir>/tests/mocks/expo-camera.js',
+    '^expo-clipboard$': '<rootDir>/tests/mocks/expo-clipboard.js',
     '^expo-glass-effect$': '<rootDir>/tests/mocks/expo-glass-effect.js',
   },
 };

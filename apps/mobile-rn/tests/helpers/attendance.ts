@@ -45,6 +45,8 @@ export interface AlunoHomeOptions {
   todayClass?: null;
   /** `null` removes the graduation payload (defensive rendering path). */
   graduation?: null;
+  /** Real "mensalidade em aberto" alert payload (BIL.16, story 7). */
+  mensalidade?: AlunoHomeResponse['mensalidade'];
 }
 
 /** aluno-03/09: Open mat today at 10:00; faixa azul 2 graus, 26 de 40. */
@@ -64,6 +66,7 @@ export function makeAlunoHome(options: AlunoHomeOptions = {}): AlunoHomeResponse
     ...(options.graduation === null
       ? {}
       : { graduation: { belt: makeBeltView(), progress: makeProgress() } }),
+    ...(options.mensalidade ? { mensalidade: options.mensalidade } : {}),
   };
 }
 

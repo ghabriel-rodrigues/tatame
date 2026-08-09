@@ -5,12 +5,13 @@
  * graduation progress bar fed by the true lesson count.
  */
 
-import { act, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
 import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
 import { makeAlunoHome, type AlunoHomeOptions } from '../helpers/attendance';
+import { makeMensalidadeAlert, makeWallet } from '../helpers/billing';
 
 jest.useFakeTimers();
 
@@ -82,5 +83,33 @@ describe('aluno Início (ATT.16)', () => {
 
     await waitFor(() => expect(screen.getByText('Sem aula hoje')).toBeTruthy());
     expect(screen.queryByText('Fazer check-in')).toBeNull();
+  });
+
+  it('renders the real mensalidade alert from the home payload (BIL.16, story 7)', async () => {
+    renderAluno({ mensalidade: makeMensalidadeAlert() });
+
+    await waitFor(() => expect(screen.getByTestId('mensalidade-alert')).toBeTruthy());
+    expect(screen.getByText('Mensalidade em aberto')).toBeTruthy();
+    expect(screen.getByText('R$ 180,00 · Vence em 10 de agosto')).toBeTruthy();
+  });
+
+  it('hides the alert when nothing is open and flags overdue distinctly', async () => {
+    renderAluno();
+    await waitFor(() => expect(screen.getByText('Open mat')).toBeTruthy());
+    expect(screen.queryByTestId('mensalidade-alert')).toBeNull();
+  });
+
+  it('deep-links the alert into the Carteira (BIL.16)', async () => {
+    renderAluno({ mensalidade: makeMensalidadeAlert() }, ({ method, path }) =>
+      method === 'GET' && path === '/v1/aluno/wallet' ? json(200, makeWallet()) : null,
+    );
+
+    await waitFor(() => expect(screen.getByTestId('mensalidade-alert')).toBeTruthy());
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('mensalidade-alert'));
+    });
+
+    await waitFor(() => expect(screen.getByTestId('mensalidade-card')).toBeTruthy());
+    expect(screen.getByText('Plano mensal recorrente · R$ 180,00')).toBeTruthy();
   });
 });
