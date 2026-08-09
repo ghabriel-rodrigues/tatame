@@ -74,6 +74,7 @@ fun AlunoHomeTab(
     modifier: Modifier = Modifier,
     openCheckinOnEnter: Boolean = false,
     onOpenCarteira: () -> Unit = {},
+    onOpenAgenda: () -> Unit = {},
     viewModel: AlunoHomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -109,9 +110,30 @@ fun AlunoHomeTab(
                 onCheckin = viewModel::openCheckinSheet,
                 onOpenGraduacao = { graduacaoOpen = true },
                 onOpenCarteira = onOpenCarteira,
+                onOpenAgenda = onOpenAgenda,
             )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
+    }
+
+    AlunoCheckinSheetHost(viewModel = viewModel)
+}
+
+/**
+ * The Phase-4 check-in sheet + success pop rendered from [viewModel] state.
+ * Public so other aluno surfaces reuse the *same* sheet (the Agenda tab's
+ * card button, AGD.7 — spec 007 story 7); [onCheckinApplied] fires when a
+ * check-in result lands so callers can refetch their own read model.
+ */
+@Composable
+fun AlunoCheckinSheetHost(
+    viewModel: AlunoHomeViewModel = koinViewModel(),
+    onCheckinApplied: () -> Unit = {},
+) {
+    val state by viewModel.uiState.collectAsState()
+    val hasResult = state.result != null
+    LaunchedEffect(hasResult) {
+        if (hasResult) onCheckinApplied()
     }
 
     if (state.sheet.visible) {
@@ -140,8 +162,9 @@ private fun AlunoHomeContent(
     onCheckin: () -> Unit,
     onOpenGraduacao: () -> Unit,
     onOpenCarteira: () -> Unit,
+    onOpenAgenda: () -> Unit,
 ) {
-    HeroCard(todayClass = home.todayClass, onCheckin = onCheckin)
+    HeroCard(todayClass = home.todayClass, onCheckin = onCheckin, onOpenAgenda = onOpenAgenda)
     // Real "mensalidade em aberto" alert (spec 006, story 7) — deep-links
     // into the Carteira tab; absent when nothing is open (server truth).
     home.mensalidade?.let { alert ->
@@ -215,7 +238,7 @@ private fun MensalidadeAlertCard(alert: MensalidadeAlert, onOpen: () -> Unit) {
 }
 
 @Composable
-private fun HeroCard(todayClass: AlunoTodayClass?, onCheckin: () -> Unit) {
+private fun HeroCard(todayClass: AlunoTodayClass?, onCheckin: () -> Unit, onOpenAgenda: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,12 +308,13 @@ private fun HeroCard(todayClass: AlunoTodayClass?, onCheckin: () -> Unit) {
                     }
                     Spacer(Modifier.size(LumiraTokens.Space.S2))
                 }
-                // Agenda is a later slice — rendered disabled, never faked.
-                TextButton(onClick = {}, enabled = false) {
+                // AGD.7 closes the recorded "Ver agenda" debt: the CTA now
+                // navigates to the real Agenda tab.
+                TextButton(onClick = onOpenAgenda) {
                     Text(
                         text = stringResource(R.string.aluno_hero_agenda_cta),
                         style = MaterialTheme.typography.labelSmall,
-                        color = LumiraTokens.Colors.Purple200,
+                        color = LumiraTokens.Colors.Purple100,
                     )
                 }
             }

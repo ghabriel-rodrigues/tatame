@@ -1,5 +1,6 @@
 package br.com.tatame.core.di
 
+import br.com.tatame.feature.agenda.di.agendaFeatureModule
 import br.com.tatame.feature.attendance.di.attendanceFeatureModule
 import br.com.tatame.feature.auth.di.authFeatureModule
 import br.com.tatame.feature.billing.di.billingFeatureModule
@@ -23,6 +24,7 @@ val featureModules: List<Module> = listOf(
     attendanceFeatureModule,
     graduationFeatureModule,
     billingFeatureModule,
+    agendaFeatureModule,
 )
 
 val appModules: List<Module> = coreModules + featureModules

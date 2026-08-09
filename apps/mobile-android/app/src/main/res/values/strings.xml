@@ -311,6 +311,28 @@
     <string name="error_billing_mandate_already_active">Você já tem uma recorrência ativa no cartão.</string>
     <string name="error_billing_simulate_unavailable">Simulação indisponível neste ambiente.</string>
 
+    <!-- Aluno Agenda (AGD.7, aluno-11) -->
+    <string name="agenda_title">Agenda</string>
+    <string name="agenda_month_button">Mês</string>
+    <string name="agenda_card_professor">Prof. %1$s</string>
+    <string name="agenda_checkin_cta">Check-in</string>
+    <string name="agenda_empty_title">Sem aulas neste dia</string>
+    <string name="agenda_empty_body">Bom descanso — o tatame espera você amanhã.</string>
+    <string name="agenda_events_title">Eventos do mês</string>
+    <!-- Events content is a later phase; the section stays honestly empty. -->
+    <string name="agenda_events_empty">Nenhum evento neste mês</string>
+
+    <!-- Persona month calendars (AGD.8, aluno-08 / professor-04) -->
+    <string name="calendar_title_fallback">Calendário</string>
+    <string name="calendar_subtitle_aluno">Suas aulas e eventos da academia</string>
+    <string name="calendar_subtitle_professor">Aulas recorrentes e eventos da academia</string>
+    <string name="calendar_legend_class_aluno">sua aula</string>
+    <string name="calendar_legend_class_professor">aula recorrente</string>
+    <string name="calendar_legend_event">evento</string>
+    <string name="calendar_empty_day_aluno">Dia livre — o tatame espera você no próximo treino.</string>
+    <string name="calendar_empty_day_professor">Dia livre — bom descanso.</string>
+    <string name="calendar_tag_aula">Aula</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>

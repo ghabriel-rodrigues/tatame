@@ -1,6 +1,7 @@
 package br.com.tatame.feature.attendance.professor
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +37,7 @@ import br.com.tatame.R
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.ProfessorDashboardResponse
 import br.com.tatame.core.network.dto.ProfessorTodayClass
+import br.com.tatame.feature.agenda.ProfessorCalendarScreen
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
@@ -54,14 +57,25 @@ fun ProfessorHomeTab(
 ) {
     val state by viewModel.uiState.collectAsState()
     var chamadaFor by remember { mutableStateOf<Pair<String, String>?>(null) } // classId to name
+    var calendarOpen by rememberSaveable { mutableStateOf(false) }
+
+    // AGD.8 — the header calendar icon pushes the professor month view.
+    if (calendarOpen) {
+        ProfessorCalendarScreen(onBack = { calendarOpen = false }, modifier = modifier)
+        return
+    }
 
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(LumiraTokens.Space.S6))
-        Text(
-            text = stringResource(R.string.dashboard_greeting, firstName),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.dashboard_greeting, firstName),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+            )
+            CalendarBubble(onClick = { calendarOpen = true })
+        }
         Spacer(Modifier.height(LumiraTokens.Space.S4))
 
         when (val dashboard = state) {
@@ -92,6 +106,24 @@ fun ProfessorHomeTab(
                 chamadaFor = null
                 viewModel.refresh()
             },
+        )
+    }
+}
+
+/** Header calendar entry point (AGD.8, professor-02 header icon). */
+@Composable
+private fun CalendarBubble(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(LumiraTokens.Space.S8)
+            .background(color = LumiraTokens.Colors.Gray100, shape = PillShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "▤",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

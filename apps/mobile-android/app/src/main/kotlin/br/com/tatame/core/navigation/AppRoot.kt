@@ -15,6 +15,7 @@ import br.com.tatame.core.auth.SessionState
 import br.com.tatame.core.network.dto.AcademyStatus
 import br.com.tatame.core.network.dto.MeResponse
 import br.com.tatame.core.network.dto.Roles
+import br.com.tatame.feature.agenda.aluno.AlunoAgendaTab
 import br.com.tatame.feature.attendance.aluno.AlunoHomeTab
 import br.com.tatame.feature.attendance.professor.ProfessorHomeTab
 import br.com.tatame.feature.auth.LoginScreen
@@ -97,21 +98,28 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             onLogout = onLogout,
             // ATT.19 — Início (index 0) is the real aluno surface; the central
             // Check-in tab (index 2) routes there with the sheet already open.
-            // BIL.19 — Carteira (index 3) is the real wallet; the home
-            // mensalidade alert deep-links into it. GRD.19 — Perfil (index 4)
-            // carries the real derived belt chip.
+            // AGD.7 — Agenda (index 1) is the real weekday agenda; the hero
+            // "Ver agenda" CTA now navigates there (closed debt). BIL.19 —
+            // Carteira (index 3) is the real wallet; the home mensalidade
+            // alert deep-links into it. GRD.19 — Perfil (index 4) carries the
+            // real derived belt chip.
             tabContent = mapOf(
                 0 to { selectTab ->
                     AlunoHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
                         onOpenCarteira = { selectTab(3) },
+                        onOpenAgenda = { selectTab(1) },
                     )
+                },
+                1 to { _ ->
+                    AlunoAgendaTab(academyName = me.academy?.name)
                 },
                 2 to { selectTab ->
                     AlunoHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
                         openCheckinOnEnter = true,
                         onOpenCarteira = { selectTab(3) },
+                        onOpenAgenda = { selectTab(1) },
                     )
                 },
                 3 to { _ ->
