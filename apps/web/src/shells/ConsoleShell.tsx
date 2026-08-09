@@ -206,6 +206,7 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
             Início
           </NavLink>
           <NavLink to="/admin/cadastros">Cadastros</NavLink>
+          <NavLink to="/admin/graduacao">Graduação</NavLink>
         </Box>
       ) : null}
       <Box component="main" sx={{ padding: '24px 20px', maxWidth: 1080, margin: '0 auto' }}>

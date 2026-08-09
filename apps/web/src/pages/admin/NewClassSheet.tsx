@@ -12,7 +12,7 @@ import Stack from '@mui/material/Stack';
 import { BottomSheet, Chip, FormField, TatameButton } from '@tatame/design-system';
 import { $api, queryClient } from '../../api/api';
 import { enrollmentErrorMessage } from './common';
-import { WEEKDAY_CHIP_ORDER, WEEKDAY_SHORT } from './format';
+import { WEEKDAY_CHIP_ORDER, WEEKDAY_SHORT, beltLabel } from './format';
 
 export interface NewClassSheetProps {
   open: boolean;
@@ -29,10 +29,15 @@ export function NewClassSheet({ open, onClose, onSuccess }: NewClassSheetProps) 
   const [capacity, setCapacity] = useState('20');
   const [ageMin, setAgeMin] = useState('');
   const [ageMax, setAgeMax] = useState('');
+  const [minBeltId, setMinBeltId] = useState('');
+  const [maxBeltId, setMaxBeltId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
 
   const professors = $api.useQuery('get', '/v1/admin/professors');
+  // Merged régua — belt-range selects offer enabled belts only (GRD.14).
+  const rules = $api.useQuery('get', '/v1/admin/graduation-rules');
+  const enabledBelts = (rules.data?.rules ?? []).filter((rule) => rule.enabled);
   const create = $api.useMutation('post', '/v1/admin/classes');
 
   function toggleWeekday(weekday: number) {
@@ -71,6 +76,9 @@ export function NewClassSheet({ open, onClose, onSuccess }: NewClassSheetProps) 
           capacity: capacityNumber,
           ...(min !== null ? { ageMin: min } : {}),
           ...(max !== null ? { ageMax: max } : {}),
+          // Optional belt range — "Branca a Azul" chips on class cards.
+          ...(minBeltId ? { minBeltId } : {}),
+          ...(maxBeltId ? { maxBeltId } : {}),
           schedules: weekdays.map((weekday) => ({
             weekday,
             startTime,
@@ -139,11 +147,16 @@ export function NewClassSheet({ open, onClose, onSuccess }: NewClassSheetProps) 
           />
         </Box>
         <Stack spacing="6px">
-          <FormLabel htmlFor="new-class-professor" sx={{ fontSize: 13, fontWeight: 600 }}>
+          <FormLabel
+            id="new-class-professor-label"
+            htmlFor="new-class-professor"
+            sx={{ fontSize: 13, fontWeight: 600 }}
+          >
             Professor
           </FormLabel>
           <Select
             id="new-class-professor"
+            labelId="new-class-professor-label"
             size="small"
             displayEmpty
             value={professorUserId}
@@ -173,6 +186,58 @@ export function NewClassSheet({ open, onClose, onSuccess }: NewClassSheetProps) 
           <FormField label="Idade máx." type="number" value={ageMax} onChangeText={setAgeMax} />
         </Box>
         {errors['age'] ? <FormHelperText error>{errors['age']}</FormHelperText> : null}
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <Stack spacing="6px">
+            <FormLabel
+              id="new-class-min-belt-label"
+              htmlFor="new-class-min-belt"
+              sx={{ fontSize: 13, fontWeight: 600 }}
+            >
+              Faixa mínima
+            </FormLabel>
+            <Select
+              id="new-class-min-belt"
+              labelId="new-class-min-belt-label"
+              size="small"
+              displayEmpty
+              value={minBeltId}
+              inputProps={{ 'aria-label': 'Faixa mínima' }}
+              onChange={(event) => setMinBeltId(event.target.value)}
+            >
+              <MenuItem value="">Sem restrição</MenuItem>
+              {enabledBelts.map((belt) => (
+                <MenuItem key={belt.beltId} value={belt.beltId}>
+                  {beltLabel(belt)}
+                </MenuItem>
+              ))}
+            </Select>
+          </Stack>
+          <Stack spacing="6px">
+            <FormLabel
+              id="new-class-max-belt-label"
+              htmlFor="new-class-max-belt"
+              sx={{ fontSize: 13, fontWeight: 600 }}
+            >
+              Faixa máxima
+            </FormLabel>
+            <Select
+              id="new-class-max-belt"
+              labelId="new-class-max-belt-label"
+              size="small"
+              displayEmpty
+              value={maxBeltId}
+              inputProps={{ 'aria-label': 'Faixa máxima' }}
+              onChange={(event) => setMaxBeltId(event.target.value)}
+            >
+              <MenuItem value="">Sem restrição</MenuItem>
+              {enabledBelts.map((belt) => (
+                <MenuItem key={belt.beltId} value={belt.beltId}>
+                  {beltLabel(belt)}
+                </MenuItem>
+              ))}
+            </Select>
+          </Stack>
+        </Box>
         {apiError ? <FormHelperText error>{apiError}</FormHelperText> : null}
         <TatameButton label="Criar turma" fullWidth loading={create.isPending} onPress={submit} />
         <TatameButton variant="ghost" label="Voltar" fullWidth onPress={onClose} />

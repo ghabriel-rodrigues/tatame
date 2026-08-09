@@ -47,6 +47,9 @@ export default defineConfig(() => ({
     environment: 'jsdom',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['src/test/setup.ts'],
+    // userEvent + MUI surfaces routinely take 2-5s per test under parallel
+    // workers; the 5s default made timing the dominant failure mode.
+    testTimeout: 15_000,
     reporters: ['default'],
     coverage: {
       reportsDirectory: './test-output/vitest/coverage',

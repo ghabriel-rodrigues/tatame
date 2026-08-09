@@ -31,6 +31,11 @@ export interface EditRecordSheetProps {
     confirmText: string;
     onArchive: () => Promise<void>;
   };
+  /**
+   * Optional extra action rendered between Salvar and Excluir — the student
+   * sheet plugs "Ver graduações" here (GRD.14).
+   */
+  secondaryAction?: { label: string; onPress: () => void };
 }
 
 export function EditRecordSheet({
@@ -40,6 +45,7 @@ export function EditRecordSheet({
   currentName,
   onRename,
   archive,
+  secondaryAction,
 }: EditRecordSheetProps) {
   const [name, setName] = useState(currentName);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +89,15 @@ export function EditRecordSheet({
         <FormField label="Nome" value={name} onChangeText={setName} required />
         {error ? <FormHelperText error>{error}</FormHelperText> : null}
         <TatameButton label="Salvar" fullWidth loading={busy} onPress={() => void save()} />
+        {secondaryAction ? (
+          <TatameButton
+            variant="secondary"
+            label={secondaryAction.label}
+            fullWidth
+            disabled={busy}
+            onPress={secondaryAction.onPress}
+          />
+        ) : null}
         {archive ? (
           <TatameButton
             variant="danger"

@@ -87,6 +87,29 @@ export function useToastState(): ToastState {
   return { message, show, clear };
 }
 
+/** PT-BR copy for the graduation problem codes (GRD.13-14). */
+export function graduationErrorMessage(error: unknown): string {
+  const problem = parseProblem(error);
+  switch (problem?.code) {
+    case ApiErrorCodes.GRADUATION_DEGREE_AT_MAX:
+      return 'O aluno já está no número máximo de graus desta faixa.';
+    case ApiErrorCodes.GRADUATION_BELT_INVALID_TARGET:
+      return 'Faixa inválida para esta graduação.';
+    case ApiErrorCodes.GRADUATION_ALREADY_REVERSED:
+      return 'Esta graduação já foi revogada.';
+    case ApiErrorCodes.GRADUATION_LESSONS_BELOW_MINIMUM:
+      return 'Aulas por grau deve ser de no mínimo 10.';
+    case ApiErrorCodes.GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT:
+      return 'Apenas faixas infantis podem ser desativadas.';
+    case ApiErrorCodes.VALIDATION_FAILED:
+      return 'Verifique os dados informados e tente novamente.';
+    case ApiErrorCodes.TENANT_READ_ONLY:
+      return 'Academia em modo somente leitura — alterações bloqueadas.';
+    default:
+      return 'Algo deu errado. Tente novamente.';
+  }
+}
+
 /** PT-BR copy for the enrollment problem codes (client branches on `code`). */
 export function enrollmentErrorMessage(error: unknown): string {
   const problem = parseProblem(error);

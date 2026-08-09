@@ -52,7 +52,7 @@ describe('turmas list + nova turma (ENR.15)', () => {
 
     const sheet = await screen.findByRole('dialog', { name: 'Nova turma' });
     await user.type(within(sheet).getByLabelText(/Nome da turma/), 'Iniciantes');
-    await user.click(within(sheet).getByRole('combobox'));
+    await user.click(within(sheet).getAllByRole('combobox')[0]!);
     await user.click(await screen.findByRole('option', { name: 'Rafael Nunes' }));
     await user.click(within(sheet).getByRole('button', { name: 'Criar turma' }));
 
@@ -87,7 +87,7 @@ describe('turmas list + nova turma (ENR.15)', () => {
     fireEvent.change(within(sheet).getByLabelText(/Hora de início/), {
       target: { value: '18:30' },
     });
-    await user.click(within(sheet).getByRole('combobox'));
+    await user.click(within(sheet).getAllByRole('combobox')[0]!);
     await user.click(await screen.findByRole('option', { name: 'Ana Souza' }));
     await user.click(within(sheet).getByRole('button', { name: 'Criar turma' }));
 

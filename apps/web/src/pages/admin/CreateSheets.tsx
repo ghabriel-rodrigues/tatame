@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack';
 import { BottomSheet, FormField, TatameButton } from '@tatame/design-system';
 import { $api, queryClient } from '../../api/api';
 import { enrollmentErrorMessage } from './common';
-import { isMinor } from './format';
+import { beltLabel, isMinor } from './format';
 
 interface SheetProps {
   open: boolean;
@@ -25,10 +25,14 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [guardianId, setGuardianId] = useState('');
+  const [initialBeltId, setInitialBeltId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
 
   const guardians = $api.useQuery('get', '/v1/admin/guardians');
+  // Merged régua — the initial-belt select offers enabled belts only (GRD.14).
+  const rules = $api.useQuery('get', '/v1/admin/graduation-rules');
+  const enabledBelts = (rules.data?.rules ?? []).filter((rule) => rule.enabled);
   const create = $api.useMutation('post', '/v1/admin/students');
 
   function submit() {
@@ -47,6 +51,8 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
           fullName: fullName.trim(),
           birthDate,
           ...(guardianId ? { guardianId } : {}),
+          // Optional transfer-student seed; empty = starts white (story 32).
+          ...(initialBeltId ? { initialBeltId } : {}),
         },
       },
       {
@@ -84,11 +90,16 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
           required
         />
         <Stack spacing="6px">
-          <FormLabel htmlFor="new-student-guardian" sx={{ fontSize: 13, fontWeight: 600 }}>
+          <FormLabel
+            id="new-student-guardian-label"
+            htmlFor="new-student-guardian"
+            sx={{ fontSize: 13, fontWeight: 600 }}
+          >
             Responsável
           </FormLabel>
           <Select
             id="new-student-guardian"
+            labelId="new-student-guardian-label"
             size="small"
             displayEmpty
             value={guardianId}
@@ -106,6 +117,31 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
           {errors['guardianId'] ? (
             <FormHelperText error>{errors['guardianId']}</FormHelperText>
           ) : null}
+        </Stack>
+        <Stack spacing="6px">
+          <FormLabel
+            id="new-student-belt-label"
+            htmlFor="new-student-belt"
+            sx={{ fontSize: 13, fontWeight: 600 }}
+          >
+            Faixa inicial (opcional)
+          </FormLabel>
+          <Select
+            id="new-student-belt"
+            labelId="new-student-belt-label"
+            size="small"
+            displayEmpty
+            value={initialBeltId}
+            inputProps={{ 'aria-label': 'Faixa inicial' }}
+            onChange={(event) => setInitialBeltId(event.target.value)}
+          >
+            <MenuItem value="">Padrão — faixa branca</MenuItem>
+            {enabledBelts.map((belt) => (
+              <MenuItem key={belt.beltId} value={belt.beltId}>
+                {beltLabel(belt)}
+              </MenuItem>
+            ))}
+          </Select>
         </Stack>
         {apiError ? <FormHelperText error>{apiError}</FormHelperText> : null}
         <TatameButton

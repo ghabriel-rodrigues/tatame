@@ -125,7 +125,7 @@ describe('Cadastros — FAB creation forms (ENR.13)', () => {
     fireEvent.change(within(sheet).getByLabelText(/Data de nascimento/), {
       target: { value: '2015-06-10' },
     });
-    await user.click(within(sheet).getByRole('combobox'));
+    await user.click(within(sheet).getAllByRole('combobox')[0]!);
     await user.click(await screen.findByRole('option', { name: 'Fernanda Silveira' }));
     await user.click(within(sheet).getByRole('button', { name: 'Cadastrar aluno' }));
 

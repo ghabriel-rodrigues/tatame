@@ -34,4 +34,15 @@ export {
   type SegmentedControlOption,
 } from './SegmentedControl.tsx';
 export { ListRow, type ListRowProps } from './ListRow.tsx';
+
+/* Graduation primitives (GRD.15 — ds-04 resolved belt anatomy). */
+export {
+  BeltBar,
+  BeltChip,
+  resolveBeltColor,
+  type BeltBarProps,
+  type BeltBarBelt,
+  type BeltBarSize,
+  type BeltChipProps,
+} from './BeltBar.tsx';
 export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';

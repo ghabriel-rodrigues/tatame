@@ -12,6 +12,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useNavigate, useParams } from 'react-router';
 import {
+  BeltChip,
   BottomSheet,
   Card,
   Chip,
@@ -26,6 +27,7 @@ import { InitialsAvatar, enrollmentErrorMessage, useToastState } from './common'
 import {
   WEEKDAY_CHIP_ORDER,
   WEEKDAY_SHORT,
+  beltLabel,
   presencesLabel,
   scheduleTimeRange,
   sessionDateLabel,
@@ -162,6 +164,45 @@ export function TurmaDetailPage() {
             </Typography>
             <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>toda semana</Typography>
           </Box>
+          {turma.minBelt || turma.maxBelt ? (
+            // Turma belt range as drawn chips — "Branca a Azul" (GRD.14).
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginTop: '12px',
+              }}
+            >
+              <Typography variant="overline" sx={{ color: 'var(--fg-3)' }}>
+                Faixas
+              </Typography>
+              {turma.minBelt ? (
+                <BeltChip
+                  name={turma.minBelt.name}
+                  colorSlug={turma.minBelt.colorSlug}
+                  tipColorSlug={turma.minBelt.tipColorSlug}
+                  maxDegrees={turma.minBelt.maxDegrees}
+                  label={beltLabel(turma.minBelt)}
+                />
+              ) : null}
+              {turma.minBelt && turma.maxBelt ? (
+                <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>a</Typography>
+              ) : null}
+              {turma.maxBelt ? (
+                <BeltChip
+                  name={turma.maxBelt.name}
+                  colorSlug={turma.maxBelt.colorSlug}
+                  tipColorSlug={turma.maxBelt.tipColorSlug}
+                  maxDegrees={turma.maxBelt.maxDegrees}
+                  label={
+                    turma.minBelt ? beltLabel(turma.maxBelt) : `Até ${turma.maxBelt.name}`
+                  }
+                />
+              ) : null}
+            </Box>
+          ) : null}
         </Card>
 
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

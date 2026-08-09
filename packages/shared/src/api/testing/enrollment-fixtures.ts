@@ -14,6 +14,13 @@ import type {
   ScheduleSlotView,
   StudentListItem,
 } from '../types.js';
+import { catalogBelt, makeBeltView } from './graduation-fixtures.js';
+
+/** Catalog belt as a BeltRefDto (turma min/max range fields, GRD.14). */
+function beltRef(name: string) {
+  const { ladderKind: _ladderKind, ...ref } = catalogBelt(name);
+  return ref;
+}
 
 const uuid = (block: string, counter: number) =>
   `018f0000-0000-7000-${block}-${counter.toString(16).padStart(12, '0')}`;
@@ -134,6 +141,8 @@ export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
     capacity: 24,
     occupancy: 24,
     lotada: true,
+    minBelt: beltRef('Branca'),
+    maxBelt: beltRef('Azul'),
     professor: { userId: rafael.userId, fullName: rafael.fullName },
     schedules: [
       makeSchedule({ weekday: 1 }),
@@ -166,14 +175,17 @@ export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
 
   const fernanda = makeGuardian({ fullName: 'Fernanda Silveira', dependentCount: 1 });
 
+  // Derived belts per admin-07 rows ("Faixa azul · Fundamentos…").
   const students = [
     makeStudent({
       fullName: 'Lucas Almeida',
       classes: [{ id: fundamentos.id, name: fundamentos.name }],
+      belt: makeBeltView('Azul', 2),
     }),
     makeStudent({
       fullName: 'Marina Costa',
       classes: [{ id: avancada.id, name: avancada.name }],
+      belt: makeBeltView('Roxa', 1),
     }),
     makeStudent({
       fullName: 'Pedro Silveira',
@@ -182,16 +194,19 @@ export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
       userId: null,
       guardianId: fernanda.id,
       classes: [{ id: kids.id, name: kids.name }],
+      belt: makeBeltView('Cinza'),
     }),
     makeStudent({
       fullName: 'João Ferraz',
       classes: [{ id: fundamentos.id, name: fundamentos.name }],
+      belt: makeBeltView('Branca'),
     }),
     makeStudent({
       fullName: 'Bia Andrade',
       badge: 'pendente',
       userId: null,
       classes: [{ id: avancada.id, name: avancada.name }],
+      belt: makeBeltView('Azul'),
     }),
   ];
 

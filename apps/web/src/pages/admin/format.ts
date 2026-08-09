@@ -2,7 +2,7 @@
  * Enrollment display helpers (ENR.13-15). Pure formatting only — occupancy,
  * Lotada and badges are server-derived; nothing here recomputes rules.
  */
-import type { ClassListItem, ScheduleSlotView } from '@tatame/shared';
+import type { BeltRef, BeltView, ClassListItem, ScheduleSlotView } from '@tatame/shared';
 
 /** 0 = Domingo … 6 = Sábado (API weekday contract). */
 export const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
@@ -74,6 +74,41 @@ export function ageFromBirthDate(birthDate: string, today: Date = new Date()): n
     (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
   if (beforeBirthday) age -= 1;
   return age;
+}
+
+/** "Faixa azul" — pt-BR belt label from the API display name (GRD.14). */
+export function beltLabel(belt: Pick<BeltView, 'name'>): string {
+  return `Faixa ${belt.name.toLocaleLowerCase('pt-BR')}`;
+}
+
+/** "Faixa azul · 2 graus" (degrees omitted at zero) — admin-07 subtitles. */
+export function beltWithDegrees(belt: Pick<BeltView, 'name' | 'degrees'>): string {
+  if (belt.degrees <= 0) return beltLabel(belt);
+  return `${beltLabel(belt)} · ${belt.degrees} ${belt.degrees === 1 ? 'grau' : 'graus'}`;
+}
+
+/** "Branca a Azul" turma range chip text (null when unrestricted). */
+export function beltRangeLabel(
+  min?: BeltRef | null,
+  max?: BeltRef | null,
+): string | null {
+  if (min && max) return `${min.name} a ${max.name}`;
+  if (min) return `A partir de ${min.name}`;
+  if (max) return `Até ${max.name}`;
+  return null;
+}
+
+/** "máx. 4 graus" régua note fragment ("sem graus" for the red belt). */
+export function maxDegreesLabel(maxDegrees: number): string {
+  return maxDegrees === 0 ? 'sem graus' : `máx. ${maxDegrees} graus`;
+}
+
+/** "10/08/2026" from an ISO timestamp (graduation timeline rows). */
+export function graduationDateLabel(isoDateTime: string): string {
+  const date = new Date(isoDateTime);
+  if (Number.isNaN(date.getTime())) return isoDateTime;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
 }
 
 export function isMinor(birthDate: string): boolean {

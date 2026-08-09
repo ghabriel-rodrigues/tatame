@@ -25,3 +25,13 @@ export {
 export { ListRow, type ListRowProps } from './ListRow.tsx';
 export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';
 export { EmptyState, type EmptyStateProps } from './EmptyState.tsx';
+
+// Graduation primitives (GRD.12).
+export {
+  BeltBar,
+  BeltChip,
+  beltChipLabel,
+  type BeltBarProps,
+  type BeltBarSize,
+  type BeltChipProps,
+} from './BeltBar.tsx';

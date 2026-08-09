@@ -11,6 +11,8 @@ import type { paths } from '../schema.js';
 import type { ApiProblem } from '../errors.js';
 import { makeAuthSession, makeMeResponse, type MeFixtureOptions, type SessionFixtureOptions } from './fixtures.js';
 import { makeEnrollmentRegistry, type EnrollmentRegistryFixture } from './enrollment-fixtures.js';
+import { makeGraduationRules } from './graduation-fixtures.js';
+import type { GraduationEntry, GraduationRuleRow } from '../types.js';
 
 /**
  * Single-source msw re-exports: consumers (web/RN test suites) must import
@@ -138,6 +140,50 @@ export function enrollmentHandlers(
     }),
     http.get('/v1/admin/classes/{id}/sessions', ({ params, response }) =>
       response(200).json({ sessions: data.sessions[params.id] ?? [] }),
+    ),
+    // Régua defaults so belt selects (student/turma forms) resolve (GRD.14).
+    http.get('/v1/admin/graduation-rules', ({ response }) =>
+      response(200).json({ rules: makeGraduationRules() }),
+    ),
+  ];
+}
+
+export interface GraduationHandlerOptions {
+  /** Merged régua rows for GET /admin/graduation-rules (defaults when omitted). */
+  rules?: GraduationRuleRow[];
+  /** Graduation history per student id for GET /admin/students/:id/graduations. */
+  histories?: Record<string, GraduationEntry[]>;
+}
+
+/**
+ * Happy-path handlers for the admin graduation surface (GRD.13-14): régua
+ * GET/PUT (PUT echoes the submitted values merged over the rows) and the
+ * per-student history. Revoke stays per-test via `server.use(...)`.
+ */
+export function graduationHandlers(options: GraduationHandlerOptions = {}) {
+  const rules = options.rules ?? makeGraduationRules();
+  const histories = options.histories ?? {};
+
+  return [
+    http.get('/v1/admin/graduation-rules', ({ response }) =>
+      response(200).json({ rules }),
+    ),
+    http.put('/v1/admin/graduation-rules', async ({ request, response }) => {
+      const body = (await request.json()) as {
+        rules: Array<{ beltId: string; lessonsPerDegree: number; enabled: boolean }>;
+      };
+      const byBelt = new Map(body.rules.map((entry) => [entry.beltId, entry]));
+      return response(200).json({
+        rules: rules.map((row) => {
+          const entry = byBelt.get(row.beltId);
+          return entry
+            ? { ...row, lessonsPerDegree: entry.lessonsPerDegree, enabled: entry.enabled }
+            : row;
+        }),
+      });
+    }),
+    http.get('/v1/admin/students/{id}/graduations', ({ params, response }) =>
+      response(200).json({ graduations: histories[params.id] ?? [] }),
     ),
   ];
 }

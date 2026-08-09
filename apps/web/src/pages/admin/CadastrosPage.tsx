@@ -3,8 +3,10 @@
  * FAB creation forms, multi-select with the atomic "Mover para turma" flow,
  * and name-edit/excluir per the backend contract (ENR.16).
  *
- * Belt/plan line items from the handoff rows are graduation/billing scope —
- * omitted here (recorded parity debt), never faked.
+ * Belt chips landed with GRD.14: student rows carry the derived
+ * "Faixa azul · 2 graus" subtitle, turma rows the "Branca a Azul" range
+ * chip, and the row's edit sheet opens the graduation-history drawer with
+ * the audited Revogar. Plan line items stay billing scope (recorded debt).
  */
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
@@ -26,11 +28,12 @@ import {
 import type { GuardianListItem, StudentListItem } from '@tatame/shared';
 import { $api, queryClient } from '../../api/api';
 import { Fab, InitialsAvatar, StatusBadge, useToastState } from './common';
-import { classSubtitle } from './format';
+import { beltRangeLabel, beltWithDegrees, classSubtitle } from './format';
 import { NewGuardianSheet, NewProfessorSheet, NewStudentSheet } from './CreateSheets';
 import { NewClassSheet } from './NewClassSheet';
 import { MoveToClassSheet } from './MoveToClassSheet';
 import { EditRecordSheet } from './EditRecordSheet';
+import { GraduationHistorySheet } from './GraduationHistorySheet';
 
 type Segment = 'alunos' | 'professores' | 'responsaveis' | 'turmas';
 
@@ -43,7 +46,12 @@ const SEGMENTS = [
 
 function studentSubtitle(student: StudentListItem): string {
   const classes = student.classes.map((turma) => turma.name);
-  return classes.length > 0 ? classes.join(' · ') : 'Sem turma';
+  const parts = [
+    // Derived belt payload (GRD.6) — "Faixa azul · 2 graus" per admin-07.
+    ...(student.belt ? [beltWithDegrees(student.belt)] : []),
+    ...(classes.length > 0 ? classes : ['Sem turma']),
+  ];
+  return parts.join(' · ');
 }
 
 export function CadastrosPage() {
@@ -57,6 +65,7 @@ export function CadastrosPage() {
   const [moving, setMoving] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentListItem | null>(null);
   const [editingGuardian, setEditingGuardian] = useState<GuardianListItem | null>(null);
+  const [historyStudent, setHistoryStudent] = useState<StudentListItem | null>(null);
 
   const students = $api.useQuery('get', '/v1/admin/students', undefined, {
     enabled: segment === 'alunos',
@@ -258,17 +267,28 @@ export function CadastrosPage() {
               ) : null}
               {(classes.data?.classes ?? [])
                 .filter((turma) => matches(turma.name))
-                .map((turma) => (
-                  <ListRow
-                    key={turma.id}
-                    title={turma.name}
-                    subtitle={classSubtitle(turma)}
-                    leading={<InitialsAvatar name={turma.name} />}
-                    trailing={turma.lotada ? <Chip label="Lotada" tone="brand" /> : undefined}
-                    chevron
-                    onPress={() => navigate(`/admin/turmas/${turma.id}`)}
-                  />
-                ))}
+                .map((turma) => {
+                  // "Branca a Azul" belt-range chip on class cards (GRD.14).
+                  const range = beltRangeLabel(turma.minBelt, turma.maxBelt);
+                  return (
+                    <ListRow
+                      key={turma.id}
+                      title={turma.name}
+                      subtitle={classSubtitle(turma)}
+                      leading={<InitialsAvatar name={turma.name} />}
+                      trailing={
+                        range || turma.lotada ? (
+                          <Stack direction="row" spacing="6px">
+                            {range ? <Chip label={range} /> : null}
+                            {turma.lotada ? <Chip label="Lotada" tone="brand" /> : null}
+                          </Stack>
+                        ) : undefined
+                      }
+                      chevron
+                      onPress={() => navigate(`/admin/turmas/${turma.id}`)}
+                    />
+                  );
+                })}
             </>
           ) : null}
         </Card>
@@ -368,6 +388,22 @@ export function CadastrosPage() {
               toast.show('Aluno excluído.');
             },
           }}
+          secondaryAction={{
+            label: 'Ver graduações',
+            onPress: () => {
+              setHistoryStudent(editingStudent);
+              setEditingStudent(null);
+            },
+          }}
+        />
+      ) : null}
+
+      {historyStudent ? (
+        <GraduationHistorySheet
+          open
+          onClose={() => setHistoryStudent(null)}
+          student={{ id: historyStudent.id, fullName: historyStudent.fullName }}
+          onRevoked={toast.show}
         />
       ) : null}
 

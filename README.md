@@ -152,9 +152,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] GRD.9 Backend: admin — graduation-rules GET/PUT (defaults merged, ≥ 10, kids-only toggles), per-student history, revoke endpoint (compensation row, single reversal, graduation.revoked audit)
 - [x] GRD.10 Backend: student notes create/list + GET /v1/professor/students/:id/profile (belt, progress, attendance tiles, notes) + GET /v1/professor/profile (own belt chip, graduações válidas)
 - [x] GRD.11 Backend: e2e suite green — append-only layers, revocation semantics, award validations + permission toggle, rules validation, derivation/progress fixtures, belt exposure in list responses, read-only block, RBAC + RLS + catalog write-protection
-- [ ] GRD.12 Web: BeltBar in the design system per the resolved anatomy (sizes, ponteira, degree stripes, outline, black-dan red tip, gray fallback) + belt chip variant
-- [ ] GRD.13 Web: admin Regras de graduação screen — merged ladder rows with swatch and máx-graus note, ±5 stepper (default 40, min 10), kids toggles, Salvar bulk upsert
-- [ ] GRD.14 Web: belt chips on registry student rows + initial-belt select on student form + turma belt-range fields with "Branca a Azul" card chips + student graduation-history drawer with audited Revogar
+- [x] GRD.12 Web: BeltBar in the design system per the resolved anatomy (sizes, ponteira, degree stripes, outline, black-dan red tip, gray fallback) + belt chip variant
+- [x] GRD.13 Web: admin Regras de graduação screen — merged ladder rows with swatch and máx-graus note, ±5 stepper (default 40, min 10), kids toggles, Salvar bulk upsert
+- [x] GRD.14 Web: belt chips on registry student rows + initial-belt select on student form + turma belt-range fields with "Branca a Azul" card chips + student graduation-history drawer with audited Revogar
 - [ ] GRD.15 RN: BeltBar native component in the design system (same anatomy and fallback rules)
 - [ ] GRD.16 RN: aluno Graduação screen (hero card, progress bar, evolution timeline, Ver certificado placeholder) + real home graduation card + profile belt
 - [ ] GRD.17 RN: professor perfil do aluno (BeltBar, progress, Adicionar grau / Promover faixa gated by toggle, observações) + professor profile graduações válidas + responsável dependent-card belts

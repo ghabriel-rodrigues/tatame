@@ -51,6 +51,21 @@ export type RevokeAttendanceResponse = ApiSchemas['RevokeAttendanceResponseDto']
 export type ProfessorDashboardResponse = ApiSchemas['ProfessorDashboardResponseDto'];
 export type ProfessorStudent = ApiSchemas['ProfessorStudentDto'];
 
+// Graduation web surface (GRD.12-14).
+export type BeltView = ApiSchemas['BeltViewDto'];
+export type BeltRef = ApiSchemas['BeltRefDto'];
+export type GraduationActor = ApiSchemas['GraduationActorDto'];
+export type GraduationEntry = ApiSchemas['GraduationEntryDto'];
+export type GraduationHistoryResponse = ApiSchemas['GraduationHistoryResponseDto'];
+export type GraduationRuleRow = ApiSchemas['GraduationRuleRowDto'];
+export type GraduationRulesResponse = ApiSchemas['GraduationRulesResponseDto'];
+export type GraduationRuleEntry = ApiSchemas['GraduationRuleEntryDto'];
+export type UpdateGraduationRules = ApiSchemas['UpdateGraduationRulesDto'];
+export type RevokeGraduationResponse = ApiSchemas['RevokeGraduationResponseDto'];
+export type AwardGraduationResponse = ApiSchemas['AwardGraduationResponseDto'];
+export type ValidGraduation = ApiSchemas['ValidGraduationDto'];
+export type AlunoGraduationResponse = ApiSchemas['AlunoGraduationResponseDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;
