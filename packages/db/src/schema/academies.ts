@@ -23,6 +23,11 @@ export const academies = pgTable(
     logoUrl: text('logo_url'),
     /** 3-color white-label palette `{deep,vibrant,accent}` — shape not final. */
     theme: jsonb('theme'),
+    /**
+     * Stripe connected account (`acct_…`) for stage-2 Connect destination
+     * charges + repasse payouts. NULL in v1 (simulated provider only).
+     */
+    providerAccountId: text('provider_account_id'),
     ...timestamps,
   },
   (t) => [

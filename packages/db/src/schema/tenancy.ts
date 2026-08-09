@@ -14,6 +14,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
+import { academyPlans } from './academy-plans.js';
 import { users } from './auth.js';
 import { belts } from './catalogs.js';
 import { classes } from './enrollment.js';
@@ -52,8 +53,9 @@ export const invites = pgTable(
     /** Turma binding — composite tenant FK onto `classes` (ENR.3, 001 debt). */
     classId: uuid('class_id'),
     /**
-     * Plan binding. Plain uuid until `academy_plans` lands with the billing
-     * slice; hardened to a composite tenant FK then.
+     * Mensalidade plan binding — composite tenant FK onto `academy_plans`
+     * (spec 006 BIL.4 closing the Phase-1/3 stub). Invite acceptance copies
+     * the invite's plan onto the created student(s).
      */
     academyPlanId: uuid('academy_plan_id'),
     createdByUserId: uuid('created_by_user_id')
@@ -73,6 +75,11 @@ export const invites = pgTable(
       name: 'invites_class_fk',
       columns: [t.tenantId, t.classId],
       foreignColumns: [classes.tenantId, classes.id],
+    }),
+    foreignKey({
+      name: 'invites_academy_plan_fk',
+      columns: [t.tenantId, t.academyPlanId],
+      foreignColumns: [academyPlans.tenantId, academyPlans.id],
     }),
     pgPolicy('invites_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
   ],

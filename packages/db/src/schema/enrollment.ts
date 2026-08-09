@@ -15,6 +15,7 @@ import {
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
+import { academyPlans } from './academy-plans.js';
 import { users } from './auth.js';
 import { belts } from './catalogs.js';
 import { classStatus, enrollmentStatus, studentStatus } from './enums.js';
@@ -85,9 +86,9 @@ export const students = pgTable(
     /** Guardian link — required for minors (service-enforced). */
     guardianId: uuid('guardian_id'),
     /**
-     * Plan binding. Plain uuid until `academy_plans` lands with the billing
-     * slice; hardened to a composite tenant FK then (mirrors the invites
-     * pattern — recorded 003 debt).
+     * Mensalidade plan binding — composite tenant FK onto `academy_plans`
+     * (spec 006 BIL.4 closing the recorded 003 debt). NULL = no plan assigned
+     * (the Carteira shows a clean empty state, billing never invents money).
      */
     academyPlanId: uuid('academy_plan_id'),
     status: studentStatus('status').notNull().default('active'),
@@ -102,6 +103,11 @@ export const students = pgTable(
       name: 'students_guardian_fk',
       columns: [t.tenantId, t.guardianId],
       foreignColumns: [guardians.tenantId, guardians.id],
+    }),
+    foreignKey({
+      name: 'students_academy_plan_fk',
+      columns: [t.tenantId, t.academyPlanId],
+      foreignColumns: [academyPlans.tenantId, academyPlans.id],
     }),
     pgPolicy('students_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
   ],

@@ -167,11 +167,11 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 6 — Billing / wallet ([spec 006](docs/specs/006-billing.md))
 
-- [ ] BIL.1 DB: 7 billing enums + academy_plans (amount_cents, recurrence, due_day CHECK 1–28, is_active soft archive, UNIQUE tenant+name) with forced tenant RLS
-- [ ] BIL.2 DB: charges — per-origin columns + CHECK (plan FK now, event/order plain uuid pending their slices), guardian bill-to, competência + partial-unique materialization key, lazy-overdue lifecycle, (tenant, status, due_date) index, forced RLS
-- [ ] BIL.3 DB: payments (provider refs + provider_data snapshot + receipt + refund columns, provider partial unique) + payment_mandates (single-active partial unique) + billing_customers (empty in v1), forced RLS
-- [ ] BIL.4 DB: additive platform columns (academies.provider_account_id, academy_subscriptions provider trio, platform_plans.fee_bps) + composite-FK upgrade of students.academy_plan_id and invites.academy_plan_id onto academy_plans
-- [ ] BIL.5 DB: dev seeds — plans per fixture academy, open/paid/overdue charge histories with mixed-method payments, an active card mandate, a delinquent-academy fixture for repasses
+- [x] BIL.1 DB: 7 billing enums + academy_plans (amount_cents, recurrence, due_day CHECK 1–28, is_active soft archive, UNIQUE tenant+name) with forced tenant RLS
+- [x] BIL.2 DB: charges — per-origin columns + CHECK (plan FK now, event/order plain uuid pending their slices), guardian bill-to, competência + partial-unique materialization key, lazy-overdue lifecycle, (tenant, status, due_date) index, forced RLS
+- [x] BIL.3 DB: payments (provider refs + provider_data snapshot + receipt + refund columns, provider partial unique) + payment_mandates (single-active partial unique) + billing_customers (empty in v1), forced RLS
+- [x] BIL.4 DB: additive platform columns (academies.provider_account_id, academy_subscriptions provider trio, platform_plans.fee_bps) + composite-FK upgrade of students.academy_plan_id and invites.academy_plan_id onto academy_plans
+- [x] BIL.5 DB: dev seeds — plans per fixture academy, open/paid/overdue charge histories with mixed-method payments, an active card mandate, a delinquent-academy fixture for repasses
 - [ ] BIL.6 Backend: payments infra seam — PaymentProviderPort + SimulatedPaymentProvider (deterministic Pix/boleto payloads in provider_data, mandate inline settle, instant refund) + compile-checked Stripe stub + provider config factory
 - [ ] BIL.7 Backend: billing module — idempotent ensureCurrentCycleCharges (on-read at wallet/admin entry points, open→overdue flip, events only for inserted/flipped rows) + audited admin materialize trigger, no cron
 - [ ] BIL.8 Backend: aluno wallet — GET payload (plan header, current charge, recurrence banner, histórico, empty state), payment creation per method, mandate create-on-toggle/cancel, simulate endpoint (@BypassReadOnly, 404 unless simulated) settling through the normalized-event handler, receipt route, home alert flag

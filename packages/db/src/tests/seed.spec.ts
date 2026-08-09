@@ -4,11 +4,14 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createAppDb, createPlatformDb, withPlatform, withTenant, type DbHandle } from '../lib/client.js';
 import {
   academies,
+  academyPlans,
   academySubscriptions,
   attendances,
   auditLogs,
   beltLadders,
   belts,
+  billingCustomers,
+  charges,
   classSchedules,
   classSessions,
   classes,
@@ -18,6 +21,8 @@ import {
   guardians,
   martialArts,
   memberships,
+  paymentMandates,
+  payments,
   platformPlans,
   platformUsers,
   rolePermissions,
@@ -29,6 +34,7 @@ import {
 import {
   DEV_PASSWORD,
   seedBeltCatalog,
+  seedBillingFixtures,
   seedDevFixtures,
   seedPlatformPlans,
 } from '../seed/index.js';
@@ -46,6 +52,7 @@ describe('seeds', () => {
     await seedPlatformPlans(platform.db);
     await seedBeltCatalog(platform.db);
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
   });
 
   afterAll(async () => {
@@ -54,21 +61,21 @@ describe('seeds', () => {
     await fresh?.drop();
   });
 
-  it('seeds the platform plan catalog (Essencial/Pro/Black)', async () => {
+  it('seeds the platform plan catalog (Essencial/Pro/Black) with repasse fee_bps', async () => {
     const plans = await withPlatform(platform.db, (tx) =>
       tx.select().from(platformPlans).orderBy(asc(platformPlans.sortOrder)),
     );
-    expect(plans.map((p) => [p.name, p.priceCents, p.studentLimit])).toEqual([
-      ['Essencial', 9_900, 80],
-      ['Pro', 19_900, 250],
-      ['Black', 34_900, null],
+    expect(plans.map((p) => [p.name, p.priceCents, p.studentLimit, p.feeBps])).toEqual([
+      ['Essencial', 9_900, 80, 500],
+      ['Pro', 19_900, 250, 400],
+      ['Black', 34_900, null, 250],
     ]);
     // Public catalog readable by the app role with no context at all.
     const publicPlans = await app.db.select().from(platformPlans);
     expect(publicPlans).toHaveLength(3);
   });
 
-  it('seeds two academies with live subscriptions', async () => {
+  it('seeds the fixture academies with subscriptions, incl. the delinquent repasse fixture', async () => {
     const rows = await withPlatform(platform.db, (tx) =>
       tx
         .select({
@@ -85,6 +92,9 @@ describe('seeds', () => {
     expect(rows).toEqual([
       { slug: 'alpha-jj', status: 'active', subStatus: 'active', plan: 'Pro' },
       { slug: 'bravo-bjj', status: 'trial', subStatus: 'trialing', plan: 'Essencial' },
+      // BIL.5: academy-level delinquency comes only from its SaaS
+      // subscription — repasses render this one Retido.
+      { slug: 'charlie-fc', status: 'delinquent', subStatus: 'past_due', plan: 'Pro' },
     ]);
   });
 
@@ -422,6 +432,144 @@ describe('seeds', () => {
     }
   });
 
+  it('seeds the mensalidade plan catalog per academy (BIL.5)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const plans = await withTenant(app.db, academy!.id, (tx) =>
+        tx.select().from(academyPlans).orderBy(asc(academyPlans.name)),
+      );
+      expect(
+        plans.map((p) => [p.name, p.amountCents, p.recurrence, p.dueDay, p.isActive]),
+      ).toEqual([
+        ['Kids Mensal', 15_000, 'monthly', 10, true],
+        ['Mensal', 18_000, 'monthly', 5, true],
+        // Soft-archived plan — history stays intact, no hard delete.
+        ['Trimestral', 48_000, 'quarterly', 15, false],
+      ]);
+    }
+  });
+
+  it('seeds charge histories: open cycle, paid-with-Pix, overdue, guardian-billed (BIL.5)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const rows = await withTenant(app.db, tenantId, (tx) => tx.select().from(charges));
+      // 7 plan charges: main open+paid, one overdue, 2 dependents × (open+paid).
+      expect(rows).toHaveLength(7);
+      expect(rows.every((c) => c.origin === 'plan' && c.academyPlanId !== null)).toBe(true);
+      expect(rows.every((c) => c.periodStart !== null && c.periodEnd !== null)).toBe(true);
+
+      const byStatus = new Map<string, number>();
+      for (const c of rows) byStatus.set(c.status, (byStatus.get(c.status) ?? 0) + 1);
+      expect(byStatus.get('open')).toBe(3);
+      expect(byStatus.get('paid')).toBe(3);
+      expect(byStatus.get('overdue')).toBe(1);
+
+      // The overdue fixture is actually past due (derived truth holds).
+      const overdue = rows.find((c) => c.status === 'overdue')!;
+      expect(new Date(`${overdue.dueDate}T00:00:00`).getTime()).toBeLessThan(Date.now());
+
+      // Guardian-billed: the dependents' charges carry the bill-to guardian.
+      const guardianBilled = rows.filter((c) => c.guardianId !== null);
+      expect(guardianBilled).toHaveLength(4);
+
+      // Settled payments: simulated provider, render-ready payloads, receipt.
+      const paymentRows = await withTenant(app.db, tenantId, (tx) => tx.select().from(payments));
+      expect(paymentRows).toHaveLength(3);
+      expect(paymentRows.every((p) => p.status === 'succeeded' && p.provider === 'simulated')).toBe(
+        true,
+      );
+      expect(paymentRows.every((p) => p.paidAt !== null && p.receiptUrl !== null)).toBe(true);
+      expect(
+        paymentRows.every((p) => p.providerPaymentId === `SIM-${p.method.toUpperCase()}-${p.chargeId}`),
+      ).toBe(true);
+
+      const pix = paymentRows.filter((p) => p.method === 'pix');
+      expect(pix).toHaveLength(2);
+      for (const p of pix) {
+        const data = p.providerData as { qrPayload?: string; copiaECola?: string };
+        expect(data.qrPayload).toBe(`TATAME-SIM-PIX-${p.chargeId}`);
+        expect(data.copiaECola).toBe(`TATAME-SIM-PIX-${p.chargeId}`);
+      }
+      // The "recorrência no cartão" settlement for a dependent (story 19).
+      const card = paymentRows.find((p) => p.method === 'card')!;
+      const cardCharge = rows.find((c) => c.id === card.chargeId)!;
+      expect(cardCharge.guardianId).not.toBeNull();
+
+      // Every paid charge has its settled payment.
+      const paidIds = rows.filter((c) => c.status === 'paid').map((c) => c.id).sort();
+      expect(paymentRows.map((p) => p.chargeId).sort()).toEqual(paidIds);
+
+      // Audited in-transaction with the billing action codes.
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ action: auditLogs.action })
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} LIKE 'billing.%'`),
+      );
+      const actions = audit.map((a) => a.action);
+      expect(actions.filter((a) => a === 'billing.charge.created')).toHaveLength(7);
+      expect(actions.filter((a) => a === 'billing.charge.paid')).toHaveLength(3);
+    }
+  });
+
+  it('seeds active card mandates where a payer login exists; billing_customers stays empty (BIL.5)', async () => {
+    const [alpha] = await withPlatform(platform.db, (tx) =>
+      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, 'alpha-jj')),
+    );
+    const alphaMandates = await withTenant(app.db, alpha!.id, (tx) =>
+      tx.select().from(paymentMandates),
+    );
+    // The claimed aluno (self-payer) + the responsável paying a dependent.
+    expect(alphaMandates).toHaveLength(2);
+    for (const m of alphaMandates) {
+      expect(m.status).toBe('active');
+      expect(m.method).toBe('card');
+      expect(m.provider).toBe('simulated');
+      expect(m.providerMandateId).toBe(`SIM-MANDATE-${m.studentId}`);
+    }
+    const students_ = new Set(alphaMandates.map((m) => m.studentId));
+    expect(students_.size).toBe(2);
+
+    // Bravo has no claimed payer logins — no mandates by construction.
+    const [bravo] = await withPlatform(platform.db, (tx) =>
+      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, 'bravo-bjj')),
+    );
+    const bravoMandates = await withTenant(app.db, bravo!.id, (tx) =>
+      tx.select().from(paymentMandates),
+    );
+    expect(bravoMandates).toHaveLength(0);
+
+    // v1: the simulated driver never writes the Stripe Customer mapping.
+    const customers = await withPlatform(platform.db, (tx) => tx.select().from(billingCustomers));
+    expect(customers).toHaveLength(0);
+  });
+
+  it('assigns mensalidade plans to the fixture students, keeping one planless empty-state fixture', async () => {
+    const [alpha] = await withPlatform(platform.db, (tx) =>
+      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, 'alpha-jj')),
+    );
+    const rows = await withTenant(app.db, alpha!.id, (tx) =>
+      tx
+        .select({ name: students.fullName, planName: academyPlans.name })
+        .from(students)
+        .leftJoin(academyPlans, eq(academyPlans.id, students.academyPlanId))
+        .orderBy(asc(students.fullName)),
+    );
+    const byName = new Map(rows.map((r) => [r.name, r.planName]));
+    expect(byName.get('Ana Aluna')).toBe('Mensal');
+    expect(byName.get('Flavia Fila')).toBe('Mensal');
+    expect(byName.get('Kiko Kids')).toBe('Kids Mensal');
+    expect(byName.get('Lara Kids')).toBe('Kids Mensal');
+    // Story 8: no plan assigned → the Carteira shows its clean empty state.
+    expect(byName.get('Fabio Fila')).toBeNull();
+  });
+
   it('is idempotent — re-running seeds changes no row counts', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
@@ -441,9 +589,15 @@ describe('seeds', () => {
         const [gr] = await tx.select({ n: sql<number>`count(*)::int` }).from(graduationRules);
         const [sg] = await tx.select({ n: sql<number>`count(*)::int` }).from(studentGraduations);
         const [sn] = await tx.select({ n: sql<number>`count(*)::int` }).from(studentNotes);
+        const [ap] = await tx.select({ n: sql<number>`count(*)::int` }).from(academyPlans);
+        const [ch] = await tx.select({ n: sql<number>`count(*)::int` }).from(charges);
+        const [pay] = await tx.select({ n: sql<number>`count(*)::int` }).from(payments);
+        const [pm] = await tx.select({ n: sql<number>`count(*)::int` }).from(paymentMandates);
+        const [bc] = await tx.select({ n: sql<number>`count(*)::int` }).from(billingCustomers);
+        const [ac] = await tx.select({ n: sql<number>`count(*)::int` }).from(academies);
         return [
           u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n,
-          b!.n, gr!.n, sg!.n, sn!.n,
+          b!.n, gr!.n, sg!.n, sn!.n, ap!.n, ch!.n, pay!.n, pm!.n, bc!.n, ac!.n,
         ];
       });
 
@@ -451,6 +605,7 @@ describe('seeds', () => {
     await seedPlatformPlans(platform.db);
     await seedBeltCatalog(platform.db);
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);
   });

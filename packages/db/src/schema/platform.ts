@@ -13,7 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
 import { users } from './auth.js';
-import { platformRole, subscriptionStatus, userStatus } from './enums.js';
+import { paymentProvider, platformRole, subscriptionStatus, userStatus } from './enums.js';
 import { id, timestamps } from './helpers.js';
 import { appRole } from './roles.js';
 
@@ -57,6 +57,12 @@ export const platformPlans = pgTable(
     features: jsonb('features'),
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
+    /**
+     * Platform take on academy revenue, basis points (spec 006). NULL = 0
+     * until product prices it — feeds the repasse read model (gross ×
+     * fee_bps = fee; net = gross − fee).
+     */
+    feeBps: integer('fee_bps'),
     ...timestamps,
   },
   () => [
@@ -70,8 +76,14 @@ export const platformPlans = pgTable(
 
 /**
  * Academy subscription to a platform plan. Plan change applies next cycle
- * (charter rule) via `pending_platform_plan_id`. Stripe columns land in the
- * billing slice (ticket 05).
+ * (charter rule) via `pending_platform_plan_id`.
+ *
+ * Provider columns (spec 006): the platform→academy SaaS fee is plain Stripe
+ * Billing on the platform account at stage 2. Status mapping: Stripe
+ * `past_due` → local `past_due` → academy delinquent (read-only + repasse
+ * retention). Local DB is source of truth for access control; Stripe is
+ * source of truth for money events (mirrored via webhook, never read in the
+ * request path). Students not paying an academy NEVER make it delinquent.
  */
 export const academySubscriptions = pgTable(
   'academy_subscriptions',
@@ -89,6 +101,12 @@ export const academySubscriptions = pgTable(
     /** Plan change applies next billing cycle. */
     pendingPlatformPlanId: uuid('pending_platform_plan_id').references(() => platformPlans.id),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
+    /** Provider behind the SaaS subscription; NULL until the Stripe swap. */
+    provider: paymentProvider('provider'),
+    /** Stripe Customer (`cus_…`) on the platform account. */
+    providerCustomerId: text('provider_customer_id'),
+    /** Stripe Billing subscription (`sub_…`). */
+    providerSubscriptionId: text('provider_subscription_id'),
     ...timestamps,
   },
   (t) => [

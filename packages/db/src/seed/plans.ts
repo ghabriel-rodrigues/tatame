@@ -4,7 +4,9 @@ import { platformPlans } from '../schema/index.js';
 
 /**
  * Platform plan catalog (charter: Essencial / Pro / Black). Production data —
- * idempotent upsert keyed on the unique plan name.
+ * idempotent upsert keyed on the unique plan name. `feeBps` is the platform
+ * take on academy revenue in basis points (spec 006) — dev pricing so the
+ * repasse read model (gross × fee_bps → net) computes real numbers.
  */
 export const PLATFORM_PLAN_CATALOG = [
   {
@@ -14,6 +16,7 @@ export const PLATFORM_PLAN_CATALOG = [
     studentLimit: 80,
     features: { invites: true, store: false, whiteLabel: false },
     sortOrder: 1,
+    feeBps: 500,
   },
   {
     name: 'Pro',
@@ -22,6 +25,7 @@ export const PLATFORM_PLAN_CATALOG = [
     studentLimit: 250,
     features: { invites: true, store: true, whiteLabel: false },
     sortOrder: 2,
+    feeBps: 400,
   },
   {
     name: 'Black',
@@ -30,6 +34,7 @@ export const PLATFORM_PLAN_CATALOG = [
     studentLimit: null,
     features: { invites: true, store: true, whiteLabel: true },
     sortOrder: 3,
+    feeBps: 250,
   },
 ] as const;
 
@@ -47,6 +52,7 @@ export async function seedPlatformPlans(platformDb: Database): Promise<void> {
           features: plan.features,
           sortOrder: plan.sortOrder,
           isActive: true,
+          feeBps: plan.feeBps,
         })
         .onConflictDoUpdate({
           target: platformPlans.name,
@@ -56,6 +62,7 @@ export async function seedPlatformPlans(platformDb: Database): Promise<void> {
             features: plan.features,
             sortOrder: plan.sortOrder,
             isActive: true,
+            feeBps: plan.feeBps,
             updatedAt: new Date(),
           },
         });

@@ -41,6 +41,14 @@ const GRADUATION_TABLES = [
   'student_notes',
 ];
 
+const BILLING_TABLES = [
+  'academy_plans',
+  'charges',
+  'payments',
+  'payment_mandates',
+  'billing_customers',
+];
+
 const AUTH_FUNCTIONS = [
   'auth_login_lookup',
   'auth_user_memberships',
@@ -72,7 +80,7 @@ describe('migrations', () => {
     await expect(runMigrations(fresh.url)).resolves.toBeUndefined();
   });
 
-  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables and the 6 graduation tables', async () => {
+  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables, the 6 graduation tables and the 5 billing tables', async () => {
     const res = await client.query(
       `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`,
     );
@@ -82,17 +90,19 @@ describe('migrations', () => {
       ...ENROLLMENT_TABLES,
       ...ATTENDANCE_TABLES,
       ...GRADUATION_TABLES,
+      ...BILLING_TABLES,
     ]) {
       expect(names).toContain(table);
     }
   });
 
-  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance and graduation table', async () => {
+  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance, graduation and billing table', async () => {
     const allTables = [
       ...AUTH_TABLES,
       ...ENROLLMENT_TABLES,
       ...ATTENDANCE_TABLES,
       ...GRADUATION_TABLES,
+      ...BILLING_TABLES,
     ];
     const res = await client.query(
       `SELECT relname, relrowsecurity, relforcerowsecurity
@@ -127,7 +137,7 @@ describe('migrations', () => {
     expect(res.rows.length).toBeGreaterThanOrEqual(11); // 3 auth + 5 enrollment + 3 attendance
     // The catalog-driven sweep must pick the new slices' tables up on its own.
     const names = res.rows.map((r) => r.table_name);
-    for (const table of [...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES]) {
+    for (const table of [...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES, ...BILLING_TABLES]) {
       expect(names, `meta-test must cover ${table}`).toContain(table);
     }
     for (const row of res.rows) {
@@ -215,6 +225,15 @@ describe('migrations', () => {
       'student_graduations_student_fk',
       'student_graduations_reverses_fk', // revocation cannot target a foreign tenant's row
       'student_notes_student_fk',
+      // Billing slice (BIL.2–BIL.4): money can never cross academies, and the
+      // two Phase-3 academy_plan_id stubs are now hardened.
+      'charges_student_fk',
+      'charges_guardian_fk',
+      'charges_academy_plan_fk',
+      'payments_charge_fk',
+      'payment_mandates_student_fk',
+      'students_academy_plan_fk',
+      'invites_academy_plan_fk',
     ]) {
       expect(names, `composite FK ${fk}`).toContain(fk);
     }
@@ -340,6 +359,86 @@ describe('migrations', () => {
         `SELECT 1 FROM pg_constraint WHERE conname = 'invites_class_fk' AND contype = 'f'`,
       );
       expect(fk.rows).toHaveLength(1);
+    } finally {
+      await pool.end();
+      await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
+      await admin.end();
+      rmSync(partialDir, { recursive: true, force: true });
+    }
+  });
+
+  it('hardens the academy_plan_id stubs over Phase-5 data (dangling bindings nulled, FKs added)', async () => {
+    // Rebuild pre-billing state: a migrations folder truncated at 0013.
+    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
+    const phase5Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 13);
+    expect(phase5Entries).toHaveLength(14);
+    const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase5-'));
+    mkdirSync(join(partialDir, 'meta'));
+    writeFileSync(
+      join(partialDir, 'meta', '_journal.json'),
+      JSON.stringify({ ...journal, entries: phase5Entries }),
+    );
+    for (const entry of phase5Entries) {
+      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+    }
+
+    const dbName = `t_${randomUUID().replaceAll('-', '')}`;
+    const admin = new pg.Client({ connectionString: testAdminUrl() });
+    await admin.connect();
+    await admin.query(`CREATE DATABASE ${dbName}`);
+    const url = new URL(testAdminUrl());
+    url.pathname = `/${dbName}`;
+
+    const pool = new pg.Pool({ connectionString: url.toString(), max: 1 });
+    try {
+      // Phases 1–5 only, then live data: a student and an invite carrying
+      // dangling plan bindings (academy_plans did not exist yet, so any uuid
+      // was accepted by the plain-uuid stubs).
+      await migrate(drizzle(pool), { migrationsFolder: partialDir });
+      const tenant = randomUUID();
+      const creator = randomUUID();
+      await pool.query(
+        `INSERT INTO academies (id, name, slug, contact_email) VALUES ($1, 'Phase5', 'phase5', 'p5@t.dev')`,
+        [tenant],
+      );
+      await pool.query(
+        `INSERT INTO users (id, email, full_name) VALUES ($1, 'p5@t.dev', 'Phase Five')`,
+        [creator],
+      );
+      await pool.query(
+        `INSERT INTO students (id, tenant_id, full_name, birth_date, academy_plan_id)
+         VALUES ($1, $2, 'Phase Five Student', '2000-01-01', $3)`,
+        [randomUUID(), tenant, randomUUID()],
+      );
+      await pool.query(
+        `INSERT INTO invites (id, tenant_id, token_hash, kind, academy_plan_id, created_by_user_id, expires_at)
+         VALUES ($1, $2, 'phase5-token', 'student', $3, $4, now() + interval '7 days')`,
+        [randomUUID(), tenant, randomUUID(), creator],
+      );
+
+      // The billing migrations (0014+) must apply on top of that state.
+      await migrate(drizzle(pool), { migrationsFolder });
+
+      const student = await pool.query(
+        `SELECT academy_plan_id FROM students WHERE full_name = 'Phase Five Student'`,
+      );
+      expect(student.rows).toHaveLength(1);
+      expect(student.rows[0].academy_plan_id).toBeNull(); // dangling binding cleaned
+
+      const invite = await pool.query(
+        `SELECT academy_plan_id FROM invites WHERE token_hash = 'phase5-token'`,
+      );
+      expect(invite.rows).toHaveLength(1);
+      expect(invite.rows[0].academy_plan_id).toBeNull(); // dangling binding cleaned
+
+      const fks = await pool.query(
+        `SELECT conname FROM pg_constraint
+         WHERE conname IN ('students_academy_plan_fk', 'invites_academy_plan_fk') AND contype = 'f'`,
+      );
+      expect(fks.rows.map((r) => r.conname).sort()).toEqual([
+        'invites_academy_plan_fk',
+        'students_academy_plan_fk',
+      ]);
     } finally {
       await pool.end();
       await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
