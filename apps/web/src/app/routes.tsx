@@ -11,7 +11,10 @@ import { InvitePage } from '../pages/InvitePage';
 import { LoginPage } from '../pages/LoginPage';
 import { CadastrosPage } from '../pages/admin/CadastrosPage';
 import { GraduationRulesPage } from '../pages/admin/GraduationRulesPage';
+import { PlansPage } from '../pages/admin/PlansPage';
 import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
+import { VisaoFinanceiraPage } from '../pages/admin/VisaoFinanceiraPage';
+import { RepassesPage } from '../pages/plataforma/RepassesPage';
 
 export const appRoutes: RouteObject[] = [
   { path: '/', element: <RootRedirect /> },
@@ -26,9 +29,11 @@ export const appRoutes: RouteObject[] = [
       {
         element: <ConsoleShell surface="/admin" />,
         children: [
-          { index: true, element: <UnderConstruction surfaceLabel="Painel da academia" /> },
+          // BIL.13: the console home is the Visão financeira per admin-02.
+          { index: true, element: <VisaoFinanceiraPage /> },
           { path: 'cadastros', element: <CadastrosPage /> },
           { path: 'graduacao', element: <GraduationRulesPage /> },
+          { path: 'planos', element: <PlansPage /> },
           { path: 'turmas/:id', element: <TurmaDetailPage /> },
           { path: '*', element: <UnderConstruction surfaceLabel="Painel da academia" /> },
         ],
@@ -42,7 +47,8 @@ export const appRoutes: RouteObject[] = [
       {
         element: <ConsoleShell surface="/plataforma" />,
         children: [
-          { index: true, element: <UnderConstruction surfaceLabel="Visão geral" /> },
+          // BIL.15: the platform console's first real screen (plataforma-09).
+          { index: true, element: <RepassesPage /> },
           { path: '*', element: <UnderConstruction surfaceLabel="Visão geral" /> },
         ],
       },

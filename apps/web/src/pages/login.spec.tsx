@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import {
   HttpResponse,
   rawHttp as mswHttp,
+  billingHandlers,
   defaultHandlers,
   http,
   makeAuthSession,
@@ -15,6 +16,7 @@ import {
   makeMembership,
   makePlatformMembership,
   problemResponse,
+  repassesHandlers,
 } from '@tatame/shared/testing';
 import { renderRoute } from '../test/render-route';
 import { server } from '../test/setup';
@@ -36,13 +38,16 @@ describe('login page', () => {
         session: { memberships: [admin] },
         me: { memberships: [admin] },
       }),
+      ...billingHandlers(),
     );
 
     const { router } = renderRoute('/login');
     await fillCredentials();
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/admin'));
-    expect(await screen.findByText('Em construção')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Visão financeira' }),
+    ).toBeInTheDocument();
     expect(session.activeMembershipId).toBe(admin.id);
   });
 
@@ -77,6 +82,7 @@ describe('login page', () => {
       http.get('/v1/auth/me', ({ response }) =>
         response(200).json(makeMeResponse({ memberships: [platform], academy: null })),
       ),
+      ...repassesHandlers(),
     );
 
     const { router } = renderRoute('/login');

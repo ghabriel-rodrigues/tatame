@@ -29,6 +29,7 @@ import type { GuardianListItem, StudentListItem } from '@tatame/shared';
 import { $api, queryClient } from '../../api/api';
 import { Fab, InitialsAvatar, StatusBadge, useToastState } from './common';
 import { beltRangeLabel, beltWithDegrees, classSubtitle } from './format';
+import { planOptionLabel } from '../billing-format';
 import { NewGuardianSheet, NewProfessorSheet, NewStudentSheet } from './CreateSheets';
 import { NewClassSheet } from './NewClassSheet';
 import { MoveToClassSheet } from './MoveToClassSheet';
@@ -79,6 +80,11 @@ export function CadastrosPage() {
   const classes = $api.useQuery('get', '/v1/admin/classes', undefined, {
     enabled: segment === 'turmas',
   });
+  // Plan catalog for the student edit sheet's plan select (BIL.14).
+  const plans = $api.useQuery('get', '/v1/admin/billing/plans', undefined, {
+    enabled: segment === 'alunos',
+  });
+  const activePlans = (plans.data?.plans ?? []).filter((plan) => plan.isActive);
 
   const renameStudent = $api.useMutation('patch', '/v1/admin/students/{id}');
   const archiveStudent = $api.useMutation('post', '/v1/admin/students/{id}/archive');
@@ -367,15 +373,23 @@ export function CadastrosPage() {
           open
           onClose={() => setEditingStudent(null)}
           title="Editar aluno"
+          subtitle="Nome e plano de mensalidade do aluno."
           currentName={editingStudent.fullName}
-          onRename={async (fullName) => {
+          planSelect={{
+            options: activePlans.map((plan) => ({ id: plan.id, label: planOptionLabel(plan) })),
+            initialValue: editingStudent.academyPlanId ?? null,
+          }}
+          onRename={async (fullName, academyPlanId) => {
             await renameStudent.mutateAsync({
               params: { path: { id: editingStudent.id } },
-              body: { fullName },
+              body: {
+                fullName,
+                ...(academyPlanId !== undefined ? { academyPlanId } : {}),
+              },
             });
             await invalidateStudents();
             setEditingStudent(null);
-            toast.show('Nome atualizado.');
+            toast.show('Cadastro atualizado.');
           }}
           archive={{
             confirmTitle: 'Excluir aluno',

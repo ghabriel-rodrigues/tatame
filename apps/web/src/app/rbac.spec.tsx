@@ -5,11 +5,20 @@
  */
 import { screen } from '@testing-library/react';
 import {
+  billingHandlers,
   makeMeResponse,
   makeMembership,
   makePlatformMembership,
+  repassesHandlers,
 } from '@tatame/shared/testing';
 import { renderRoute } from '../test/render-route';
+import { server } from '../test/setup';
+
+// The index routes are real screens now (BIL.13/15): every render that lands
+// on /admin or /plataforma fetches — keep the happy-path handlers in place.
+beforeEach(() => {
+  server.use(...billingHandlers(), ...repassesHandlers());
+});
 
 describe('route guards — /admin', () => {
   it('redirects anonymous users to /login preserving ?next=', () => {
@@ -23,12 +32,15 @@ describe('route guards — /admin', () => {
     expect(screen.getByTestId('boot-splash')).toBeInTheDocument();
   });
 
-  it('renders the admin shell for an admin membership', async () => {
+  it('renders the admin shell with the Visão financeira home (BIL.13)', async () => {
+    server.use(...billingHandlers());
     const admin = makeMembership({ role: 'admin' });
     renderRoute('/admin', {
       session: makeMeResponse({ memberships: [admin] }),
     });
-    expect(await screen.findByText('Em construção')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Visão financeira' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Alpha Jiu-Jitsu')).toBeInTheDocument();
     expect(screen.getByText('Sair')).toBeInTheDocument();
   });
@@ -58,6 +70,7 @@ describe('route guards — /admin', () => {
   });
 
   it('renders the non-dismissible impersonation banner for an impersonated session', async () => {
+    server.use(...billingHandlers());
     const platform = makePlatformMembership();
     renderRoute('/admin', {
       session: makeMeResponse({
@@ -80,13 +93,16 @@ describe('route guards — /plataforma', () => {
     expect(router.state.location.search).toBe(`?next=${encodeURIComponent('/plataforma')}`);
   });
 
-  it('renders the platform console for platform staff', async () => {
+  it('renders the platform console with Faturamento e repasses (BIL.15)', async () => {
+    server.use(...repassesHandlers());
     const platform = makePlatformMembership();
     renderRoute('/plataforma', {
       session: makeMeResponse({ memberships: [platform], academy: null }),
     });
     expect(await screen.findByText('Console da plataforma')).toBeInTheDocument();
-    expect(screen.getByText('Em construção')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Faturamento e repasses' }),
+    ).toBeInTheDocument();
   });
 
   it('redirects academy admins to /admin', () => {

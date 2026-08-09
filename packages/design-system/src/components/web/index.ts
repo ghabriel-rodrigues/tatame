@@ -26,6 +26,13 @@ export { ListRow, type ListRowProps } from './ListRow.tsx';
 export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';
 export { EmptyState, type EmptyStateProps } from './EmptyState.tsx';
 
+// P2 components (ds-05 inventory, billing path — BIL.13).
+export {
+  MiniBarChart,
+  type MiniBarChartProps,
+  type MiniBarChartPoint,
+} from './MiniBarChart.tsx';
+
 // Graduation primitives (GRD.12).
 export {
   BeltBar,

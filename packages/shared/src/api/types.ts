@@ -66,6 +66,22 @@ export type AwardGraduationResponse = ApiSchemas['AwardGraduationResponseDto'];
 export type ValidGraduation = ApiSchemas['ValidGraduationDto'];
 export type AlunoGraduationResponse = ApiSchemas['AlunoGraduationResponseDto'];
 
+// Billing web surface (BIL.13-15).
+export type AcademyPlan = ApiSchemas['PlanDto'];
+export type PlanListResponse = ApiSchemas['PlanListResponseDto'];
+export type CreatePlanRequest = ApiSchemas['CreatePlanDto'];
+export type UpdatePlanRequest = ApiSchemas['UpdatePlanDto'];
+export type BillingRecurrence = AcademyPlan['recurrence'];
+export type RevenueMonth = ApiSchemas['RevenueMonthDto'];
+export type UpcomingCharge = ApiSchemas['UpcomingChargeDto'];
+export type UpcomingGroup = ApiSchemas['UpcomingGroupDto'];
+export type DelinquentStudent = ApiSchemas['DelinquentStudentDto'];
+export type MaterializationResult = ApiSchemas['MaterializationResultDto'];
+export type AdminBillingOverview = ApiSchemas['AdminOverviewResponseDto'];
+export type RepasseTotals = ApiSchemas['RepasseTotalsDto'];
+export type RepasseRow = ApiSchemas['RepasseRowDto'];
+export type RepassesResponse = ApiSchemas['RepassesResponseDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

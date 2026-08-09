@@ -14,6 +14,7 @@ import { BottomSheet, FormField, TatameButton } from '@tatame/design-system';
 import { $api, queryClient } from '../../api/api';
 import { enrollmentErrorMessage } from './common';
 import { beltLabel, isMinor } from './format';
+import { planOptionLabel } from '../billing-format';
 
 interface SheetProps {
   open: boolean;
@@ -26,6 +27,7 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
   const [birthDate, setBirthDate] = useState('');
   const [guardianId, setGuardianId] = useState('');
   const [initialBeltId, setInitialBeltId] = useState('');
+  const [academyPlanId, setAcademyPlanId] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -33,6 +35,9 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
   // Merged régua — the initial-belt select offers enabled belts only (GRD.14).
   const rules = $api.useQuery('get', '/v1/admin/graduation-rules');
   const enabledBelts = (rules.data?.rules ?? []).filter((rule) => rule.enabled);
+  // Plan catalog — the select offers active plans only (BIL.14, plan.archived).
+  const plans = $api.useQuery('get', '/v1/admin/billing/plans');
+  const activePlans = (plans.data?.plans ?? []).filter((plan) => plan.isActive);
   const create = $api.useMutation('post', '/v1/admin/students');
 
   function submit() {
@@ -53,6 +58,8 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
           ...(guardianId ? { guardianId } : {}),
           // Optional transfer-student seed; empty = starts white (story 32).
           ...(initialBeltId ? { initialBeltId } : {}),
+          // Mensalidade plan — what materialization charges (BIL.14).
+          ...(academyPlanId ? { academyPlanId } : {}),
         },
       },
       {
@@ -139,6 +146,31 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
             {enabledBelts.map((belt) => (
               <MenuItem key={belt.beltId} value={belt.beltId}>
                 {beltLabel(belt)}
+              </MenuItem>
+            ))}
+          </Select>
+        </Stack>
+        <Stack spacing="6px">
+          <FormLabel
+            id="new-student-plan-label"
+            htmlFor="new-student-plan"
+            sx={{ fontSize: 13, fontWeight: 600 }}
+          >
+            Plano de mensalidade
+          </FormLabel>
+          <Select
+            id="new-student-plan"
+            labelId="new-student-plan-label"
+            size="small"
+            displayEmpty
+            value={academyPlanId}
+            inputProps={{ 'aria-label': 'Plano de mensalidade' }}
+            onChange={(event) => setAcademyPlanId(event.target.value)}
+          >
+            <MenuItem value="">Sem plano</MenuItem>
+            {activePlans.map((plan) => (
+              <MenuItem key={plan.id} value={plan.id}>
+                {planOptionLabel(plan)}
               </MenuItem>
             ))}
           </Select>

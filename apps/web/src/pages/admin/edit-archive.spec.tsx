@@ -41,7 +41,7 @@ describe('edit + excluir (ENR.16)', () => {
     await user.type(field, 'Lucas A. Silva');
     await user.click(within(sheet).getByRole('button', { name: 'Salvar' }));
 
-    expect(await screen.findByText('Nome atualizado.')).toBeInTheDocument();
+    expect(await screen.findByText('Cadastro atualizado.')).toBeInTheDocument();
     expect(patched).toMatchObject({ id: lucas.id, body: { fullName: 'Lucas A. Silva' } });
   });
 

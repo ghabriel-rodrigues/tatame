@@ -110,6 +110,25 @@ export function graduationErrorMessage(error: unknown): string {
   }
 }
 
+/** PT-BR copy for the billing problem codes (BIL.13-14). */
+export function billingErrorMessage(error: unknown): string {
+  const problem = parseProblem(error);
+  switch (problem?.code) {
+    case ApiErrorCodes.PLAN_NAME_TAKEN:
+      return 'Já existe um plano com esse nome.';
+    case ApiErrorCodes.PLAN_ARCHIVED:
+      return 'Este plano está arquivado e não aceita novos alunos.';
+    case ApiErrorCodes.PLAN_NOT_FOUND:
+      return 'Plano não encontrado.';
+    case ApiErrorCodes.VALIDATION_FAILED:
+      return 'Verifique os dados informados e tente novamente.';
+    case ApiErrorCodes.TENANT_READ_ONLY:
+      return 'Academia em modo somente leitura — alterações bloqueadas.';
+    default:
+      return 'Algo deu errado. Tente novamente.';
+  }
+}
+
 /** PT-BR copy for the enrollment problem codes (client branches on `code`). */
 export function enrollmentErrorMessage(error: unknown): string {
   const problem = parseProblem(error);

@@ -12,7 +12,14 @@ import type { ApiProblem } from '../errors.js';
 import { makeAuthSession, makeMeResponse, type MeFixtureOptions, type SessionFixtureOptions } from './fixtures.js';
 import { makeEnrollmentRegistry, type EnrollmentRegistryFixture } from './enrollment-fixtures.js';
 import { makeGraduationRules } from './graduation-fixtures.js';
-import type { GraduationEntry, GraduationRuleRow } from '../types.js';
+import { makeAdminOverview, makePlanCatalog, makeRepasses } from './billing-fixtures.js';
+import type {
+  AcademyPlan,
+  AdminBillingOverview,
+  GraduationEntry,
+  GraduationRuleRow,
+  RepassesResponse,
+} from '../types.js';
 
 /**
  * Single-source msw re-exports: consumers (web/RN test suites) must import
@@ -145,6 +152,43 @@ export function enrollmentHandlers(
     http.get('/v1/admin/graduation-rules', ({ response }) =>
       response(200).json({ rules: makeGraduationRules() }),
     ),
+    // Plan-catalog default so plan selects (student sheets) resolve (BIL.14).
+    http.get('/v1/admin/billing/plans', ({ response }) =>
+      response(200).json({ plans: makePlanCatalog() }),
+    ),
+  ];
+}
+
+export interface BillingHandlerOptions {
+  /** Visão financeira payload (admin-02 default when omitted). */
+  overview?: AdminBillingOverview;
+  /** Plan catalog for GET /admin/billing/plans (seed default when omitted). */
+  plans?: AcademyPlan[];
+}
+
+/**
+ * Happy-path GET handlers for the admin billing surface (BIL.13-14):
+ * overview aggregates + plan catalog. Mutations stay per-test via
+ * `server.use(...)`.
+ */
+export function billingHandlers(options: BillingHandlerOptions = {}) {
+  const overview = options.overview ?? makeAdminOverview();
+  const plans = options.plans ?? makePlanCatalog();
+
+  return [
+    http.get('/v1/admin/billing/overview', ({ response }) => response(200).json(overview)),
+    http.get('/v1/admin/billing/plans', ({ response }) => response(200).json({ plans })),
+  ];
+}
+
+/**
+ * Happy-path handler for the platform repasse read model (BIL.15) —
+ * plataforma-09-faithful default with the Retido delinquent-academy row.
+ */
+export function repassesHandlers(data?: RepassesResponse) {
+  const body = data ?? makeRepasses();
+  return [
+    http.get('/v1/platform/billing/repasses', ({ response }) => response(200).json(body)),
   ];
 }
 
