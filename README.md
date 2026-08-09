@@ -205,4 +205,22 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AGD.9 iOS: aluno Agenda tab added to the shell + real Agenda screen (same scope as AGD.5)
 - [x] AGD.10 iOS: aluno + professor month calendar screens (same scope as AGD.6)
 
-_Next phases (events, store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._
+### Phase 8 — Events ([spec 008](docs/specs/008-events.md))
+
+- [ ] EVT.1 DB: event_status + event_registration_status enums + events table (banner_preset slug, nullable starts_at/location with published CHECK, price_cents NULL = gratuito, responsible_user_id, status lifecycle, (tenant,status,starts_at) index) with forced tenant RLS
+- [ ] EVT.2 DB: event_registrations (composite event/student FKs, confirmed_by_user_id, status, UNIQUE tenant+event+student) + charges.event_registration_id composite-FK hardening closing the BIL.2 stub
+- [ ] EVT.3 DB: dev seeds — draft/published free/paid events per fixture academy with mixed registrations (confirmed free, paid-settled, pending_payment) and their event-origin charges
+- [ ] EVT.4 Backend: events module admin — CRUD + publish/cancel lifecycle (cancel cancels open charges), inscritos list with confirmados/inscritos/arrecadado totals, Comunicar endpoint emitting events.announcement.requested + audit only
+- [ ] EVT.5 Backend: aluno — home upcomingEvents (next 2 with own state), event detail, free confirm/cancel, paid registration issuing the event-origin charge (guardian bill-to path shared) paid via existing wallet + simulate rails, normalized-event handler extended (succeeded→confirmed, refunded→canceled)
+- [ ] EVT.6 Backend: responsável events with per-dependent states + confirm/pay/cancel per dependent; professor dashboard eventos-futuros count + list (read-only, no professor write route)
+- [ ] EVT.7 Backend: AGD contracts filled — agenda "Eventos do mês" + dated month events in all three persona calendars, tenant-timezone bucketing, published-only visibility
+- [ ] EVT.8 Backend: e2e suite green — lifecycle + publish validation, free/paid/refund registration transitions through the handler contract, charge cancel on registration cancel, guardian scoping 404s, month windows, announce gating, RBAC/RLS/read-only + CI route assertions
+- [ ] EVT.9 Web: /admin/eventos console page + nav link per admin-13 — gradient-preset cards with valor chip and inscritos line, criar/editar/publicar/cancelar form (valor vazio = gratuito), inscritos view, Comunicar toast; admin calendar pink dots real
+- [ ] EVT.10 RN: aluno — home Próximos eventos section, Agenda Eventos do mês real, event detail per aluno-10 (Confirmar presença / Pagar inscrição → existing Pix sheet + simulate / Cancelar participação / confirmed banner), calendar event dots + day Evento entries
+- [ ] EVT.11 RN: responsável Eventos tab real per responsavel-06 (per-dependent chips with check, Pix per dependent) + professor dashboard eventos-futuros tile and list + professor calendar event dots
+- [ ] EVT.12 Android: aluno events (same scope as EVT.10)
+- [ ] EVT.13 Android: responsável + professor events (same scope as EVT.11)
+- [ ] EVT.14 iOS: aluno events (same scope as EVT.10)
+- [ ] EVT.15 iOS: responsável + professor events (same scope as EVT.11)
+
+_Next phases (store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._
