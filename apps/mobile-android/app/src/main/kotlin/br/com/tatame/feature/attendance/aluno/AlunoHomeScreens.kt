@@ -48,6 +48,8 @@ import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.AlunoHomeGraduation
 import br.com.tatame.core.network.dto.AlunoHomeResponse
 import br.com.tatame.core.network.dto.AlunoTodayClass
+import br.com.tatame.core.network.dto.MensalidadeAlert
+import br.com.tatame.feature.billing.BillingFormat
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.EnrollmentNotice
 import br.com.tatame.feature.enrollment.ScheduleFormat
@@ -71,6 +73,7 @@ fun AlunoHomeTab(
     firstName: String,
     modifier: Modifier = Modifier,
     openCheckinOnEnter: Boolean = false,
+    onOpenCarteira: () -> Unit = {},
     viewModel: AlunoHomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -105,6 +108,7 @@ fun AlunoHomeTab(
                 home = home.home,
                 onCheckin = viewModel::openCheckinSheet,
                 onOpenGraduacao = { graduacaoOpen = true },
+                onOpenCarteira = onOpenCarteira,
             )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
@@ -135,8 +139,15 @@ private fun AlunoHomeContent(
     home: AlunoHomeResponse,
     onCheckin: () -> Unit,
     onOpenGraduacao: () -> Unit,
+    onOpenCarteira: () -> Unit,
 ) {
     HeroCard(todayClass = home.todayClass, onCheckin = onCheckin)
+    // Real "mensalidade em aberto" alert (spec 006, story 7) — deep-links
+    // into the Carteira tab; absent when nothing is open (server truth).
+    home.mensalidade?.let { alert ->
+        Spacer(Modifier.height(LumiraTokens.Space.S3))
+        MensalidadeAlertCard(alert = alert, onOpen = onOpenCarteira)
+    }
     Spacer(Modifier.height(LumiraTokens.Space.S4))
     StatTilesRow(home = home)
     Spacer(Modifier.height(LumiraTokens.Space.S4))
@@ -145,6 +156,62 @@ private fun AlunoHomeContent(
         totalLessons = home.stats.totalLessons,
         onOpen = onOpenGraduacao,
     )
+}
+
+/** Home mensalidade alert fed by real charge data — never a placeholder. */
+@Composable
+private fun MensalidadeAlertCard(alert: MensalidadeAlert, onOpen: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = if (alert.overdue) {
+                    LumiraTokens.Colors.Danger100
+                } else {
+                    LumiraTokens.Colors.Warning100
+                },
+                shape = RoundedCornerShape(LumiraTokens.Radius.Md),
+            )
+            .clickable(onClick = onOpen)
+            .padding(LumiraTokens.Space.S3),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (alert.overdue) {
+                        stringResource(
+                            R.string.home_mensalidade_overdue,
+                            BillingFormat.longDate(alert.dueDate),
+                        )
+                    } else {
+                        stringResource(
+                            R.string.home_mensalidade_open,
+                            BillingFormat.longDate(alert.dueDate),
+                        )
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LumiraTokens.Colors.Fg1,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.home_mensalidade_amount,
+                        BillingFormat.amountBRL(alert.amountCents),
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (alert.overdue) {
+                        LumiraTokens.Colors.Danger500
+                    } else {
+                        LumiraTokens.Colors.Warning500
+                    },
+                )
+            }
+            Text(
+                text = "›",
+                style = MaterialTheme.typography.titleMedium,
+                color = LumiraTokens.Colors.Fg3,
+            )
+        }
+    }
 }
 
 @Composable

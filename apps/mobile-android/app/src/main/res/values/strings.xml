@@ -242,6 +242,75 @@
     <string name="error_graduation_belt_invalid_target">Faixa de destino inválida ou desativada pela academia.</string>
     <string name="error_graduation_already_reversed">Esta graduação já foi revogada.</string>
 
+    <!-- Aluno Carteira (BIL.19, aluno-12) -->
+    <string name="carteira_title">Carteira</string>
+    <string name="carteira_status_open">Em aberto</string>
+    <string name="carteira_status_paid">Paga</string>
+    <string name="carteira_status_overdue">Em atraso</string>
+    <string name="carteira_status_refunded">Estornada</string>
+    <string name="carteira_pay_pix">Pagar com Pix</string>
+    <string name="carteira_pay_boleto">Boleto</string>
+    <string name="carteira_pay_card">Cartão</string>
+    <string name="carteira_view_receipt">Ver comprovante</string>
+    <string name="carteira_recurrence_banner">Cobrança recorrente ativa. A próxima mensalidade chega em %1$s com aviso automático.</string>
+    <string name="carteira_recurrence_banner_no_date">Cobrança recorrente ativa.</string>
+    <string name="carteira_recurrence_cancel">Cancelar recorrência</string>
+    <string name="carteira_history_title">Histórico</string>
+    <string name="carteira_history_empty">Nenhum pagamento registrado ainda.</string>
+    <string name="carteira_no_plan_empty">Você ainda não tem um plano de mensalidade. Fale com a sua academia.</string>
+    <string name="carteira_no_charge">Nenhuma mensalidade em aberto no momento.</string>
+
+    <!-- Aluno home mensalidade alert (spec 006, story 7) -->
+    <string name="home_mensalidade_open">Mensalidade em aberto · vence em %1$s</string>
+    <string name="home_mensalidade_overdue">Mensalidade vencida em %1$s</string>
+    <string name="home_mensalidade_amount">%1$s · pagar na Carteira</string>
+
+    <!-- Payment sheets (BIL.20, aluno-13/14/15) -->
+    <string name="billing_pix_sheet_title">Pagar com Pix</string>
+    <string name="billing_copy_pix">Copiar código Pix</string>
+    <string name="billing_pix_copied">Código Pix copiado</string>
+    <string name="billing_simulate_payment">Simular pagamento</string>
+    <string name="billing_boleto_sheet_title">Boleto bancário</string>
+    <string name="billing_copy_linha">Copiar linha digitável</string>
+    <string name="billing_linha_copied">Linha digitável copiada</string>
+    <string name="billing_simulate_boleto">Simular compensação</string>
+    <string name="billing_boleto_footer">Boletos compensam em até 1 dia útil.</string>
+    <string name="billing_card_sheet_title">Pagar com cartão</string>
+    <string name="billing_card_number_placeholder">Número do cartão</string>
+    <string name="billing_card_holder_placeholder">Nome impresso no cartão</string>
+    <string name="billing_card_expiry_placeholder">Validade (MM/AA)</string>
+    <string name="billing_card_cvv_placeholder">CVV</string>
+    <string name="billing_card_recurrence_toggle">Usar este cartão na recorrência mensal</string>
+    <string name="billing_card_pay_cta">Pagar %1$s</string>
+    <string name="billing_success_title">Pagamento confirmado</string>
+    <string name="billing_success_body">Mensalidade de %1$s paga.</string>
+    <string name="billing_success_body_no_month">Mensalidade paga.</string>
+    <string name="billing_success_mandate_line">Recorrência mensal ativada neste cartão.</string>
+    <string name="billing_close">Fechar</string>
+    <string name="billing_receipt_title">Comprovante</string>
+    <string name="billing_receipt_amount">Valor</string>
+    <string name="billing_receipt_student">Aluno</string>
+    <string name="billing_receipt_plan">Plano</string>
+    <string name="billing_receipt_academy">Academia</string>
+    <string name="billing_receipt_method">Método</string>
+    <string name="billing_receipt_paid_at">Pago em</string>
+    <string name="billing_receipt_payment_id">Identificador</string>
+
+    <!-- Responsável Pagamentos (BIL.21, responsavel-04/05) -->
+    <string name="pagamentos_title">Pagamentos</string>
+    <string name="pagamentos_subtitle">Mensalidades dos seus dependentes.</string>
+    <string name="pagamentos_empty">Nenhum dependente vinculado a você ainda.</string>
+    <string name="pagamentos_no_plan">Sem plano de mensalidade</string>
+    <string name="pagamentos_no_charge">Nenhuma cobrança no momento</string>
+    <string name="dependent_mensalidade_open">Mensalidade em aberto · vence %1$s</string>
+    <string name="dependent_mensalidade_overdue">Mensalidade vencida em %1$s</string>
+
+    <!-- Billing errors (stable codes → PT-BR copy) -->
+    <string name="error_billing_charge_not_payable">Esta cobrança já foi paga ou cancelada.</string>
+    <string name="error_billing_method_mandate_mismatch">A recorrência está disponível apenas no pagamento com cartão.</string>
+    <string name="error_billing_mandate_already_active">Você já tem uma recorrência ativa no cartão.</string>
+    <string name="error_billing_simulate_unavailable">Simulação indisponível neste ambiente.</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>

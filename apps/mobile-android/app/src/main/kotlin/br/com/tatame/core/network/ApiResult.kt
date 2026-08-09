@@ -80,6 +80,11 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     ApiErrorCodes.GRADUATION_LESSONS_BELOW_MINIMUM -> ApiError.Graduation.LessonsBelowMinimum
     ApiErrorCodes.GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT ->
         ApiError.Graduation.CannotDisableNonKidsBelt
+    ApiErrorCodes.BILLING_CHARGE_NOT_PAYABLE -> ApiError.Billing.ChargeNotPayable
+    ApiErrorCodes.BILLING_METHOD_MANDATE_MISMATCH -> ApiError.Billing.MethodMandateMismatch
+    ApiErrorCodes.BILLING_MANDATE_ALREADY_ACTIVE -> ApiError.Billing.MandateAlreadyActive
+    ApiErrorCodes.BILLING_REFUND_UNSETTLED -> ApiError.Billing.RefundUnsettled
+    ApiErrorCodes.BILLING_SIMULATE_UNAVAILABLE -> ApiError.Billing.SimulateUnavailable
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden

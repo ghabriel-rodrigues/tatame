@@ -58,6 +58,13 @@ object ApiErrorCodes {
     const val GRADUATION_ALREADY_REVERSED = "graduation.already_reversed"
     const val GRADUATION_LESSONS_BELOW_MINIMUM = "graduation.lessons_below_minimum"
     const val GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT = "graduation.cannot_disable_non_kids_belt"
+
+    // Billing slice (spec 006) additions.
+    const val BILLING_CHARGE_NOT_PAYABLE = "billing.charge_not_payable"
+    const val BILLING_METHOD_MANDATE_MISMATCH = "billing.method_mandate_mismatch"
+    const val BILLING_MANDATE_ALREADY_ACTIVE = "billing.mandate_already_active"
+    const val BILLING_REFUND_UNSETTLED = "billing.refund_unsettled"
+    const val BILLING_SIMULATE_UNAVAILABLE = "billing.simulate_unavailable"
 }
 
 /**
@@ -144,6 +151,24 @@ sealed interface ApiError {
 
         /** `graduation.cannot_disable_non_kids_belt` — kids-only toggle violated (admin web). */
         data object CannotDisableNonKidsBelt : Graduation
+    }
+
+    /** Billing-slice stable codes (spec 006) the Carteira/Pagamentos UX maps to PT-BR copy. */
+    sealed interface Billing : ApiError {
+        /** `billing.charge_not_payable` — paying a charge already paid/canceled/refunded. */
+        data object ChargeNotPayable : Billing
+
+        /** `billing.method_mandate_mismatch` — recurrence toggle on a non-card method. */
+        data object MethodMandateMismatch : Billing
+
+        /** `billing.mandate_already_active` — second recurrence opt-in while one is active. */
+        data object MandateAlreadyActive : Billing
+
+        /** `billing.refund_unsettled` — refund on a non-succeeded payment (admin path). */
+        data object RefundUnsettled : Billing
+
+        /** `billing.simulate_unavailable` — reserved non-hidden gating (route is 404 by default). */
+        data object SimulateUnavailable : Billing
     }
 
     /** 422 `validation.failed` with field-level errors. */

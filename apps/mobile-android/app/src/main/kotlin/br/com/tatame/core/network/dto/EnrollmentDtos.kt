@@ -104,6 +104,8 @@ data class DependentDetail(
     val status: String, // active | inactive
     @SerialName("class") val enrolledClass: DependentClass? = null,
     val belt: BeltView? = null,
+    /** Dependent-card mensalidade alert fed by real charge data (spec 006, story 22). */
+    val mensalidade: MensalidadeAlert? = null,
 )
 
 /** `DependentListResponseDto` */

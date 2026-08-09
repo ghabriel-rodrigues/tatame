@@ -40,6 +40,7 @@ import br.com.tatame.core.designsystem.components.BeltBarSize
 import br.com.tatame.core.designsystem.components.BeltChip
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.DependentDetail
+import br.com.tatame.feature.billing.BillingFormat
 import br.com.tatame.feature.enrollment.AvatarBubble
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
@@ -247,6 +248,33 @@ private fun DependentCard(dependent: DependentDetail, onClick: () -> Unit) {
                     text = stringResource(R.string.dependent_next_slot, next),
                     containerColor = LumiraTokens.Colors.Purple100,
                     contentColor = LumiraTokens.Colors.Purple700,
+                )
+            }
+            // Mensalidade alert fed by real charge data (spec 006, story 22).
+            dependent.mensalidade?.let { alert ->
+                Spacer(Modifier.height(LumiraTokens.Space.S3))
+                EnrollmentChip(
+                    text = if (alert.overdue) {
+                        stringResource(
+                            R.string.dependent_mensalidade_overdue,
+                            BillingFormat.shortDay(alert.dueDate),
+                        )
+                    } else {
+                        stringResource(
+                            R.string.dependent_mensalidade_open,
+                            BillingFormat.shortDay(alert.dueDate),
+                        )
+                    },
+                    containerColor = if (alert.overdue) {
+                        LumiraTokens.Colors.Danger100
+                    } else {
+                        LumiraTokens.Colors.Warning100
+                    },
+                    contentColor = if (alert.overdue) {
+                        LumiraTokens.Colors.Danger500
+                    } else {
+                        LumiraTokens.Colors.Warning500
+                    },
                 )
             }
         }

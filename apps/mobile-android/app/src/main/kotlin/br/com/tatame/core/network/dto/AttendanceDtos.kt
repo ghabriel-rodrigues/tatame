@@ -81,13 +81,18 @@ data class AlunoTodayClass(
     val checkedIn: Boolean,
 )
 
-/** `AlunoHomeResponseDto` — `graduation` is the real derived card payload (GRD.7). */
+/**
+ * `AlunoHomeResponseDto` — `graduation` is the real derived card payload
+ * (GRD.7); `mensalidade` is the real "mensalidade em aberto" alert (spec 006,
+ * story 7) deep-linking into the Carteira, null = nothing open.
+ */
 @Serializable
 data class AlunoHomeResponse(
     val student: AlunoStudentRef,
     val todayClass: AlunoTodayClass? = null,
     val stats: AlunoStats,
     val graduation: AlunoHomeGraduation? = null,
+    val mensalidade: MensalidadeAlert? = null,
 )
 
 /** `LiveSessionDto` */

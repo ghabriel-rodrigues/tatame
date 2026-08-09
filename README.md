@@ -185,9 +185,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] BIL.16 RN: aluno Carteira per aluno-12 (mensalidade card with Em aberto/Paga chip, plan header, recurrence banner, histórico, empty state) replacing the shell + real home mensalidade alert with Carteira deep link
 - [ ] BIL.17 RN: payment sheets per aluno-13/14/15 — Pix QR + copia-e-cola + Simular pagamento (gated), boleto linha digitável + barcode + Simular compensação, cartão form + recurrence toggle — success pop, Ver comprovante
 - [ ] BIL.18 RN: responsável Pagamentos per responsavel-04/05 — per-dependent charge cards with plan subtitle, Pix per dependent, Ver comprovante, consolidated histórico + dependent-card alerts
-- [ ] BIL.19 Android: aluno Carteira + real home mensalidade alert
-- [ ] BIL.20 Android: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
-- [ ] BIL.21 Android: responsável Pagamentos + Pix per dependent + consolidated histórico
+- [x] BIL.19 Android: aluno Carteira + real home mensalidade alert
+- [x] BIL.20 Android: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
+- [x] BIL.21 Android: responsável Pagamentos + Pix per dependent + consolidated histórico
 - [ ] BIL.22 iOS: aluno Carteira + real home mensalidade alert
 - [ ] BIL.23 iOS: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
 - [ ] BIL.24 iOS: responsável Pagamentos + Pix per dependent + consolidated histórico

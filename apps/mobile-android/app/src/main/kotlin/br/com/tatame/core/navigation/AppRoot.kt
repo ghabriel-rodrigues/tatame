@@ -20,6 +20,8 @@ import br.com.tatame.feature.attendance.professor.ProfessorHomeTab
 import br.com.tatame.feature.auth.LoginScreen
 import br.com.tatame.feature.auth.MembershipChooserScreen
 import br.com.tatame.feature.auth.roleLabel
+import br.com.tatame.feature.billing.aluno.CarteiraTab
+import br.com.tatame.feature.billing.responsavel.PagamentosTab
 import br.com.tatame.feature.enrollment.professor.TurmasTab
 import br.com.tatame.feature.enrollment.responsavel.DEPENDENTS_REGISTER_PERMISSION
 import br.com.tatame.feature.enrollment.responsavel.DependentsHomeTab
@@ -95,16 +97,25 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             onLogout = onLogout,
             // ATT.19 — Início (index 0) is the real aluno surface; the central
             // Check-in tab (index 2) routes there with the sheet already open.
-            // GRD.19 — Perfil (index 4) carries the real derived belt chip.
+            // BIL.19 — Carteira (index 3) is the real wallet; the home
+            // mensalidade alert deep-links into it. GRD.19 — Perfil (index 4)
+            // carries the real derived belt chip.
             tabContent = mapOf(
-                0 to { _ ->
-                    AlunoHomeTab(firstName = me.user.fullName.substringBefore(' '))
+                0 to { selectTab ->
+                    AlunoHomeTab(
+                        firstName = me.user.fullName.substringBefore(' '),
+                        onOpenCarteira = { selectTab(3) },
+                    )
                 },
-                2 to { _ ->
+                2 to { selectTab ->
                     AlunoHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
                         openCheckinOnEnter = true,
+                        onOpenCarteira = { selectTab(3) },
                     )
+                },
+                3 to { _ ->
+                    CarteiraTab(academyName = me.academy?.name)
                 },
                 4 to { _ ->
                     AlunoPerfilTab(
@@ -163,6 +174,7 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             onLogout = onLogout,
             // ENR.22/23 — home tab (index 0) is the dependents panel; the
             // Cadastrar aluno CTA is hidden when dependents.register is off.
+            // BIL.21 — Pagamentos (index 2) is the real per-dependent wallet.
             tabContent = mapOf(
                 0 to { _ ->
                     DependentsHomeTab(
@@ -170,6 +182,9 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                         canRegisterDependents =
                             me.permissions[DEPENDENTS_REGISTER_PERMISSION] ?: true,
                     )
+                },
+                2 to { _ ->
+                    PagamentosTab()
                 },
             ),
         )

@@ -6,6 +6,7 @@ import br.com.tatame.core.network.AttendanceApi
 import br.com.tatame.core.network.AuthApi
 import br.com.tatame.core.network.AuthEvents
 import br.com.tatame.core.network.AuthInterceptor
+import br.com.tatame.core.network.BillingApi
 import br.com.tatame.core.network.EnrollmentApi
 import br.com.tatame.core.network.GraduationApi
 import br.com.tatame.core.network.ProblemJson
@@ -77,6 +78,9 @@ val networkModule = module {
     }
     single<GraduationApi> {
         buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(GraduationApi::class.java)
+    }
+    single<BillingApi> {
+        buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(BillingApi::class.java)
     }
 }
 
