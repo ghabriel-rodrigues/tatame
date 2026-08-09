@@ -202,7 +202,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AGD.6 RN: aluno month calendar behind the "Mês" button + professor calendar behind the dashboard header icon — dots, legend, day agenda, persona empty states
 - [x] AGD.7 Android: aluno Agenda tab real (same scope as AGD.5)
 - [x] AGD.8 Android: aluno + professor month calendar screens (same scope as AGD.6)
-- [ ] AGD.9 iOS: aluno Agenda tab added to the shell + real Agenda screen (same scope as AGD.5)
-- [ ] AGD.10 iOS: aluno + professor month calendar screens (same scope as AGD.6)
+- [x] AGD.9 iOS: aluno Agenda tab added to the shell + real Agenda screen (same scope as AGD.5)
+- [x] AGD.10 iOS: aluno + professor month calendar screens (same scope as AGD.6)
 
 _Next phases (events, store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._

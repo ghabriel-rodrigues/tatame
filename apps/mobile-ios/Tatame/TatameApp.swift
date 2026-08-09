@@ -4,6 +4,7 @@
 // Repositories are composed once here and injected via the environment
 // (ticket 06, decision 5); views never build networking themselves.
 
+import AgendaFeature
 import AppShell
 import AttendanceFeature
 import BillingFeature
@@ -25,6 +26,7 @@ struct TatameApp: App {
                 .environment(\.attendanceRepository, composition.attendanceRepository)
                 .environment(\.graduationRepository, composition.graduationRepository)
                 .environment(\.billingRepository, composition.billingRepository)
+                .environment(\.agendaRepository, composition.agendaRepository)
         }
     }
 }
@@ -51,6 +53,7 @@ final class AppComposition {
     let attendanceRepository: any AttendanceRepository
     let graduationRepository: any GraduationRepository
     let billingRepository: any BillingRepository
+    let agendaRepository: any AgendaRepository
 
     init() {
         // Dev server URL. Environment-specific .xcconfig wiring is ticket 08
@@ -75,5 +78,6 @@ final class AppComposition {
         attendanceRepository = stack.attendanceRepository
         graduationRepository = stack.graduationRepository
         billingRepository = stack.billingRepository
+        agendaRepository = stack.agendaRepository
     }
 }

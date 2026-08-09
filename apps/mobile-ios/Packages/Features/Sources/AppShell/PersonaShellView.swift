@@ -1,10 +1,13 @@
-// Persona shells (AUTH.26 scaffold + spec 003/004/006 tabs): aluno gets the
-// real Início (check-in + stat tiles, ATT.22) and the Carteira tab (BIL.22),
-// professor the dashboard Início (ATT.24) and the Turmas tab, responsável
-// the dependents panel (ENR.24-26) and the Pagamentos tab (BIL.24); the
-// remaining tabs stay placeholders until their slices land. The glass pill
-// tab bar remains recorded parity debt.
+// Persona shells (AUTH.26 scaffold + spec 003/004/006/007 tabs): aluno gets
+// the real Início (check-in + stat tiles, ATT.22), the Agenda tab (AGD.9 —
+// closing the recorded missing-tab debt; Início · Agenda · Carteira · Perfil
+// order per design) and the Carteira tab (BIL.22), professor the dashboard
+// Início (ATT.24, with the month-calendar header entry, AGD.10) and the
+// Turmas tab, responsável the dependents panel (ENR.24-26) and the
+// Pagamentos tab (BIL.24). The glass pill tab bar remains recorded parity
+// debt.
 
+import AgendaFeature
 import AttendanceFeature
 import BillingFeature
 import DesignSystem
@@ -38,6 +41,7 @@ enum Persona {
 struct PersonaShellView: View {
     enum Tab: Hashable {
         case inicio
+        case agenda
         case turmas
         case carteira
         case pagamentos
@@ -50,10 +54,12 @@ struct PersonaShellView: View {
 
     @State private var selection: Tab = .inicio
     @State private var showGraduation = false
+    @State private var showProfessorCalendar = false
     @Environment(SessionStore.self) private var session
     @Environment(\.enrollmentRepository) private var enrollmentRepository
     @Environment(\.attendanceRepository) private var attendanceRepository
     @Environment(\.billingRepository) private var billingRepository
+    @Environment(\.agendaRepository) private var agendaRepository
 
     var body: some View {
         TabView(selection: $selection) {
@@ -67,7 +73,10 @@ struct PersonaShellView: View {
                             onOpenGraduation: { showGraduation = true },
                             // Real home mensalidade alert deep-links into the
                             // Carteira (spec 006, story 7).
-                            onOpenCarteira: { selection = .carteira }
+                            onOpenCarteira: { selection = .carteira },
+                            // Hero "Ver agenda" CTA switches to the Agenda
+                            // tab (spec 007 — the recorded debt closes).
+                            onOpenAgenda: { selection = .agenda }
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showGraduation) {
@@ -76,6 +85,18 @@ struct PersonaShellView: View {
                     }
                 }
                 .tag(Tab.inicio)
+                featureTab(title: "Agenda", icon: "calendar") {
+                    // Real Agenda tab (AGD.9); the "Mês" header button pushes
+                    // the month calendar inside this stack (AGD.10).
+                    NavigationStack {
+                        AlunoAgendaView(
+                            repository: agendaRepository,
+                            academyName: context.activeMembership.academyName
+                        )
+                        .navigationBarHiddenOnIOS()
+                    }
+                }
+                .tag(Tab.agenda)
                 featureTab(title: "Carteira", icon: "creditcard") {
                     AlunoCarteiraView(
                         repository: billingRepository,
@@ -85,12 +106,21 @@ struct PersonaShellView: View {
                 .tag(Tab.carteira)
             case .professor:
                 featureTab(title: "Início", icon: persona.homeIcon) {
-                    ProfessorDashboardView(
-                        repository: attendanceRepository,
-                        professorName: context.user.fullName,
-                        professorUserId: context.user.id,
-                        onVerTurmas: { selection = .turmas }
-                    )
+                    // The header calendar icon pushes the professor month
+                    // calendar (spec 007 story 20, AGD.10).
+                    NavigationStack {
+                        ProfessorDashboardView(
+                            repository: attendanceRepository,
+                            professorName: context.user.fullName,
+                            professorUserId: context.user.id,
+                            onVerTurmas: { selection = .turmas },
+                            onOpenCalendar: { showProfessorCalendar = true }
+                        )
+                        .navigationBarHiddenOnIOS()
+                        .navigationDestination(isPresented: $showProfessorCalendar) {
+                            MonthCalendarView(persona: .professor, repository: agendaRepository)
+                        }
+                    }
                 }
                 .tag(Tab.inicio)
                 featureTab(title: "Turmas", icon: "person.3") {

@@ -23,6 +23,8 @@ public struct AuthStack: Sendable {
     public let graduationRepository: any GraduationRepository
     /// Billing slice repository (spec 006) — same authenticated client.
     public let billingRepository: any BillingRepository
+    /// Agenda slice repository (spec 007) — same authenticated client.
+    public let agendaRepository: any AgendaRepository
 }
 
 public enum TatameClientFactory {
@@ -70,7 +72,8 @@ public enum TatameClientFactory {
             enrollmentRepository: LiveEnrollmentRepository(client: client),
             attendanceRepository: LiveAttendanceRepository(client: client, serverURL: serverURL),
             graduationRepository: LiveGraduationRepository(client: client),
-            billingRepository: LiveBillingRepository(client: client)
+            billingRepository: LiveBillingRepository(client: client),
+            agendaRepository: LiveAgendaRepository(client: client)
         )
     }
 }

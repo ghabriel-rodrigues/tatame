@@ -13,17 +13,20 @@ public struct ProfessorDashboardView: View {
     private let professorName: String
     private let professorUserId: UUID
     private let onVerTurmas: () -> Void
+    private let onOpenCalendar: (() -> Void)?
 
     public init(
         repository: any AttendanceRepository,
         professorName: String,
         professorUserId: UUID,
-        onVerTurmas: @escaping () -> Void = {}
+        onVerTurmas: @escaping () -> Void = {},
+        onOpenCalendar: (() -> Void)? = nil
     ) {
         _model = State(initialValue: ProfessorDashboardModel(repository: repository))
         self.professorName = professorName
         self.professorUserId = professorUserId
         self.onVerTurmas = onVerTurmas
+        self.onOpenCalendar = onOpenCalendar
     }
 
     public var body: some View {
@@ -31,7 +34,8 @@ public struct ProfessorDashboardView: View {
             model: model,
             professorName: professorName,
             professorUserId: professorUserId,
-            onVerTurmas: onVerTurmas
+            onVerTurmas: onVerTurmas,
+            onOpenCalendar: onOpenCalendar
         )
     }
 }
@@ -41,6 +45,7 @@ struct ProfessorDashboardContent: View {
     let professorName: String
     let professorUserId: UUID
     let onVerTurmas: () -> Void
+    var onOpenCalendar: (() -> Void)?
 
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
@@ -98,7 +103,23 @@ struct ProfessorDashboardContent: View {
                     .foregroundStyle(LumiraTokens.Colors.fg1)
             }
             Spacer()
-            AttendanceAvatar(initials: NameInitials.from(professorName))
+            HStack(spacing: LumiraTokens.Space.s3) {
+                // Month calendar entry (spec 007 story 20, handoff
+                // professor-02 header icon).
+                if let onOpenCalendar {
+                    Button(action: onOpenCalendar) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: LumiraTokens.FontSize.textMd))
+                            .foregroundStyle(LumiraTokens.Colors.fg2)
+                            .frame(width: 42, height: 42)
+                            .background(LumiraTokens.Colors.bgSurface)
+                            .clipShape(Circle())
+                            .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                    }
+                    .accessibilityIdentifier("professor-calendar-button")
+                }
+                AttendanceAvatar(initials: NameInitials.from(professorName))
+            }
         }
         .padding(.top, LumiraTokens.Space.s6)
     }

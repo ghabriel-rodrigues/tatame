@@ -41,6 +41,8 @@ targets:
         product: EnrollmentFeature
       - package: Features
         product: AttendanceFeature
+      - package: Features
+        product: AgendaFeature
       - package: TatameAPI
         product: TatameAPI
       - package: TatameCore

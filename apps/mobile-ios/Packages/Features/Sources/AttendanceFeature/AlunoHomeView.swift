@@ -13,19 +13,27 @@ public struct AlunoHomeView: View {
     @State private var model: AlunoHomeModel
     private let onOpenGraduation: (() -> Void)?
     private let onOpenCarteira: (() -> Void)?
+    private let onOpenAgenda: (() -> Void)?
 
     public init(
         repository: any AttendanceRepository,
         onOpenGraduation: (() -> Void)? = nil,
-        onOpenCarteira: (() -> Void)? = nil
+        onOpenCarteira: (() -> Void)? = nil,
+        onOpenAgenda: (() -> Void)? = nil
     ) {
         _model = State(initialValue: AlunoHomeModel(repository: repository))
         self.onOpenGraduation = onOpenGraduation
         self.onOpenCarteira = onOpenCarteira
+        self.onOpenAgenda = onOpenAgenda
     }
 
     public var body: some View {
-        AlunoHomeContent(model: model, onOpenGraduation: onOpenGraduation, onOpenCarteira: onOpenCarteira)
+        AlunoHomeContent(
+            model: model,
+            onOpenGraduation: onOpenGraduation,
+            onOpenCarteira: onOpenCarteira,
+            onOpenAgenda: onOpenAgenda
+        )
     }
 }
 
@@ -33,6 +41,7 @@ struct AlunoHomeContent: View {
     @Bindable var model: AlunoHomeModel
     var onOpenGraduation: (() -> Void)?
     var onOpenCarteira: (() -> Void)?
+    var onOpenAgenda: (() -> Void)?
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
 
@@ -143,11 +152,14 @@ struct AlunoHomeContent: View {
                         }
                         .accessibilityIdentifier("fazer-checkin-button")
                     }
-                    // "Ver agenda" belongs to the agenda slice — explicit
-                    // placeholder, never faked.
-                    Text("Ver agenda")
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.5))
+                    // Real "Ver agenda" CTA switching to the Agenda tab
+                    // (spec 007 closes the recorded attendance-slice debt).
+                    Button("Ver agenda") {
+                        onOpenAgenda?()
+                    }
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .accessibilityIdentifier("ver-agenda-button")
                 }
                 .padding(.top, LumiraTokens.Space.s2)
             } else {

@@ -22,6 +22,7 @@ let package = Package(
         .library(name: "AttendanceFeature", targets: ["AttendanceFeature"]),
         .library(name: "GraduationFeature", targets: ["GraduationFeature"]),
         .library(name: "BillingFeature", targets: ["BillingFeature"]),
+        .library(name: "AgendaFeature", targets: ["AgendaFeature"]),
         .library(name: "AppShell", targets: ["AppShell"]),
     ],
     dependencies: [
@@ -69,6 +70,17 @@ let package = Package(
             ]
         ),
         .target(
+            // Agenda slice (spec 007, AGD.9-10): aluno Agenda tab + aluno/
+            // professor month calendars. Depends on AttendanceFeature to
+            // reopen the Phase-4 check-in sheet from agenda rows.
+            name: "AgendaFeature",
+            dependencies: [
+                "AttendanceFeature",
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
             name: "AppShell",
             dependencies: [
                 "AuthFeature",
@@ -76,6 +88,7 @@ let package = Package(
                 "EnrollmentFeature",
                 "GraduationFeature",
                 "BillingFeature",
+                "AgendaFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -88,6 +101,7 @@ let package = Package(
                 "EnrollmentFeature",
                 "GraduationFeature",
                 "BillingFeature",
+                "AgendaFeature",
                 "AppShell",
                 .product(name: "TatameCore", package: "TatameCore"),
             ]

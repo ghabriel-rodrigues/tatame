@@ -7,15 +7,17 @@ import DesignSystem
 import SwiftUI
 import TatameCore
 
-struct CheckinSheet: View {
+/// Public so the agenda slice reuses the exact same sheet from its class
+/// rows (spec 007 story 7 — check-in behaves identically everywhere).
+public struct CheckinSheet: View {
     @State var model: CheckinModel
     @Environment(\.dismiss) private var dismiss
 
-    init(model: CheckinModel) {
+    public init(model: CheckinModel) {
         _model = State(initialValue: model)
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
             switch model.phase {
             case .entry, .submitting, .failed:
