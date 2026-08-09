@@ -194,9 +194,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 7 — Agenda / calendar ([spec 007](docs/specs/007-agenda.md))
 
-- [ ] AGD.1 Backend: agenda module — `GET /v1/aluno/agenda?weekday=` with enrolled-class slot items (times, professor, level fields, occupancy), tenant-timezone `isToday` + read-only `checkedIn` state, `events: []`
-- [ ] AGD.2 Backend: persona calendars — `GET /v1/{aluno|professor|admin}/calendar?month=` returning persona-scoped weekday recurrence buckets + `events: []`, no session reads or writes
-- [ ] AGD.3 Backend: e2e suite green — scoping per persona, weekday filter, checkedIn with/without session and after revoke, read purity (no rows created), month validation, RBAC + RLS, read-only academies served
+- [x] AGD.1 Backend: agenda module — `GET /v1/aluno/agenda?weekday=` with enrolled-class slot items (times, professor, level fields, occupancy), tenant-timezone `isToday` + read-only `checkedIn` state, `events: []`
+- [x] AGD.2 Backend: persona calendars — `GET /v1/{aluno|professor|admin}/calendar?month=` returning persona-scoped weekday recurrence buckets + `events: []`, no session reads or writes
+- [x] AGD.3 Backend: e2e suite green — scoping per persona, weekday filter, checkedIn with/without session and after revoke, read purity (no rows created), month validation, RBAC + RLS, read-only academies served
 - [ ] AGD.4 Web: `/admin/calendario` console page + nav link — month grid with dot expansion, "aulas recorrentes"/"evento" legend, selected-day list, "Nada agendado neste dia." empty state, page component spec
 - [ ] AGD.5 RN: aluno Agenda tab real — day pills (today default), class cards with check-in button → Phase-4 sheet / green check, "Sem aulas neste dia", Eventos do mês empty section, hero "Ver agenda" CTA enabled
 - [ ] AGD.6 RN: aluno month calendar behind the "Mês" button + professor calendar behind the dashboard header icon — dots, legend, day agenda, persona empty states

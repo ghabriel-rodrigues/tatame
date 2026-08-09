@@ -12,6 +12,7 @@ import { ErrorCodes, ProblemException } from '../common/problem.js';
 import { AppConfigModule } from '../infra/config/config.module.js';
 import { DbModule } from '../infra/db/db.module.js';
 import { NotificationsModule } from '../infra/notifications/notifications.module.js';
+import { AgendaModule } from '../modules/agenda/agenda.module.js';
 import { AttendanceModule } from '../modules/attendance/attendance.module.js';
 import { BillingModule } from '../modules/billing/billing.module.js';
 import { EnrollmentModule } from '../modules/enrollment/enrollment.module.js';
@@ -51,6 +52,7 @@ function flattenValidationErrors(
     IdentityModule,
     EnrollmentModule,
     AttendanceModule,
+    AgendaModule,
     GraduationModule,
     BillingModule,
   ],

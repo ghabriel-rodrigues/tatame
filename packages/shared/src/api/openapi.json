@@ -2043,6 +2043,163 @@
         ]
       }
     },
+    "/v1/aluno/agenda": {
+      "get": {
+        "description": "Never creates class_sessions rows: `checkedIn` is a pure read of today's session and the active attendance. `events` ships empty until the events phase.",
+        "operationId": "AlunoAgendaController_agendaOf_v1",
+        "parameters": [
+          {
+            "name": "weekday",
+            "required": false,
+            "in": "query",
+            "description": "0 = Sunday … 6 = Saturday; omitted = today in the tenant timezone",
+            "schema": {
+              "minimum": 0,
+              "maximum": 6,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoAgendaResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Agenda: enrolled classes of one weekday (default today) + check-in state",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/aluno/calendar": {
+      "get": {
+        "description": "Schedule-derived — no session reads. The client expands dots over the grid.",
+        "operationId": "AlunoAgendaController_calendar_v1",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "description": "YYYY-MM, echoed back; omitted = current tenant-local month. In v1 it only windows the (empty) events — recurrence is month-independent.",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Month calendar: enrolled-class weekly recurrence buckets (\"sua aula\")",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/professor/calendar": {
+      "get": {
+        "description": "Schedule-derived — no session reads. The client expands dots over the grid.",
+        "operationId": "ProfessorCalendarController_calendar_v1",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "description": "YYYY-MM, echoed back; omitted = current tenant-local month. In v1 it only windows the (empty) events — recurrence is month-independent.",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Month calendar: own-class weekly recurrence buckets (\"aula recorrente\")",
+        "tags": [
+          "professor"
+        ]
+      }
+    },
+    "/v1/admin/calendar": {
+      "get": {
+        "description": "Schedule-derived — no session reads. The client expands dots over the grid.",
+        "operationId": "AdminCalendarController_calendar_v1",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "description": "YYYY-MM, echoed back; omitted = current tenant-local month. In v1 it only windows the (empty) events — recurrence is month-independent.",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Month calendar: all-active-turma weekly recurrence buckets (\"aulas recorrentes\")",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/aluno/graduation": {
       "get": {
         "description": "Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only \"Ver certificado\" placeholder flag.",
@@ -5991,6 +6148,248 @@
         },
         "required": [
           "sessions"
+        ]
+      },
+      "AgendaOccupancyDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "number",
+            "description": "Active enrollments — the \"N\" of the \"N de M\" chip"
+          },
+          "capacity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "active",
+          "capacity"
+        ]
+      },
+      "AlunoAgendaClassDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "19:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "20:00",
+            "description": "Slot start + duration"
+          },
+          "professorName": {
+            "type": "string"
+          },
+          "ageMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "ageMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "minBelt": {
+            "nullable": true,
+            "description": "Level chip lower bound; both ends null = \"Todas as faixas\"",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltRefDto"
+              }
+            ]
+          },
+          "maxBelt": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BeltRefDto"
+              }
+            ]
+          },
+          "occupancy": {
+            "$ref": "#/components/schemas/AgendaOccupancyDto"
+          },
+          "checkedIn": {
+            "type": "boolean",
+            "description": "True iff today's session exists AND the caller holds an active (non-revoked) attendance on it. Always false off-today — clients render the button iff `isToday && !checkedIn`."
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "startTime",
+          "endTime",
+          "professorName",
+          "ageMin",
+          "ageMax",
+          "occupancy",
+          "checkedIn"
+        ]
+      },
+      "AlunoAgendaResponseDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 = Sunday … 6 = Saturday"
+          },
+          "isToday": {
+            "type": "boolean",
+            "description": "Whether the returned weekday is today in the tenant timezone"
+          },
+          "classes": {
+            "description": "Sorted by start time",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlunoAgendaClassDto"
+            }
+          },
+          "events": {
+            "description": "Always empty in this phase — stable contract the events phase fills (spec 007)",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "weekday",
+          "isToday",
+          "classes",
+          "events"
+        ]
+      },
+      "CalendarClassItemDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "19:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "20:00"
+          },
+          "professorName": {
+            "type": "string"
+          },
+          "occupancy": {
+            "$ref": "#/components/schemas/AgendaOccupancyDto"
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "startTime",
+          "endTime",
+          "professorName",
+          "occupancy"
+        ]
+      },
+      "CalendarBucketsDto": {
+        "type": "object",
+        "properties": {
+          "0": {
+            "description": "Sunday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          },
+          "1": {
+            "description": "Monday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          },
+          "2": {
+            "description": "Tuesday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          },
+          "3": {
+            "description": "Wednesday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          },
+          "4": {
+            "description": "Thursday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          },
+          "5": {
+            "description": "Friday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          },
+          "6": {
+            "description": "Saturday",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarClassItemDto"
+            }
+          }
+        },
+        "required": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ]
+      },
+      "CalendarResponseDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-08",
+            "description": "Echoed (or current tenant-local) month"
+          },
+          "classesByWeekday": {
+            "$ref": "#/components/schemas/CalendarBucketsDto"
+          },
+          "events": {
+            "description": "Always empty in this phase — stable contract the events phase fills (spec 007)",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "month",
+          "classesByWeekday",
+          "events"
         ]
       },
       "GraduationActorDto": {

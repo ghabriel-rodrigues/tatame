@@ -891,6 +891,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/aluno/agenda": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Agenda: enrolled classes of one weekday (default today) + check-in state
+         * @description Never creates class_sessions rows: `checkedIn` is a pure read of today's session and the active attendance. `events` ships empty until the events phase.
+         */
+        get: operations["AlunoAgendaController_agendaOf_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Month calendar: enrolled-class weekly recurrence buckets ("sua aula")
+         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         */
+        get: operations["AlunoAgendaController_calendar_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Month calendar: own-class weekly recurrence buckets ("aula recorrente")
+         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         */
+        get: operations["ProfessorCalendarController_calendar_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Month calendar: all-active-turma weekly recurrence buckets ("aulas recorrentes")
+         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         */
+        get: operations["AdminCalendarController_calendar_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/aluno/graduation": {
         parameters: {
             query?: never;
@@ -2282,6 +2362,79 @@ export interface components {
         AdminSessionListResponseDto: {
             /** @description Newest first */
             sessions: components["schemas"]["AdminSessionRowDto"][];
+        };
+        AgendaOccupancyDto: {
+            /** @description Active enrollments — the "N" of the "N de M" chip */
+            active: number;
+            capacity: number;
+        };
+        AlunoAgendaClassDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @example 19:00 */
+            startTime: string;
+            /**
+             * @description Slot start + duration
+             * @example 20:00
+             */
+            endTime: string;
+            professorName: string;
+            ageMin: number | null;
+            ageMax: number | null;
+            /** @description Level chip lower bound; both ends null = "Todas as faixas" */
+            minBelt?: components["schemas"]["BeltRefDto"] | null;
+            maxBelt?: components["schemas"]["BeltRefDto"] | null;
+            occupancy: components["schemas"]["AgendaOccupancyDto"];
+            /** @description True iff today's session exists AND the caller holds an active (non-revoked) attendance on it. Always false off-today — clients render the button iff `isToday && !checkedIn`. */
+            checkedIn: boolean;
+        };
+        AlunoAgendaResponseDto: {
+            /** @description 0 = Sunday … 6 = Saturday */
+            weekday: number;
+            /** @description Whether the returned weekday is today in the tenant timezone */
+            isToday: boolean;
+            /** @description Sorted by start time */
+            classes: components["schemas"]["AlunoAgendaClassDto"][];
+            /** @description Always empty in this phase — stable contract the events phase fills (spec 007) */
+            events: Record<string, never>[];
+        };
+        CalendarClassItemDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @example 19:00 */
+            startTime: string;
+            /** @example 20:00 */
+            endTime: string;
+            professorName: string;
+            occupancy: components["schemas"]["AgendaOccupancyDto"];
+        };
+        CalendarBucketsDto: {
+            /** @description Sunday */
+            0: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Monday */
+            1: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Tuesday */
+            2: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Wednesday */
+            3: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Thursday */
+            4: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Friday */
+            5: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Saturday */
+            6: components["schemas"]["CalendarClassItemDto"][];
+        };
+        CalendarResponseDto: {
+            /**
+             * @description Echoed (or current tenant-local) month
+             * @example 2026-08
+             */
+            month: string;
+            classesByWeekday: components["schemas"]["CalendarBucketsDto"];
+            /** @description Always empty in this phase — stable contract the events phase fills (spec 007) */
+            events: Record<string, never>[];
         };
         GraduationActorDto: {
             /** Format: uuid */
@@ -4034,6 +4187,94 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminSessionListResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoAgendaController_agendaOf_v1: {
+        parameters: {
+            query?: {
+                /** @description 0 = Sunday … 6 = Saturday; omitted = today in the tenant timezone */
+                weekday?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlunoAgendaResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoAgendaController_calendar_v1: {
+        parameters: {
+            query?: {
+                /** @description YYYY-MM, echoed back; omitted = current tenant-local month. In v1 it only windows the (empty) events — recurrence is month-independent. */
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarResponseDto"];
+                };
+            };
+        };
+    };
+    ProfessorCalendarController_calendar_v1: {
+        parameters: {
+            query?: {
+                /** @description YYYY-MM, echoed back; omitted = current tenant-local month. In v1 it only windows the (empty) events — recurrence is month-independent. */
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarResponseDto"];
+                };
+            };
+        };
+    };
+    AdminCalendarController_calendar_v1: {
+        parameters: {
+            query?: {
+                /** @description YYYY-MM, echoed back; omitted = current tenant-local month. In v1 it only windows the (empty) events — recurrence is month-independent. */
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalendarResponseDto"];
                 };
             };
         };
