@@ -29,6 +29,7 @@ Locked monorepo + docker + CI/deploy conventions: nx project layout with enforce
 - Production hosting for the NestJS API and Postgres — sharpened by 02+03: the artifact is fixed (the `apps/api/Dockerfile` image, built/pushed from GitHub Actions), so the question is now "pick a container host for that image + a managed Postgres (Railway / Fly.io / Render / cloud-managed), including how deploy triggers from CI". Still fog: needs its own research ticket; cost, region (BR latency), and Stripe webhook reachability are the criteria.
 - Mobile release CI: Expo EAS builds and app-store signing/release pipelines (TestFlight / Play Console). PR-lane builds for the natives are decided in 03; what remains fog is release artifacts — sharp once the mobile apps exist.
 - Staging/preview environments (API + DB per PR? Netlify deploy previews against what backend?) — depends on API hosting (above); CI platform is now fixed (GHA).
+- Scheduled jobs / cron runner (nightly billing charge materialization + dunning notifications) — backend map ticket 05 ships an idempotent on-read materialization + manual admin trigger for v1 and explicitly defers the real cron here; sharp once API hosting (above) fixes where a scheduler can live.
 - Database migration **execution** at deploy time (drift *check* in CI is decided in 03; `migrate()` runs at deploy per db-01 workflow, but where/when hangs on the API hosting choice above).
 
 ## Out of scope
