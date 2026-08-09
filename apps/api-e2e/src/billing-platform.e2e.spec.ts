@@ -67,7 +67,9 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
     );
     const totalGross = rows.reduce((sum: number, r: any) => sum + r.grossCents, 0);
     expect(totalGross).toBe(Number(truth!.gross));
-    expect(Number(truth!.gross)).toBe(48000);
+    // Plan fixtures (Ana 18000 + Kiko 15000 + Lara 15000) + Ana's settled
+    // event inscription (spec 008 fixtures, 6000) — event money repasses too.
+    expect(Number(truth!.gross)).toBe(54000);
     const totalStudents = rows.reduce((sum: number, r: any) => sum + r.studentCount, 0);
     expect(totalStudents).toBeGreaterThanOrEqual(Number(truth!.students));
 

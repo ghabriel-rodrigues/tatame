@@ -51,6 +51,13 @@ export const ErrorCodes = {
   PLAN_NOT_FOUND: 'plan.not_found',
   PLAN_ARCHIVED: 'plan.archived',
   PLAN_NAME_TAKEN: 'plan.name_taken',
+  // events (spec 008)
+  /** Publish (or a published-state edit) without date/local — the friendly face of events_published_ck. */
+  EVENT_PUBLISH_REQUIREMENTS: 'event.publish_requirements',
+  /** Registration or Comunicar against a draft/canceled event. */
+  EVENT_NOT_PUBLISHED: 'event.not_published',
+  /** Self-cancel of a paid, settled (confirmed) registration — admin refund is the only way back. */
+  EVENT_REGISTRATION_SETTLED: 'event.registration_settled',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',

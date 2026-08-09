@@ -42,3 +42,12 @@ export {
   BILLING_CHARGE_PAID,
   BILLING_CHARGE_REFUNDED,
 } from './modules/billing/billing.events.js';
+// Events seam (spec 008) — e2e asserts announce/lifecycle emissions and the
+// handler-driven registration transitions.
+export {
+  EVENTS_ANNOUNCEMENT_REQUESTED,
+  EVENTS_EVENT_CANCELED,
+  EVENTS_EVENT_PUBLISHED,
+  EVENTS_REGISTRATION_CANCELED,
+  EVENTS_REGISTRATION_CONFIRMED,
+} from './modules/events/events.events.js';

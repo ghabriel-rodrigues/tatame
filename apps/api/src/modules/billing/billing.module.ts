@@ -9,6 +9,7 @@ import { BillingSharedController } from './controllers/billing-shared.controller
 import { PlatformRepassesController } from './controllers/platform-repasses.controller.js';
 import { ResponsavelPaymentsController } from './controllers/responsavel-payments.controller.js';
 import { AdminOverviewService } from './services/admin-overview.service.js';
+import { EventChargesService } from './services/event-charges.service.js';
 import { GuardianPaymentsService } from './services/guardian-payments.service.js';
 import { MaterializationService } from './services/materialization.service.js';
 import { PaymentFlowService } from './services/payment-flow.service.js';
@@ -45,7 +46,10 @@ import { WalletService } from './services/wallet.service.js';
     AdminOverviewService,
     PlansService,
     RepassesService,
+    EventChargesService,
   ],
-  exports: [ProviderEventsService, MaterializationService],
+  // EventChargesService is the internal seam the events module (spec 008)
+  // uses to issue/cancel event-origin charges — money stays billing's.
+  exports: [ProviderEventsService, MaterializationService, EventChargesService],
 })
 export class BillingModule {}

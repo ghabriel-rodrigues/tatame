@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { AlunoEventItemDto, CalendarEventItemDto } from '../../events/dto/responses.dto.js';
 import { BeltRefDto } from '../../graduation/dto/belt.dto.js';
 
 /**
@@ -68,11 +69,11 @@ export class AlunoAgendaResponseDto {
   classes!: AlunoAgendaClassDto[];
 
   @ApiProperty({
-    isArray: true,
-    type: Object,
-    description: 'Always empty in this phase — stable contract the events phase fills (spec 007)',
+    type: [AlunoEventItemDto],
+    description:
+      '"Eventos do mês": the current tenant-local month\'s published events with own state (spec 008)',
   })
-  events!: unknown[];
+  events!: AlunoEventItemDto[];
 }
 
 export class CalendarClassItemDto {
@@ -127,9 +128,10 @@ export class CalendarResponseDto {
   classesByWeekday!: CalendarBucketsDto;
 
   @ApiProperty({
-    isArray: true,
-    type: Object,
-    description: 'Always empty in this phase — stable contract the events phase fills (spec 007)',
+    type: [CalendarEventItemDto],
+    description:
+      "The requested month's published events as dated items (tenant-timezone bucketing) — the " +
+      'pink dots. Aluno items carry own registration state (spec 008).',
   })
-  events!: unknown[];
+  events!: CalendarEventItemDto[];
 }

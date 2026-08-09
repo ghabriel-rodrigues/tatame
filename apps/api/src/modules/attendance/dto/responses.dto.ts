@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MensalidadeAlertDto } from '../../billing/dto/responses.dto.js';
 import { ScheduleSlotViewDto } from '../../enrollment/dto/responses.dto.js';
+import { AlunoEventItemDto, ProfessorUpcomingEventDto } from '../../events/dto/responses.dto.js';
 import { BeltViewDto, GraduationProgressDto } from '../../graduation/dto/belt.dto.js';
 
 /**
@@ -129,6 +130,13 @@ export class AlunoHomeResponseDto {
       'Real "mensalidade em aberto" alert (spec 006) deep-linking into the Carteira; null = nothing open',
   })
   mensalidade!: MensalidadeAlertDto | null;
+
+  @ApiProperty({
+    type: [AlunoEventItemDto],
+    description:
+      '"Próximos eventos": the next 2 published events with own registration state (spec 008)',
+  })
+  upcomingEvents!: AlunoEventItemDto[];
 }
 
 export class LiveSessionDto {
@@ -366,6 +374,15 @@ export class ProfessorDashboardResponseDto {
 
   @ApiProperty({ type: [ProfessorTodayClassDto] })
   todayClasses!: ProfessorTodayClassDto[];
+
+  @ApiProperty({ description: 'The "eventos futuros" stat tile (spec 008)' })
+  upcomingEventsCount!: number;
+
+  @ApiProperty({
+    type: [ProfessorUpcomingEventDto],
+    description: '"Eventos futuros" list — read-only academy-wide data (spec 008)',
+  })
+  upcomingEvents!: ProfessorUpcomingEventDto[];
 }
 
 export class ProfessorStudentDto {

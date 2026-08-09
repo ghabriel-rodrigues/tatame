@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swa
 import { ClsService } from 'nestjs-cls';
 import { RequiresPermission, Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
+import { EventsQueryService } from '../../events/services/events-query.service.js';
 import { CheckinRequestDto } from '../dto/requests.dto.js';
 import { AlunoHomeResponseDto, CheckinResponseDto } from '../dto/responses.dto.js';
 import { CheckinService } from '../services/checkin.service.js';
@@ -21,6 +22,7 @@ export class AlunoAttendanceController {
   constructor(
     private readonly checkins: CheckinService,
     private readonly stats: StatsService,
+    private readonly eventsQuery: EventsQueryService,
     private readonly cls: ClsService,
   ) {}
 
@@ -46,14 +48,20 @@ export class AlunoAttendanceController {
 
   @Get('home')
   @ApiOperation({
-    summary: 'Início: today-class hero, presença %, streak, real graduation card',
+    summary: 'Início: today-class hero, presença %, streak, graduation card, próximos eventos',
     description:
       'Streak is null when the academy disabled the gamification.streak toggle. The graduation ' +
-      'card carries the derived belt and the progress against the academy rule (GRD.7).',
+      'card carries the derived belt and the progress against the academy rule (GRD.7). ' +
+      '`upcomingEvents` is the "Próximos eventos" section: the next 2 published events with the ' +
+      'caller\'s own registration state (spec 008 — additive).',
   })
   @ApiOkResponse({ type: AlunoHomeResponseDto })
   async home() {
     const ctx = requireTenantContext(this.cls);
-    return this.stats.alunoHome(ctx);
+    const [home, upcomingEvents] = await Promise.all([
+      this.stats.alunoHome(ctx),
+      this.eventsQuery.alunoUpcoming(ctx, 2),
+    ]);
+    return { ...home, upcomingEvents };
   }
 }

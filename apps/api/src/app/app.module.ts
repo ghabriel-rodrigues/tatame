@@ -16,6 +16,7 @@ import { AgendaModule } from '../modules/agenda/agenda.module.js';
 import { AttendanceModule } from '../modules/attendance/attendance.module.js';
 import { BillingModule } from '../modules/billing/billing.module.js';
 import { EnrollmentModule } from '../modules/enrollment/enrollment.module.js';
+import { EventsModule } from '../modules/events/events.module.js';
 import { GraduationModule } from '../modules/graduation/graduation.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
 
@@ -55,6 +56,7 @@ function flattenValidationErrors(
     AgendaModule,
     GraduationModule,
     BillingModule,
+    EventsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

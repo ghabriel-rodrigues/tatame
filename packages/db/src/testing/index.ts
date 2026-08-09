@@ -8,8 +8,10 @@ export {
   seedBeltCatalog,
   seedBillingFixtures,
   seedDevFixtures,
+  seedEventFixtures,
   seedPlatformPlans,
   PLATFORM_PLAN_CATALOG,
   type SeedBillingHandles,
   type SeedDevHandles,
+  type SeedEventHandles,
 } from '../seed/index.js';

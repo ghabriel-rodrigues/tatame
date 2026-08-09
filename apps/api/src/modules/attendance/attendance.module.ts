@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../../infra/db/db.module.js';
+import { EventsModule } from '../events/events.module.js';
 import { GraduationCoreModule } from '../graduation/graduation-core.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AdminAttendanceController } from './controllers/admin-attendance.controller.js';
@@ -26,7 +27,9 @@ import { StatsService } from './services/stats.service.js';
  * in-process live rooms (realtime decision be-09).
  */
 @Module({
-  imports: [DbModule, IdentityModule, GraduationCoreModule],
+  // EventsModule feeds the home "Próximos eventos" section and the professor
+  // dashboard "Eventos futuros" tile (spec 008 — controller-level merge).
+  imports: [DbModule, IdentityModule, GraduationCoreModule, EventsModule],
   controllers: [
     AlunoAttendanceController,
     ProfessorLiveController,

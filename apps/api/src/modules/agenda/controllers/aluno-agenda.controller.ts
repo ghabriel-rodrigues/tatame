@@ -26,7 +26,8 @@ export class AlunoAgendaController {
     summary: 'Agenda: enrolled classes of one weekday (default today) + check-in state',
     description:
       "Never creates class_sessions rows: `checkedIn` is a pure read of today's session and the " +
-      'active attendance. `events` ships empty until the events phase.',
+      'active attendance. `events` carries the current month\'s published events with own state ' +
+      '("Eventos do mês", spec 008).',
   })
   @ApiOkResponse({ type: AlunoAgendaResponseDto })
   async agendaOf(@Query() query: AlunoAgendaQueryDto) {

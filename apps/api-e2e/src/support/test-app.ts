@@ -20,6 +20,7 @@ import {
   seedBeltCatalog,
   seedBillingFixtures,
   seedDevFixtures,
+  seedEventFixtures,
   seedPlatformPlans,
   testAdminUrl,
   type FreshDb,
@@ -69,6 +70,9 @@ export async function createTestApp(overrides?: {
   // Billing fixtures (spec 006, BIL.5): plan catalog, charge histories,
   // mandates, and the charlie-fc delinquent academy (repasse retention).
   await seedBillingFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+  // Event fixtures (spec 008, EVT.3): draft + published free/paid events with
+  // mixed registrations and their event-origin charges.
+  await seedEventFixtures({ appDb: appDb.db, platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;
   process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';

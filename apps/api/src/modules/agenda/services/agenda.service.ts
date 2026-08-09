@@ -17,6 +17,8 @@ import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { localDate, localWeekday } from '../../attendance/lib/time.js';
 import { normalizeTime } from '../../enrollment/lib/derive.js';
+import type { CalendarEventItemView } from '../../events/events.types.js';
+import { EventsQueryService } from '../../events/services/events-query.service.js';
 import type { BeltRef } from '../../graduation/graduation.types.js';
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
 
@@ -50,8 +52,11 @@ export interface AlunoAgenda {
   weekday: number;
   isToday: boolean;
   classes: AlunoAgendaClassItem[];
-  /** Stable empty contract until the events phase (spec 007). */
-  events: unknown[];
+  /**
+   * "Eventos do mês" (spec 008 filled the Phase-7 contract): the current
+   * tenant-local month's published events with the caller's own state.
+   */
+  events: CalendarEventItemView[];
 }
 
 export interface CalendarClassItem {
@@ -67,7 +72,11 @@ export interface CalendarView {
   month: string;
   /** Weekly recurrence buckets, 0 = Sunday … 6 = Saturday. Client expands. */
   classesByWeekday: Record<string, CalendarClassItem[]>;
-  events: unknown[];
+  /**
+   * The requested month's published events as dated items (spec 008 filled
+   * the Phase-7 contract) — the pink dots. Aluno items carry own state.
+   */
+  events: CalendarEventItemView[];
 }
 
 export type CalendarPersona = 'aluno' | 'professor' | 'admin';
@@ -92,6 +101,7 @@ export class AgendaService {
   constructor(
     @Inject(APP_DB) private readonly appDb: DbHandle,
     private readonly graduationQuery: GraduationQueryService,
+    private readonly eventsQuery: EventsQueryService,
   ) {}
 
   /** GET /aluno/agenda — enrolled-class slots of one weekday (default today). */
@@ -183,6 +193,15 @@ export class AgendaService {
         };
       };
 
+      // "Eventos do mês": the current tenant-local month's published events
+      // with the caller's own registration state (spec 008 — the Phase-7
+      // empty state retires).
+      const monthEvents = await this.eventsQuery.monthEventItems(
+        tx,
+        localDate(now).slice(0, 7),
+        student.id,
+      );
+
       return {
         weekday,
         isToday,
@@ -205,7 +224,7 @@ export class AgendaService {
             checkedIn: checkedInByClass.get(klass.id) ?? false,
           };
         }),
-        events: [],
+        events: monthEvents,
       };
     });
   }
@@ -219,13 +238,15 @@ export class AgendaService {
     persona: CalendarPersona,
     month?: string,
   ): Promise<CalendarView> {
-    // Echoed contract seam: in v1 the month only windows the (empty) events.
+    // The month windows the events (spec 008); recurrence stays month-free.
     const echoedMonth = month ?? localDate(new Date()).slice(0, 7);
 
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
+      let alunoStudentId: string | undefined;
       let classRows: Array<typeof classes.$inferSelect>;
       if (persona === 'aluno') {
         const student = await this.requireStudent(tx, ctx.userId);
+        alunoStudentId = student.id;
         classRows = (
           await tx
             .select({ class: classes })
@@ -285,7 +306,14 @@ export class AgendaService {
         }
       }
 
-      return { month: echoedMonth, classesByWeekday, events: [] };
+      // The pink dots: the requested month's published events, bucketed in
+      // the tenant timezone. Aluno items carry the caller's own state.
+      const monthEvents = await this.eventsQuery.monthEventItems(
+        tx,
+        echoedMonth,
+        alunoStudentId,
+      );
+      return { month: echoedMonth, classesByWeekday, events: monthEvents };
     });
   }
 

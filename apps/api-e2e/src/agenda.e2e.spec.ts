@@ -129,11 +129,17 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
 
   // ── aluno agenda (AGD.1) ───────────────────────────────────────────────
 
-  it('defaults to today (tenant timezone) with the stable empty events array', async () => {
+  it('defaults to today (tenant timezone); events carries the month buckets (spec 008)', async () => {
     const body = await agenda();
     expect(body.weekday).toBe(spWeekday());
     expect(body.isToday).toBe(true);
-    expect(body.events).toEqual([]);
+    // Filled contract: published events of the CURRENT month only (the seeded
+    // fixtures float on "now", so membership is date-dependent — the precise
+    // month-window behavior is pinned in events-agenda.e2e.spec.ts).
+    expect(Array.isArray(body.events)).toBe(true);
+    for (const event of body.events) {
+      expect(event.date.slice(0, 7)).toBe(spMonth());
+    }
   });
 
   it('weekday filter returns only that day; a multi-slot weekday yields one item per slot, sorted', async () => {
@@ -281,7 +287,9 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     const res = await t.http().get('/v1/aluno/calendar').set(bearer(aluno));
     expect(res.status).toBe(200);
     expect(res.body.month).toBe(spMonth());
-    expect(res.body.events).toEqual([]);
+    // Spec 008 filled the events contract; membership of the floating seeded
+    // fixtures is date-dependent — pinned in events-agenda.e2e.spec.ts.
+    expect(Array.isArray(res.body.events)).toBe(true);
     expect(Object.keys(res.body.classesByWeekday).sort()).toEqual([
       '0', '1', '2', '3', '4', '5', '6',
     ]);

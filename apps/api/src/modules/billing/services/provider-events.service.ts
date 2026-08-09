@@ -1,9 +1,23 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { and, eq, sql } from 'drizzle-orm';
-import { charges, payments, withTenant, type DbHandle, type DbTransaction } from '@tatame/db';
+import {
+  charges,
+  eventRegistrations,
+  events as eventsTable,
+  payments,
+  withTenant,
+  type DbHandle,
+  type DbTransaction,
+} from '@tatame/db';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { ProviderEvent } from '../../../infra/payments/payment-provider.port.js';
+import {
+  EVENTS_REGISTRATION_CANCELED,
+  EVENTS_REGISTRATION_CONFIRMED,
+  type RegistrationCanceledEvent,
+  type RegistrationConfirmedEvent,
+} from '../../events/events.events.js';
 import {
   BILLING_CHARGE_PAID,
   BILLING_CHARGE_REFUNDED,
@@ -69,6 +83,7 @@ export class ProviderEventsService {
     actor: BillingActor,
   ): Promise<ProviderEventOutcome> {
     let paid: ChargePaidEvent | null = null;
+    let registrationConfirmed: RegistrationConfirmedEvent | null = null;
     const outcome = await withTenant(
       this.appDb.db,
       { tenantId: event.tenantId, userId: actor.userId },
@@ -101,7 +116,7 @@ export class ProviderEventsService {
             .update(charges)
             .set({ status: 'paid', updatedAt: new Date() })
             .where(eq(charges.id, charge.id));
-          await this.audit(tx, event.tenantId, actor, 'billing.charge.paid', charge.id, {
+          await this.audit(tx, event.tenantId, actor, 'billing.charge.paid', 'charge', charge.id, {
             payment_id: payment.id,
             method: payment.method,
             provider: event.provider,
@@ -122,12 +137,24 @@ export class ProviderEventsService {
             paidAt: paidAt.toISOString(),
             receiptUrl,
           };
+          // Spec 008: settlement of an event-origin charge ALSO confirms its
+          // registration — same handler, same transaction, so the simulate
+          // button and the future Stripe webhook behave identically.
+          registrationConfirmed = await this.confirmEventRegistration(
+            tx,
+            event.tenantId,
+            actor,
+            charge,
+          );
         }
         return { applied: true, paymentId: payment.id, chargeId: charge.id };
       },
     );
     // Post-commit emission — only committed settlements reach listeners.
     if (paid) this.events.emit(BILLING_CHARGE_PAID, paid);
+    if (registrationConfirmed) {
+      this.events.emit(EVENTS_REGISTRATION_CONFIRMED, registrationConfirmed);
+    }
     return outcome;
   }
 
@@ -153,6 +180,7 @@ export class ProviderEventsService {
     actor: BillingActor,
   ): Promise<ProviderEventOutcome> {
     let refunded: ChargeRefundedEvent | null = null;
+    let registrationCanceled: RegistrationCanceledEvent | null = null;
     const outcome = await withTenant(
       this.appDb.db,
       { tenantId: event.tenantId, userId: actor.userId },
@@ -186,11 +214,19 @@ export class ProviderEventsService {
             .update(charges)
             .set({ status: 'refunded', updatedAt: new Date() })
             .where(eq(charges.id, charge.id));
-          await this.audit(tx, event.tenantId, actor, 'billing.charge.refunded', charge.id, {
-            payment_id: payment.id,
-            provider_refund_id: event.providerRefundId,
-            reason: event.reason ?? null,
-          });
+          await this.audit(
+            tx,
+            event.tenantId,
+            actor,
+            'billing.charge.refunded',
+            'charge',
+            charge.id,
+            {
+              payment_id: payment.id,
+              provider_refund_id: event.providerRefundId,
+              reason: event.reason ?? null,
+            },
+          );
           refunded = {
             tenantId: event.tenantId,
             chargeId: charge.id,
@@ -204,12 +240,124 @@ export class ProviderEventsService {
             paymentId: payment.id,
             providerRefundId: event.providerRefundId,
           };
+          // Spec 008: refunding an event-origin charge cancels its
+          // registration — the audited admin refund is the only way a paid,
+          // confirmed inscription is undone (recorded, never silently).
+          registrationCanceled = await this.cancelEventRegistration(
+            tx,
+            event.tenantId,
+            actor,
+            charge,
+          );
         }
         return { applied: true, paymentId: payment.id, chargeId: charge.id };
       },
     );
     if (refunded) this.events.emit(BILLING_CHARGE_REFUNDED, refunded);
+    if (registrationCanceled) {
+      this.events.emit(EVENTS_REGISTRATION_CANCELED, registrationCanceled);
+    }
     return outcome;
+  }
+
+  /** `payment.succeeded` on an event charge: pending_payment → confirmed. */
+  private async confirmEventRegistration(
+    tx: DbTransaction,
+    tenantId: string,
+    actor: BillingActor,
+    charge: typeof charges.$inferSelect,
+  ): Promise<RegistrationConfirmedEvent | null> {
+    if (charge.origin !== 'event' || !charge.eventRegistrationId) return null;
+    const registration = await this.registrationOf(tx, charge.eventRegistrationId);
+    if (!registration || registration.status === 'confirmed') return null;
+
+    await tx
+      .update(eventRegistrations)
+      .set({ status: 'confirmed', canceledAt: null, updatedAt: new Date() })
+      .where(eq(eventRegistrations.id, registration.id));
+    await this.audit(
+      tx,
+      tenantId,
+      actor,
+      'events.registration.confirmed',
+      'event_registration',
+      registration.id,
+      { event_id: registration.eventId, student_id: registration.studentId, charge_id: charge.id },
+    );
+    return {
+      tenantId,
+      eventId: registration.eventId,
+      eventName: registration.eventName,
+      registrationId: registration.id,
+      studentId: registration.studentId,
+      guardianId: charge.guardianId,
+      audience: charge.guardianId ? 'guardian' : 'student',
+      priceCents: registration.priceCents,
+    };
+  }
+
+  /** `payment.refunded` on an event charge: confirmed → canceled. */
+  private async cancelEventRegistration(
+    tx: DbTransaction,
+    tenantId: string,
+    actor: BillingActor,
+    charge: typeof charges.$inferSelect,
+  ): Promise<RegistrationCanceledEvent | null> {
+    if (charge.origin !== 'event' || !charge.eventRegistrationId) return null;
+    const registration = await this.registrationOf(tx, charge.eventRegistrationId);
+    if (!registration || registration.status === 'canceled') return null;
+
+    await tx
+      .update(eventRegistrations)
+      .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+      .where(eq(eventRegistrations.id, registration.id));
+    await this.audit(
+      tx,
+      tenantId,
+      actor,
+      'events.registration.canceled',
+      'event_registration',
+      registration.id,
+      {
+        event_id: registration.eventId,
+        student_id: registration.studentId,
+        charge_id: charge.id,
+        via: 'refund',
+      },
+    );
+    return {
+      tenantId,
+      eventId: registration.eventId,
+      eventName: registration.eventName,
+      registrationId: registration.id,
+      studentId: registration.studentId,
+      guardianId: charge.guardianId,
+      audience: charge.guardianId ? 'guardian' : 'student',
+      priceCents: registration.priceCents,
+      via: 'refund',
+    };
+  }
+
+  private async registrationOf(tx: DbTransaction, registrationId: string) {
+    const [row] = await tx
+      .select({
+        id: eventRegistrations.id,
+        eventId: eventRegistrations.eventId,
+        studentId: eventRegistrations.studentId,
+        status: eventRegistrations.status,
+        eventName: eventsTable.name,
+        priceCents: eventsTable.priceCents,
+      })
+      .from(eventRegistrations)
+      .innerJoin(
+        eventsTable,
+        and(
+          eq(eventsTable.tenantId, eventRegistrations.tenantId),
+          eq(eventsTable.id, eventRegistrations.eventId),
+        ),
+      )
+      .where(eq(eventRegistrations.id, registrationId));
+    return row ?? null;
   }
 
   private async paymentByProviderId(
@@ -232,7 +380,8 @@ export class ProviderEventsService {
     tenantId: string,
     actor: BillingActor,
     action: string,
-    chargeId: string,
+    targetType: string,
+    targetId: string,
     metadata: Record<string, unknown>,
   ): Promise<void> {
     await tx.execute(sql`
@@ -241,8 +390,8 @@ export class ProviderEventsService {
         ${actor.userId}::uuid,
         ${actor.impersonatorUserId}::uuid,
         ${action},
-        'charge',
-        ${chargeId}::text,
+        ${targetType},
+        ${targetId}::text,
         ${JSON.stringify(metadata)}::jsonb
       )
     `);

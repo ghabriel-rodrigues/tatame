@@ -651,8 +651,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Início: today-class hero, presença %, streak, real graduation card
-         * @description Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7).
+         * Início: today-class hero, presença %, streak, graduation card, próximos eventos
+         * @description Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7). `upcomingEvents` is the "Próximos eventos" section: the next 2 published events with the caller's own registration state (spec 008 — additive).
          */
         get: operations["AlunoAttendanceController_home_v1"];
         put?: never;
@@ -827,7 +827,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Dashboard: alunos hoje, presença média, next-class hero, today's classes */
+        /**
+         * Dashboard: alunos hoje, presença média, next-class hero, today's classes, eventos futuros
+         * @description The "eventos futuros" stat tile + list are read-only academy-wide data (spec 008): the professor has no event write route — the "Criar eventos" toggle stays render-only in v1.
+         */
         get: operations["ProfessorDashboardController_dashboard_v1"];
         put?: never;
         post?: never;
@@ -891,7 +894,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/aluno/agenda": {
+    "/v1/admin/events": {
         parameters: {
             query?: never;
             header?: never;
@@ -899,136 +902,43 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Agenda: enrolled classes of one weekday (default today) + check-in state
-         * @description Never creates class_sessions rows: `checkedIn` is a pure read of today's session and the active attendance. `events` ships empty until the events phase.
+         * Eventos: gradient cards with valor chip, date, inscritos/arrecadado totals
+         * @description Drafts first ("Rascunho · Data a definir"), then chronological.
          */
-        get: operations["AlunoAgendaController_agendaOf_v1"];
+        get: operations["AdminEventsController_list_v1"];
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/aluno/calendar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
         /**
-         * Month calendar: enrolled-class weekly recurrence buckets ("sua aula")
-         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         * Create an event (Rascunho by default; publishing is a separate gesture)
+         * @description Valor vazio = gratuito. status=published requires date + local (422 event.publish_requirements).
          */
-        get: operations["AlunoAgendaController_calendar_v1"];
-        put?: never;
-        post?: never;
+        post: operations["AdminEventsController_create_v1"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/professor/calendar": {
+    "/v1/admin/events/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         /**
-         * Month calendar: own-class weekly recurrence buckets ("aula recorrente")
-         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         * Edit an event (canceled events are frozen history — 409)
+         * @description A published event must keep its date and local (422 event.publish_requirements).
          */
-        get: operations["ProfessorCalendarController_calendar_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
+        patch: operations["AdminEventsController_update_v1"];
         trace?: never;
     };
-    "/v1/admin/calendar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Month calendar: all-active-turma weekly recurrence buckets ("aulas recorrentes")
-         * @description Schedule-derived — no session reads. The client expands dots over the grid.
-         */
-        get: operations["AdminCalendarController_calendar_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/aluno/graduation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Graduação: belt hero, progress to the next milestone, evolution timeline
-         * @description Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only "Ver certificado" placeholder flag.
-         */
-        get: operations["AlunoGraduationController_graduation_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/professor/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Own profile: belt chip + Graduações válidas (merged régua) */
-        get: operations["ProfessorGraduationController_profile_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/professor/students/{id}/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Perfil do aluno: belt, progress, Phase-4 stat tiles, observações
-         * @description Any student of the academy (grading day works across turmas); foreign id → 404.
-         */
-        get: operations["ProfessorGraduationController_studentProfile_v1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/professor/students/{id}/graduations": {
+    "/v1/admin/events/{id}/publish": {
         parameters: {
             query?: never;
             header?: never;
@@ -1038,74 +948,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Adicionar grau / Promover faixa (gated by the graduation.update toggle)
-         * @description degree: current + 1 on the current belt, rejected at max. belt: any enabled non-current catalog belt, degrees reset. Audited in-transaction (graduation.awarded).
+         * Publish a draft (audited) — requires date + local
+         * @description Students never see an undated event: missing date/local → 422 event.publish_requirements.
          */
-        post: operations["ProfessorGraduationController_award_v1"];
+        post: operations["AdminEventsController_publish_v1"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/professor/students/{id}/notes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Observações history (staff-visible only), newest first */
-        get: operations["ProfessorGraduationController_listNotes_v1"];
-        put?: never;
-        /** Persist an observação (coaching notes outlive graduations) */
-        post: operations["ProfessorGraduationController_createNote_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/graduation-rules": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Regras de graduação: merged ladder (defaults + overrides) in régua order */
-        get: operations["AdminGraduationController_getRules_v1"];
-        /**
-         * Salvar: bulk upsert (≥ 10 lessons; only kids belts can be disabled)
-         * @description Changed rules immediately re-aim every progress bar in the academy (story 27).
-         */
-        put: operations["AdminGraduationController_putRules_v1"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/students/{id}/graduations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Full graduation history including revocations, newest first */
-        get: operations["AdminGraduationController_history_v1"];
-        put?: never;
-        /** Award (no toggle gates the admin — role-fixed, story 28) */
-        post: operations["AdminGraduationController_award_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/graduations/{id}/revoke": {
+    "/v1/admin/events/{id}/cancel": {
         parameters: {
             query?: never;
             header?: never;
@@ -1115,29 +968,130 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Revogar: append a compensation row restoring the previous belt/degree
-         * @description Never an edit — history stays immutable. Each award is revocable at most once (409 on a second attempt); audited with who and why (graduation.revoked).
+         * Cancel an event (never hard-delete; audited)
+         * @description Voids the open event charges and cancels pending registrations — nobody is billed for a dead event. Confirmed rows keep their history.
          */
-        post: operations["AdminGraduationController_revoke_v1"];
+        post: operations["AdminEventsController_cancel_v1"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/admin/students/{id}/notes": {
+    "/v1/admin/events/{id}/registrations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Observações history — the staff shares one memory (story 19) */
-        get: operations["AdminGraduationController_listNotes_v1"];
+        /** Inscritos: who registered, status, who confirmed, paid amount + totals */
+        get: operations["AdminEventsController_registrations_v1"];
         put?: never;
-        /** Persist an observação as the admin */
-        post: operations["AdminGraduationController_createNote_v1"];
+        post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/events/{id}/announce": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Comunicar: queue an announcement to the inscritos (published only)
+         * @description Emits events.announcement.requested + one audit row and NOTHING else — delivery is the notifications phase. Clients show "Comunicado enviado aos inscritos." on 202.
+         */
+        post: operations["AdminEventsController_announce_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/events/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event detail: banner, data/local/responsável, valor chip, own state
+         * @description Published events only — drafts and canceled events behave as 404.
+         */
+        get: operations["AlunoEventsController_detail_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/events/{id}/registration": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar presença (free) / Pagar inscrição (paid → chargeId)
+         * @description Gratuito = confirmed on the spot. Paid = pending_payment + an event-origin charge paid via POST /aluno/wallet/charges/{chargeId}/payments (same Pix sheet, same simulate). Cancel-and-reconfirm reuses the same row — one registration per (event, student).
+         */
+        post: operations["AlunoEventsController_register_v1"];
+        /**
+         * Cancelar participação (free or not-yet-paid)
+         * @description Canceling a pending registration voids its open charge. A paid, confirmed registration is only undone by an admin refund (409 event.registration_settled).
+         */
+        delete: operations["AlunoEventsController_cancel_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published events as gradient cards with one chip per dependent */
+        get: operations["ResponsavelEventsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/events/{id}/registrations/{studentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm (free) / start paying (paid) for one dependent
+         * @description Same free/paid semantics as the aluno flow, billed to the guardian. Paid: pay the returned chargeId via POST /responsavel/payments/charges/{chargeId}/payments.
+         */
+        post: operations["ResponsavelEventsController_register_v1"];
+        /** Cancel one dependent's registration (free or not-yet-paid) */
+        delete: operations["ResponsavelEventsController_cancel_v1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1409,6 +1363,258 @@ export interface paths {
         get: operations["PlatformRepassesController_list_v1"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/agenda": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Agenda: enrolled classes of one weekday (default today) + check-in state
+         * @description Never creates class_sessions rows: `checkedIn` is a pure read of today's session and the active attendance. `events` carries the current month's published events with own state ("Eventos do mês", spec 008).
+         */
+        get: operations["AlunoAgendaController_agendaOf_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Month calendar: enrolled-class weekly recurrence buckets ("sua aula")
+         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         */
+        get: operations["AlunoAgendaController_calendar_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Month calendar: own-class weekly recurrence buckets ("aula recorrente")
+         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         */
+        get: operations["ProfessorCalendarController_calendar_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Month calendar: all-active-turma weekly recurrence buckets ("aulas recorrentes")
+         * @description Schedule-derived — no session reads. The client expands dots over the grid.
+         */
+        get: operations["AdminCalendarController_calendar_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/graduation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Graduação: belt hero, progress to the next milestone, evolution timeline
+         * @description Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only "Ver certificado" placeholder flag.
+         */
+        get: operations["AlunoGraduationController_graduation_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Own profile: belt chip + Graduações válidas (merged régua) */
+        get: operations["ProfessorGraduationController_profile_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/students/{id}/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Perfil do aluno: belt, progress, Phase-4 stat tiles, observações
+         * @description Any student of the academy (grading day works across turmas); foreign id → 404.
+         */
+        get: operations["ProfessorGraduationController_studentProfile_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/students/{id}/graduations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adicionar grau / Promover faixa (gated by the graduation.update toggle)
+         * @description degree: current + 1 on the current belt, rejected at max. belt: any enabled non-current catalog belt, degrees reset. Audited in-transaction (graduation.awarded).
+         */
+        post: operations["ProfessorGraduationController_award_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/professor/students/{id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Observações history (staff-visible only), newest first */
+        get: operations["ProfessorGraduationController_listNotes_v1"];
+        put?: never;
+        /** Persist an observação (coaching notes outlive graduations) */
+        post: operations["ProfessorGraduationController_createNote_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/graduation-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Regras de graduação: merged ladder (defaults + overrides) in régua order */
+        get: operations["AdminGraduationController_getRules_v1"];
+        /**
+         * Salvar: bulk upsert (≥ 10 lessons; only kids belts can be disabled)
+         * @description Changed rules immediately re-aim every progress bar in the academy (story 27).
+         */
+        put: operations["AdminGraduationController_putRules_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/students/{id}/graduations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Full graduation history including revocations, newest first */
+        get: operations["AdminGraduationController_history_v1"];
+        put?: never;
+        /** Award (no toggle gates the admin — role-fixed, story 28) */
+        post: operations["AdminGraduationController_award_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/graduations/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revogar: append a compensation row restoring the previous belt/degree
+         * @description Never an edit — history stays immutable. Each award is revocable at most once (409 on a second attempt); audited with who and why (graduation.revoked).
+         */
+        post: operations["AdminGraduationController_revoke_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/students/{id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Observações history — the staff shares one memory (story 19) */
+        get: operations["AdminGraduationController_listNotes_v1"];
+        put?: never;
+        /** Persist an observação as the admin */
+        post: operations["AdminGraduationController_createNote_v1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2154,6 +2360,47 @@ export interface components {
             belt: components["schemas"]["BeltViewDto"];
             progress: components["schemas"]["GraduationProgressDto"];
         };
+        EventRegistrationStateDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "pending_payment" | "confirmed" | "canceled";
+            /**
+             * Format: uuid
+             * @description Open event-origin charge to pay (pending_payment only) — drives the Pix sheet
+             */
+            chargeId?: string | null;
+        };
+        AlunoEventItemDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Open mat de verão */
+            name: string;
+            /**
+             * @description Design-system gradient slug
+             * @example event-purple-pink
+             */
+            bannerPreset: string;
+            location?: string | null;
+            /**
+             * Format: date-time
+             * @description Null only on drafts ("Data a definir")
+             */
+            startsAt?: string | null;
+            /**
+             * @description Tenant-local date
+             * @example 2026-08-22
+             */
+            date?: string | null;
+            /**
+             * @description Tenant-local time
+             * @example 10:00
+             */
+            time?: string | null;
+            /** @description Integer cents; null = gratuito */
+            priceCents?: number | null;
+            registration?: components["schemas"]["EventRegistrationStateDto"] | null;
+        };
         AlunoHomeResponseDto: {
             student: components["schemas"]["AlunoStudentRefDto"];
             todayClass?: components["schemas"]["AlunoTodayClassDto"] | null;
@@ -2162,6 +2409,8 @@ export interface components {
             graduation?: components["schemas"]["AlunoHomeGraduationDto"];
             /** @description Real "mensalidade em aberto" alert (spec 006) deep-linking into the Carteira; null = nothing open */
             mensalidade?: components["schemas"]["MensalidadeAlertDto"] | null;
+            /** @description "Próximos eventos": the next 2 published events with own registration state (spec 008) */
+            upcomingEvents: components["schemas"]["AlunoEventItemDto"][];
         };
         LiveSessionDto: {
             /** Format: uuid */
@@ -2326,12 +2575,47 @@ export interface components {
             checkedInCount: number;
             enrolledCount: number;
         };
+        ProfessorUpcomingEventDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Open mat de verão */
+            name: string;
+            /**
+             * @description Design-system gradient slug
+             * @example event-purple-pink
+             */
+            bannerPreset: string;
+            location?: string | null;
+            /**
+             * Format: date-time
+             * @description Null only on drafts ("Data a definir")
+             */
+            startsAt?: string | null;
+            /**
+             * @description Tenant-local date
+             * @example 2026-08-22
+             */
+            date?: string | null;
+            /**
+             * @description Tenant-local time
+             * @example 10:00
+             */
+            time?: string | null;
+            /** @description Integer cents; null = gratuito */
+            priceCents?: number | null;
+            /** @description The "N confirmados" of the dashboard list */
+            confirmedCount: number;
+        };
         ProfessorDashboardResponseDto: {
             /** @description Distinct students with an active check-in today across own classes */
             alunosHoje: number;
             presencaMediaPct: number;
             nextClass?: components["schemas"]["ProfessorNextClassDto"] | null;
             todayClasses: components["schemas"]["ProfessorTodayClassDto"][];
+            /** @description The "eventos futuros" stat tile (spec 008) */
+            upcomingEventsCount: number;
+            /** @description "Eventos futuros" list — read-only academy-wide data (spec 008) */
+            upcomingEvents: components["schemas"]["ProfessorUpcomingEventDto"][];
         };
         ProfessorStudentDto: {
             /** Format: uuid */
@@ -2363,269 +2647,206 @@ export interface components {
             /** @description Newest first */
             sessions: components["schemas"]["AdminSessionRowDto"][];
         };
-        AgendaOccupancyDto: {
-            /** @description Active enrollments — the "N" of the "N de M" chip */
-            active: number;
-            capacity: number;
-        };
-        AlunoAgendaClassDto: {
-            /** Format: uuid */
-            classId: string;
-            className: string;
-            /** @example 19:00 */
-            startTime: string;
-            /**
-             * @description Slot start + duration
-             * @example 20:00
-             */
-            endTime: string;
-            professorName: string;
-            ageMin: number | null;
-            ageMax: number | null;
-            /** @description Level chip lower bound; both ends null = "Todas as faixas" */
-            minBelt?: components["schemas"]["BeltRefDto"] | null;
-            maxBelt?: components["schemas"]["BeltRefDto"] | null;
-            occupancy: components["schemas"]["AgendaOccupancyDto"];
-            /** @description True iff today's session exists AND the caller holds an active (non-revoked) attendance on it. Always false off-today — clients render the button iff `isToday && !checkedIn`. */
-            checkedIn: boolean;
-        };
-        AlunoAgendaResponseDto: {
-            /** @description 0 = Sunday … 6 = Saturday */
-            weekday: number;
-            /** @description Whether the returned weekday is today in the tenant timezone */
-            isToday: boolean;
-            /** @description Sorted by start time */
-            classes: components["schemas"]["AlunoAgendaClassDto"][];
-            /** @description Always empty in this phase — stable contract the events phase fills (spec 007) */
-            events: Record<string, never>[];
-        };
-        CalendarClassItemDto: {
-            /** Format: uuid */
-            classId: string;
-            className: string;
-            /** @example 19:00 */
-            startTime: string;
-            /** @example 20:00 */
-            endTime: string;
-            professorName: string;
-            occupancy: components["schemas"]["AgendaOccupancyDto"];
-        };
-        CalendarBucketsDto: {
-            /** @description Sunday */
-            0: components["schemas"]["CalendarClassItemDto"][];
-            /** @description Monday */
-            1: components["schemas"]["CalendarClassItemDto"][];
-            /** @description Tuesday */
-            2: components["schemas"]["CalendarClassItemDto"][];
-            /** @description Wednesday */
-            3: components["schemas"]["CalendarClassItemDto"][];
-            /** @description Thursday */
-            4: components["schemas"]["CalendarClassItemDto"][];
-            /** @description Friday */
-            5: components["schemas"]["CalendarClassItemDto"][];
-            /** @description Saturday */
-            6: components["schemas"]["CalendarClassItemDto"][];
-        };
-        CalendarResponseDto: {
-            /**
-             * @description Echoed (or current tenant-local) month
-             * @example 2026-08
-             */
-            month: string;
-            classesByWeekday: components["schemas"]["CalendarBucketsDto"];
-            /** @description Always empty in this phase — stable contract the events phase fills (spec 007) */
-            events: Record<string, never>[];
-        };
-        GraduationActorDto: {
+        EventResponsibleDto: {
             /** Format: uuid */
             userId: string;
+            /** @example Paulo Professor */
             fullName: string;
         };
-        GraduationEntryDto: {
+        EventTotalsDto: {
+            /** @description Non-canceled registrations (pending + confirmed) */
+            inscritos: number;
+            confirmados: number;
+            /** @description Settled event money (paid charges; refunds excluded) */
+            arrecadadoCents: number;
+        };
+        AdminEventDto: {
             /** Format: uuid */
             id: string;
-            /** @enum {string} */
-            kind: "degree" | "belt" | "revocation";
-            belt: components["schemas"]["BeltRefDto"];
-            /** @description 0 on belt promotions and revocations */
-            degree: number;
-            /** Format: date-time */
-            awardedAt: string;
-            awardedBy: components["schemas"]["GraduationActorDto"];
-            notes: string | null;
-            /** @description Award reversed by a later revocation compensation row */
-            reversed: boolean;
-            /**
-             * Format: uuid
-             * @description Set on revocation rows
-             */
-            reversesGraduationId: string | null;
-            /** @description Render-only "Ver certificado" placeholder — non-reversed belt awards only */
-            certificateAvailable: boolean;
-        };
-        AlunoGraduationResponseDto: {
-            /** @description FAIXA ATUAL hero payload */
-            belt: components["schemas"]["BeltViewDto"];
-            progress: components["schemas"]["GraduationProgressDto"];
-            /** @description Histórico de evolução, newest first */
-            timeline: components["schemas"]["GraduationEntryDto"][];
-        };
-        ValidGraduationDto: {
-            /** Format: uuid */
-            beltId: string;
-            /**
-             * @description PT-BR display name (client copy)
-             * @example Azul
-             */
+            /** @example Open mat de verão */
             name: string;
             /**
-             * @description Design-token slug — never hex
-             * @example belt.blue
+             * @description Design-system gradient slug
+             * @example event-purple-pink
              */
-            colorSlug: string;
+            bannerPreset: string;
+            location?: string | null;
             /**
-             * @description Ponteira override slug; null = default belt.tip
-             * @example belt.red
+             * Format: date-time
+             * @description Null only on drafts ("Data a definir")
              */
-            tipColorSlug: string | null;
-            /** @description 0 = no degree stripes (red belt in v1) */
-            maxDegrees: number;
-            /** @enum {string} */
-            ladderKind: "adult" | "kids";
-            /** @description Kids belts reflect the admin toggles (dimmed when false) */
-            enabled: boolean;
-        };
-        ProfessorProfileResponseDto: {
-            professor: components["schemas"]["GraduationActorDto"];
-            /** @description Display-only membership rank chip — null when unset */
-            belt?: components["schemas"]["BeltViewDto"] | null;
-            /** @description Graduações válidas (merged régua) */
-            validGraduations: components["schemas"]["ValidGraduationDto"][];
-        };
-        ProfileStudentDto: {
-            /** Format: uuid */
-            id: string;
-            fullName: string;
-            /** @example 2000-03-15 */
-            birthDate: string;
-            /** @enum {string} */
-            status: "active" | "inactive";
-            /** @enum {string} */
-            badge: "ativo" | "pendente";
-        };
-        StudentNoteDto: {
-            /** Format: uuid */
-            id: string;
-            body: string;
-            /** Format: date-time */
-            createdAt: string;
-            author: components["schemas"]["GraduationActorDto"];
-        };
-        StudentProfileResponseDto: {
-            student: components["schemas"]["ProfileStudentDto"];
-            belt: components["schemas"]["BeltViewDto"];
-            progress: components["schemas"]["GraduationProgressDto"];
-            /** @description Phase-4 attendance stat tiles */
-            stats: components["schemas"]["AlunoStatsDto"];
-            /** @description Observações, newest first */
-            notes: components["schemas"]["StudentNoteDto"][];
-        };
-        AwardGraduationDto: {
+            startsAt?: string | null;
             /**
-             * @description degree = one more stripe on the current belt; belt = promotion (degrees reset)
+             * @description Tenant-local date
+             * @example 2026-08-22
+             */
+            date?: string | null;
+            /**
+             * @description Tenant-local time
+             * @example 10:00
+             */
+            time?: string | null;
+            /** @description Integer cents; null = gratuito */
+            priceCents?: number | null;
+            description?: string | null;
+            /** @enum {string} */
+            status: "draft" | "published" | "canceled";
+            responsible: components["schemas"]["EventResponsibleDto"];
+            totals: components["schemas"]["EventTotalsDto"];
+        };
+        AdminEventsResponseDto: {
+            /** @description Drafts first, then chronological */
+            events: components["schemas"]["AdminEventDto"][];
+        };
+        CreateEventDto: {
+            /** @example Open mat de verão */
+            name: string;
+            description?: string | null;
+            /**
+             * @description Design-system gradient catalog slug (no image upload in v1)
+             * @example event-purple-pink
+             */
+            bannerPreset?: string;
+            /** @example Tatame principal */
+            location?: string | null;
+            /**
+             * Format: date-time
+             * @description ISO instant; drafts may omit it ("Data a definir")
+             */
+            startsAt?: string | null;
+            /** @description Integer cents; omitted/null = gratuito (never 0) */
+            priceCents?: number | null;
+            /**
+             * Format: uuid
+             * @description The "Responsável: Prof. …" line
+             */
+            responsibleUserId: string;
+            /**
+             * @description Default draft — creating and publishing are separate gestures
              * @enum {string}
              */
-            kind: "degree" | "belt";
-            /**
-             * Format: uuid
-             * @description Target belt — required for kind=belt (any enabled, non-current catalog belt)
-             */
-            beltId?: string;
-            /** @description Observação carried on the timeline entry */
-            notes?: string;
+            status?: "draft" | "published";
         };
-        AwardGraduationResponseDto: {
-            graduation: components["schemas"]["GraduationEntryDto"];
-            /** @description Freshly derived current belt after the award */
-            belt: components["schemas"]["BeltViewDto"];
-        };
-        StudentNotesResponseDto: {
-            /** @description Newest first */
-            notes: components["schemas"]["StudentNoteDto"][];
-        };
-        CreateStudentNoteDto: {
-            /** @example Exame de faixa — aprovado com distinção. */
-            body: string;
-        };
-        StudentNoteResponseDto: {
-            note: components["schemas"]["StudentNoteDto"];
-        };
-        GraduationRuleRowDto: {
+        UpdateEventDto: {
+            name?: string;
+            description?: string | null;
+            /** @example event-purple-pink */
+            bannerPreset?: string;
+            /** @description Null clears it on drafts only (published keeps date + local) */
+            location?: string | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            priceCents?: number | null;
             /** Format: uuid */
-            beltId: string;
-            /**
-             * @description PT-BR display name (client copy)
-             * @example Azul
-             */
+            responsibleUserId?: string;
+        };
+        AdminRegistrationStudentDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+        };
+        AdminRegistrationRowDto: {
+            /** Format: uuid */
+            id: string;
+            student: components["schemas"]["AdminRegistrationStudentDto"];
+            /** @enum {string} */
+            status: "pending_payment" | "confirmed" | "canceled";
+            /** @description Who confirmed — the aluno themself or the responsável */
+            confirmedBy: components["schemas"]["EventResponsibleDto"];
+            /** @description Settled amount for this registration (null while unpaid / free) */
+            paidAmountCents?: number | null;
+        };
+        AdminEventRegistrationsResponseDto: {
+            event: components["schemas"]["AdminEventDto"];
+            registrations: components["schemas"]["AdminRegistrationRowDto"][];
+            totals: components["schemas"]["EventTotalsDto"];
+        };
+        AnnounceResponseDto: {
+            /** @description Inscritos addressed by the queued announcement */
+            recipients: number;
+        };
+        AlunoEventDetailResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Open mat de verão */
             name: string;
             /**
-             * @description Design-token slug — never hex
-             * @example belt.blue
+             * @description Design-system gradient slug
+             * @example event-purple-pink
              */
-            colorSlug: string;
+            bannerPreset: string;
+            location?: string | null;
             /**
-             * @description Ponteira override slug; null = default belt.tip
-             * @example belt.red
+             * Format: date-time
+             * @description Null only on drafts ("Data a definir")
              */
-            tipColorSlug: string | null;
-            /** @description 0 = no degree stripes (red belt in v1) */
-            maxDegrees: number;
-            /** @enum {string} */
-            ladderKind: "adult" | "kids";
-            /** @description Aulas por grau — default 40 when no override row exists */
-            lessonsPerDegree: number;
-            enabled: boolean;
-            /** @description Only kids-ladder belts render a toggle */
-            toggleable: boolean;
+            startsAt?: string | null;
+            /**
+             * @description Tenant-local date
+             * @example 2026-08-22
+             */
+            date?: string | null;
+            /**
+             * @description Tenant-local time
+             * @example 10:00
+             */
+            time?: string | null;
+            /** @description Integer cents; null = gratuito */
+            priceCents?: number | null;
+            description?: string | null;
+            /** @description The "Responsável: Prof. …" line */
+            responsible: components["schemas"]["EventResponsibleDto"];
+            registration?: components["schemas"]["EventRegistrationStateDto"] | null;
         };
-        GraduationRulesResponseDto: {
-            /** @description Merged ladder in the handoff régua display order */
-            rules: components["schemas"]["GraduationRuleRowDto"][];
+        RegisterEventResponseDto: {
+            registration: components["schemas"]["EventRegistrationStateDto"];
+            /**
+             * Format: uuid
+             * @description Paid events: pay this charge through the existing wallet rails (Pix sheet + simulate). Null on free events.
+             */
+            chargeId?: string | null;
         };
-        GraduationRuleEntryDto: {
+        ResponsavelEventDependentDto: {
             /** Format: uuid */
-            beltId: string;
-            /** @description Aulas por grau — service rejects values below 10 with a stable code */
-            lessonsPerDegree: number;
-            /** @description false is accepted only for kids-ladder belts */
-            enabled: boolean;
+            studentId: string;
+            fullName: string;
+            registration?: components["schemas"]["EventRegistrationStateDto"] | null;
         };
-        UpdateGraduationRulesDto: {
-            rules: components["schemas"]["GraduationRuleEntryDto"][];
-        };
-        GraduationHistoryResponseDto: {
-            /** @description Full history incl. revocations */
-            graduations: components["schemas"]["GraduationEntryDto"][];
-        };
-        RevokeGraduationDto: {
-            /** @description Audited reason ("who and why", story 31) */
-            reason?: string;
-        };
-        RevokeGraduationResponseDto: {
-            /** @enum {string} */
-            status: "revoked";
+        ResponsavelEventDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Open mat de verão */
+            name: string;
             /**
-             * Format: uuid
-             * @description The reversed award row
+             * @description Design-system gradient slug
+             * @example event-purple-pink
              */
-            graduationId: string;
+            bannerPreset: string;
+            location?: string | null;
             /**
-             * Format: uuid
-             * @description The appended compensation row
+             * Format: date-time
+             * @description Null only on drafts ("Data a definir")
              */
-            revocationId: string;
-            /** @description Restored current belt after the reversal */
-            belt: components["schemas"]["BeltViewDto"];
+            startsAt?: string | null;
+            /**
+             * @description Tenant-local date
+             * @example 2026-08-22
+             */
+            date?: string | null;
+            /**
+             * @description Tenant-local time
+             * @example 10:00
+             */
+            time?: string | null;
+            /** @description Integer cents; null = gratuito */
+            priceCents?: number | null;
+            description?: string | null;
+            /** @description One chip per dependent — per-child state, per the charter */
+            dependents: components["schemas"]["ResponsavelEventDependentDto"][];
+        };
+        ResponsavelEventsResponseDto: {
+            /** @description Published upcoming, chronological */
+            events: components["schemas"]["ResponsavelEventDto"][];
         };
         WalletStudentDto: {
             /** Format: uuid */
@@ -2930,6 +3151,301 @@ export interface components {
         RepassesResponseDto: {
             totals: components["schemas"]["RepasseTotalsDto"];
             repasses: components["schemas"]["RepasseRowDto"][];
+        };
+        AgendaOccupancyDto: {
+            /** @description Active enrollments — the "N" of the "N de M" chip */
+            active: number;
+            capacity: number;
+        };
+        AlunoAgendaClassDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @example 19:00 */
+            startTime: string;
+            /**
+             * @description Slot start + duration
+             * @example 20:00
+             */
+            endTime: string;
+            professorName: string;
+            ageMin: number | null;
+            ageMax: number | null;
+            /** @description Level chip lower bound; both ends null = "Todas as faixas" */
+            minBelt?: components["schemas"]["BeltRefDto"] | null;
+            maxBelt?: components["schemas"]["BeltRefDto"] | null;
+            occupancy: components["schemas"]["AgendaOccupancyDto"];
+            /** @description True iff today's session exists AND the caller holds an active (non-revoked) attendance on it. Always false off-today — clients render the button iff `isToday && !checkedIn`. */
+            checkedIn: boolean;
+        };
+        AlunoAgendaResponseDto: {
+            /** @description 0 = Sunday … 6 = Saturday */
+            weekday: number;
+            /** @description Whether the returned weekday is today in the tenant timezone */
+            isToday: boolean;
+            /** @description Sorted by start time */
+            classes: components["schemas"]["AlunoAgendaClassDto"][];
+            /** @description "Eventos do mês": the current tenant-local month's published events with own state (spec 008) */
+            events: components["schemas"]["AlunoEventItemDto"][];
+        };
+        CalendarClassItemDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @example 19:00 */
+            startTime: string;
+            /** @example 20:00 */
+            endTime: string;
+            professorName: string;
+            occupancy: components["schemas"]["AgendaOccupancyDto"];
+        };
+        CalendarBucketsDto: {
+            /** @description Sunday */
+            0: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Monday */
+            1: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Tuesday */
+            2: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Wednesday */
+            3: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Thursday */
+            4: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Friday */
+            5: components["schemas"]["CalendarClassItemDto"][];
+            /** @description Saturday */
+            6: components["schemas"]["CalendarClassItemDto"][];
+        };
+        CalendarEventItemDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Open mat de verão */
+            name: string;
+            /**
+             * @description Design-system gradient slug
+             * @example event-purple-pink
+             */
+            bannerPreset: string;
+            location?: string | null;
+            /**
+             * Format: date-time
+             * @description Null only on drafts ("Data a definir")
+             */
+            startsAt?: string | null;
+            /**
+             * @description Tenant-local date
+             * @example 2026-08-22
+             */
+            date?: string | null;
+            /**
+             * @description Tenant-local time
+             * @example 10:00
+             */
+            time?: string | null;
+            /** @description Integer cents; null = gratuito */
+            priceCents?: number | null;
+            /** @description Own state — present on aluno surfaces only */
+            registration?: components["schemas"]["EventRegistrationStateDto"] | null;
+        };
+        CalendarResponseDto: {
+            /**
+             * @description Echoed (or current tenant-local) month
+             * @example 2026-08
+             */
+            month: string;
+            classesByWeekday: components["schemas"]["CalendarBucketsDto"];
+            /** @description The requested month's published events as dated items (tenant-timezone bucketing) — the pink dots. Aluno items carry own registration state (spec 008). */
+            events: components["schemas"]["CalendarEventItemDto"][];
+        };
+        GraduationActorDto: {
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+        };
+        GraduationEntryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "degree" | "belt" | "revocation";
+            belt: components["schemas"]["BeltRefDto"];
+            /** @description 0 on belt promotions and revocations */
+            degree: number;
+            /** Format: date-time */
+            awardedAt: string;
+            awardedBy: components["schemas"]["GraduationActorDto"];
+            notes: string | null;
+            /** @description Award reversed by a later revocation compensation row */
+            reversed: boolean;
+            /**
+             * Format: uuid
+             * @description Set on revocation rows
+             */
+            reversesGraduationId: string | null;
+            /** @description Render-only "Ver certificado" placeholder — non-reversed belt awards only */
+            certificateAvailable: boolean;
+        };
+        AlunoGraduationResponseDto: {
+            /** @description FAIXA ATUAL hero payload */
+            belt: components["schemas"]["BeltViewDto"];
+            progress: components["schemas"]["GraduationProgressDto"];
+            /** @description Histórico de evolução, newest first */
+            timeline: components["schemas"]["GraduationEntryDto"][];
+        };
+        ValidGraduationDto: {
+            /** Format: uuid */
+            beltId: string;
+            /**
+             * @description PT-BR display name (client copy)
+             * @example Azul
+             */
+            name: string;
+            /**
+             * @description Design-token slug — never hex
+             * @example belt.blue
+             */
+            colorSlug: string;
+            /**
+             * @description Ponteira override slug; null = default belt.tip
+             * @example belt.red
+             */
+            tipColorSlug: string | null;
+            /** @description 0 = no degree stripes (red belt in v1) */
+            maxDegrees: number;
+            /** @enum {string} */
+            ladderKind: "adult" | "kids";
+            /** @description Kids belts reflect the admin toggles (dimmed when false) */
+            enabled: boolean;
+        };
+        ProfessorProfileResponseDto: {
+            professor: components["schemas"]["GraduationActorDto"];
+            /** @description Display-only membership rank chip — null when unset */
+            belt?: components["schemas"]["BeltViewDto"] | null;
+            /** @description Graduações válidas (merged régua) */
+            validGraduations: components["schemas"]["ValidGraduationDto"][];
+        };
+        ProfileStudentDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+            /** @example 2000-03-15 */
+            birthDate: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            /** @enum {string} */
+            badge: "ativo" | "pendente";
+        };
+        StudentNoteDto: {
+            /** Format: uuid */
+            id: string;
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+            author: components["schemas"]["GraduationActorDto"];
+        };
+        StudentProfileResponseDto: {
+            student: components["schemas"]["ProfileStudentDto"];
+            belt: components["schemas"]["BeltViewDto"];
+            progress: components["schemas"]["GraduationProgressDto"];
+            /** @description Phase-4 attendance stat tiles */
+            stats: components["schemas"]["AlunoStatsDto"];
+            /** @description Observações, newest first */
+            notes: components["schemas"]["StudentNoteDto"][];
+        };
+        AwardGraduationDto: {
+            /**
+             * @description degree = one more stripe on the current belt; belt = promotion (degrees reset)
+             * @enum {string}
+             */
+            kind: "degree" | "belt";
+            /**
+             * Format: uuid
+             * @description Target belt — required for kind=belt (any enabled, non-current catalog belt)
+             */
+            beltId?: string;
+            /** @description Observação carried on the timeline entry */
+            notes?: string;
+        };
+        AwardGraduationResponseDto: {
+            graduation: components["schemas"]["GraduationEntryDto"];
+            /** @description Freshly derived current belt after the award */
+            belt: components["schemas"]["BeltViewDto"];
+        };
+        StudentNotesResponseDto: {
+            /** @description Newest first */
+            notes: components["schemas"]["StudentNoteDto"][];
+        };
+        CreateStudentNoteDto: {
+            /** @example Exame de faixa — aprovado com distinção. */
+            body: string;
+        };
+        StudentNoteResponseDto: {
+            note: components["schemas"]["StudentNoteDto"];
+        };
+        GraduationRuleRowDto: {
+            /** Format: uuid */
+            beltId: string;
+            /**
+             * @description PT-BR display name (client copy)
+             * @example Azul
+             */
+            name: string;
+            /**
+             * @description Design-token slug — never hex
+             * @example belt.blue
+             */
+            colorSlug: string;
+            /**
+             * @description Ponteira override slug; null = default belt.tip
+             * @example belt.red
+             */
+            tipColorSlug: string | null;
+            /** @description 0 = no degree stripes (red belt in v1) */
+            maxDegrees: number;
+            /** @enum {string} */
+            ladderKind: "adult" | "kids";
+            /** @description Aulas por grau — default 40 when no override row exists */
+            lessonsPerDegree: number;
+            enabled: boolean;
+            /** @description Only kids-ladder belts render a toggle */
+            toggleable: boolean;
+        };
+        GraduationRulesResponseDto: {
+            /** @description Merged ladder in the handoff régua display order */
+            rules: components["schemas"]["GraduationRuleRowDto"][];
+        };
+        GraduationRuleEntryDto: {
+            /** Format: uuid */
+            beltId: string;
+            /** @description Aulas por grau — service rejects values below 10 with a stable code */
+            lessonsPerDegree: number;
+            /** @description false is accepted only for kids-ladder belts */
+            enabled: boolean;
+        };
+        UpdateGraduationRulesDto: {
+            rules: components["schemas"]["GraduationRuleEntryDto"][];
+        };
+        GraduationHistoryResponseDto: {
+            /** @description Full history incl. revocations */
+            graduations: components["schemas"]["GraduationEntryDto"][];
+        };
+        RevokeGraduationDto: {
+            /** @description Audited reason ("who and why", story 31) */
+            reason?: string;
+        };
+        RevokeGraduationResponseDto: {
+            /** @enum {string} */
+            status: "revoked";
+            /**
+             * Format: uuid
+             * @description The reversed award row
+             */
+            graduationId: string;
+            /**
+             * Format: uuid
+             * @description The appended compensation row
+             */
+            revocationId: string;
+            /** @description Restored current belt after the reversal */
+            belt: components["schemas"]["BeltViewDto"];
         };
     };
     responses: never;
@@ -4191,6 +4707,596 @@ export interface operations {
             };
         };
     };
+    AdminEventsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventsResponseDto"];
+                };
+            };
+        };
+    };
+    AdminEventsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEventDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventDto"];
+                };
+            };
+        };
+    };
+    AdminEventsController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEventDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventDto"];
+                };
+            };
+        };
+    };
+    AdminEventsController_publish_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventDto"];
+                };
+            };
+        };
+    };
+    AdminEventsController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventDto"];
+                };
+            };
+        };
+    };
+    AdminEventsController_registrations_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminEventRegistrationsResponseDto"];
+                };
+            };
+        };
+    };
+    AdminEventsController_announce_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnounceResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoEventsController_detail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlunoEventDetailResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoEventsController_register_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterEventResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoEventsController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ResponsavelEventsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponsavelEventsResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelEventsController_register_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                studentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterEventResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelEventsController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                studentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AlunoWalletController_getWallet_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoWalletController_pay_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChargePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoWalletController_cancelMandate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ResponsavelPaymentsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuardianPaymentsResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelPaymentsController_pay_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChargePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
+                };
+            };
+        };
+    };
+    BillingSharedController_simulate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatePaymentResponseDto"];
+                };
+            };
+        };
+    };
+    BillingSharedController_receipt_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptResponseDto"];
+                };
+            };
+        };
+    };
+    AdminBillingController_getOverview_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverviewResponseDto"];
+                };
+            };
+        };
+    };
+    AdminBillingController_materialize_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterializationResultDto"];
+                };
+            };
+        };
+    };
+    AdminBillingController_refund_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundPaymentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformRepassesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepassesResponseDto"];
+                };
+            };
+        };
+    };
     AlunoAgendaController_agendaOf_v1: {
         parameters: {
             query?: {
@@ -4564,323 +5670,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentNoteResponseDto"];
-                };
-            };
-        };
-    };
-    AlunoWalletController_getWallet_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletResponseDto"];
-                };
-            };
-        };
-    };
-    AlunoWalletController_pay_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateChargePaymentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
-                };
-            };
-        };
-    };
-    AlunoWalletController_cancelMandate_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ResponsavelPaymentsController_list_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GuardianPaymentsResponseDto"];
-                };
-            };
-        };
-    };
-    ResponsavelPaymentsController_pay_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateChargePaymentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
-                };
-            };
-        };
-    };
-    BillingSharedController_simulate_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SimulatePaymentResponseDto"];
-                };
-            };
-        };
-    };
-    BillingSharedController_receipt_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReceiptResponseDto"];
-                };
-            };
-        };
-    };
-    AdminBillingController_getOverview_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminOverviewResponseDto"];
-                };
-            };
-        };
-    };
-    AdminBillingController_materialize_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MaterializationResultDto"];
-                };
-            };
-        };
-    };
-    AdminBillingController_refund_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefundPaymentDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RefundResponseDto"];
-                };
-            };
-        };
-    };
-    AdminPlansController_list_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanListResponseDto"];
-                };
-            };
-        };
-    };
-    AdminPlansController_create_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePlanDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponseDto"];
-                };
-            };
-        };
-    };
-    AdminPlansController_update_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdatePlanDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponseDto"];
-                };
-            };
-        };
-    };
-    AdminPlansController_archive_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanResponseDto"];
-                };
-            };
-        };
-    };
-    PlatformRepassesController_list_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RepassesResponseDto"];
                 };
             };
         };
