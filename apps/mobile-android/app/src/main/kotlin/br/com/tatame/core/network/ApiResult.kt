@@ -74,6 +74,12 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     ApiErrorCodes.CHECKIN_NO_SESSION_TODAY -> ApiError.Attendance.NoSessionToday
     ApiErrorCodes.CHECKIN_OUTSIDE_WINDOW -> ApiError.Attendance.OutsideWindow
     ApiErrorCodes.ATTENDANCE_REVOKE_WINDOW_CLOSED -> ApiError.Attendance.RevokeWindowClosed
+    ApiErrorCodes.GRADUATION_DEGREE_AT_MAX -> ApiError.Graduation.DegreeAtMax
+    ApiErrorCodes.GRADUATION_BELT_INVALID_TARGET -> ApiError.Graduation.BeltInvalidTarget
+    ApiErrorCodes.GRADUATION_ALREADY_REVERSED -> ApiError.Graduation.AlreadyReversed
+    ApiErrorCodes.GRADUATION_LESSONS_BELOW_MINIMUM -> ApiError.Graduation.LessonsBelowMinimum
+    ApiErrorCodes.GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT ->
+        ApiError.Graduation.CannotDisableNonKidsBelt
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden

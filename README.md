@@ -158,9 +158,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] GRD.15 RN: BeltBar native component in the design system (same anatomy and fallback rules)
 - [ ] GRD.16 RN: aluno Graduação screen (hero card, progress bar, evolution timeline, Ver certificado placeholder) + real home graduation card + profile belt
 - [ ] GRD.17 RN: professor perfil do aluno (BeltBar, progress, Adicionar grau / Promover faixa gated by toggle, observações) + professor profile graduações válidas + responsável dependent-card belts
-- [ ] GRD.18 Android: BeltBar Compose component (same anatomy and fallback rules)
-- [ ] GRD.19 Android: aluno Graduação screen + real home graduation card + profile belt
-- [ ] GRD.20 Android: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts
+- [x] GRD.18 Android: BeltBar Compose component (same anatomy and fallback rules)
+- [x] GRD.19 Android: aluno Graduação screen + real home graduation card + profile belt
+- [x] GRD.20 Android: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts
 - [ ] GRD.21 iOS: BeltBar SwiftUI component (same anatomy and fallback rules)
 - [ ] GRD.22 iOS: aluno Graduação screen + real home graduation card + profile belt
 - [ ] GRD.23 iOS: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts

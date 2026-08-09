@@ -95,7 +95,7 @@ data class DependentClass(
     val nextSlot: ScheduleSlotView? = null,
 )
 
-/** `DependentDetailDto` — `class` is the active class when enrolled. */
+/** `DependentDetailDto` — `class` is the active class when enrolled; `belt` derived (GRD.6). */
 @Serializable
 data class DependentDetail(
     val id: String,
@@ -103,6 +103,7 @@ data class DependentDetail(
     val birthDate: String, // "2017-06-10"
     val status: String, // active | inactive
     @SerialName("class") val enrolledClass: DependentClass? = null,
+    val belt: BeltView? = null,
 )
 
 /** `DependentListResponseDto` */

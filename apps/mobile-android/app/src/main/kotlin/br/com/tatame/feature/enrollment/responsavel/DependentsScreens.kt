@@ -35,9 +35,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import br.com.tatame.R
+import br.com.tatame.core.designsystem.components.BeltBar
+import br.com.tatame.core.designsystem.components.BeltBarSize
+import br.com.tatame.core.designsystem.components.BeltChip
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.DependentDetail
 import br.com.tatame.feature.enrollment.AvatarBubble
+import br.com.tatame.feature.graduation.GraduationFormat
+import br.com.tatame.feature.graduation.toBeltDisplay
 import br.com.tatame.feature.enrollment.EnrollmentChip
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.EnrollmentNotice
@@ -221,6 +226,21 @@ private fun DependentCard(dependent: DependentDetail, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            // GRD.20 (story 34) — the child's derived belt drawn with degrees.
+            dependent.belt?.let { belt ->
+                Spacer(Modifier.height(LumiraTokens.Space.S3))
+                BeltBar(
+                    belt = belt.toBeltDisplay(),
+                    size = BeltBarSize.Sm,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(LumiraTokens.Space.S2))
+                Text(
+                    text = GraduationFormat.chipLabel(belt),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             ScheduleFormat.nextSlotLabel(dependent.enrolledClass?.nextSlot)?.let { next ->
                 Spacer(Modifier.height(LumiraTokens.Space.S3))
                 EnrollmentChip(
@@ -289,6 +309,11 @@ private fun DependentDetailScreen(dependent: DependentDetail, onBack: () -> Unit
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+        }
+        // GRD.20 (story 34) — belt chip on the dependent detail as well.
+        dependent.belt?.let { belt ->
+            Spacer(Modifier.height(LumiraTokens.Space.S3))
+            BeltChip(label = GraduationFormat.chipLabel(belt), belt = belt.toBeltDisplay())
         }
         Spacer(Modifier.height(LumiraTokens.Space.S4))
         Text(

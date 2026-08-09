@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import br.com.tatame.feature.attendance.professor.LiveChamadaSheet
 import br.com.tatame.feature.attendance.professor.RollCallScreen
+import br.com.tatame.feature.graduation.professor.StudentProfileScreen
 import br.com.tatame.feature.enrollment.AvatarBubble
 import br.com.tatame.feature.enrollment.EnrollmentChip
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
@@ -61,12 +62,25 @@ import org.koin.androidx.compose.koinViewModel
 fun TurmasTab(
     academyName: String?,
     modifier: Modifier = Modifier,
+    canUpdateGraduations: Boolean = true,
     viewModel: TurmasViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
     var liveChamadaOpen by remember { mutableStateOf(false) }
     var rollCallOpen by remember { mutableStateOf(false) }
+    var profileStudentId by remember { mutableStateOf<String?>(null) }
     val openDetail = (state.detail as? TurmaDetailState.Loaded)?.detail
+
+    // Perfil do aluno replaces the detail surface (GRD.20, professor-11).
+    profileStudentId?.let { studentId ->
+        StudentProfileScreen(
+            studentId = studentId,
+            canUpdateGraduations = canUpdateGraduations,
+            onBack = { profileStudentId = null },
+            modifier = modifier,
+        )
+        return
+    }
 
     // Chamada manual replaces the detail surface (professor-10).
     if (rollCallOpen && openDetail != null) {
@@ -97,6 +111,7 @@ fun TurmasTab(
                 actionErrorRes = state.actionErrorRes,
                 onBack = viewModel::closeTurma,
                 onAddStudent = viewModel::openAddSheet,
+                onOpenStudent = { student -> profileStudentId = student.studentId },
                 onRequestRemove = viewModel::requestRemove,
                 onDismissActionError = viewModel::dismissActionError,
                 onLiveChamada = { liveChamadaOpen = true },
@@ -272,6 +287,7 @@ private fun TurmaDetailScreen(
     actionErrorRes: Int?,
     onBack: () -> Unit,
     onAddStudent: () -> Unit,
+    onOpenStudent: (RosterStudent) -> Unit,
     onRequestRemove: (RosterStudent) -> Unit,
     onDismissActionError: () -> Unit,
     onLiveChamada: () -> Unit,
@@ -366,7 +382,11 @@ private fun TurmaDetailScreen(
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2)) {
                 items(detail.roster, key = { it.studentId }) { student ->
-                    RosterRow(student = student, onRemove = { onRequestRemove(student) })
+                    RosterRow(
+                        student = student,
+                        onOpen = { onOpenStudent(student) },
+                        onRemove = { onRequestRemove(student) },
+                    )
                 }
             }
         }
@@ -411,11 +431,12 @@ private fun StatTile(
 }
 
 @Composable
-private fun RosterRow(student: RosterStudent, onRemove: () -> Unit) {
+private fun RosterRow(student: RosterStudent, onOpen: () -> Unit, onRemove: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(LumiraTokens.Radius.Md),
         color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth(),
+        // Row tap opens the perfil do aluno (GRD.20); remove keeps its own button.
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
     ) {
         Row(
             modifier = Modifier.padding(

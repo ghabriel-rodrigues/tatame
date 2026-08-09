@@ -51,6 +51,13 @@ object ApiErrorCodes {
     const val CHECKIN_NO_SESSION_TODAY = "checkin.no_session_today"
     const val CHECKIN_OUTSIDE_WINDOW = "checkin.outside_window"
     const val ATTENDANCE_REVOKE_WINDOW_CLOSED = "attendance.revoke_window_closed"
+
+    // Graduation slice (spec 005) additions.
+    const val GRADUATION_DEGREE_AT_MAX = "graduation.degree_at_max"
+    const val GRADUATION_BELT_INVALID_TARGET = "graduation.belt_invalid_target"
+    const val GRADUATION_ALREADY_REVERSED = "graduation.already_reversed"
+    const val GRADUATION_LESSONS_BELOW_MINIMUM = "graduation.lessons_below_minimum"
+    const val GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT = "graduation.cannot_disable_non_kids_belt"
 }
 
 /**
@@ -119,6 +126,24 @@ sealed interface ApiError {
 
         /** `attendance.revoke_window_closed` — professor revoke after day close (admin-only path). */
         data object RevokeWindowClosed : Attendance
+    }
+
+    /** Graduation-slice stable codes (spec 005) the award/rules UX maps to PT-BR copy. */
+    sealed interface Graduation : ApiError {
+        /** `graduation.degree_at_max` — add-degree on a belt already at `max_degrees`. */
+        data object DegreeAtMax : Graduation
+
+        /** `graduation.belt_invalid_target` — disabled, unknown, or current belt as target. */
+        data object BeltInvalidTarget : Graduation
+
+        /** `graduation.already_reversed` — second revocation of the same award. */
+        data object AlreadyReversed : Graduation
+
+        /** `graduation.lessons_below_minimum` — rules PUT below the 10-lesson floor (admin web). */
+        data object LessonsBelowMinimum : Graduation
+
+        /** `graduation.cannot_disable_non_kids_belt` — kids-only toggle violated (admin web). */
+        data object CannotDisableNonKidsBelt : Graduation
     }
 
     /** 422 `validation.failed` with field-level errors. */

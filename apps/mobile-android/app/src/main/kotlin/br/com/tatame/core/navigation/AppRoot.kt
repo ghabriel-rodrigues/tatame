@@ -23,6 +23,9 @@ import br.com.tatame.feature.auth.roleLabel
 import br.com.tatame.feature.enrollment.professor.TurmasTab
 import br.com.tatame.feature.enrollment.responsavel.DEPENDENTS_REGISTER_PERMISSION
 import br.com.tatame.feature.enrollment.responsavel.DependentsHomeTab
+import br.com.tatame.feature.graduation.aluno.AlunoPerfilTab
+import br.com.tatame.feature.graduation.professor.GRADUATION_UPDATE_PERMISSION
+import br.com.tatame.feature.graduation.professor.ProfessorPerfilTab
 import br.com.tatame.feature.shell.PersonaShellScreen
 import br.com.tatame.feature.shell.SuspendedAcademyScreen
 import br.com.tatame.feature.shell.WebOnlyRoleScreen
@@ -92,6 +95,7 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             onLogout = onLogout,
             // ATT.19 — Início (index 0) is the real aluno surface; the central
             // Check-in tab (index 2) routes there with the sheet already open.
+            // GRD.19 — Perfil (index 4) carries the real derived belt chip.
             tabContent = mapOf(
                 0 to { _ ->
                     AlunoHomeTab(firstName = me.user.fullName.substringBefore(' '))
@@ -100,6 +104,13 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                     AlunoHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
                         openCheckinOnEnter = true,
+                    )
+                },
+                4 to { _ ->
+                    AlunoPerfilTab(
+                        fullName = me.user.fullName,
+                        academyName = me.academy?.name,
+                        onLogout = onLogout,
                     )
                 },
             ),
@@ -114,7 +125,9 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 R.string.tab_profile,
             ),
             onLogout = onLogout,
-            // ENR.21/22 — Turmas tab (index 1); ATT.20/21 — dashboard (index 0).
+            // ENR.21/22 — Turmas tab (index 1); ATT.20/21 — dashboard (index 0);
+            // GRD.20 — perfil do aluno via roster tap (graduation.update gate)
+            // + own Perfil tab (index 3, belt chip + Graduações válidas).
             tabContent = mapOf(
                 0 to { selectTab ->
                     ProfessorHomeTab(
@@ -122,7 +135,20 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                         onVerTurmas = { selectTab(1) },
                     )
                 },
-                1 to { _ -> TurmasTab(academyName = me.academy?.name) },
+                1 to { _ ->
+                    TurmasTab(
+                        academyName = me.academy?.name,
+                        canUpdateGraduations =
+                            me.permissions[GRADUATION_UPDATE_PERMISSION] ?: true,
+                    )
+                },
+                3 to { _ ->
+                    ProfessorPerfilTab(
+                        fullName = me.user.fullName,
+                        academyName = me.academy?.name,
+                        onLogout = onLogout,
+                    )
+                },
             ),
         )
 

@@ -81,12 +81,13 @@ data class AlunoTodayClass(
     val checkedIn: Boolean,
 )
 
-/** `AlunoHomeResponseDto` */
+/** `AlunoHomeResponseDto` — `graduation` is the real derived card payload (GRD.7). */
 @Serializable
 data class AlunoHomeResponse(
     val student: AlunoStudentRef,
     val todayClass: AlunoTodayClass? = null,
     val stats: AlunoStats,
+    val graduation: AlunoHomeGraduation? = null,
 )
 
 /** `LiveSessionDto` */
@@ -249,13 +250,14 @@ data class ProfessorDashboardResponse(
     val todayClasses: List<ProfessorTodayClass> = emptyList(),
 )
 
-/** `ProfessorStudentDto` — the "Adicionar aluno" picker candidate. */
+/** `ProfessorStudentDto` — the "Adicionar aluno" picker candidate; `belt` derived (GRD.6). */
 @Serializable
 data class ProfessorStudent(
     val id: String,
     val fullName: String,
     val birthDate: String,
     val badge: String, // ativo | pendente
+    val belt: BeltView? = null,
 )
 
 /** `ProfessorStudentsResponseDto` */

@@ -31,6 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -39,12 +42,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import br.com.tatame.R
+import br.com.tatame.core.designsystem.components.BeltBar
+import br.com.tatame.core.designsystem.components.BeltBarSize
 import br.com.tatame.core.designsystem.theme.PillShape
+import br.com.tatame.core.network.dto.AlunoHomeGraduation
 import br.com.tatame.core.network.dto.AlunoHomeResponse
 import br.com.tatame.core.network.dto.AlunoTodayClass
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.EnrollmentNotice
 import br.com.tatame.feature.enrollment.ScheduleFormat
+import br.com.tatame.feature.graduation.GraduationFormat
+import br.com.tatame.feature.graduation.aluno.AlunoGraduacaoScreen
+import br.com.tatame.feature.graduation.toBeltDisplay
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
@@ -65,9 +74,16 @@ fun AlunoHomeTab(
     viewModel: AlunoHomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    var graduacaoOpen by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(openCheckinOnEnter) {
         if (openCheckinOnEnter) viewModel.openCheckinSheet()
+    }
+
+    // GRD.19 — the home graduation card links to the Graduação screen.
+    if (graduacaoOpen) {
+        AlunoGraduacaoScreen(onBack = { graduacaoOpen = false }, modifier = modifier)
+        return
     }
 
     Column(
@@ -88,6 +104,7 @@ fun AlunoHomeTab(
             is AlunoHomeState.Loaded -> AlunoHomeContent(
                 home = home.home,
                 onCheckin = viewModel::openCheckinSheet,
+                onOpenGraduacao = { graduacaoOpen = true },
             )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
@@ -114,12 +131,20 @@ fun AlunoHomeTab(
 // ---- Início content (aluno-03) -------------------------------------------
 
 @Composable
-private fun AlunoHomeContent(home: AlunoHomeResponse, onCheckin: () -> Unit) {
+private fun AlunoHomeContent(
+    home: AlunoHomeResponse,
+    onCheckin: () -> Unit,
+    onOpenGraduacao: () -> Unit,
+) {
     HeroCard(todayClass = home.todayClass, onCheckin = onCheckin)
     Spacer(Modifier.height(LumiraTokens.Space.S4))
     StatTilesRow(home = home)
     Spacer(Modifier.height(LumiraTokens.Space.S4))
-    GraduationCard(totalLessons = home.stats.totalLessons)
+    GraduationCard(
+        graduation = home.graduation,
+        totalLessons = home.stats.totalLessons,
+        onOpen = onOpenGraduacao,
+    )
 }
 
 @Composable
@@ -245,10 +270,16 @@ private fun StatTilesRow(home: AlunoHomeResponse) {
                 modifier = Modifier.weight(1f),
             )
         }
+        // "graus na faixa" is real derived data now (GRD.19, story 7).
+        val graduation = home.graduation
         StatTile(
-            value = "—",
+            value = graduation?.belt?.degrees?.toString() ?: "—",
             label = stringResource(R.string.aluno_stat_graduation_label),
-            caption = stringResource(R.string.aluno_stat_graduation_placeholder),
+            caption = if (graduation == null) {
+                stringResource(R.string.aluno_stat_graduation_placeholder)
+            } else {
+                null
+            },
             modifier = Modifier.weight(1f),
         )
     }
@@ -294,28 +325,79 @@ private fun StatTile(
 }
 
 /**
- * Graduation target stays a placeholder until the graduation slice ships its
- * rules — only the numerator (lifetime lessons) is real data (spec story 17).
+ * Home graduation card (GRD.19 supersedes the Phase-4 placeholder): the
+ * derived belt drawn by [BeltBar], the progress toward the academy-rule
+ * target, and a tap-through to the Graduação screen. The legacy lifetime
+ * rendering only survives as a defensive fallback for a payload-less server.
  */
-private const val GRADUATION_TARGET_PLACEHOLDER = 40
-
 @Composable
-private fun GraduationCard(totalLessons: Int) {
+private fun GraduationCard(
+    graduation: AlunoHomeGraduation?,
+    totalLessons: Int,
+    onOpen: () -> Unit,
+) {
     Surface(
         shape = RoundedCornerShape(LumiraTokens.Radius.Lg),
         color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpen),
     ) {
         Column(modifier = Modifier.padding(LumiraTokens.Space.S4)) {
-            Text(
-                text = stringResource(R.string.aluno_graduation_title),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.aluno_graduation_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = "›",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (graduation == null) {
+                Spacer(Modifier.height(LumiraTokens.Space.S3))
+                LinearProgressIndicator(
+                    progress = { 0f },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = LumiraTokens.Colors.Pink500,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+                Spacer(Modifier.height(LumiraTokens.Space.S2))
+                Text(
+                    text = stringResource(R.string.aluno_graduation_lessons, totalLessons),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                return@Column
+            }
+            Spacer(Modifier.height(LumiraTokens.Space.S3))
+            BeltBar(
+                belt = graduation.belt.toBeltDisplay(),
+                size = BeltBarSize.Md,
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(LumiraTokens.Space.S3))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = GraduationFormat.heroTitle(graduation.belt),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = graduation.progress.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(LumiraTokens.Space.S2))
             LinearProgressIndicator(
                 progress = {
-                    (totalLessons.toFloat() / GRADUATION_TARGET_PLACEHOLDER).coerceIn(0f, 1f)
+                    GraduationFormat.progressFraction(
+                        graduation.progress.current,
+                        graduation.progress.target,
+                    )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 color = LumiraTokens.Colors.Pink500,
@@ -323,14 +405,12 @@ private fun GraduationCard(totalLessons: Int) {
             )
             Spacer(Modifier.height(LumiraTokens.Space.S2))
             Text(
-                text = stringResource(R.string.aluno_graduation_lessons, totalLessons),
+                text = GraduationFormat.lessonsLabel(
+                    graduation.progress.current,
+                    graduation.progress.target,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.aluno_graduation_placeholder),
-                style = MaterialTheme.typography.labelSmall,
-                color = LumiraTokens.Colors.Fg4,
             )
         }
     }

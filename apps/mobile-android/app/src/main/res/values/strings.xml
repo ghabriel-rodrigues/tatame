@@ -135,7 +135,6 @@
     <string name="aluno_stat_graduation_placeholder">Em breve</string>
     <string name="aluno_graduation_title">Sua graduação</string>
     <string name="aluno_graduation_lessons">%1$d aulas registradas</string>
-    <string name="aluno_graduation_placeholder">Linha do tempo de graduação chega em fase futura.</string>
     <string name="checkin_sheet_title">Check-in · %1$s</string>
     <string name="checkin_sheet_subtitle">Hoje, %1$s</string>
     <string name="checkin_method_qr">QR Code</string>
@@ -205,6 +204,43 @@
 
     <!-- Adicionar aluno picker (rewired to /professor/students) -->
     <string name="add_student_error">Não foi possível carregar os alunos da academia.</string>
+
+    <!-- Aluno Graduação (GRD.19, aluno-09) -->
+    <string name="graduacao_title">Graduação</string>
+    <string name="graduacao_current_belt">Faixa atual</string>
+    <string name="graduacao_timeline_title">Histórico de evolução</string>
+    <string name="graduacao_awarded_by">Prof. %1$s</string>
+    <string name="graduacao_certificate_cta">Ver certificado</string>
+
+    <!-- Professor perfil do aluno (GRD.20, professor-11) -->
+    <string name="student_profile_title">Perfil do aluno</string>
+    <string name="student_profile_progress_line">%1$s · %2$s</string>
+    <string name="student_profile_add_degree">Adicionar grau</string>
+    <string name="student_profile_promote">Promover faixa</string>
+    <string name="award_degree_body">Conceder o %1$dº grau a %2$s? A graduação fica registrada de forma permanente.</string>
+    <string name="award_belt_body">Promover %1$s para a faixa %2$s? Os graus voltam a zero e a graduação fica registrada de forma permanente.</string>
+    <string name="award_notes_placeholder">Observação (opcional)</string>
+    <string name="award_confirm">Confirmar</string>
+    <string name="award_cancel">Cancelar</string>
+    <string name="student_profile_stat_frequency">frequência</string>
+    <string name="student_profile_stat_month">aulas no mês</string>
+    <string name="student_profile_stat_billing">mensalidade</string>
+    <!-- Billing status is served by the payments slice; tile stays an honest placeholder. -->
+    <string name="student_profile_stat_billing_placeholder">Em breve</string>
+    <string name="student_profile_notes_title">Observações</string>
+    <string name="student_profile_note_placeholder">Nova observação</string>
+    <string name="student_profile_note_save">Salvar</string>
+    <string name="student_profile_note_meta">%1$s · %2$s</string>
+
+    <!-- Professor own profile (GRD.20, professor-12) -->
+    <string name="professor_profile_subtitle">Professor · %1$s</string>
+    <string name="professor_profile_valid_title">Graduações válidas</string>
+    <string name="professor_profile_valid_body">Régua definida pelo admin para toda a academia. Faixas infantis desativadas aparecem esmaecidas.</string>
+
+    <!-- Graduation errors (stable codes → PT-BR copy) -->
+    <string name="error_graduation_degree_at_max">Este aluno já está no grau máximo da faixa atual.</string>
+    <string name="error_graduation_belt_invalid_target">Faixa de destino inválida ou desativada pela academia.</string>
+    <string name="error_graduation_already_reversed">Esta graduação já foi revogada.</string>
 
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
