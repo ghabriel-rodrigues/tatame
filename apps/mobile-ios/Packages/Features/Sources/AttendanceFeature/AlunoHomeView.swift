@@ -11,18 +11,21 @@ import TatameCore
 
 public struct AlunoHomeView: View {
     @State private var model: AlunoHomeModel
+    private let onOpenGraduation: (() -> Void)?
 
-    public init(repository: any AttendanceRepository) {
+    public init(repository: any AttendanceRepository, onOpenGraduation: (() -> Void)? = nil) {
         _model = State(initialValue: AlunoHomeModel(repository: repository))
+        self.onOpenGraduation = onOpenGraduation
     }
 
     public var body: some View {
-        AlunoHomeContent(model: model)
+        AlunoHomeContent(model: model, onOpenGraduation: onOpenGraduation)
     }
 }
 
 struct AlunoHomeContent: View {
     @Bindable var model: AlunoHomeModel
+    var onOpenGraduation: (() -> Void)?
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
 
@@ -40,8 +43,8 @@ struct AlunoHomeContent: View {
                 case .loaded(let home):
                     header(home)
                     heroCard(home)
-                    statTiles(home.stats)
-                    graduationCard(home.stats)
+                    statTiles(home)
+                    graduationCard(home)
                     rankingPlaceholder
                 }
             }
@@ -191,68 +194,80 @@ struct AlunoHomeContent: View {
         }
     }
 
-    // MARK: Stat tiles (stories 13-16)
+    // MARK: Stat tiles (stories 13-16; graus na faixa real per spec 005)
 
-    private func statTiles(_ stats: AlunoStats) -> some View {
+    private func statTiles(_ home: AlunoHome) -> some View {
         HStack(spacing: LumiraTokens.Space.s3) {
             AlunoStatTile(
-                value: AttendanceFormatters.percentLabel(stats.monthPresencePct),
+                value: AttendanceFormatters.percentLabel(home.stats.monthPresencePct),
                 label: "presença no mês"
             )
-            if let streak = stats.streak {
+            if let streak = home.stats.streak {
                 AlunoStatTile(
                     value: "🔥 \(streak)",
                     label: "aulas seguidas",
                     accent: true
                 )
             }
-            // Graus na faixa is graduation-slice data — explicit placeholder.
-            AlunoStatTile(value: "—", label: "graus na faixa", footnote: "Fase 5")
+            if let graduation = home.graduation {
+                AlunoStatTile(value: "\(graduation.belt.degrees)", label: "graus na faixa")
+            } else {
+                AlunoStatTile(value: "—", label: "graus na faixa")
+            }
         }
     }
 
-    // MARK: Graduation card (story 17 — real lesson count, placeholder target)
+    // MARK: Graduation card (spec 005 story 6 — real belt + real target,
+    // linking to the Graduação screen)
 
-    private func graduationCard(_ stats: AlunoStats) -> some View {
-        VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
-            HStack {
-                Text("Sua graduação")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+    @ViewBuilder
+    private func graduationCard(_ home: AlunoHome) -> some View {
+        if let graduation = home.graduation {
+            Button {
+                onOpenGraduation?()
+            } label: {
+                VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
+                    HStack {
+                        Text("Sua graduação")
+                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .foregroundStyle(LumiraTokens.Colors.fg1)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
+                            .foregroundStyle(LumiraTokens.Colors.fg4)
+                    }
+                    BeltBar(
+                        colorSlug: graduation.belt.colorSlug,
+                        tipColorSlug: graduation.belt.tipColorSlug,
+                        degrees: graduation.belt.degrees,
+                        maxDegrees: graduation.belt.maxDegrees,
+                        size: .md
+                    )
+                    HStack {
+                        Text(graduation.progress.label)
+                            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                            .foregroundStyle(LumiraTokens.Colors.fg3)
+                        Spacer()
+                        Text("\(graduation.progress.current) de \(graduation.progress.target) aulas")
+                            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                            .foregroundStyle(LumiraTokens.Colors.fg3)
+                            .accessibilityIdentifier("graduation-lesson-count")
+                    }
+                    ProgressBar(fraction: graduation.progress.fraction)
+                }
+                .padding(LumiraTokens.Space.s4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(LumiraTokens.Colors.bgSurface)
+                .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                )
             }
-            HStack {
-                // Belt + degree rendering belongs to the graduation slice.
-                Text("Aulas registradas")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
-                Spacer()
-                Text("\(stats.totalLessons) de \(Self.placeholderTarget) aulas")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
-                    .accessibilityIdentifier("graduation-lesson-count")
-            }
-            ProgressBar(fraction: min(1, Double(stats.totalLessons) / Double(Self.placeholderTarget)))
-            Text("Meta por graduação chega com as regras de graduação · Fase 5")
-                .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("graduation-card")
         }
-        .padding(LumiraTokens.Space.s4)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
-        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
-        )
     }
-
-    /// The handoff's "26 de 40 aulas" — 40 stays a placeholder until the
-    /// graduation rules slice ships the real per-academy target.
-    private static let placeholderTarget = 40
 
     private var rankingPlaceholder: some View {
         HStack(spacing: LumiraTokens.Space.s3) {

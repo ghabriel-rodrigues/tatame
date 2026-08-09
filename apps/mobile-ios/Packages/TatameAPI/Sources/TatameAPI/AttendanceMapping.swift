@@ -40,7 +40,8 @@ extension AlunoHome {
             studentId: try uuid(dto.student.id, "student id"),
             studentName: dto.student.fullName,
             todayClass: try dto.todayClass.map { try AlunoTodayClass(dto: $0.value1) },
-            stats: AlunoStats(dto: dto.stats)
+            stats: AlunoStats(dto: dto.stats),
+            graduation: try dto.graduation.map { try AlunoHomeGraduation(dto: $0.value1) }
         )
     }
 }
@@ -151,7 +152,8 @@ extension RollCallRow {
         self.init(
             studentId: try uuid(dto.studentId, "student id"),
             fullName: dto.fullName,
-            attendance: try dto.attendance.map { try RollCallAttendance(dto: $0.value1) }
+            attendance: try dto.attendance.map { try RollCallAttendance(dto: $0.value1) },
+            belt: try dto.belt.map { try BeltView(dto: $0.value1) }
         )
     }
 }
@@ -228,7 +230,8 @@ extension RosterStudent {
             studentId: try uuid(dto.id, "student id"),
             fullName: dto.fullName,
             birthDate: dto.birthDate,
-            badge: RosterBadge(rawValue: dto.badge.rawValue) ?? .ativo
+            badge: RosterBadge(rawValue: dto.badge.rawValue) ?? .ativo,
+            belt: try dto.belt.map { try BeltView(dto: $0.value1) }
         )
     }
 }

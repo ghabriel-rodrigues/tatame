@@ -19,6 +19,8 @@ public struct AuthStack: Sendable {
     /// Attendance slice repository (spec 004) — same authenticated client
     /// plus the hand-rolled SSE stream (issue 09).
     public let attendanceRepository: any AttendanceRepository
+    /// Graduation slice repository (spec 005) — same authenticated client.
+    public let graduationRepository: any GraduationRepository
 }
 
 public enum TatameClientFactory {
@@ -64,7 +66,8 @@ public enum TatameClientFactory {
             repository: LiveAuthRepository(client: client, coordinator: coordinator),
             accessTokenStore: coordinator,
             enrollmentRepository: LiveEnrollmentRepository(client: client),
-            attendanceRepository: LiveAttendanceRepository(client: client, serverURL: serverURL)
+            attendanceRepository: LiveAttendanceRepository(client: client, serverURL: serverURL),
+            graduationRepository: LiveGraduationRepository(client: client)
         )
     }
 }

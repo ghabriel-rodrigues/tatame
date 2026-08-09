@@ -172,6 +172,22 @@ struct DependentCard: View {
                     .foregroundStyle(LumiraTokens.Colors.fg4)
             }
 
+            // Drawn belt with degrees (spec 005, story 34).
+            if let belt = dependent.belt {
+                VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
+                    BeltBar(
+                        colorSlug: belt.colorSlug,
+                        tipColorSlug: belt.tipColorSlug,
+                        degrees: belt.degrees,
+                        maxDegrees: belt.maxDegrees,
+                        size: .sm
+                    )
+                    Text(GraduationFormatters.chipLabelPTBR(belt: belt))
+                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                }
+            }
+
             HStack(spacing: LumiraTokens.Space.s3) {
                 StatTile(value: "—", label: "frequência", footnote: "Fase 4")
                 if let nextSlot = dependent.enrolledClass?.nextSlot {

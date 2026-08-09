@@ -70,7 +70,8 @@ extension RosterStudent {
             studentId: studentId,
             fullName: dto.fullName,
             birthDate: dto.birthDate,
-            badge: RosterBadge(rawValue: dto.badge.rawValue) ?? .ativo
+            badge: RosterBadge(rawValue: dto.badge.rawValue) ?? .ativo,
+            belt: try dto.belt.map { try BeltView(dto: $0.value1) }
         )
     }
 }
@@ -121,7 +122,8 @@ extension Dependent {
             fullName: dto.fullName,
             birthDate: dto.birthDate,
             status: StudentStatus(rawValue: dto.status.rawValue) ?? .active,
-            enrolledClass: try dto._class.map { try DependentClass(dto: $0.value1) }
+            enrolledClass: try dto._class.map { try DependentClass(dto: $0.value1) },
+            belt: try dto.belt.map { try BeltView(dto: $0.value1) }
         )
     }
 }

@@ -7,6 +7,7 @@
 import AttendanceFeature
 import DesignSystem
 import EnrollmentFeature
+import GraduationFeature
 import SwiftUI
 import TatameCore
 
@@ -44,6 +45,7 @@ struct PersonaShellView: View {
     let readOnly: Bool
 
     @State private var selection: Tab = .inicio
+    @State private var showGraduation = false
     @Environment(SessionStore.self) private var session
     @Environment(\.enrollmentRepository) private var enrollmentRepository
     @Environment(\.attendanceRepository) private var attendanceRepository
@@ -53,7 +55,17 @@ struct PersonaShellView: View {
             switch persona {
             case .aluno:
                 featureTab(title: "Início", icon: persona.homeIcon) {
-                    AlunoHomeView(repository: attendanceRepository)
+                    // Home card → Graduação screen (spec 005, story 6).
+                    NavigationStack {
+                        AlunoHomeView(
+                            repository: attendanceRepository,
+                            onOpenGraduation: { showGraduation = true }
+                        )
+                        .navigationBarHiddenOnIOS()
+                        .navigationDestination(isPresented: $showGraduation) {
+                            AlunoGraduationView()
+                        }
+                    }
                 }
                 .tag(Tab.inicio)
             case .professor:
@@ -83,10 +95,34 @@ struct PersonaShellView: View {
                 }
                 .tag(Tab.inicio)
             }
-            shellTab(title: "Perfil", icon: "person.crop.circle")
+            perfilTab
                 .tag(Tab.perfil)
         }
         .tint(LumiraTokens.Colors.inkPurple)
+    }
+
+    /// Perfil tab: aluno gets the belt-chip header (spec 005 story 7),
+    /// professor the professor-12 profile (belt chip + graduações válidas);
+    /// responsável keeps the session card until its slice lands.
+    @ViewBuilder
+    private var perfilTab: some View {
+        switch persona {
+        case .aluno:
+            shellTab(title: "Perfil", icon: "person.crop.circle") {
+                AlunoProfileHeader(fullName: context.user.fullName)
+            }
+        case .professor:
+            shellTab(title: "Perfil", icon: "person.crop.circle") {
+                ProfessorProfileView(
+                    fullName: context.user.fullName,
+                    academyName: context.activeMembership.academyName
+                )
+            }
+        case .responsavel:
+            shellTab(title: "Perfil", icon: "person.crop.circle") {
+                EmptyView()
+            }
+        }
     }
 
     /// Real feature tab with the shared read-only banner slot.
@@ -107,13 +143,18 @@ struct PersonaShellView: View {
         }
     }
 
-    private func shellTab(title: String, icon: String) -> some View {
+    private func shellTab(
+        title: String,
+        icon: String,
+        @ViewBuilder header: () -> some View = { EmptyView() }
+    ) -> some View {
         VStack(spacing: 0) {
             if readOnly {
                 ReadOnlyBanner()
             }
             ScrollView {
                 VStack(spacing: LumiraTokens.Space.s4) {
+                    header()
                     SessionContextCard(context: context, shellTitle: persona.titlePTBR)
                     LogoutButton()
                 }
@@ -125,6 +166,19 @@ struct PersonaShellView: View {
         .tabItem {
             Label(title, systemImage: icon)
         }
+    }
+}
+
+extension View {
+    /// The handoff home header replaces the system bar on iOS; the macOS
+    /// floor (test-only host) has no hiding API.
+    @ViewBuilder
+    func navigationBarHiddenOnIOS() -> some View {
+        #if os(iOS)
+        toolbar(.hidden, for: .navigationBar)
+        #else
+        self
+        #endif
     }
 }
 

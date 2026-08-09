@@ -88,14 +88,23 @@ public struct RosterStudent: Sendable, Equatable, Identifiable {
     /// ISO "yyyy-MM-dd".
     public let birthDate: String
     public let badge: RosterBadge
+    /// Derived current belt (GRD.6 belt exposure) — nil pre-graduation-slice.
+    public let belt: BeltView?
 
     public var id: UUID { studentId }
 
-    public init(studentId: UUID, fullName: String, birthDate: String, badge: RosterBadge) {
+    public init(
+        studentId: UUID,
+        fullName: String,
+        birthDate: String,
+        badge: RosterBadge,
+        belt: BeltView? = nil
+    ) {
         self.studentId = studentId
         self.fullName = fullName
         self.birthDate = birthDate
         self.badge = badge
+        self.belt = belt
     }
 }
 
@@ -158,19 +167,23 @@ public struct Dependent: Sendable, Equatable, Identifiable {
     public let status: StudentStatus
     /// Nil when the child is registered but not enrolled (full grid, story 34).
     public let enrolledClass: DependentClass?
+    /// Derived current belt (GRD.6, story 34) — the dependent-card BeltBar.
+    public let belt: BeltView?
 
     public init(
         id: UUID,
         fullName: String,
         birthDate: String,
         status: StudentStatus,
-        enrolledClass: DependentClass?
+        enrolledClass: DependentClass?,
+        belt: BeltView? = nil
     ) {
         self.id = id
         self.fullName = fullName
         self.birthDate = birthDate
         self.status = status
         self.enrolledClass = enrolledClass
+        self.belt = belt
     }
 }
 

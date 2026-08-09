@@ -5,6 +5,7 @@
 
 import AttendanceFeature
 import DesignSystem
+import GraduationFeature
 import SwiftUI
 import TatameCore
 
@@ -76,6 +77,9 @@ struct TurmaDetailContent: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .navigationDestination(for: StudentProfileRoute.self) { route in
+            StudentProfileView(studentId: route.studentId)
+        }
         .sheet(isPresented: $model.showAddSheet) {
             if let detail = model.detail {
                 AddStudentSheet(model: model, turmaName: detail.summary.name)
@@ -226,9 +230,13 @@ struct TurmaDetailContent: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(detail.roster.enumerated()), id: \.element.id) { index, student in
-                        RosterRow(student: student) {
-                            model.askRemove(student)
+                        // Row tap → perfil do aluno (spec 005, GRD.23).
+                        NavigationLink(value: StudentProfileRoute(studentId: student.studentId)) {
+                            RosterRow(student: student) {
+                                model.askRemove(student)
+                            }
                         }
+                        .buttonStyle(.plain)
                         if index < detail.roster.count - 1 {
                             Divider().overlay(LumiraTokens.Colors.border1)
                         }
@@ -271,10 +279,23 @@ struct RosterRow: View {
                 Text(student.fullName)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
                     .foregroundStyle(LumiraTokens.Colors.fg1)
-                if let ageLabel = BirthDates.ageLabelPTBR(fromISO: student.birthDate) {
-                    Text(ageLabel)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                HStack(spacing: LumiraTokens.Space.s2) {
+                    // Derived belt (spec 005 — the Phase-3 chip deferral).
+                    if let belt = student.belt {
+                        BeltBar(
+                            colorSlug: belt.colorSlug,
+                            tipColorSlug: belt.tipColorSlug,
+                            degrees: belt.degrees,
+                            maxDegrees: belt.maxDegrees,
+                            size: .sm
+                        )
+                        .frame(width: 44)
+                    }
+                    if let ageLabel = BirthDates.ageLabelPTBR(fromISO: student.birthDate) {
+                        Text(ageLabel)
+                            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                            .foregroundStyle(LumiraTokens.Colors.fg4)
+                    }
                 }
             }
 

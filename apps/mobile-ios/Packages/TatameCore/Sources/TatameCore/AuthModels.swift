@@ -127,6 +127,8 @@ public struct SwitchedMembership: Sendable, Equatable {
 public enum PermissionKey {
     /// Guardian "cadastrar dependentes" toggle (default on, spec 003).
     public static let dependentsRegister = "dependents.register"
+    /// Professor "atualizar graduações" toggle (default on, spec 005).
+    public static let graduationUpdate = "graduation.update"
 }
 
 /// The signed-in context the root router renders from.

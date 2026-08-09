@@ -3,6 +3,7 @@
 // the ownership 404 as PT-BR copy (story 35 — server-enforced).
 
 import DesignSystem
+import GraduationFeature
 import Observation
 import SwiftUI
 import TatameCore
@@ -118,6 +119,12 @@ struct DependentDetailContent: View {
                     Text(ageLabel)
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
                         .foregroundStyle(LumiraTokens.Colors.fg4)
+                }
+                // Derived belt chip (spec 005, story 34).
+                if let belt = dependent.belt {
+                    BeltChip(belt: belt)
+                        .padding(.top, LumiraTokens.Space.s1)
+                        .accessibilityIdentifier("dependent-belt-chip")
                 }
             }
         }

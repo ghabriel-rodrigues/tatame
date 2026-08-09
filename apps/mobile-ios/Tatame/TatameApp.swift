@@ -7,6 +7,7 @@
 import AppShell
 import AttendanceFeature
 import EnrollmentFeature
+import GraduationFeature
 import SwiftUI
 import TatameAPI
 import TatameCore
@@ -21,6 +22,7 @@ struct TatameApp: App {
                 .environment(composition.sessionStore)
                 .environment(\.enrollmentRepository, composition.enrollmentRepository)
                 .environment(\.attendanceRepository, composition.attendanceRepository)
+                .environment(\.graduationRepository, composition.graduationRepository)
         }
     }
 }
@@ -45,6 +47,7 @@ final class AppComposition {
     let sessionStore: SessionStore
     let enrollmentRepository: any EnrollmentRepository
     let attendanceRepository: any AttendanceRepository
+    let graduationRepository: any GraduationRepository
 
     init() {
         // Dev server URL. Environment-specific .xcconfig wiring is ticket 08
@@ -67,5 +70,6 @@ final class AppComposition {
         sessionStore = store
         enrollmentRepository = stack.enrollmentRepository
         attendanceRepository = stack.attendanceRepository
+        graduationRepository = stack.graduationRepository
     }
 }

@@ -64,20 +64,43 @@ public struct AlunoHome: Sendable, Equatable {
     public let studentName: String
     public let todayClass: AlunoTodayClass?
     public let stats: AlunoStats
+    /// Real graduation card payload (GRD.22) — nil only when the backend
+    /// predates the graduation slice.
+    public let graduation: AlunoHomeGraduation?
 
-    public init(studentId: UUID, studentName: String, todayClass: AlunoTodayClass?, stats: AlunoStats) {
+    public init(
+        studentId: UUID,
+        studentName: String,
+        todayClass: AlunoTodayClass?,
+        stats: AlunoStats,
+        graduation: AlunoHomeGraduation? = nil
+    ) {
         self.studentId = studentId
         self.studentName = studentName
         self.todayClass = todayClass
         self.stats = stats
+        self.graduation = graduation
     }
 
     /// Copy with the hero flipped and the stats refreshed (post-check-in).
+    /// A fresh check-in also bumps the graduation progress numerator (one
+    /// more active lesson since the last award); duplicates don't.
     public func applying(_ result: CheckinResult) -> AlunoHome {
         let flipped = todayClass.map {
             AlunoTodayClass(classId: $0.classId, className: $0.className, slot: $0.slot, checkedIn: true)
         }
-        return AlunoHome(studentId: studentId, studentName: studentName, todayClass: flipped, stats: result.stats)
+        let bumped = graduation.map { card in
+            result.status == .checkedIn
+                ? AlunoHomeGraduation(belt: card.belt, progress: card.progress.addingLesson())
+                : card
+        }
+        return AlunoHome(
+            studentId: studentId,
+            studentName: studentName,
+            todayClass: flipped,
+            stats: result.stats,
+            graduation: bumped
+        )
     }
 }
 
@@ -277,14 +300,17 @@ public struct RollCallRow: Sendable, Equatable, Identifiable {
     public let studentId: UUID
     public let fullName: String
     public let attendance: RollCallAttendance?
+    /// Derived current belt (GRD.6 belt exposure) — nil pre-graduation-slice.
+    public let belt: BeltView?
 
     public var id: UUID { studentId }
     public var present: Bool { attendance != nil }
 
-    public init(studentId: UUID, fullName: String, attendance: RollCallAttendance?) {
+    public init(studentId: UUID, fullName: String, attendance: RollCallAttendance?, belt: BeltView? = nil) {
         self.studentId = studentId
         self.fullName = fullName
         self.attendance = attendance
+        self.belt = belt
     }
 }
 

@@ -118,9 +118,22 @@ struct RollCallRowView: View {
     var body: some View {
         HStack(spacing: LumiraTokens.Space.s3) {
             AttendanceAvatar(initials: NameInitials.from(row.fullName))
-            Text(row.fullName)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(row.fullName)
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                // Derived belt (spec 005 — the Phase-4 chip deferral).
+                if let belt = row.belt {
+                    BeltBar(
+                        colorSlug: belt.colorSlug,
+                        tipColorSlug: belt.tipColorSlug,
+                        degrees: belt.degrees,
+                        maxDegrees: belt.maxDegrees,
+                        size: .sm
+                    )
+                    .frame(width: 44)
+                }
+            }
             Spacer()
             if let marker = row.attendance?.method.markerLabelPTBR {
                 AttendanceChip(text: marker, style: .brand)
