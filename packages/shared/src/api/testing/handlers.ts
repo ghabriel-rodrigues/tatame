@@ -13,6 +13,7 @@ import { makeAuthSession, makeMeResponse, type MeFixtureOptions, type SessionFix
 import { makeEnrollmentRegistry, type EnrollmentRegistryFixture } from './enrollment-fixtures.js';
 import { makeGraduationRules } from './graduation-fixtures.js';
 import { makeAdminOverview, makePlanCatalog, makeRepasses } from './billing-fixtures.js';
+import { makeAdminCalendar, type CalendarResponse } from './agenda-fixtures.js';
 import type {
   AcademyPlan,
   AdminBillingOverview,
@@ -189,6 +190,17 @@ export function repassesHandlers(data?: RepassesResponse) {
   const body = data ?? makeRepasses();
   return [
     http.get('/v1/platform/billing/repasses', ({ response }) => response(200).json(body)),
+  ];
+}
+
+/**
+ * Happy-path handler for the admin console calendar (AGD.4, spec 007) —
+ * admin-14-faithful weekday recurrence buckets, `events` always empty.
+ */
+export function adminCalendarHandlers(data?: CalendarResponse) {
+  const body = data ?? makeAdminCalendar();
+  return [
+    http.get('/v1/admin/calendar', ({ response }) => response(200).json(body)),
   ];
 }
 
