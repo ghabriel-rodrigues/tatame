@@ -56,6 +56,34 @@ export class CreateStudentDto {
   @IsOptional()
   @IsUUID()
   initialBeltId?: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Mensalidade plan assignment (spec 006): must be an active plan of this academy — ' +
+      'dangling → 404 plan.not_found, archived → 409 plan.archived.',
+  })
+  @IsOptional()
+  @IsUUID()
+  academyPlanId?: string;
+}
+
+/**
+ * Student edit (spec 006 extends the name-only Phase-3 edit additively):
+ * `academyPlanId` null unassigns the plan; an archived plan refuses NEW
+ * assignment.
+ */
+export class UpdateStudentDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  fullName?: string;
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true, type: String })
+  @IsOptional()
+  @IsUUID()
+  academyPlanId?: string | null;
 }
 
 export class CreateGuardianDto {

@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { MensalidadeAlertDto } from '../../billing/dto/responses.dto.js';
 import { ScheduleSlotViewDto } from '../../enrollment/dto/responses.dto.js';
 import { BeltViewDto, GraduationProgressDto } from '../../graduation/dto/belt.dto.js';
 
@@ -120,6 +121,14 @@ export class AlunoHomeResponseDto {
     description: 'Derived belt + progress against the academy rule (GRD.7)',
   })
   graduation?: AlunoHomeGraduationDto;
+
+  @ApiPropertyOptional({
+    type: MensalidadeAlertDto,
+    nullable: true,
+    description:
+      'Real "mensalidade em aberto" alert (spec 006) deep-linking into the Carteira; null = nothing open',
+  })
+  mensalidade!: MensalidadeAlertDto | null;
 }
 
 export class LiveSessionDto {

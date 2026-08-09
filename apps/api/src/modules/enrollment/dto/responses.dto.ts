@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { MensalidadeAlertDto } from '../../billing/dto/responses.dto.js';
 import { BeltRefDto, BeltViewDto } from '../../graduation/dto/belt.dto.js';
 
 /**
@@ -48,6 +49,14 @@ export class StudentListItemDto {
 
   @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
   belt?: BeltViewDto;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    type: String,
+    description: 'Assigned mensalidade plan (spec 006) — what materialization charges',
+  })
+  academyPlanId?: string | null;
 }
 
 export class StudentListResponseDto {
@@ -287,6 +296,13 @@ export class DependentDetailDto {
     description: 'Derived current belt (GRD.6, story 34) — the dependent-card BeltBar',
   })
   belt?: BeltViewDto;
+
+  @ApiPropertyOptional({
+    type: MensalidadeAlertDto,
+    nullable: true,
+    description: 'Dependent-card mensalidade alert fed by real charge data (spec 006); null = nothing open',
+  })
+  mensalidade!: MensalidadeAlertDto | null;
 }
 
 export class DependentListResponseDto {

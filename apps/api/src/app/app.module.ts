@@ -13,6 +13,7 @@ import { AppConfigModule } from '../infra/config/config.module.js';
 import { DbModule } from '../infra/db/db.module.js';
 import { NotificationsModule } from '../infra/notifications/notifications.module.js';
 import { AttendanceModule } from '../modules/attendance/attendance.module.js';
+import { BillingModule } from '../modules/billing/billing.module.js';
 import { EnrollmentModule } from '../modules/enrollment/enrollment.module.js';
 import { GraduationModule } from '../modules/graduation/graduation.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
@@ -51,6 +52,7 @@ function flattenValidationErrors(
     EnrollmentModule,
     AttendanceModule,
     GraduationModule,
+    BillingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

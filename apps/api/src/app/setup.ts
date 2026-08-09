@@ -31,6 +31,7 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       .addTag('professor')
       .addTag('aluno')
       .addTag('responsavel')
+      .addTag('billing')
       .addTag('platform')
       .build(),
   );

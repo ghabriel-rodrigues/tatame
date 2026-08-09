@@ -342,8 +342,8 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Name-only edit (design backlog: multi-field editing not designed) */
-        patch: operations["AdminStudentsController_rename_v1"];
+        /** Edit name and/or mensalidade plan assignment (spec 006 additive extension) */
+        patch: operations["AdminStudentsController_update_v1"];
         trace?: never;
     };
     "/v1/admin/students/{id}/archive": {
@@ -1063,6 +1063,278 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/aluno/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Carteira: plan header, current mensalidade, recurrence banner, histórico
+         * @description Money-displaying entry point — runs the idempotent current-cycle materialization for the caller before reading. No assigned plan → clean empty state (billing never invents money).
+         */
+        get: operations["AlunoWalletController_getWallet_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/wallet/charges/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open a settlement attempt (pix / boleto / cartão + recurrence toggle)
+         * @description Pix/boleto return the render-ready provider payload and stay pending until "Simular pagamento" (or the future webhook); cartão settles inline through the normalized-event handler. The recurrence toggle creates the card mandate in the same gesture.
+         */
+        post: operations["AlunoWalletController_pay_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/aluno/wallet/mandate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Cancelar recorrência no cartão (audited; 404 when none active) */
+        delete: operations["AlunoWalletController_cancelMandate_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Per-dependent mensalidade cards + consolidated histórico
+         * @description Money-displaying entry point — materializes the current cycle for the caller’s dependents before reading.
+         */
+        get: operations["ResponsavelPaymentsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/responsavel/payments/charges/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pay a dependent’s charge (same methods as the aluno sheet)
+         * @description The charge must be billed to the calling guardian (bill-to). Card recurrence opt-in creates the mandate with the responsável as payer.
+         */
+        post: operations["ResponsavelPaymentsController_pay_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/payments/{id}/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Simular pagamento — settles a pending attempt instantly
+         * @description Exists ONLY when the simulated provider is configured (404 otherwise — a driver affordance, never a production backdoor). Synthesizes `payment.succeeded` through the exact normalized-event handler the Stripe webhook will use.
+         */
+        post: operations["BillingSharedController_simulate_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/payments/{id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Comprovante data for a settled payment
+         * @description Aluno sees their own, responsável their dependents’, admin any tenant payment. Unsettled or foreign payments are 404 — no existence leak.
+         */
+        get: operations["BillingSharedController_receipt_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visão financeira: receita mês/ano, previsão, inadimplência %, série, vencimentos
+         * @description Runs the tenant-wide idempotent materialization pass first, so previsão reflects every plan — not just wallets already opened. All aggregates derived on read, tenant timezone.
+         */
+        get: operations["AdminBillingController_getOverview_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/charges/materialize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Materialize the current cycle tenant-wide on demand (audited)
+         * @description The ops lever and the test seam — same idempotent pass as the on-read entry points.
+         */
+        post: operations["AdminBillingController_materialize_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/payments/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Full refund of a settled payment via the provider path (audited)
+         * @description Corrects a wrong charge through the provider port, never by editing rows: the driver emits `payment.refunded` through the normalized handler (payment + charge flip refunded).
+         */
+        post: operations["AdminBillingController_refund_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plan catalog including archived (soft-archive is a filter, not a delete) */
+        get: operations["AdminPlansController_list_v1"];
+        put?: never;
+        /**
+         * Novo plano (nome, valor em centavos, recorrência chip, vencimento chip)
+         * @description Duplicate name in the academy → 409 `plan.name_taken` (UNIQUE tenant+name).
+         */
+        post: operations["AdminPlansController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit a plan (existing charges keep their issued amounts) */
+        patch: operations["AdminPlansController_update_v1"];
+        trace?: never;
+    };
+    "/v1/admin/billing/plans/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Soft archive: refuses new assignment, history stays intact (never hard-delete) */
+        post: operations["AdminPlansController_archive_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/billing/repasses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Repasse read model: gross − fee_bps = net, Retido on delinquent academies
+         * @description Pure query — no ledger writes, no money movement in v1. At the Stripe stage the same view reconciles Connect transfers/payouts and Retido becomes payout pausing.
+         */
+        get: operations["PlatformRepassesController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1390,6 +1662,11 @@ export interface components {
             classes: components["schemas"]["ClassRefDto"][];
             /** @description Derived current belt (GRD.6) */
             belt?: components["schemas"]["BeltViewDto"];
+            /**
+             * Format: uuid
+             * @description Assigned mensalidade plan (spec 006) — what materialization charges
+             */
+            academyPlanId?: string | null;
         };
         StudentListResponseDto: {
             students: components["schemas"]["StudentListItemDto"][];
@@ -1408,6 +1685,11 @@ export interface components {
              * @description Optional initial belt (transfer students, story 32): seeds one audited belt award. Left empty, the student starts white. Must be an enabled catalog belt.
              */
             initialBeltId?: string;
+            /**
+             * Format: uuid
+             * @description Mensalidade plan assignment (spec 006): must be an active plan of this academy — dangling → 404 plan.not_found, archived → 409 plan.archived.
+             */
+            academyPlanId?: string;
         };
         StudentResponseDto: {
             student: components["schemas"]["StudentListItemDto"];
@@ -1423,8 +1705,10 @@ export interface components {
             /** @description Every selected student — the move is atomic */
             movedStudentIds: string[];
         };
-        UpdateNameDto: {
-            fullName: string;
+        UpdateStudentDto: {
+            fullName?: string;
+            /** Format: uuid */
+            academyPlanId?: string | null;
         };
         GuardianListItemDto: {
             /** Format: uuid */
@@ -1448,6 +1732,9 @@ export interface components {
         };
         GuardianResponseDto: {
             guardian: components["schemas"]["GuardianListItemDto"];
+        };
+        UpdateNameDto: {
+            fullName: string;
         };
         ProfessorListItemDto: {
             /** Format: uuid */
@@ -1629,6 +1916,22 @@ export interface components {
             /** @description Next scheduled slot, server-derived */
             nextSlot: components["schemas"]["ScheduleSlotViewDto"] | null;
         };
+        MensalidadeAlertDto: {
+            /**
+             * Format: uuid
+             * @description Deep-link target: the Carteira charge
+             */
+            chargeId: string;
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @example 2026-08-10 */
+            dueDate: string;
+            /** @description Derived truth: past due (never the lazy status flip) */
+            overdue: boolean;
+            /** @example 2026-08-01 */
+            periodStart?: string | null;
+        };
         DependentDetailDto: {
             /** Format: uuid */
             id: string;
@@ -1641,6 +1944,8 @@ export interface components {
             class: components["schemas"]["DependentClassDto"] | null;
             /** @description Derived current belt (GRD.6, story 34) — the dependent-card BeltBar */
             belt?: components["schemas"]["BeltViewDto"];
+            /** @description Dependent-card mensalidade alert fed by real charge data (spec 006); null = nothing open */
+            mensalidade?: components["schemas"]["MensalidadeAlertDto"] | null;
         };
         DependentListResponseDto: {
             dependents: components["schemas"]["DependentDetailDto"][];
@@ -1775,6 +2080,8 @@ export interface components {
             stats: components["schemas"]["AlunoStatsDto"];
             /** @description Derived belt + progress against the academy rule (GRD.7) */
             graduation?: components["schemas"]["AlunoHomeGraduationDto"];
+            /** @description Real "mensalidade em aberto" alert (spec 006) deep-linking into the Carteira; null = nothing open */
+            mensalidade?: components["schemas"]["MensalidadeAlertDto"] | null;
         };
         LiveSessionDto: {
             /** Format: uuid */
@@ -2166,6 +2473,310 @@ export interface components {
             revocationId: string;
             /** @description Restored current belt after the reversal */
             belt: components["schemas"]["BeltViewDto"];
+        };
+        WalletStudentDto: {
+            /** Format: uuid */
+            id: string;
+            fullName: string;
+        };
+        PlanDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Mensal */
+            name: string;
+            /** @description Integer cents */
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @enum {string} */
+            recurrence: "monthly" | "quarterly" | "semiannual" | "yearly";
+            dueDay: number;
+            /** @description false = soft-archived (refuses new assignment) */
+            isActive: boolean;
+        };
+        PaymentDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            chargeId: string;
+            /** @enum {string} */
+            method: "pix" | "boleto" | "card";
+            /** @enum {string} */
+            status: "pending" | "succeeded" | "failed" | "refunded";
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @enum {string} */
+            provider: "simulated" | "stripe";
+            /** @description Render-ready provider snapshot: Pix `qrPayload`/`copiaECola`, boleto `linhaDigitavel`/`barcodePayload`, card brand/last4. */
+            providerData?: Record<string, never> | null;
+            /** Format: date-time */
+            paidAt?: string | null;
+            receiptUrl?: string | null;
+        };
+        ChargeWithPaymentsDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            guardianId?: string | null;
+            /** @enum {string} */
+            status: "open" | "paid" | "overdue" | "canceled" | "refunded";
+            /** @description Derived truth: open AND past due (never the lazy flip) */
+            overdue: boolean;
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @example 2026-08-10 */
+            dueDate: string;
+            /** @example 2026-08-01 */
+            periodStart?: string | null;
+            /** @example 2026-08-31 */
+            periodEnd?: string | null;
+            /** Format: uuid */
+            academyPlanId?: string | null;
+            payments: components["schemas"]["PaymentDto"][];
+        };
+        WalletRecurrenceDto: {
+            /** @description "Cobrança recorrente ativa" banner switch */
+            active: boolean;
+            /**
+             * @description Next cycle vencimento ("a próxima mensalidade chega em …")
+             * @example 2026-09-05
+             */
+            nextChargeDueDate?: string | null;
+        };
+        HistoryEntryDto: {
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            chargeId: string;
+            /** @example 2026-07-01 */
+            periodStart?: string | null;
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @enum {string} */
+            chargeStatus: "paid" | "refunded";
+            /** Format: uuid */
+            paymentId: string;
+            /** @enum {string} */
+            method: "pix" | "boleto" | "card";
+            /** Format: date-time */
+            paidAt?: string | null;
+            receiptUrl?: string | null;
+        };
+        WalletResponseDto: {
+            student: components["schemas"]["WalletStudentDto"];
+            /** @description Null = no assigned plan → clean empty state */
+            plan?: components["schemas"]["PlanDto"] | null;
+            currentCharge?: components["schemas"]["ChargeWithPaymentsDto"] | null;
+            recurrence: components["schemas"]["WalletRecurrenceDto"];
+            history: components["schemas"]["HistoryEntryDto"][];
+        };
+        CardDetailsDto: {
+            /** @description Nome impresso (display only) */
+            holderName?: string;
+            /** @description Display last4 (client-derived) */
+            last4?: string;
+        };
+        CreateChargePaymentDto: {
+            /** @enum {string} */
+            method: "pix" | "boleto" | "card";
+            /** @description "Usar este cartão na recorrência mensal" — card only (422 billing.method_mandate_mismatch otherwise); creates the mandate in the same gesture. */
+            recurrence?: boolean;
+            card?: components["schemas"]["CardDetailsDto"];
+        };
+        ChargeDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            guardianId?: string | null;
+            /** @enum {string} */
+            status: "open" | "paid" | "overdue" | "canceled" | "refunded";
+            /** @description Derived truth: open AND past due (never the lazy flip) */
+            overdue: boolean;
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @example 2026-08-10 */
+            dueDate: string;
+            /** @example 2026-08-01 */
+            periodStart?: string | null;
+            /** @example 2026-08-31 */
+            periodEnd?: string | null;
+            /** Format: uuid */
+            academyPlanId?: string | null;
+        };
+        PaymentCreatedResponseDto: {
+            payment: components["schemas"]["PaymentDto"];
+            charge: components["schemas"]["ChargeDto"];
+            /** @description True when the recurrence toggle created a mandate */
+            mandateCreated: boolean;
+        };
+        DependentPaymentsDto: {
+            /** Format: uuid */
+            studentId: string;
+            fullName: string;
+            plan?: components["schemas"]["PlanDto"] | null;
+            currentCharge?: components["schemas"]["ChargeWithPaymentsDto"] | null;
+            /** @description "Pago via recorrência no cartão" mandate switch */
+            recurrenceActive: boolean;
+        };
+        GuardianHistoryEntryDto: {
+            /** Format: uuid */
+            studentId: string;
+            /** Format: uuid */
+            chargeId: string;
+            /** @example 2026-07-01 */
+            periodStart?: string | null;
+            amountCents: number;
+            /** @example BRL */
+            currency: string;
+            /** @enum {string} */
+            chargeStatus: "paid" | "refunded";
+            /** Format: uuid */
+            paymentId: string;
+            /** @enum {string} */
+            method: "pix" | "boleto" | "card";
+            /** Format: date-time */
+            paidAt?: string | null;
+            receiptUrl?: string | null;
+            studentName: string;
+        };
+        GuardianPaymentsResponseDto: {
+            dependents: components["schemas"]["DependentPaymentsDto"][];
+            history: components["schemas"]["GuardianHistoryEntryDto"][];
+        };
+        SimulatePaymentResponseDto: {
+            payment: components["schemas"]["PaymentDto"];
+            charge: components["schemas"]["ChargeDto"];
+        };
+        ReceiptResponseDto: {
+            payment: components["schemas"]["PaymentDto"];
+            charge: components["schemas"]["ChargeDto"];
+            studentName: string;
+            planName?: string | null;
+            academyName?: string | null;
+        };
+        RevenueMonthDto: {
+            /** @example 2026-08 */
+            month: string;
+            totalCents: number;
+        };
+        UpcomingChargeDto: {
+            /** Format: uuid */
+            chargeId: string;
+            /** Format: uuid */
+            studentId: string;
+            studentName: string;
+            amountCents: number;
+            planName?: string | null;
+        };
+        UpcomingGroupDto: {
+            /** @example 2026-08-10 */
+            dueDate: string;
+            count: number;
+            totalCents: number;
+            charges: components["schemas"]["UpcomingChargeDto"][];
+        };
+        DelinquentStudentDto: {
+            /** Format: uuid */
+            studentId: string;
+            fullName: string;
+            totalCents: number;
+            /**
+             * @description Since when (oldest due date)
+             * @example 2026-07-05
+             */
+            oldestDueDate: string;
+            chargeCount: number;
+        };
+        MaterializationResultDto: {
+            /** @description Charges actually inserted by this pass */
+            created: number;
+            /** @description Charges lazily flipped open → overdue */
+            flippedOverdue: number;
+            /** @description Due charges auto-settled by active card mandates */
+            autoSettled: number;
+        };
+        AdminOverviewResponseDto: {
+            /** @example 2026-08 */
+            month: string;
+            receitaMesCents: number;
+            receitaAnoCents: number;
+            previsaoProximoMesCents: number;
+            /** @description By value: overdue-open ÷ current-month plan total (0-100) */
+            inadimplenciaPct: number;
+            /** @description Last 6 months incl. current */
+            series: components["schemas"]["RevenueMonthDto"][];
+            proximosVencimentos: components["schemas"]["UpcomingGroupDto"][];
+            inadimplentes: components["schemas"]["DelinquentStudentDto"][];
+            materialization: components["schemas"]["MaterializationResultDto"];
+        };
+        RefundPaymentDto: {
+            /** @description Estorno reason, recorded on the payment + audit */
+            reason?: string;
+        };
+        RefundResponseDto: {
+            payment: components["schemas"]["PaymentDto"];
+            charge: components["schemas"]["ChargeDto"];
+        };
+        PlanListResponseDto: {
+            plans: components["schemas"]["PlanDto"][];
+        };
+        CreatePlanDto: {
+            /** @example Mensal */
+            name: string;
+            /** @description Integer cents (R$ 180,00 = 18000) */
+            amountCents: number;
+            /** @enum {string} */
+            recurrence: "monthly" | "quarterly" | "semiannual" | "yearly";
+            /** @description Vencimento day — UI offers the handoff chips 5/10/15 */
+            dueDay: number;
+        };
+        PlanResponseDto: {
+            plan: components["schemas"]["PlanDto"];
+        };
+        UpdatePlanDto: {
+            /** @example Mensal */
+            name?: string;
+            amountCents?: number;
+            /** @enum {string} */
+            recurrence?: "monthly" | "quarterly" | "semiannual" | "yearly";
+            dueDay?: number;
+        };
+        RepasseTotalsDto: {
+            /** @description "assinaturas · mês" — live SaaS subscriptions */
+            subscriptionsMonthCents: number;
+            /** @description "taxa de pagamento" — current-period platform fees */
+            paymentFeesMonthCents: number;
+        };
+        RepasseRowDto: {
+            /** Format: uuid */
+            academyId: string;
+            academyName: string;
+            /** @example 2026-08 */
+            period: string;
+            /** @description Distinct students with settled payments in the period */
+            studentCount: number;
+            grossCents: number;
+            /** @description Platform take in basis points (fee_bps NULL → 0) */
+            feeBps: number;
+            feeCents: number;
+            /** @description gross − fee */
+            netCents: number;
+            /** @description Charter retention: delinquent academy ⇒ true */
+            withheld: boolean;
+            /** @enum {string} */
+            status: "repassado" | "em_transito" | "retido";
+        };
+        RepassesResponseDto: {
+            totals: components["schemas"]["RepasseTotalsDto"];
+            repasses: components["schemas"]["RepasseRowDto"][];
         };
     };
     responses: never;
@@ -2637,7 +3248,7 @@ export interface operations {
             };
         };
     };
-    AdminStudentsController_rename_v1: {
+    AdminStudentsController_update_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2648,7 +3259,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateNameDto"];
+                "application/json": components["schemas"]["UpdateStudentDto"];
             };
         };
         responses: {
@@ -3712,6 +4323,323 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentNoteResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoWalletController_getWallet_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoWalletController_pay_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChargePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoWalletController_cancelMandate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ResponsavelPaymentsController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuardianPaymentsResponseDto"];
+                };
+            };
+        };
+    };
+    ResponsavelPaymentsController_pay_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChargePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
+                };
+            };
+        };
+    };
+    BillingSharedController_simulate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulatePaymentResponseDto"];
+                };
+            };
+        };
+    };
+    BillingSharedController_receipt_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptResponseDto"];
+                };
+            };
+        };
+    };
+    AdminBillingController_getOverview_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOverviewResponseDto"];
+                };
+            };
+        };
+    };
+    AdminBillingController_materialize_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterializationResultDto"];
+                };
+            };
+        };
+    };
+    AdminBillingController_refund_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundPaymentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanListResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePlanDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePlanDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanResponseDto"];
+                };
+            };
+        };
+    };
+    AdminPlansController_archive_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformRepassesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepassesResponseDto"];
                 };
             };
         };

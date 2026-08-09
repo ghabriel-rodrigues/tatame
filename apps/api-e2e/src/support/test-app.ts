@@ -18,6 +18,7 @@ import {
   createFreshDb,
   DEV_PASSWORD,
   seedBeltCatalog,
+  seedBillingFixtures,
   seedDevFixtures,
   seedPlatformPlans,
   testAdminUrl,
@@ -53,7 +54,10 @@ export interface TestApp {
  * Only the NotificationPort is overridden — with a recorder, so reset-token
  * emails can be asserted without any network.
  */
-export async function createTestApp(): Promise<TestApp> {
+export async function createTestApp(overrides?: {
+  /** Extra env for this app boot (e.g. PAYMENTS_PROVIDER=stripe gating). */
+  env?: Record<string, string>;
+}): Promise<TestApp> {
   const fresh: FreshDb = await createFreshDb(testAdminUrl());
   const appDb = createAppDb(fresh.url);
   const platformDb = createPlatformDb(fresh.url);
@@ -62,11 +66,19 @@ export async function createTestApp(): Promise<TestApp> {
   // histories resolve belts from it (spec 005).
   await seedBeltCatalog(platformDb.db);
   await seedDevFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+  // Billing fixtures (spec 006, BIL.5): plan catalog, charge histories,
+  // mandates, and the charlie-fc delinquent academy (repasse retention).
+  await seedBillingFixtures({ appDb: appDb.db, platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;
   process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';
   process.env['NODE_ENV'] = 'test';
   delete process.env['RESEND_API_KEY']; // never depend on network in tests
+  // Deterministic driver unless a spec overrides it (env-swap gating test).
+  process.env['PAYMENTS_PROVIDER'] = overrides?.env?.['PAYMENTS_PROVIDER'] ?? 'simulated';
+  for (const [key, value] of Object.entries(overrides?.env ?? {})) {
+    process.env[key] = value;
+  }
 
   const sentEmails: PasswordResetNotification[] = [];
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })

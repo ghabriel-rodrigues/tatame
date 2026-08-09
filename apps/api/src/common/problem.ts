@@ -41,6 +41,16 @@ export const ErrorCodes = {
   GRADUATION_ALREADY_REVERSED: 'graduation.already_reversed',
   GRADUATION_LESSONS_BELOW_MINIMUM: 'graduation.lessons_below_minimum',
   GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT: 'graduation.cannot_disable_non_kids_belt',
+  // billing (spec 006)
+  BILLING_CHARGE_NOT_PAYABLE: 'billing.charge_not_payable',
+  BILLING_METHOD_MANDATE_MISMATCH: 'billing.method_mandate_mismatch',
+  BILLING_MANDATE_ALREADY_ACTIVE: 'billing.mandate_already_active',
+  BILLING_REFUND_UNSETTLED: 'billing.refund_unsettled',
+  /** Reserved for non-hidden gating; the simulate route is 404 by default. */
+  BILLING_SIMULATE_UNAVAILABLE: 'billing.simulate_unavailable',
+  PLAN_NOT_FOUND: 'plan.not_found',
+  PLAN_ARCHIVED: 'plan.archived',
+  PLAN_NAME_TAKEN: 'plan.name_taken',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',

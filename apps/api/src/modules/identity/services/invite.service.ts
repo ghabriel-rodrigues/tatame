@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
-import { classes, invites, withTenant, type DbHandle } from '@tatame/db';
+import { academyPlans, classes, invites, withTenant, type DbHandle } from '@tatame/db';
 import { eq } from 'drizzle-orm';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AuthContext } from '../../../common/auth-context.js';
@@ -100,6 +100,22 @@ export class InviteService {
         }
         if (bound[0].status !== 'active') {
           throw problem(409, ErrorCodes.CLASS_ARCHIVED, 'Cannot bind an invite to an archived class');
+        }
+      }
+      // Spec 006 (BIL.10, closes the Phase-1/3 stub): the composite tenant FK
+      // now makes dead/foreign plan bindings impossible at the constraint
+      // level; this pre-check turns the violation into a clean problem
+      // (plan.not_found / plan.archived) instead of a 500.
+      if (input.academyPlanId) {
+        const plan = await tx
+          .select({ id: academyPlans.id, isActive: academyPlans.isActive })
+          .from(academyPlans)
+          .where(eq(academyPlans.id, input.academyPlanId));
+        if (!plan[0]) {
+          throw problem(404, ErrorCodes.PLAN_NOT_FOUND, 'Plan not found in this academy');
+        }
+        if (!plan[0].isActive) {
+          throw problem(409, ErrorCodes.PLAN_ARCHIVED, 'Cannot bind an invite to an archived plan');
         }
       }
       await tx.insert(invites).values({

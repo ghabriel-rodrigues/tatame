@@ -19,6 +19,7 @@ import { GraduationProgressService } from '../../graduation/services/graduation-
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
 import type { BeltView, ProgressView } from '../../graduation/graduation.types.js';
 import { nextSlot, normalizeTime, type ScheduleSlotView } from '../../enrollment/lib/derive.js';
+import { mensalidadeAlerts, type MensalidadeAlert } from '../../billing/lib/alerts.js';
 import { localDate, localMonthStart, localWeekday } from '../lib/time.js';
 import { SessionService } from './session.service.js';
 
@@ -49,6 +50,13 @@ export interface AlunoHome {
    * change; `stats.totalLessons` stays for the lifetime tile).
    */
   graduation: { belt: BeltView; progress: ProgressView };
+  /**
+   * "Mensalidade em aberto" alert (spec 006, BIL.8) — fed by REAL charge
+   * data (open plan charge, overdue by predicate), deep-linking into the
+   * Carteira. Null = nothing open (paid up or no plan): the design's
+   * placeholder finally tells the truth.
+   */
+  mensalidade: MensalidadeAlert | null;
 }
 
 export interface ProfessorDashboard {
@@ -287,7 +295,10 @@ export class StatsService {
         belt: state.belt,
         progress: await this.graduationProgress.progressFor(tx, student.id, state),
       };
-      return { student, todayClass, stats, graduation };
+      // Real mensalidade-em-aberto alert (spec 006) — pure predicate read,
+      // no materialization side effects at the home entry point.
+      const alerts = await mensalidadeAlerts(tx, [student.id], localDate(now));
+      return { student, todayClass, stats, graduation, mensalidade: alerts.get(student.id) ?? null };
     });
     home.stats = await this.applyGamificationToggle(ctx.tenantId, home.stats);
     return home;

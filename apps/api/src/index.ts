@@ -14,6 +14,7 @@ export {
   ACADEMY_ROLES,
   PLATFORM_ROLES,
   ANY_ROLE_KEY,
+  BYPASS_READ_ONLY_KEY,
   PUBLIC_KEY,
   ROLES_KEY,
 } from './common/decorators.js';
@@ -26,3 +27,18 @@ export { LiveRoomRegistry } from './modules/attendance/realtime/live-room.regist
 export { REFRESH_COOKIE } from './modules/identity/controllers/auth.controller.js';
 export { AcademyStatusService } from './modules/identity/services/academy-status.service.js';
 export { PermissionsService } from './modules/identity/services/permissions.service.js';
+// Billing seam (spec 006) — e2e contract tests pin the normalized-event
+// handler so the Stripe swap stays a driver-only PR.
+export {
+  PAYMENT_PROVIDER_PORT,
+  type PaymentProviderPort,
+  type ProviderEvent,
+} from './infra/payments/payment-provider.port.js';
+export { ProviderEventsService } from './modules/billing/services/provider-events.service.js';
+export { MaterializationService } from './modules/billing/services/materialization.service.js';
+export {
+  BILLING_CHARGE_CREATED,
+  BILLING_CHARGE_OVERDUE,
+  BILLING_CHARGE_PAID,
+  BILLING_CHARGE_REFUNDED,
+} from './modules/billing/billing.events.js';

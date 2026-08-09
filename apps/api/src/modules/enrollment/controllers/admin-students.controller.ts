@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Que
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
-import { CreateStudentDto, MoveStudentsDto, StatusFilterQueryDto, UpdateNameDto } from '../dto/requests.dto.js';
+import { CreateStudentDto, MoveStudentsDto, StatusFilterQueryDto, UpdateStudentDto } from '../dto/requests.dto.js';
 import {
   MoveStudentsResponseDto,
   StudentListResponseDto,
@@ -51,11 +51,13 @@ export class AdminStudentsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Name-only edit (design backlog: multi-field editing not designed)' })
+  @ApiOperation({
+    summary: 'Edit name and/or mensalidade plan assignment (spec 006 additive extension)',
+  })
   @ApiOkResponse({ type: StudentResponseDto })
-  async rename(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateNameDto) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateStudentDto) {
     const ctx = requireTenantContext(this.cls);
-    return { student: await this.registry.updateStudentName(ctx, id, dto.fullName) };
+    return { student: await this.registry.updateStudent(ctx, id, dto) };
   }
 
   @Post(':id/archive')

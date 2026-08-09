@@ -691,7 +691,7 @@
     },
     "/v1/admin/students/{id}": {
       "patch": {
-        "operationId": "AdminStudentsController_rename_v1",
+        "operationId": "AdminStudentsController_update_v1",
         "parameters": [
           {
             "name": "id",
@@ -707,7 +707,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateNameDto"
+                "$ref": "#/components/schemas/UpdateStudentDto"
               }
             }
           }
@@ -729,7 +729,7 @@
             "bearer": []
           }
         ],
-        "summary": "Name-only edit (design backlog: multi-field editing not designed)",
+        "summary": "Edit name and/or mensalidade plan assignment (spec 006 additive extension)",
         "tags": [
           "admin"
         ]
@@ -2531,6 +2531,526 @@
           "admin"
         ]
       }
+    },
+    "/v1/aluno/wallet": {
+      "get": {
+        "description": "Money-displaying entry point — runs the idempotent current-cycle materialization for the caller before reading. No assigned plan → clean empty state (billing never invents money).",
+        "operationId": "AlunoWalletController_getWallet_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Carteira: plan header, current mensalidade, recurrence banner, histórico",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/aluno/wallet/charges/{id}/payments": {
+      "post": {
+        "description": "Pix/boleto return the render-ready provider payload and stay pending until \"Simular pagamento\" (or the future webhook); cartão settles inline through the normalized-event handler. The recurrence toggle creates the card mandate in the same gesture.",
+        "operationId": "AlunoWalletController_pay_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChargePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentCreatedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Open a settlement attempt (pix / boleto / cartão + recurrence toggle)",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/aluno/wallet/mandate": {
+      "delete": {
+        "operationId": "AlunoWalletController_cancelMandate_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar recorrência no cartão (audited; 404 when none active)",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
+    "/v1/responsavel/payments": {
+      "get": {
+        "description": "Money-displaying entry point — materializes the current cycle for the caller’s dependents before reading.",
+        "operationId": "ResponsavelPaymentsController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuardianPaymentsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Per-dependent mensalidade cards + consolidated histórico",
+        "tags": [
+          "responsavel"
+        ]
+      }
+    },
+    "/v1/responsavel/payments/charges/{id}/payments": {
+      "post": {
+        "description": "The charge must be billed to the calling guardian (bill-to). Card recurrence opt-in creates the mandate with the responsável as payer.",
+        "operationId": "ResponsavelPaymentsController_pay_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChargePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentCreatedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pay a dependent’s charge (same methods as the aluno sheet)",
+        "tags": [
+          "responsavel"
+        ]
+      }
+    },
+    "/v1/billing/payments/{id}/simulate": {
+      "post": {
+        "description": "Exists ONLY when the simulated provider is configured (404 otherwise — a driver affordance, never a production backdoor). Synthesizes `payment.succeeded` through the exact normalized-event handler the Stripe webhook will use.",
+        "operationId": "BillingSharedController_simulate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulatePaymentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Simular pagamento — settles a pending attempt instantly",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/billing/payments/{id}/receipt": {
+      "get": {
+        "description": "Aluno sees their own, responsável their dependents’, admin any tenant payment. Unsettled or foreign payments are 404 — no existence leak.",
+        "operationId": "BillingSharedController_receipt_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Comprovante data for a settled payment",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/v1/admin/billing/overview": {
+      "get": {
+        "description": "Runs the tenant-wide idempotent materialization pass first, so previsão reflects every plan — not just wallets already opened. All aggregates derived on read, tenant timezone.",
+        "operationId": "AdminBillingController_getOverview_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverviewResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Visão financeira: receita mês/ano, previsão, inadimplência %, série, vencimentos",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/billing/charges/materialize": {
+      "post": {
+        "description": "The ops lever and the test seam — same idempotent pass as the on-read entry points.",
+        "operationId": "AdminBillingController_materialize_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaterializationResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Materialize the current cycle tenant-wide on demand (audited)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/billing/payments/{id}/refund": {
+      "post": {
+        "description": "Corrects a wrong charge through the provider port, never by editing rows: the driver emits `payment.refunded` through the normalized handler (payment + charge flip refunded).",
+        "operationId": "AdminBillingController_refund_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Full refund of a settled payment via the provider path (audited)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/billing/plans": {
+      "get": {
+        "operationId": "AdminPlansController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Plan catalog including archived (soft-archive is a filter, not a delete)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "description": "Duplicate name in the academy → 409 `plan.name_taken` (UNIQUE tenant+name).",
+        "operationId": "AdminPlansController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Novo plano (nome, valor em centavos, recorrência chip, vencimento chip)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/billing/plans/{id}": {
+      "patch": {
+        "operationId": "AdminPlansController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit a plan (existing charges keep their issued amounts)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/billing/plans/{id}/archive": {
+      "post": {
+        "operationId": "AdminPlansController_archive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft archive: refuses new assignment, history stays intact (never hard-delete)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/platform/billing/repasses": {
+      "get": {
+        "description": "Pure query — no ledger writes, no money movement in v1. At the Stripe stage the same view reconciles Connect transfers/payouts and Retido becomes payout pausing.",
+        "operationId": "PlatformRepassesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepassesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Repasse read model: gross − fee_bps = net, Retido on delinquent academies",
+        "tags": [
+          "platform"
+        ]
+      }
     }
   },
   "info": {
@@ -2566,6 +3086,10 @@
     },
     {
       "name": "responsavel",
+      "description": ""
+    },
+    {
+      "name": "billing",
       "description": ""
     },
     {
@@ -3555,6 +4079,12 @@
                 "$ref": "#/components/schemas/BeltViewDto"
               }
             ]
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Assigned mensalidade plan (spec 006) — what materialization charges"
           }
         },
         "required": [
@@ -3601,6 +4131,11 @@
             "type": "string",
             "format": "uuid",
             "description": "Optional initial belt (transfer students, story 32): seeds one audited belt award. Left empty, the student starts white. Must be an enabled catalog belt."
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Mensalidade plan assignment (spec 006): must be an active plan of this academy — dangling → 404 plan.not_found, archived → 409 plan.archived."
           }
         },
         "required": [
@@ -3660,16 +4195,18 @@
           "movedStudentIds"
         ]
       },
-      "UpdateNameDto": {
+      "UpdateStudentDto": {
         "type": "object",
         "properties": {
           "fullName": {
             "type": "string"
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           }
-        },
-        "required": [
-          "fullName"
-        ]
+        }
       },
       "GuardianListItemDto": {
         "type": "object",
@@ -3755,6 +4292,17 @@
         },
         "required": [
           "guardian"
+        ]
+      },
+      "UpdateNameDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fullName"
         ]
       },
       "ProfessorListItemDto": {
@@ -4315,6 +4863,43 @@
           "nextSlot"
         ]
       },
+      "MensalidadeAlertDto": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Deep-link target: the Carteira charge"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-08-10"
+          },
+          "overdue": {
+            "type": "boolean",
+            "description": "Derived truth: past due (never the lazy status flip)"
+          },
+          "periodStart": {
+            "type": "string",
+            "example": "2026-08-01",
+            "nullable": true
+          }
+        },
+        "required": [
+          "chargeId",
+          "amountCents",
+          "currency",
+          "dueDate",
+          "overdue"
+        ]
+      },
       "DependentDetailDto": {
         "type": "object",
         "properties": {
@@ -4351,6 +4936,16 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/BeltViewDto"
+              }
+            ]
+          },
+          "mensalidade": {
+            "nullable": true,
+            "description": "Dependent-card mensalidade alert fed by real charge data (spec 006); null = nothing open",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MensalidadeAlertDto"
               }
             ]
           }
@@ -4762,6 +5357,16 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/AlunoHomeGraduationDto"
+              }
+            ]
+          },
+          "mensalidade": {
+            "nullable": true,
+            "description": "Real \"mensalidade em aberto\" alert (spec 006) deep-linking into the Carteira; null = nothing open",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MensalidadeAlertDto"
               }
             ]
           }
@@ -5920,6 +6525,1006 @@
           "graduationId",
           "revocationId",
           "belt"
+        ]
+      },
+      "WalletStudentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "fullName"
+        ]
+      },
+      "PlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Mensal"
+          },
+          "amountCents": {
+            "type": "number",
+            "description": "Integer cents"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "quarterly",
+              "semiannual",
+              "yearly"
+            ]
+          },
+          "dueDay": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "false = soft-archived (refuses new assignment)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "amountCents",
+          "currency",
+          "recurrence",
+          "dueDay",
+          "isActive"
+        ]
+      },
+      "PaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "pix",
+              "boleto",
+              "card"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "succeeded",
+              "failed",
+              "refunded"
+            ]
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "stripe"
+            ]
+          },
+          "providerData": {
+            "type": "object",
+            "nullable": true,
+            "description": "Render-ready provider snapshot: Pix `qrPayload`/`copiaECola`, boleto `linhaDigitavel`/`barcodePayload`, card brand/last4."
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "receiptUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "chargeId",
+          "method",
+          "status",
+          "amountCents",
+          "currency",
+          "provider"
+        ]
+      },
+      "ChargeWithPaymentsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "guardianId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "paid",
+              "overdue",
+              "canceled",
+              "refunded"
+            ]
+          },
+          "overdue": {
+            "type": "boolean",
+            "description": "Derived truth: open AND past due (never the lazy flip)"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-08-10"
+          },
+          "periodStart": {
+            "type": "string",
+            "example": "2026-08-01",
+            "nullable": true
+          },
+          "periodEnd": {
+            "type": "string",
+            "example": "2026-08-31",
+            "nullable": true
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "studentId",
+          "status",
+          "overdue",
+          "amountCents",
+          "currency",
+          "dueDate",
+          "payments"
+        ]
+      },
+      "WalletRecurrenceDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "description": "\"Cobrança recorrente ativa\" banner switch"
+          },
+          "nextChargeDueDate": {
+            "type": "string",
+            "example": "2026-09-05",
+            "nullable": true,
+            "description": "Next cycle vencimento (\"a próxima mensalidade chega em …\")"
+          }
+        },
+        "required": [
+          "active"
+        ]
+      },
+      "HistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "periodStart": {
+            "type": "string",
+            "example": "2026-07-01",
+            "nullable": true
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "chargeStatus": {
+            "type": "string",
+            "enum": [
+              "paid",
+              "refunded"
+            ]
+          },
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "pix",
+              "boleto",
+              "card"
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "receiptUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "studentId",
+          "chargeId",
+          "amountCents",
+          "currency",
+          "chargeStatus",
+          "paymentId",
+          "method"
+        ]
+      },
+      "WalletResponseDto": {
+        "type": "object",
+        "properties": {
+          "student": {
+            "$ref": "#/components/schemas/WalletStudentDto"
+          },
+          "plan": {
+            "nullable": true,
+            "description": "Null = no assigned plan → clean empty state",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlanDto"
+              }
+            ]
+          },
+          "currentCharge": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChargeWithPaymentsDto"
+              }
+            ]
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/WalletRecurrenceDto"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryEntryDto"
+            }
+          }
+        },
+        "required": [
+          "student",
+          "recurrence",
+          "history"
+        ]
+      },
+      "CardDetailsDto": {
+        "type": "object",
+        "properties": {
+          "holderName": {
+            "type": "string",
+            "description": "Nome impresso (display only)"
+          },
+          "last4": {
+            "type": "string",
+            "description": "Display last4 (client-derived)"
+          }
+        }
+      },
+      "CreateChargePaymentDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "pix",
+              "boleto",
+              "card"
+            ]
+          },
+          "recurrence": {
+            "type": "boolean",
+            "description": "\"Usar este cartão na recorrência mensal\" — card only (422 billing.method_mandate_mismatch otherwise); creates the mandate in the same gesture."
+          },
+          "card": {
+            "$ref": "#/components/schemas/CardDetailsDto"
+          }
+        },
+        "required": [
+          "method"
+        ]
+      },
+      "ChargeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "guardianId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "paid",
+              "overdue",
+              "canceled",
+              "refunded"
+            ]
+          },
+          "overdue": {
+            "type": "boolean",
+            "description": "Derived truth: open AND past due (never the lazy flip)"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-08-10"
+          },
+          "periodStart": {
+            "type": "string",
+            "example": "2026-08-01",
+            "nullable": true
+          },
+          "periodEnd": {
+            "type": "string",
+            "example": "2026-08-31",
+            "nullable": true
+          },
+          "academyPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "studentId",
+          "status",
+          "overdue",
+          "amountCents",
+          "currency",
+          "dueDate"
+        ]
+      },
+      "PaymentCreatedResponseDto": {
+        "type": "object",
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/PaymentDto"
+          },
+          "charge": {
+            "$ref": "#/components/schemas/ChargeDto"
+          },
+          "mandateCreated": {
+            "type": "boolean",
+            "description": "True when the recurrence toggle created a mandate"
+          }
+        },
+        "required": [
+          "payment",
+          "charge",
+          "mandateCreated"
+        ]
+      },
+      "DependentPaymentsDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "plan": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlanDto"
+              }
+            ]
+          },
+          "currentCharge": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChargeWithPaymentsDto"
+              }
+            ]
+          },
+          "recurrenceActive": {
+            "type": "boolean",
+            "description": "\"Pago via recorrência no cartão\" mandate switch"
+          }
+        },
+        "required": [
+          "studentId",
+          "fullName",
+          "recurrenceActive"
+        ]
+      },
+      "GuardianHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "periodStart": {
+            "type": "string",
+            "example": "2026-07-01",
+            "nullable": true
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "example": "BRL"
+          },
+          "chargeStatus": {
+            "type": "string",
+            "enum": [
+              "paid",
+              "refunded"
+            ]
+          },
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "pix",
+              "boleto",
+              "card"
+            ]
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "receiptUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "studentName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "studentId",
+          "chargeId",
+          "amountCents",
+          "currency",
+          "chargeStatus",
+          "paymentId",
+          "method",
+          "studentName"
+        ]
+      },
+      "GuardianPaymentsResponseDto": {
+        "type": "object",
+        "properties": {
+          "dependents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DependentPaymentsDto"
+            }
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuardianHistoryEntryDto"
+            }
+          }
+        },
+        "required": [
+          "dependents",
+          "history"
+        ]
+      },
+      "SimulatePaymentResponseDto": {
+        "type": "object",
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/PaymentDto"
+          },
+          "charge": {
+            "$ref": "#/components/schemas/ChargeDto"
+          }
+        },
+        "required": [
+          "payment",
+          "charge"
+        ]
+      },
+      "ReceiptResponseDto": {
+        "type": "object",
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/PaymentDto"
+          },
+          "charge": {
+            "$ref": "#/components/schemas/ChargeDto"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "planName": {
+            "type": "string",
+            "nullable": true
+          },
+          "academyName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "payment",
+          "charge",
+          "studentName"
+        ]
+      },
+      "RevenueMonthDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "totalCents": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "month",
+          "totalCents"
+        ]
+      },
+      "UpcomingChargeDto": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "planName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "chargeId",
+          "studentId",
+          "studentName",
+          "amountCents"
+        ]
+      },
+      "UpcomingGroupDto": {
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "example": "2026-08-10"
+          },
+          "count": {
+            "type": "number"
+          },
+          "totalCents": {
+            "type": "number"
+          },
+          "charges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpcomingChargeDto"
+            }
+          }
+        },
+        "required": [
+          "dueDate",
+          "count",
+          "totalCents",
+          "charges"
+        ]
+      },
+      "DelinquentStudentDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "totalCents": {
+            "type": "number"
+          },
+          "oldestDueDate": {
+            "type": "string",
+            "example": "2026-07-05",
+            "description": "Since when (oldest due date)"
+          },
+          "chargeCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "studentId",
+          "fullName",
+          "totalCents",
+          "oldestDueDate",
+          "chargeCount"
+        ]
+      },
+      "MaterializationResultDto": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "number",
+            "description": "Charges actually inserted by this pass"
+          },
+          "flippedOverdue": {
+            "type": "number",
+            "description": "Charges lazily flipped open → overdue"
+          },
+          "autoSettled": {
+            "type": "number",
+            "description": "Due charges auto-settled by active card mandates"
+          }
+        },
+        "required": [
+          "created",
+          "flippedOverdue",
+          "autoSettled"
+        ]
+      },
+      "AdminOverviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "receitaMesCents": {
+            "type": "number"
+          },
+          "receitaAnoCents": {
+            "type": "number"
+          },
+          "previsaoProximoMesCents": {
+            "type": "number"
+          },
+          "inadimplenciaPct": {
+            "type": "number",
+            "description": "By value: overdue-open ÷ current-month plan total (0-100)"
+          },
+          "series": {
+            "description": "Last 6 months incl. current",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RevenueMonthDto"
+            }
+          },
+          "proximosVencimentos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpcomingGroupDto"
+            }
+          },
+          "inadimplentes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DelinquentStudentDto"
+            }
+          },
+          "materialization": {
+            "$ref": "#/components/schemas/MaterializationResultDto"
+          }
+        },
+        "required": [
+          "month",
+          "receitaMesCents",
+          "receitaAnoCents",
+          "previsaoProximoMesCents",
+          "inadimplenciaPct",
+          "series",
+          "proximosVencimentos",
+          "inadimplentes",
+          "materialization"
+        ]
+      },
+      "RefundPaymentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "description": "Estorno reason, recorded on the payment + audit"
+          }
+        }
+      },
+      "RefundResponseDto": {
+        "type": "object",
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/PaymentDto"
+          },
+          "charge": {
+            "$ref": "#/components/schemas/ChargeDto"
+          }
+        },
+        "required": [
+          "payment",
+          "charge"
+        ]
+      },
+      "PlanListResponseDto": {
+        "type": "object",
+        "properties": {
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanDto"
+            }
+          }
+        },
+        "required": [
+          "plans"
+        ]
+      },
+      "CreatePlanDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Mensal"
+          },
+          "amountCents": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Integer cents (R$ 180,00 = 18000)"
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "quarterly",
+              "semiannual",
+              "yearly"
+            ]
+          },
+          "dueDay": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28,
+            "description": "Vencimento day — UI offers the handoff chips 5/10/15"
+          }
+        },
+        "required": [
+          "name",
+          "amountCents",
+          "recurrence",
+          "dueDay"
+        ]
+      },
+      "PlanResponseDto": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/PlanDto"
+          }
+        },
+        "required": [
+          "plan"
+        ]
+      },
+      "UpdatePlanDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Mensal"
+          },
+          "amountCents": {
+            "type": "number",
+            "minimum": 1
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "quarterly",
+              "semiannual",
+              "yearly"
+            ]
+          },
+          "dueDay": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28
+          }
+        }
+      },
+      "RepasseTotalsDto": {
+        "type": "object",
+        "properties": {
+          "subscriptionsMonthCents": {
+            "type": "number",
+            "description": "\"assinaturas · mês\" — live SaaS subscriptions"
+          },
+          "paymentFeesMonthCents": {
+            "type": "number",
+            "description": "\"taxa de pagamento\" — current-period platform fees"
+          }
+        },
+        "required": [
+          "subscriptionsMonthCents",
+          "paymentFeesMonthCents"
+        ]
+      },
+      "RepasseRowDto": {
+        "type": "object",
+        "properties": {
+          "academyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "academyName": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "studentCount": {
+            "type": "number",
+            "description": "Distinct students with settled payments in the period"
+          },
+          "grossCents": {
+            "type": "number"
+          },
+          "feeBps": {
+            "type": "number",
+            "description": "Platform take in basis points (fee_bps NULL → 0)"
+          },
+          "feeCents": {
+            "type": "number"
+          },
+          "netCents": {
+            "type": "number",
+            "description": "gross − fee"
+          },
+          "withheld": {
+            "type": "boolean",
+            "description": "Charter retention: delinquent academy ⇒ true"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "repassado",
+              "em_transito",
+              "retido"
+            ]
+          }
+        },
+        "required": [
+          "academyId",
+          "academyName",
+          "period",
+          "studentCount",
+          "grossCents",
+          "feeBps",
+          "feeCents",
+          "netCents",
+          "withheld",
+          "status"
+        ]
+      },
+      "RepassesResponseDto": {
+        "type": "object",
+        "properties": {
+          "totals": {
+            "$ref": "#/components/schemas/RepasseTotalsDto"
+          },
+          "repasses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepasseRowDto"
+            }
+          }
+        },
+        "required": [
+          "totals",
+          "repasses"
         ]
       }
     }

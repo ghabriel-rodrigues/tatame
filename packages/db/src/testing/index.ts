@@ -6,8 +6,10 @@ export {
   DEV_PASSWORD,
   hashDevPassword,
   seedBeltCatalog,
+  seedBillingFixtures,
   seedDevFixtures,
   seedPlatformPlans,
   PLATFORM_PLAN_CATALOG,
+  type SeedBillingHandles,
   type SeedDevHandles,
 } from '../seed/index.js';

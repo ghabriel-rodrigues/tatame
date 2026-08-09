@@ -16,6 +16,8 @@ import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
 import type { BeltView } from '../../graduation/graduation.types.js';
+import { mensalidadeAlerts, type MensalidadeAlert } from '../../billing/lib/alerts.js';
+import { localDate } from '../../attendance/lib/time.js';
 import { ageOn, nextSlot, normalizeTime, type ScheduleSlotView } from '../lib/derive.js';
 import { EnrollmentService } from './enrollment.service.js';
 
@@ -34,6 +36,11 @@ export interface DependentDetail {
   class: DependentClassView | null;
   /** Derived current belt (GRD.6, story 34) — the dependent card's BeltBar. */
   belt: BeltView;
+  /**
+   * Dependent-card mensalidade alert (spec 006, BIL.9) — fed by real charge
+   * data (open plan charge, overdue by predicate); null = nothing open.
+   */
+  mensalidade: MensalidadeAlert | null;
 }
 
 const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
@@ -241,6 +248,11 @@ export class DependentsService {
       tx,
       rows.map((r) => r.id),
     );
+    const alertByStudent = await mensalidadeAlerts(
+      tx,
+      rows.map((r) => r.id),
+      localDate(),
+    );
     return rows.map((row) => ({
       id: row.id,
       fullName: row.fullName,
@@ -248,6 +260,7 @@ export class DependentsService {
       status: row.status,
       class: classByStudent.get(row.id) ?? null,
       belt: beltByStudent.get(row.id) as BeltView,
+      mensalidade: alertByStudent.get(row.id) ?? null,
     }));
   }
 }

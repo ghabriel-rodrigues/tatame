@@ -28,6 +28,12 @@ export const envSchema = z.object({
   WEB_URL: z.string().url().default('http://localhost:4200'),
   /** AES key material for TOTP secrets at rest; falls back to the JWT secret. */
   TOTP_ENC_KEY: z.string().optional(),
+  /**
+   * Payment provider behind the PaymentProviderPort (spec 006, two-stage
+   * decision): `simulated` is the only runtime driver in v1; `stripe` selects
+   * the compile-checked Connect stub (stage-2 swap).
+   */
+  PAYMENTS_PROVIDER: z.enum(['simulated', 'stripe']).default('simulated'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -46,6 +52,8 @@ export interface AppConfig {
   resendFromEmail: string;
   webUrl: string;
   totpEncKey: string;
+  /** Driver behind the PaymentProviderPort — gates the simulate endpoint. */
+  paymentsProvider: 'simulated' | 'stripe';
   isProduction: boolean;
 }
 
@@ -76,6 +84,7 @@ export function buildAppConfig(env: Env): AppConfig {
     resendFromEmail: env.RESEND_FROM_EMAIL,
     webUrl: env.WEB_URL,
     totpEncKey: env.TOTP_ENC_KEY ?? env.JWT_ACCESS_SECRET,
+    paymentsProvider: env.PAYMENTS_PROVIDER,
     isProduction: env.NODE_ENV === 'production',
   };
 }

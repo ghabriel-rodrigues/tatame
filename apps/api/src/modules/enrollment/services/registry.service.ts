@@ -15,6 +15,7 @@ import { APP_DB } from '../../../infra/db/db.module.js';
 import { GraduationAwardService } from '../../graduation/services/graduation-award.service.js';
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
 import type { BeltView } from '../../graduation/graduation.types.js';
+import { assertAssignablePlan } from '../../billing/lib/plan-validation.js';
 import { badgeFor, isMinor } from '../lib/derive.js';
 
 export interface StudentListItem {
@@ -28,6 +29,8 @@ export interface StudentListItem {
   classes: Array<{ id: string; name: string }>;
   /** Derived current belt (GRD.6) — the Phase-3 belt-chip deferral closed. */
   belt: BeltView;
+  /** Assigned mensalidade plan (spec 006) — what materialization charges. */
+  academyPlanId: string | null;
 }
 
 export interface GuardianListItem {
@@ -78,7 +81,13 @@ export class RegistryService {
 
   async createStudent(
     ctx: AuthContext,
-    input: { fullName: string; birthDate: string; guardianId?: string; initialBeltId?: string },
+    input: {
+      fullName: string;
+      birthDate: string;
+      guardianId?: string;
+      initialBeltId?: string;
+      academyPlanId?: string;
+    },
   ): Promise<StudentListItem> {
     // Minor ⇒ guardian rule, enforced in every creation path (age is
     // time-dependent, so this stays app-level — spec 003 schema decision).
@@ -99,6 +108,9 @@ export class RegistryService {
           throw problem(404, ErrorCodes.NOT_FOUND, 'Guardian not found in this academy');
         }
       }
+      // Plan assignment validation (spec 006, BIL.10): clean 404/409 instead
+      // of the composite-FK 500 the Phase-3 stub allowed.
+      if (input.academyPlanId) await assertAssignablePlan(tx, input.academyPlanId);
       const [row] = await tx
         .insert(students)
         .values({
@@ -106,6 +118,7 @@ export class RegistryService {
           fullName: input.fullName,
           birthDate: input.birthDate,
           guardianId: input.guardianId ?? null,
+          academyPlanId: input.academyPlanId ?? null,
         })
         .returning();
       if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Student insert returned no row');
@@ -125,11 +138,21 @@ export class RegistryService {
     });
   }
 
-  async updateStudentName(ctx: AuthContext, id: string, fullName: string): Promise<StudentListItem> {
+  async updateStudent(
+    ctx: AuthContext,
+    id: string,
+    input: { fullName?: string; academyPlanId?: string | null },
+  ): Promise<StudentListItem> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
+      // Archived plans refuse NEW assignment; null unassigns (spec 006).
+      if (input.academyPlanId) await assertAssignablePlan(tx, input.academyPlanId);
       const [row] = await tx
         .update(students)
-        .set({ fullName, updatedAt: new Date() })
+        .set({
+          ...(input.fullName !== undefined ? { fullName: input.fullName } : {}),
+          ...(input.academyPlanId !== undefined ? { academyPlanId: input.academyPlanId } : {}),
+          updatedAt: new Date(),
+        })
         .where(eq(students.id, id))
         .returning();
       if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
@@ -279,6 +302,7 @@ export class RegistryService {
       userId: row.userId,
       classes: classList,
       belt,
+      academyPlanId: row.academyPlanId,
     };
   }
 }
