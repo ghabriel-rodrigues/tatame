@@ -165,4 +165,31 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] GRD.22 iOS: aluno Graduação screen + real home graduation card + profile belt
 - [x] GRD.23 iOS: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts
 
-_Next phases (agenda, billing, events, store, …) get their specs as each phase ships._
+### Phase 6 — Billing / wallet ([spec 006](docs/specs/006-billing.md))
+
+- [ ] BIL.1 DB: 7 billing enums + academy_plans (amount_cents, recurrence, due_day CHECK 1–28, is_active soft archive, UNIQUE tenant+name) with forced tenant RLS
+- [ ] BIL.2 DB: charges — per-origin columns + CHECK (plan FK now, event/order plain uuid pending their slices), guardian bill-to, competência + partial-unique materialization key, lazy-overdue lifecycle, (tenant, status, due_date) index, forced RLS
+- [ ] BIL.3 DB: payments (provider refs + provider_data snapshot + receipt + refund columns, provider partial unique) + payment_mandates (single-active partial unique) + billing_customers (empty in v1), forced RLS
+- [ ] BIL.4 DB: additive platform columns (academies.provider_account_id, academy_subscriptions provider trio, platform_plans.fee_bps) + composite-FK upgrade of students.academy_plan_id and invites.academy_plan_id onto academy_plans
+- [ ] BIL.5 DB: dev seeds — plans per fixture academy, open/paid/overdue charge histories with mixed-method payments, an active card mandate, a delinquent-academy fixture for repasses
+- [ ] BIL.6 Backend: payments infra seam — PaymentProviderPort + SimulatedPaymentProvider (deterministic Pix/boleto payloads in provider_data, mandate inline settle, instant refund) + compile-checked Stripe stub + provider config factory
+- [ ] BIL.7 Backend: billing module — idempotent ensureCurrentCycleCharges (on-read at wallet/admin entry points, open→overdue flip, events only for inserted/flipped rows) + audited admin materialize trigger, no cron
+- [ ] BIL.8 Backend: aluno wallet — GET payload (plan header, current charge, recurrence banner, histórico, empty state), payment creation per method, mandate create-on-toggle/cancel, simulate endpoint (@BypassReadOnly, 404 unless simulated) settling through the normalized-event handler, receipt route, home alert flag
+- [ ] BIL.9 Backend: responsável payments — per-dependent charges with guardian bill-to addressing, pay + Pix per dependent, consolidated histórico, dependent-card alert data
+- [ ] BIL.10 Backend: admin — overview aggregates (receita mês/ano, previsão pós-materialização, inadimplência % by value, 6-month series, próximos vencimentos groups, inadimplentes), plans CRUD + student/invite plan assignment, audited full-refund endpoint
+- [ ] BIL.11 Backend: platform repasses read model (gross − fee_bps = net, withheld on delinquent) gated owner/finance + billing.* domain events with guardian variants + audit action codes + CI assertions (no professor billing route, payment routes @BypassReadOnly)
+- [ ] BIL.12 Backend: e2e suite green — materialization idempotency/race, full simulated paid-flow (Pix/boleto/cartão + mandate auto-settle), normalized-event contract tests, refund, aggregates & repasse math, RBAC/RLS/404s, read-only bypass on payment routes, simulate 404 gating
+- [ ] BIL.13 Web: admin Visão financeira per admin-02 replacing the index shell — hero receita card (mês, no ano, previsão, inadimplência %), 6-month bar chart, próximos vencimentos, inadimplência list
+- [ ] BIL.14 Web: admin Planos de mensalidade in Configurações per admin-15 — list + Novo plano/edit sheet (nome, valor, recorrência chips, vencimento chips 5/10/15), archive, student-form plan select
+- [ ] BIL.15 Web: plataforma Faturamento e repasses per plataforma-09 — SaaS totals tiles + per-academy repasse list with Repassado/Em trânsito/Retido from the read model
+- [ ] BIL.16 RN: aluno Carteira per aluno-12 (mensalidade card with Em aberto/Paga chip, plan header, recurrence banner, histórico, empty state) replacing the shell + real home mensalidade alert with Carteira deep link
+- [ ] BIL.17 RN: payment sheets per aluno-13/14/15 — Pix QR + copia-e-cola + Simular pagamento (gated), boleto linha digitável + barcode + Simular compensação, cartão form + recurrence toggle — success pop, Ver comprovante
+- [ ] BIL.18 RN: responsável Pagamentos per responsavel-04/05 — per-dependent charge cards with plan subtitle, Pix per dependent, Ver comprovante, consolidated histórico + dependent-card alerts
+- [ ] BIL.19 Android: aluno Carteira + real home mensalidade alert
+- [ ] BIL.20 Android: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
+- [ ] BIL.21 Android: responsável Pagamentos + Pix per dependent + consolidated histórico
+- [ ] BIL.22 iOS: aluno Carteira + real home mensalidade alert
+- [ ] BIL.23 iOS: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
+- [ ] BIL.24 iOS: responsável Pagamentos + Pix per dependent + consolidated histórico
+
+_Next phases (agenda, events, store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._
