@@ -1,10 +1,12 @@
-// Persona shells (AUTH.26 scaffold + spec 003/004 tabs): aluno gets the real
-// Início (check-in + stat tiles, ATT.22), professor the dashboard Início
-// (ATT.24) and the Turmas tab, responsável the dependents panel (ENR.24-26);
-// the remaining tabs stay placeholders until their slices land. The glass
-// pill tab bar remains recorded parity debt.
+// Persona shells (AUTH.26 scaffold + spec 003/004/006 tabs): aluno gets the
+// real Início (check-in + stat tiles, ATT.22) and the Carteira tab (BIL.22),
+// professor the dashboard Início (ATT.24) and the Turmas tab, responsável
+// the dependents panel (ENR.24-26) and the Pagamentos tab (BIL.24); the
+// remaining tabs stay placeholders until their slices land. The glass pill
+// tab bar remains recorded parity debt.
 
 import AttendanceFeature
+import BillingFeature
 import DesignSystem
 import EnrollmentFeature
 import GraduationFeature
@@ -37,6 +39,8 @@ struct PersonaShellView: View {
     enum Tab: Hashable {
         case inicio
         case turmas
+        case carteira
+        case pagamentos
         case perfil
     }
 
@@ -49,6 +53,7 @@ struct PersonaShellView: View {
     @Environment(SessionStore.self) private var session
     @Environment(\.enrollmentRepository) private var enrollmentRepository
     @Environment(\.attendanceRepository) private var attendanceRepository
+    @Environment(\.billingRepository) private var billingRepository
 
     var body: some View {
         TabView(selection: $selection) {
@@ -59,7 +64,10 @@ struct PersonaShellView: View {
                     NavigationStack {
                         AlunoHomeView(
                             repository: attendanceRepository,
-                            onOpenGraduation: { showGraduation = true }
+                            onOpenGraduation: { showGraduation = true },
+                            // Real home mensalidade alert deep-links into the
+                            // Carteira (spec 006, story 7).
+                            onOpenCarteira: { selection = .carteira }
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showGraduation) {
@@ -68,6 +76,13 @@ struct PersonaShellView: View {
                     }
                 }
                 .tag(Tab.inicio)
+                featureTab(title: "Carteira", icon: "creditcard") {
+                    AlunoCarteiraView(
+                        repository: billingRepository,
+                        academyName: context.activeMembership.academyName
+                    )
+                }
+                .tag(Tab.carteira)
             case .professor:
                 featureTab(title: "Início", icon: persona.homeIcon) {
                     ProfessorDashboardView(
@@ -94,6 +109,10 @@ struct PersonaShellView: View {
                     )
                 }
                 .tag(Tab.inicio)
+                featureTab(title: "Pagamentos", icon: "creditcard") {
+                    ResponsavelPagamentosView(repository: billingRepository)
+                }
+                .tag(Tab.pagamentos)
             }
             perfilTab
                 .tag(Tab.perfil)

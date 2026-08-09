@@ -67,19 +67,24 @@ public struct AlunoHome: Sendable, Equatable {
     /// Real graduation card payload (GRD.22) — nil only when the backend
     /// predates the graduation slice.
     public let graduation: AlunoHomeGraduation?
+    /// Real "mensalidade em aberto" alert (spec 006, BIL.22) deep-linking
+    /// into the Carteira; nil = nothing open.
+    public let mensalidade: MensalidadeAlert?
 
     public init(
         studentId: UUID,
         studentName: String,
         todayClass: AlunoTodayClass?,
         stats: AlunoStats,
-        graduation: AlunoHomeGraduation? = nil
+        graduation: AlunoHomeGraduation? = nil,
+        mensalidade: MensalidadeAlert? = nil
     ) {
         self.studentId = studentId
         self.studentName = studentName
         self.todayClass = todayClass
         self.stats = stats
         self.graduation = graduation
+        self.mensalidade = mensalidade
     }
 
     /// Copy with the hero flipped and the stats refreshed (post-check-in).
@@ -99,7 +104,8 @@ public struct AlunoHome: Sendable, Equatable {
             studentName: studentName,
             todayClass: flipped,
             stats: result.stats,
-            graduation: bumped
+            graduation: bumped,
+            mensalidade: mensalidade
         )
     }
 }

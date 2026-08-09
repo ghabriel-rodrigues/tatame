@@ -12,20 +12,27 @@ import TatameCore
 public struct AlunoHomeView: View {
     @State private var model: AlunoHomeModel
     private let onOpenGraduation: (() -> Void)?
+    private let onOpenCarteira: (() -> Void)?
 
-    public init(repository: any AttendanceRepository, onOpenGraduation: (() -> Void)? = nil) {
+    public init(
+        repository: any AttendanceRepository,
+        onOpenGraduation: (() -> Void)? = nil,
+        onOpenCarteira: (() -> Void)? = nil
+    ) {
         _model = State(initialValue: AlunoHomeModel(repository: repository))
         self.onOpenGraduation = onOpenGraduation
+        self.onOpenCarteira = onOpenCarteira
     }
 
     public var body: some View {
-        AlunoHomeContent(model: model, onOpenGraduation: onOpenGraduation)
+        AlunoHomeContent(model: model, onOpenGraduation: onOpenGraduation, onOpenCarteira: onOpenCarteira)
     }
 }
 
 struct AlunoHomeContent: View {
     @Bindable var model: AlunoHomeModel
     var onOpenGraduation: (() -> Void)?
+    var onOpenCarteira: (() -> Void)?
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
 
@@ -46,6 +53,7 @@ struct AlunoHomeContent: View {
                     statTiles(home)
                     graduationCard(home)
                     rankingPlaceholder
+                    mensalidadeAlert(home)
                 }
             }
             .padding(.horizontal, LumiraTokens.Space.s6)
@@ -266,6 +274,51 @@ struct AlunoHomeContent: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("graduation-card")
+        }
+    }
+
+    // MARK: Mensalidade alert (spec 006, BIL.22 — story 7: real charge data
+    // deep-linking into the Carteira; hidden when nothing is open)
+
+    @ViewBuilder
+    private func mensalidadeAlert(_ home: AlunoHome) -> some View {
+        if let alert = home.mensalidade {
+            HStack(spacing: LumiraTokens.Space.s3) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous)
+                        .fill(LumiraTokens.Colors.warning500)
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "creditcard")
+                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
+                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(BillingFormatters.alertTitlePTBR(alert: alert))
+                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                    Text(BillingFormatters.alertLinePTBR(alert: alert))
+                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                }
+                Spacer()
+                Button {
+                    onOpenCarteira?()
+                } label: {
+                    Text("Pagar")
+                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                        .padding(.horizontal, LumiraTokens.Space.s4)
+                        .frame(height: 36)
+                        .background(LumiraTokens.Colors.purple700)
+                        .clipShape(Capsule())
+                }
+                .accessibilityIdentifier("mensalidade-alert-pagar")
+            }
+            .padding(LumiraTokens.Space.s4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(LumiraTokens.Colors.warning100)
+            .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+            .accessibilityIdentifier("mensalidade-alert")
         }
     }
 

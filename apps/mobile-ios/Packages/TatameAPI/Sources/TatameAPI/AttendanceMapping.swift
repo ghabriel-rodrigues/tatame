@@ -41,7 +41,8 @@ extension AlunoHome {
             studentName: dto.student.fullName,
             todayClass: try dto.todayClass.map { try AlunoTodayClass(dto: $0.value1) },
             stats: AlunoStats(dto: dto.stats),
-            graduation: try dto.graduation.map { try AlunoHomeGraduation(dto: $0.value1) }
+            graduation: try dto.graduation.map { try AlunoHomeGraduation(dto: $0.value1) },
+            mensalidade: try dto.mensalidade.map { try MensalidadeAlert(dto: $0.value1) }
         )
     }
 }

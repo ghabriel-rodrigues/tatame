@@ -8,7 +8,8 @@ generate:
 # here when their feature slices land; admin/platform stay excluded
 # (web-console-only personas on mobile). professor/responsavel landed with
 # the enrollment slice (spec 003, ENR.24-26); aluno with the attendance
-# slice (spec 004, ATT.22-24).
+# slice (spec 004, ATT.22-24); billing (shared simulate/receipt routes) with
+# the billing slice (spec 006, BIL.22-24).
 filter:
   tags:
     - auth
@@ -16,3 +17,4 @@ filter:
     - professor
     - responsavel
     - aluno
+    - billing

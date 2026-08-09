@@ -188,8 +188,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] BIL.19 Android: aluno Carteira + real home mensalidade alert
 - [x] BIL.20 Android: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
 - [x] BIL.21 Android: responsável Pagamentos + Pix per dependent + consolidated histórico
-- [ ] BIL.22 iOS: aluno Carteira + real home mensalidade alert
-- [ ] BIL.23 iOS: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
-- [ ] BIL.24 iOS: responsável Pagamentos + Pix per dependent + consolidated histórico
+- [x] BIL.22 iOS: aluno Carteira + real home mensalidade alert
+- [x] BIL.23 iOS: payment sheets (Pix/boleto/cartão + recurrence toggle, simulate gating, success pop, comprovante)
+- [x] BIL.24 iOS: responsável Pagamentos + Pix per dependent + consolidated histórico
 
 _Next phases (agenda, events, store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._

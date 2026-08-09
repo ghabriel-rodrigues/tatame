@@ -196,6 +196,23 @@ struct DependentCard: View {
                     StatTile(value: "—", label: "próxima aula", footnote: "sem turma")
                 }
             }
+
+            // Mensalidade alert fed by real charge data (spec 006, story 22).
+            if let alert = dependent.mensalidade {
+                HStack(spacing: LumiraTokens.Space.s2) {
+                    Image(systemName: "creditcard")
+                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
+                    Text("Mensalidade em aberto · \(BillingFormatters.alertLinePTBR(alert: alert))")
+                        .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                }
+                .foregroundStyle(LumiraTokens.Colors.warning500)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, LumiraTokens.Space.s3)
+                .padding(.vertical, LumiraTokens.Space.s2)
+                .background(LumiraTokens.Colors.warning100)
+                .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
+                .accessibilityIdentifier("dependent-mensalidade-alert")
+            }
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)

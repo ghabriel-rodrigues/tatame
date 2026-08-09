@@ -6,11 +6,12 @@ import PackageDescription
 // responsável dependents, spec 003 ENR.24-26), AttendanceFeature (aluno
 // check-in + professor chamada, spec 004 ATT.22-24), GraduationFeature
 // (aluno Graduação + professor perfil do aluno/próprio, spec 005 GRD.21-23),
-// and AppShell (root router + persona shells). Dependency direction
-// (enforced here): Features -> TatameAPI + TatameCore + DesignSystem;
-// EnrollmentFeature -> AttendanceFeature (turma detail opens the chamada and
-// the rewired Adicionar aluno picker) + GraduationFeature (roster tap opens
-// the perfil do aluno).
+// BillingFeature (aluno Carteira + payment sheets + responsável Pagamentos,
+// spec 006 BIL.22-24), and AppShell (root router + persona shells).
+// Dependency direction (enforced here): Features -> TatameAPI + TatameCore +
+// DesignSystem; EnrollmentFeature -> AttendanceFeature (turma detail opens
+// the chamada and the rewired Adicionar aluno picker) + GraduationFeature
+// (roster tap opens the perfil do aluno).
 let package = Package(
     name: "Features",
     // macOS floor exists only so `swift test` runs SPM-level on the mac host.
@@ -20,6 +21,7 @@ let package = Package(
         .library(name: "EnrollmentFeature", targets: ["EnrollmentFeature"]),
         .library(name: "AttendanceFeature", targets: ["AttendanceFeature"]),
         .library(name: "GraduationFeature", targets: ["GraduationFeature"]),
+        .library(name: "BillingFeature", targets: ["BillingFeature"]),
         .library(name: "AppShell", targets: ["AppShell"]),
     ],
     dependencies: [
@@ -60,12 +62,20 @@ let package = Package(
             ]
         ),
         .target(
+            name: "BillingFeature",
+            dependencies: [
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
             name: "AppShell",
             dependencies: [
                 "AuthFeature",
                 "AttendanceFeature",
                 "EnrollmentFeature",
                 "GraduationFeature",
+                "BillingFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -77,6 +87,7 @@ let package = Package(
                 "AttendanceFeature",
                 "EnrollmentFeature",
                 "GraduationFeature",
+                "BillingFeature",
                 "AppShell",
                 .product(name: "TatameCore", package: "TatameCore"),
             ]

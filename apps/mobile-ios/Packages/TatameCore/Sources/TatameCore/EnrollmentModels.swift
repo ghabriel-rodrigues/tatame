@@ -169,6 +169,9 @@ public struct Dependent: Sendable, Equatable, Identifiable {
     public let enrolledClass: DependentClass?
     /// Derived current belt (GRD.6, story 34) — the dependent-card BeltBar.
     public let belt: BeltView?
+    /// Dependent-card mensalidade alert fed by real charge data (spec 006,
+    /// story 22); nil = nothing open.
+    public let mensalidade: MensalidadeAlert?
 
     public init(
         id: UUID,
@@ -176,7 +179,8 @@ public struct Dependent: Sendable, Equatable, Identifiable {
         birthDate: String,
         status: StudentStatus,
         enrolledClass: DependentClass?,
-        belt: BeltView? = nil
+        belt: BeltView? = nil,
+        mensalidade: MensalidadeAlert? = nil
     ) {
         self.id = id
         self.fullName = fullName
@@ -184,6 +188,7 @@ public struct Dependent: Sendable, Equatable, Identifiable {
         self.status = status
         self.enrolledClass = enrolledClass
         self.belt = belt
+        self.mensalidade = mensalidade
     }
 }
 

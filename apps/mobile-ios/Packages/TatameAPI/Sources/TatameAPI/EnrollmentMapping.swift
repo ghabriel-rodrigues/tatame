@@ -123,7 +123,8 @@ extension Dependent {
             birthDate: dto.birthDate,
             status: StudentStatus(rawValue: dto.status.rawValue) ?? .active,
             enrolledClass: try dto._class.map { try DependentClass(dto: $0.value1) },
-            belt: try dto.belt.map { try BeltView(dto: $0.value1) }
+            belt: try dto.belt.map { try BeltView(dto: $0.value1) },
+            mensalidade: try dto.mensalidade.map { try MensalidadeAlert(dto: $0.value1) }
         )
     }
 }
