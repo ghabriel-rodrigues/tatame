@@ -46,3 +46,10 @@ export {
   type BeltChipProps,
 } from './BeltBar.tsx';
 export { BottomSheet, type BottomSheetProps } from './BottomSheet.tsx';
+
+/* P2 components (agenda path — spec 007). */
+export {
+  CalendarMonth,
+  type CalendarMonthProps,
+  type CalendarMonthMarks,
+} from './CalendarMonth.tsx';

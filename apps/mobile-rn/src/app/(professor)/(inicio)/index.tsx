@@ -7,10 +7,11 @@
  * their slices.
  */
 
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
+import { CalendarDays } from 'lucide-react-native';
 import {
   Card,
   ScreenHeader,
@@ -44,7 +45,30 @@ export default function ProfessorInicioScreen() {
           <ScreenHeader
             eyebrow={longDatePt()}
             title={`${greetingPt()}, ${firstName}`}
-            trailing={<InitialsAvatar name={session.user.fullName} size={38} />}
+            trailing={
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}>
+                {/* AGD.6: month view one tap from Início (spec 007 story 20). */}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Calendário"
+                  onPress={() => router.push('/calendario')}
+                  hitSlop={6}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: theme.radius.pill,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.color.bg.surface,
+                    borderWidth: 1,
+                    borderColor: theme.color.border['1'],
+                  }}
+                >
+                  <CalendarDays size={18} color={theme.color.fg['2']} />
+                </Pressable>
+                <InitialsAvatar name={session.user.fullName} size={38} />
+              </View>
+            }
           />
 
           {readOnly ? (

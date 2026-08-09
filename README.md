@@ -198,8 +198,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] AGD.2 Backend: persona calendars — `GET /v1/{aluno|professor|admin}/calendar?month=` returning persona-scoped weekday recurrence buckets + `events: []`, no session reads or writes
 - [x] AGD.3 Backend: e2e suite green — scoping per persona, weekday filter, checkedIn with/without session and after revoke, read purity (no rows created), month validation, RBAC + RLS, read-only academies served
 - [x] AGD.4 Web: `/admin/calendario` console page + nav link — month grid with dot expansion, "aulas recorrentes"/"evento" legend, selected-day list, "Nada agendado neste dia." empty state, page component spec
-- [ ] AGD.5 RN: aluno Agenda tab real — day pills (today default), class cards with check-in button → Phase-4 sheet / green check, "Sem aulas neste dia", Eventos do mês empty section, hero "Ver agenda" CTA enabled
-- [ ] AGD.6 RN: aluno month calendar behind the "Mês" button + professor calendar behind the dashboard header icon — dots, legend, day agenda, persona empty states
+- [x] AGD.5 RN: aluno Agenda tab real — day pills (today default), class cards with check-in button → Phase-4 sheet / green check, "Sem aulas neste dia", Eventos do mês empty section, hero "Ver agenda" CTA enabled
+- [x] AGD.6 RN: aluno month calendar behind the "Mês" button + professor calendar behind the dashboard header icon — dots, legend, day agenda, persona empty states
 - [ ] AGD.7 Android: aluno Agenda tab real (same scope as AGD.5)
 - [ ] AGD.8 Android: aluno + professor month calendar screens (same scope as AGD.6)
 - [ ] AGD.9 iOS: aluno Agenda tab added to the shell + real Agenda screen (same scope as AGD.5)

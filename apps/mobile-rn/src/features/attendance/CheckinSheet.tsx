@@ -118,6 +118,8 @@ export function CheckinSheet({ open, onClose }: CheckinSheetProps) {
           setResult(response);
           // Hero flip + stat tiles refresh from server truth.
           void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
+          // Agenda check-in affordance flips too (AGD.5 — spec 007 story 7).
+          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/agenda'] });
         },
         onError: (mutationError) => {
           scannedRef.current = false;
