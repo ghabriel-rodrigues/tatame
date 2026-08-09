@@ -16,6 +16,7 @@ import type {
   RollCallResponse,
   SnapshotAttendance,
 } from '@tatame/shared';
+import { makeBeltView, makeProgress } from './graduation';
 
 const uuid = (block: string, counter: number) =>
   `018f0000-0000-7000-${block}-${counter.toString(16).padStart(12, '0')}`;
@@ -42,9 +43,11 @@ export interface AlunoHomeOptions {
   stats?: Partial<AlunoStats>;
   /** `null` removes the today class entirely. */
   todayClass?: null;
+  /** `null` removes the graduation payload (defensive rendering path). */
+  graduation?: null;
 }
 
-/** aluno-03: Open mat today at 10:00, 120 min. */
+/** aluno-03/09: Open mat today at 10:00; faixa azul 2 graus, 26 de 40. */
 export function makeAlunoHome(options: AlunoHomeOptions = {}): AlunoHomeResponse {
   return {
     student: { id: STUDENT_ID, fullName: 'Lucas Almeida' },
@@ -58,6 +61,9 @@ export function makeAlunoHome(options: AlunoHomeOptions = {}): AlunoHomeResponse
             checkedIn: options.checkedIn ?? false,
           },
     stats: makeAlunoStats(options.stats),
+    ...(options.graduation === null
+      ? {}
+      : { graduation: { belt: makeBeltView(), progress: makeProgress() } }),
   };
 }
 

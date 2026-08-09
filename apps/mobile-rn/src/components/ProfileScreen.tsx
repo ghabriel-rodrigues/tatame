@@ -5,7 +5,7 @@
  * login via the role gate flip).
  */
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
@@ -13,7 +13,15 @@ import { Card, TatameButton, Text, fadeUp, useTheme } from '@tatame/design-syste
 import { ROLE_LABELS } from '../session/role-labels';
 import { logout, useSession } from '../session/session-store';
 
-export function ProfileScreen() {
+export interface ProfileScreenProps {
+  /** Persona sections rendered between the identity card and "Sair"
+   *  (aluno belt chip, professor graduações válidas — GRD.16/17). */
+  children?: ReactNode;
+  /** Extra content inside the identity card, under the role line. */
+  identityExtra?: ReactNode;
+}
+
+export function ProfileScreen({ children, identityExtra }: ProfileScreenProps) {
   const theme = useTheme();
   const { session } = useSession();
   const [leaving, setLeaving] = useState(false);
@@ -38,8 +46,10 @@ export function ProfileScreen() {
                 {ROLE_LABELS[session.activeRole]}
                 {session.academy ? ` · ${session.academy.name}` : ''}
               </Text>
+              {identityExtra}
             </View>
           </Card>
+          {children}
           <TatameButton
             fullWidth
             variant="danger"

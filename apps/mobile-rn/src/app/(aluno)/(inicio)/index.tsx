@@ -3,17 +3,19 @@
  * today-class hero ("Fazer check-in" → the ATT.15 sheet; flips to the
  * "Presença registrada" chip after check-in), live stat tiles (presença no
  * mês, aulas seguidas — hidden when the academy disabled the streak toggle,
- * graus placeholder) and the graduation progress bar fed by the true lesson
- * count (the 40-lesson target is the documented placeholder until the
- * graduation slice). Ranking stays an explicit placeholder card.
+ * graus na faixa fed by the derived belt) and the graduation card fed by
+ * the real academy target (GRD.16 — supersedes the Phase-4 placeholder),
+ * linking to the Graduação screen. Ranking stays an explicit placeholder
+ * card.
  */
 
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { CheckCircle2 } from 'lucide-react-native';
+import { CheckCircle2, ChevronRight } from 'lucide-react-native';
 import {
+  BeltBar,
   Card,
   Chip,
   ScreenHeader,
@@ -28,9 +30,6 @@ import { longDatePt, scheduleTimeRange } from '../../../features/enrollment/form
 import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../features/enrollment/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
 
-/** Graduation-rules placeholder denominator (graduation slice owns it). */
-const GRADUATION_TARGET_PLACEHOLDER = 40;
-
 export default function AlunoInicioScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -44,6 +43,7 @@ export default function AlunoInicioScreen() {
   const home = homeQuery.data;
   const todayClass = home?.todayClass ?? null;
   const stats = home?.stats;
+  const graduation = home?.graduation ?? null;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -171,25 +171,49 @@ export default function AlunoInicioScreen() {
                     label="aulas seguidas"
                   />
                 ) : null}
-                <StatTile testID="tile-graus" value="—" label="graus na faixa" note="Em breve" />
+                {graduation ? (
+                  <StatTile
+                    testID="tile-graus"
+                    value={`${graduation.belt.degrees}`}
+                    label="graus na faixa"
+                  />
+                ) : (
+                  <StatTile testID="tile-graus" value="—" label="graus na faixa" note="Em breve" />
+                )}
               </View>
             ) : null}
 
-            {stats ? (
-              <Card testID="graduation-card">
-                <View style={{ gap: theme.space['3'] }}>
-                  <Text variant="subtitle">Sua graduação</Text>
-                  <OccupancyBar
-                    testID="graduation-bar"
-                    occupancy={stats.totalLessons}
-                    capacity={GRADUATION_TARGET_PLACEHOLDER}
-                  />
-                  <Text variant="caption">
-                    {stats.totalLessons} de {GRADUATION_TARGET_PLACEHOLDER} aulas · meta padrão
-                    — as regras de graduação chegam em fase futura.
-                  </Text>
-                </View>
-              </Card>
+            {graduation ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Sua graduação"
+                onPress={() => router.push('/graduacao')}
+              >
+                <Card testID="graduation-card">
+                  <View style={{ gap: theme.space['3'] }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Text variant="subtitle">Sua graduação</Text>
+                      <ChevronRight size={16} color={theme.color.fg['4']} />
+                    </View>
+                    <BeltBar belt={graduation.belt} size="md" testID="home-belt" />
+                    <OccupancyBar
+                      testID="graduation-bar"
+                      occupancy={graduation.progress.current}
+                      capacity={graduation.progress.target}
+                    />
+                    <Text variant="caption">
+                      {graduation.progress.current} de {graduation.progress.target} aulas ·{' '}
+                      {graduation.progress.label}
+                    </Text>
+                  </View>
+                </Card>
+              </Pressable>
             ) : null}
 
             <Card>

@@ -1,10 +1,11 @@
 /**
  * Responsável dependents panel (ENR.19, responsavel-02): one card per child
  * via GET /v1/responsavel/dependents — name, age, class, next scheduled
- * slot (server-derived) and honest placeholders for frequência (Fase 4) and
- * faixa (graduation slice). Billing banner and avisos belong to their own
- * slices. "+ Cadastrar aluno" opens the ENR.20 sheet and is hidden when the
- * dependents.register toggle is off.
+ * slot (server-derived), the child's drawn belt with degrees (GRD.17,
+ * story 34) and an honest placeholder for frequência (Fase 4). Billing
+ * banner and avisos belong to their own slices. "+ Cadastrar aluno" opens
+ * the ENR.20 sheet and is hidden when the dependents.register toggle is
+ * off.
  */
 
 import { Pressable, ScrollView, View } from 'react-native';
@@ -13,6 +14,7 @@ import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { ChevronRight, Plus } from 'lucide-react-native';
 import {
+  BeltBar,
   Card,
   Chip,
   ScreenHeader,
@@ -54,9 +56,27 @@ function DependentCard({ dependent }: { dependent: DependentDetail }) {
             </View>
             <ChevronRight size={16} color={theme.color.fg['4']} />
           </View>
+          {dependent.belt ? (
+            <BeltBar
+              belt={dependent.belt}
+              size="sm"
+              testID={`dependent-belt-${dependent.id}`}
+            />
+          ) : null}
           <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
             <StatTile value="—" label="frequência" note="Fase 4" />
-            <StatTile value="—" label="faixa" note="Em breve" />
+            {dependent.belt ? (
+              <StatTile
+                value={dependent.belt.name}
+                label={
+                  dependent.belt.degrees > 0
+                    ? `${dependent.belt.degrees} ${dependent.belt.degrees === 1 ? 'grau' : 'graus'}`
+                    : 'faixa'
+                }
+              />
+            ) : (
+              <StatTile value="—" label="faixa" note="Em breve" />
+            )}
             <StatTile value={nextSlot ? slotLabel(nextSlot) : '—'} label="próxima aula" />
           </View>
         </View>

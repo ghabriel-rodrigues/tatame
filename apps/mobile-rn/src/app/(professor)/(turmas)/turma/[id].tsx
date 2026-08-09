@@ -7,6 +7,8 @@
  * chamada; "Chamada manual" opens the ATT.18 roll call. Roster mutations
  * (ENR.18): Adicionar aluno sheet (ATT.18: rewired to GET
  * /v1/professor/students?notEnrolledInClassId) + remove with confirmation.
+ * GRD.17: roster rows carry the derived belt chip and tapping a row opens
+ * the perfil do aluno (graduation surface).
  */
 
 import { useState } from 'react';
@@ -18,6 +20,7 @@ import { CircleMinus } from 'lucide-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import type { RosterStudent } from '@tatame/shared';
 import {
+  BeltChip,
   BottomSheet,
   Card,
   Chip,
@@ -143,6 +146,7 @@ export default function ProfessorTurmaDetailScreen() {
                         title={student.fullName}
                         leading={<InitialsAvatar name={student.fullName} />}
                         divider={index < turma.roster.length - 1}
+                        onPress={() => router.push(`/aluno/${student.studentId}`)}
                         trailing={
                           <View
                             style={{
@@ -151,6 +155,12 @@ export default function ProfessorTurmaDetailScreen() {
                               gap: theme.space['2'],
                             }}
                           >
+                            {student.belt ? (
+                              <BeltChip
+                                belt={student.belt}
+                                testID={`roster-belt-${student.studentId}`}
+                              />
+                            ) : null}
                             {student.badge === 'pendente' ? (
                               <Chip label="Pendente" tone="warning" />
                             ) : null}

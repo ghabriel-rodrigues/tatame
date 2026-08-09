@@ -155,9 +155,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] GRD.12 Web: BeltBar in the design system per the resolved anatomy (sizes, ponteira, degree stripes, outline, black-dan red tip, gray fallback) + belt chip variant
 - [x] GRD.13 Web: admin Regras de graduação screen — merged ladder rows with swatch and máx-graus note, ±5 stepper (default 40, min 10), kids toggles, Salvar bulk upsert
 - [x] GRD.14 Web: belt chips on registry student rows + initial-belt select on student form + turma belt-range fields with "Branca a Azul" card chips + student graduation-history drawer with audited Revogar
-- [ ] GRD.15 RN: BeltBar native component in the design system (same anatomy and fallback rules)
-- [ ] GRD.16 RN: aluno Graduação screen (hero card, progress bar, evolution timeline, Ver certificado placeholder) + real home graduation card + profile belt
-- [ ] GRD.17 RN: professor perfil do aluno (BeltBar, progress, Adicionar grau / Promover faixa gated by toggle, observações) + professor profile graduações válidas + responsável dependent-card belts
+- [x] GRD.15 RN: BeltBar native component in the design system (same anatomy and fallback rules)
+- [x] GRD.16 RN: aluno Graduação screen (hero card, progress bar, evolution timeline, Ver certificado placeholder) + real home graduation card + profile belt
+- [x] GRD.17 RN: professor perfil do aluno (BeltBar, progress, Adicionar grau / Promover faixa gated by toggle, observações) + professor profile graduações válidas + responsável dependent-card belts
 - [x] GRD.18 Android: BeltBar Compose component (same anatomy and fallback rules)
 - [x] GRD.19 Android: aluno Graduação screen + real home graduation card + profile belt
 - [x] GRD.20 Android: professor perfil do aluno + professor profile graduações válidas + responsável dependent-card belts
