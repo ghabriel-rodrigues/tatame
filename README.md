@@ -207,9 +207,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 8 — Events ([spec 008](docs/specs/008-events.md))
 
-- [ ] EVT.1 DB: event_status + event_registration_status enums + events table (banner_preset slug, nullable starts_at/location with published CHECK, price_cents NULL = gratuito, responsible_user_id, status lifecycle, (tenant,status,starts_at) index) with forced tenant RLS
-- [ ] EVT.2 DB: event_registrations (composite event/student FKs, confirmed_by_user_id, status, UNIQUE tenant+event+student) + charges.event_registration_id composite-FK hardening closing the BIL.2 stub
-- [ ] EVT.3 DB: dev seeds — draft/published free/paid events per fixture academy with mixed registrations (confirmed free, paid-settled, pending_payment) and their event-origin charges
+- [x] EVT.1 DB: event_status + event_registration_status enums + events table (banner_preset slug, nullable starts_at/location with published CHECK, price_cents NULL = gratuito, responsible_user_id, status lifecycle, (tenant,status,starts_at) index) with forced tenant RLS
+- [x] EVT.2 DB: event_registrations (composite event/student FKs, confirmed_by_user_id, status, UNIQUE tenant+event+student) + charges.event_registration_id composite-FK hardening closing the BIL.2 stub
+- [x] EVT.3 DB: dev seeds — draft/published free/paid events per fixture academy with mixed registrations (confirmed free, paid-settled, pending_payment) and their event-origin charges
 - [ ] EVT.4 Backend: events module admin — CRUD + publish/cancel lifecycle (cancel cancels open charges), inscritos list with confirmados/inscritos/arrecadado totals, Comunicar endpoint emitting events.announcement.requested + audit only
 - [ ] EVT.5 Backend: aluno — home upcomingEvents (next 2 with own state), event detail, free confirm/cancel, paid registration issuing the event-origin charge (guardian bill-to path shared) paid via existing wallet + simulate rails, normalized-event handler extended (succeeded→confirmed, refunded→canceled)
 - [ ] EVT.6 Backend: responsável events with per-dependent states + confirm/pay/cancel per dependent; professor dashboard eventos-futuros count + list (read-only, no professor write route)

@@ -120,6 +120,27 @@
       "when": 1786290699875,
       "tag": "0016_billing_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1786300202451,
+      "tag": "0017_events_registration_stub_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1786300225947,
+      "tag": "0018_events_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1786300231331,
+      "tag": "0019_events_hardening",
+      "breakpoints": true
     }
   ]
 }

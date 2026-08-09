@@ -20,6 +20,7 @@ import { academies } from './academies.js';
 import { academyPlans } from './academy-plans.js';
 import { users } from './auth.js';
 import { guardians, students } from './enrollment.js';
+import { eventRegistrations } from './events.js';
 import {
   chargeOrigin,
   chargeStatus,
@@ -53,11 +54,11 @@ const tenantPolicy = (tenantId: AnyPgColumn) => ({
 /**
  * One receivable ("cobrança"), any origin. Origin is hardened to per-origin
  * columns + CHECK (polymorphic bare uuid rejected): exactly the column
- * matching `origin` is non-null. `academy_plan_id` is a composite FK now;
- * `event_registration_id`/`order_id` ship as plain nullable uuid columns —
- * their composite FKs are added by the events and store slices when those
- * tables exist (same hardening pattern as the Phase-3 `invites.class_id`
- * migration, recorded 006 delta). Only plan charges are materialized in v1.
+ * matching `origin` is non-null. `academy_plan_id` and (since spec 008 EVT.2
+ * closed the BIL.2 delta) `event_registration_id` are composite tenant FKs;
+ * `order_id` ships as a plain nullable uuid column — its composite FK is
+ * added by the store slice when that table exists (same hardening pattern as
+ * the Phase-3 `invites.class_id` migration).
  */
 export const charges = pgTable(
   'charges',
@@ -76,7 +77,7 @@ export const charges = pgTable(
     origin: chargeOrigin('origin').notNull(),
     /** Set iff origin = 'plan' (composite tenant FK). */
     academyPlanId: uuid('academy_plan_id'),
-    /** Set iff origin = 'event'. Plain uuid until the events slice lands. */
+    /** Set iff origin = 'event' (composite tenant FK — spec 008 EVT.2). */
     eventRegistrationId: uuid('event_registration_id'),
     /** Set iff origin = 'order'. Plain uuid until the store slice lands. */
     orderId: uuid('order_id'),
@@ -126,6 +127,11 @@ export const charges = pgTable(
       name: 'charges_academy_plan_fk',
       columns: [t.tenantId, t.academyPlanId],
       foreignColumns: [academyPlans.tenantId, academyPlans.id],
+    }),
+    foreignKey({
+      name: 'charges_event_registration_fk',
+      columns: [t.tenantId, t.eventRegistrationId],
+      foreignColumns: [eventRegistrations.tenantId, eventRegistrations.id],
     }),
     pgPolicy('charges_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
   ],

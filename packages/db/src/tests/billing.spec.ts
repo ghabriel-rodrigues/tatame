@@ -13,6 +13,8 @@ import {
   academyPlans,
   billingCustomers,
   charges,
+  eventRegistrations,
+  events,
   guardians,
   invites,
   paymentMandates,
@@ -179,8 +181,33 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
   describe('charges origin hardening (BIL.2)', () => {
     it('accepts one charge per origin with exactly its origin column set', async () => {
       await withTenant(app.db, tenantA, (tx) => tx.insert(charges).values(planCharge()));
-      // Event/order columns are plain uuids until their slices land — the
-      // CHECK already governs them.
+      // The event linkage is a composite FK since EVT.2 — a real registration
+      // is required; `order_id` stays a plain uuid until the store slice.
+      const registrationId = await withTenant(app.db, tenantA, async (tx) => {
+        const [event] = await tx
+          .insert(events)
+          .values({
+            tenantId: tenantA,
+            name: 'Exame de Faixa',
+            responsibleUserId: payerUserId,
+            status: 'published',
+            location: 'Tatame principal',
+            startsAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
+            priceCents: 6000,
+          })
+          .returning({ id: events.id });
+        const [reg] = await tx
+          .insert(eventRegistrations)
+          .values({
+            tenantId: tenantA,
+            eventId: event!.id,
+            studentId: studentA,
+            confirmedByUserId: payerUserId,
+            status: 'pending_payment',
+          })
+          .returning({ id: eventRegistrations.id });
+        return reg!.id;
+      });
       await withTenant(app.db, tenantA, (tx) =>
         tx.insert(charges).values(
           planCharge({
@@ -188,7 +215,7 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
             academyPlanId: null,
             periodStart: null,
             periodEnd: null,
-            eventRegistrationId: randomUUID(),
+            eventRegistrationId: registrationId,
           }),
         ),
       );

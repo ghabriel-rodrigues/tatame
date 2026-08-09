@@ -49,6 +49,8 @@ const BILLING_TABLES = [
   'billing_customers',
 ];
 
+const EVENTS_TABLES = ['events', 'event_registrations'];
+
 const AUTH_FUNCTIONS = [
   'auth_login_lookup',
   'auth_user_memberships',
@@ -80,7 +82,7 @@ describe('migrations', () => {
     await expect(runMigrations(fresh.url)).resolves.toBeUndefined();
   });
 
-  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables, the 6 graduation tables and the 5 billing tables', async () => {
+  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables, the 6 graduation tables, the 5 billing tables and the 2 events tables', async () => {
     const res = await client.query(
       `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`,
     );
@@ -91,18 +93,20 @@ describe('migrations', () => {
       ...ATTENDANCE_TABLES,
       ...GRADUATION_TABLES,
       ...BILLING_TABLES,
+      ...EVENTS_TABLES,
     ]) {
       expect(names).toContain(table);
     }
   });
 
-  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance, graduation and billing table', async () => {
+  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance, graduation, billing and events table', async () => {
     const allTables = [
       ...AUTH_TABLES,
       ...ENROLLMENT_TABLES,
       ...ATTENDANCE_TABLES,
       ...GRADUATION_TABLES,
       ...BILLING_TABLES,
+      ...EVENTS_TABLES,
     ];
     const res = await client.query(
       `SELECT relname, relrowsecurity, relforcerowsecurity
@@ -137,7 +141,12 @@ describe('migrations', () => {
     expect(res.rows.length).toBeGreaterThanOrEqual(11); // 3 auth + 5 enrollment + 3 attendance
     // The catalog-driven sweep must pick the new slices' tables up on its own.
     const names = res.rows.map((r) => r.table_name);
-    for (const table of [...ENROLLMENT_TABLES, ...ATTENDANCE_TABLES, ...BILLING_TABLES]) {
+    for (const table of [
+      ...ENROLLMENT_TABLES,
+      ...ATTENDANCE_TABLES,
+      ...BILLING_TABLES,
+      ...EVENTS_TABLES,
+    ]) {
       expect(names, `meta-test must cover ${table}`).toContain(table);
     }
     for (const row of res.rows) {
@@ -234,6 +243,11 @@ describe('migrations', () => {
       'payment_mandates_student_fk',
       'students_academy_plan_fk',
       'invites_academy_plan_fk',
+      // Events slice (EVT.1/EVT.2): registrations bind same-tenant events and
+      // students, and the BIL.2 event_registration_id stub is now hardened.
+      'event_registrations_event_fk',
+      'event_registrations_student_fk',
+      'charges_event_registration_fk',
     ]) {
       expect(names, `composite FK ${fk}`).toContain(fk);
     }
@@ -439,6 +453,94 @@ describe('migrations', () => {
         'invites_academy_plan_fk',
         'students_academy_plan_fk',
       ]);
+    } finally {
+      await pool.end();
+      await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
+      await admin.end();
+      rmSync(partialDir, { recursive: true, force: true });
+    }
+  });
+
+  it('hardens charges.event_registration_id over Phase-6 data (dangling event charges removed, FK added)', async () => {
+    // Rebuild pre-events state: a migrations folder truncated at 0016.
+    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
+    const phase6Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 16);
+    expect(phase6Entries).toHaveLength(17);
+    const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase6-'));
+    mkdirSync(join(partialDir, 'meta'));
+    writeFileSync(
+      join(partialDir, 'meta', '_journal.json'),
+      JSON.stringify({ ...journal, entries: phase6Entries }),
+    );
+    for (const entry of phase6Entries) {
+      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+    }
+
+    const dbName = `t_${randomUUID().replaceAll('-', '')}`;
+    const admin = new pg.Client({ connectionString: testAdminUrl() });
+    await admin.connect();
+    await admin.query(`CREATE DATABASE ${dbName}`);
+    const url = new URL(testAdminUrl());
+    url.pathname = `/${dbName}`;
+
+    const pool = new pg.Pool({ connectionString: url.toString(), max: 1 });
+    try {
+      // Phases 1–6 only, then live data: an event-origin charge with a
+      // dangling registration binding (event_registrations did not exist yet,
+      // so the BIL.2 plain-uuid stub accepted any uuid) plus its settlement
+      // attempt — and a plan charge that must survive the cleanup untouched.
+      await migrate(drizzle(pool), { migrationsFolder: partialDir });
+      const tenant = randomUUID();
+      const student = randomUUID();
+      const plan = randomUUID();
+      const eventCharge = randomUUID();
+      const planCharge = randomUUID();
+      await pool.query(
+        `INSERT INTO academies (id, name, slug, contact_email) VALUES ($1, 'Phase6', 'phase6', 'p6@t.dev')`,
+        [tenant],
+      );
+      await pool.query(
+        `INSERT INTO students (id, tenant_id, full_name, birth_date) VALUES ($1, $2, 'Phase Six Student', '2000-01-01')`,
+        [student, tenant],
+      );
+      await pool.query(
+        `INSERT INTO academy_plans (id, tenant_id, name, amount_cents, recurrence, due_day)
+         VALUES ($1, $2, 'Mensal', 18000, 'monthly', 5)`,
+        [plan, tenant],
+      );
+      await pool.query(
+        `INSERT INTO charges (id, tenant_id, student_id, origin, event_registration_id, amount_cents, due_date)
+         VALUES ($1, $2, $3, 'event', $4, 6000, '2026-09-01')`,
+        [eventCharge, tenant, student, randomUUID()],
+      );
+      await pool.query(
+        `INSERT INTO payments (id, tenant_id, charge_id, method, amount_cents, provider)
+         VALUES ($1, $2, $3, 'pix', 6000, 'simulated')`,
+        [randomUUID(), tenant, eventCharge],
+      );
+      await pool.query(
+        `INSERT INTO charges (id, tenant_id, student_id, origin, academy_plan_id, period_start, period_end, amount_cents, due_date)
+         VALUES ($1, $2, $3, 'plan', $4, '2026-08-01', '2026-08-31', 18000, '2026-08-05')`,
+        [planCharge, tenant, student, plan],
+      );
+
+      // The events migrations (0017+) must apply on top of that state.
+      await migrate(drizzle(pool), { migrationsFolder });
+
+      // The dangling event charge and its payment are gone (the per-origin
+      // CHECK forbids nulling, unlike the 0006/0014 nullable stubs)...
+      const gone = await pool.query(`SELECT 1 FROM charges WHERE origin = 'event'`);
+      expect(gone.rows).toHaveLength(0);
+      const orphanPayments = await pool.query(`SELECT 1 FROM payments`);
+      expect(orphanPayments.rows).toHaveLength(0);
+      // ...while plan money survives untouched.
+      const survivor = await pool.query(`SELECT id FROM charges WHERE origin = 'plan'`);
+      expect(survivor.rows.map((r) => r.id)).toEqual([planCharge]);
+
+      const fk = await pool.query(
+        `SELECT 1 FROM pg_constraint WHERE conname = 'charges_event_registration_fk' AND contype = 'f'`,
+      );
+      expect(fk.rows).toHaveLength(1);
     } finally {
       await pool.end();
       await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);

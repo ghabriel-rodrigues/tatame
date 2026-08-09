@@ -17,6 +17,8 @@ import {
   classes,
   credentials,
   enrollments,
+  eventRegistrations,
+  events,
   graduationRules,
   guardians,
   martialArts,
@@ -36,6 +38,7 @@ import {
   seedBeltCatalog,
   seedBillingFixtures,
   seedDevFixtures,
+  seedEventFixtures,
   seedPlatformPlans,
 } from '../seed/index.js';
 import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
@@ -53,6 +56,7 @@ describe('seeds', () => {
     await seedBeltCatalog(platform.db);
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
     await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
   });
 
   afterAll(async () => {
@@ -458,10 +462,13 @@ describe('seeds', () => {
       );
       const tenantId = academy!.id;
 
-      const rows = await withTenant(app.db, tenantId, (tx) => tx.select().from(charges));
+      // Event-origin money belongs to the EVT.3 fixtures — scope to plan.
+      const rows = (
+        await withTenant(app.db, tenantId, (tx) => tx.select().from(charges))
+      ).filter((c) => c.origin === 'plan');
       // 7 plan charges: main open+paid, one overdue, 2 dependents × (open+paid).
       expect(rows).toHaveLength(7);
-      expect(rows.every((c) => c.origin === 'plan' && c.academyPlanId !== null)).toBe(true);
+      expect(rows.every((c) => c.academyPlanId !== null)).toBe(true);
       expect(rows.every((c) => c.periodStart !== null && c.periodEnd !== null)).toBe(true);
 
       const byStatus = new Map<string, number>();
@@ -479,7 +486,10 @@ describe('seeds', () => {
       expect(guardianBilled).toHaveLength(4);
 
       // Settled payments: simulated provider, render-ready payloads, receipt.
-      const paymentRows = await withTenant(app.db, tenantId, (tx) => tx.select().from(payments));
+      const planChargeIds = new Set(rows.map((c) => c.id));
+      const paymentRows = (
+        await withTenant(app.db, tenantId, (tx) => tx.select().from(payments))
+      ).filter((p) => planChargeIds.has(p.chargeId));
       expect(paymentRows).toHaveLength(3);
       expect(paymentRows.every((p) => p.status === 'succeeded' && p.provider === 'simulated')).toBe(
         true,
@@ -513,8 +523,10 @@ describe('seeds', () => {
           .where(sql`${auditLogs.action} LIKE 'billing.%'`),
       );
       const actions = audit.map((a) => a.action);
-      expect(actions.filter((a) => a === 'billing.charge.created')).toHaveLength(7);
-      expect(actions.filter((a) => a === 'billing.charge.paid')).toHaveLength(3);
+      // 7 plan charges (BIL.5) + 2 event charges (EVT.3); 3 plan settlements
+      // + 1 event settlement — money rows share the billing action codes.
+      expect(actions.filter((a) => a === 'billing.charge.created')).toHaveLength(9);
+      expect(actions.filter((a) => a === 'billing.charge.paid')).toHaveLength(4);
     }
   });
 
@@ -570,6 +582,139 @@ describe('seeds', () => {
     expect(byName.get('Fabio Fila')).toBeNull();
   });
 
+  it('seeds 3 events per academy: draft without date/local, published free, published paid R$ 60 (EVT.3)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const rows = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(events).orderBy(asc(events.name)),
+      );
+      expect(rows.map((e) => e.name)).toEqual([
+        'Exame de Faixa',
+        'Open Mat de Verao',
+        'Seminario de Guarda',
+      ]);
+      expect(rows.every((e) => e.responsibleUserId !== null && e.description !== null)).toBe(true);
+
+      // The "Rascunho · Data a definir" card: draft may lack date and local.
+      const draft = rows.find((e) => e.name === 'Seminario de Guarda')!;
+      expect(draft.status).toBe('draft');
+      expect(draft.startsAt).toBeNull();
+      expect(draft.location).toBeNull();
+
+      // Published free: NULL price = gratuito, date + local present (CHECK).
+      const free = rows.find((e) => e.name === 'Open Mat de Verao')!;
+      expect(free.status).toBe('published');
+      expect(free.priceCents).toBeNull();
+      expect(free.startsAt).not.toBeNull();
+      expect(free.location).toBe('Tatame principal');
+
+      // Published paid: the handoff's R$ 60 chip, in integer cents.
+      const paid = rows.find((e) => e.name === 'Exame de Faixa')!;
+      expect(paid.status).toBe('published');
+      expect(paid.priceCents).toBe(6_000);
+      expect(paid.startsAt).not.toBeNull();
+      expect(paid.location).toBe('Ginasio central');
+
+      // Lifecycle audited: 3 created, 2 published.
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ action: auditLogs.action })
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} LIKE 'events.event.%'`),
+      );
+      const actions = audit.map((a) => a.action);
+      expect(actions.filter((a) => a === 'events.event.created')).toHaveLength(3);
+      expect(actions.filter((a) => a === 'events.event.published')).toHaveLength(2);
+    }
+  });
+
+  it('seeds mixed registrations with their event-origin charges (EVT.3)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const eventRows = await withTenant(app.db, tenantId, (tx) => tx.select().from(events));
+      const free = eventRows.find((e) => e.name === 'Open Mat de Verao')!;
+      const paid = eventRows.find((e) => e.name === 'Exame de Faixa')!;
+
+      const regs = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(eventRegistrations),
+      );
+      expect(regs).toHaveLength(4);
+      expect(regs.every((r) => r.confirmedByUserId !== null)).toBe(true);
+
+      // Free event: aluno + one dependent, both confirmed direto (no money).
+      const freeRegs = regs.filter((r) => r.eventId === free.id);
+      expect(freeRegs).toHaveLength(2);
+      expect(freeRegs.every((r) => r.status === 'confirmed')).toBe(true);
+      const [guardian] = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(guardians),
+      );
+      const dependents = await withTenant(app.db, tenantId, (tx) =>
+        tx.select({ id: students.id }).from(students).where(eq(students.guardianId, guardian!.id)),
+      );
+      const dependentIds = new Set(dependents.map((d) => d.id));
+      const freeDependent = freeRegs.find((r) => dependentIds.has(r.studentId));
+      expect(freeDependent).toBeDefined();
+      if (guardian!.userId) {
+        // Per-dependent confirmation acted by the responsável (charter rule).
+        expect(freeDependent!.confirmedByUserId).toBe(guardian!.userId);
+      }
+
+      // Paid event: one settled (confirmed + paid charge + Pix payment), one
+      // pending_payment with its open charge billed to the guardian.
+      const paidRegs = regs.filter((r) => r.eventId === paid.id);
+      expect(paidRegs.map((r) => r.status).sort()).toEqual(['confirmed', 'pending_payment']);
+
+      const eventCharges = (
+        await withTenant(app.db, tenantId, (tx) => tx.select().from(charges))
+      ).filter((c) => c.origin === 'event');
+      expect(eventCharges).toHaveLength(2);
+      expect(eventCharges.every((c) => c.amountCents === 6_000)).toBe(true);
+      expect(eventCharges.every((c) => c.eventRegistrationId !== null)).toBe(true);
+      expect(
+        eventCharges.every((c) => c.academyPlanId === null && c.orderId === null),
+      ).toBe(true);
+
+      const settledReg = paidRegs.find((r) => r.status === 'confirmed')!;
+      const settledCharge = eventCharges.find(
+        (c) => c.eventRegistrationId === settledReg.id,
+      )!;
+      expect(settledCharge.status).toBe('paid');
+      const [settlement] = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(payments).where(eq(payments.chargeId, settledCharge.id)),
+      );
+      expect(settlement!.status).toBe('succeeded');
+      expect(settlement!.method).toBe('pix');
+      expect(settlement!.provider).toBe('simulated');
+      expect(settlement!.receiptUrl).not.toBeNull();
+
+      const pendingReg = paidRegs.find((r) => r.status === 'pending_payment')!;
+      const pendingCharge = eventCharges.find(
+        (c) => c.eventRegistrationId === pendingReg.id,
+      )!;
+      expect(pendingCharge.status).toBe('open');
+      // The dependent's inscription is billed to the responsável.
+      expect(pendingReg.studentId && dependentIds.has(pendingReg.studentId)).toBe(true);
+      expect(pendingCharge.guardianId).toBe(guardian!.id);
+
+      // Confirmed transitions audited (pending awaits the handler).
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ action: auditLogs.action })
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} = 'events.registration.confirmed'`),
+      );
+      expect(audit).toHaveLength(3);
+    }
+  });
+
   it('is idempotent — re-running seeds changes no row counts', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
@@ -595,9 +740,11 @@ describe('seeds', () => {
         const [pm] = await tx.select({ n: sql<number>`count(*)::int` }).from(paymentMandates);
         const [bc] = await tx.select({ n: sql<number>`count(*)::int` }).from(billingCustomers);
         const [ac] = await tx.select({ n: sql<number>`count(*)::int` }).from(academies);
+        const [ev] = await tx.select({ n: sql<number>`count(*)::int` }).from(events);
+        const [er] = await tx.select({ n: sql<number>`count(*)::int` }).from(eventRegistrations);
         return [
           u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n,
-          b!.n, gr!.n, sg!.n, sn!.n, ap!.n, ch!.n, pay!.n, pm!.n, bc!.n, ac!.n,
+          b!.n, gr!.n, sg!.n, sn!.n, ap!.n, ch!.n, pay!.n, pm!.n, bc!.n, ac!.n, ev!.n, er!.n,
         ];
       });
 
@@ -606,6 +753,7 @@ describe('seeds', () => {
     await seedBeltCatalog(platform.db);
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
     await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);
   });

@@ -98,6 +98,24 @@ export const paymentProvider = pgEnum('payment_provider', ['simulated', 'stripe'
 /** Card-recurrence mandate lifecycle ("recorrência ativa" toggle). */
 export const mandateStatus = pgEnum('mandate_status', ['active', 'canceled']);
 
+/**
+ * Event lifecycle — `draft → published → canceled` (spec 008). Drafts may
+ * lack date/local ("Rascunho · Data a definir"); publishing requires both
+ * (the `events_published_ck` CHECK). Never hard-deleted.
+ */
+export const eventStatus = pgEnum('event_status', ['draft', 'published', 'canceled']);
+
+/**
+ * Registration lifecycle — one row per (event, student) whose status flips:
+ * free confirm ⇒ `confirmed` directly; paid ⇒ `pending_payment` until the
+ * normalized provider event settles it; cancel-and-reconfirm reuses the row.
+ */
+export const eventRegistrationStatus = pgEnum('event_registration_status', [
+  'pending_payment',
+  'confirmed',
+  'canceled',
+]);
+
 /** Academy status: Trial / Ativa / Inadimplente / Suspensa. */
 export const academyStatus = pgEnum('academy_status', [
   'trial',

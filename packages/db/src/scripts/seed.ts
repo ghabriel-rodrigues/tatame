@@ -9,6 +9,7 @@ import {
   seedBeltCatalog,
   seedBillingFixtures,
   seedDevFixtures,
+  seedEventFixtures,
   seedPlatformPlans,
 } from '../seed/index.js';
 
@@ -30,6 +31,8 @@ try {
   console.log('Dev fixtures seeded.');
   await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
   console.log('Billing fixtures seeded.');
+  await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
+  console.log('Event fixtures seeded.');
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
