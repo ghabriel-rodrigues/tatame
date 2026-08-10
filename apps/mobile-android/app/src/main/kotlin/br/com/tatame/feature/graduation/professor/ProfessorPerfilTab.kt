@@ -22,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -38,6 +41,8 @@ import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
 import br.com.tatame.feature.graduation.toGraduationMessageRes
+import br.com.tatame.feature.store.StorePerfilRow
+import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,9 +81,11 @@ class ProfessorProfileViewModel(private val repository: GraduationRepository) : 
 
 /**
  * Professor Perfil tab (GRD.20, professor-12): own belt chip (display-only
- * membership rank — hidden when unset) and the "Graduações válidas" card
+ * membership rank — hidden when unset), the "Graduações válidas" card
  * rendering the merged régua as belt chips, kids belts dimmed when the admin
- * toggled them off. Convite por link stays with the invites slice.
+ * toggled them off, and the "Loja da academia" row (STO.12, professor-13 —
+ * the professor's storefront entry, strictly consumer-side). Convite por
+ * link stays with the invites slice.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -90,6 +97,17 @@ fun ProfessorPerfilTab(
     viewModel: ProfessorProfileViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    var lojaOpen by rememberSaveable { mutableStateOf(false) }
+
+    // STO.12 — the perfil row opens the SAME shared storefront as the aluno.
+    if (lojaOpen) {
+        StoreFlowScreen(
+            academyName = academyName,
+            onBack = { lojaOpen = false },
+            modifier = modifier,
+        )
+        return
+    }
 
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()),
@@ -138,6 +156,11 @@ fun ProfessorPerfilTab(
                 ValidGraduationsCard(profile = loaded.profile)
             }
         }
+
+        // STO.12 — "Loja da academia" row (professor perfil placement, no
+        // "Novo" pill per professor-13; spec 009 story 17).
+        Spacer(Modifier.height(LumiraTokens.Space.S4))
+        StorePerfilRow(onOpen = { lojaOpen = true })
 
         Spacer(Modifier.height(LumiraTokens.Space.S8))
         OutlinedButton(

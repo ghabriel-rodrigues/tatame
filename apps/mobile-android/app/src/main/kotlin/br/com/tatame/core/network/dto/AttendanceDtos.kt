@@ -86,7 +86,8 @@ data class AlunoTodayClass(
  * (GRD.7); `mensalidade` is the real "mensalidade em aberto" alert (spec 006,
  * story 7) deep-linking into the Carteira, null = nothing open;
  * `upcomingEvents` is "Próximos eventos": the next 2 published events with
- * own registration state (spec 008).
+ * own registration state (spec 008); `storeStrip` is the "Loja da academia"
+ * strip — the first 3 active store products + "Ver tudo" (spec 009, additive).
  */
 @Serializable
 data class AlunoHomeResponse(
@@ -96,6 +97,7 @@ data class AlunoHomeResponse(
     val graduation: AlunoHomeGraduation? = null,
     val mensalidade: MensalidadeAlert? = null,
     val upcomingEvents: List<AlunoEventItem> = emptyList(),
+    val storeStrip: List<ProductCard> = emptyList(),
 )
 
 /** `LiveSessionDto` */

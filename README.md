@@ -236,8 +236,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] STO.9 Web: /admin/loja Pedidos — board per admin-04 (Recebido/Em andamento/Entregue/Cancelado chips, pending excluded), status sheet per admin-05 with atual marker, transitions and Cancelado→refund confirm
 - [ ] STO.10 RN: shared vitrine + detail in both shells — aluno home Loja strip + perfil row, professor perfil row, vitrine per aluno-16/professor-13 with working chip carousel and unclipped grid, detail per aluno-17 (gallery variants, size pills, qty stepper capped, Comprar com Pix → existing Pix sheet + simulate)
 - [ ] STO.11 RN: Meus pedidos with status chips + retirada note + pending cancel, pedido-pago success toast, Carteira histórico showing aluno order payments
-- [ ] STO.12 Android: shared vitrine + detail + shell entries (same scope as STO.10)
-- [ ] STO.13 Android: Meus pedidos + purchase feedback (same scope as STO.11)
+- [x] STO.12 Android: shared vitrine + detail + shell entries (same scope as STO.10)
+- [x] STO.13 Android: Meus pedidos + purchase feedback (same scope as STO.11)
 - [ ] STO.14 iOS: shared vitrine + detail + shell entries (same scope as STO.10)
 - [ ] STO.15 iOS: Meus pedidos + purchase feedback (same scope as STO.11)
 

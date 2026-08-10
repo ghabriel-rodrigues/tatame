@@ -48,11 +48,15 @@ data class Plan(
     val isActive: Boolean,
 )
 
-/** `ChargeDto` — `overdue` is the derived truth (never the lazy status flip). */
+/**
+ * `ChargeDto` — `overdue` is the derived truth (never the lazy status flip).
+ * `studentId` is null only on order-origin charges of a professor buyer
+ * (spec 009 relaxed the column; the shape here follows the contract).
+ */
 @Serializable
 data class Charge(
     val id: String,
-    val studentId: String,
+    val studentId: String? = null,
     val guardianId: String? = null,
     val status: String, // open | paid | overdue | canceled | refunded
     val overdue: Boolean,

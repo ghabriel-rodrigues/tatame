@@ -88,6 +88,12 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     ApiErrorCodes.EVENT_PUBLISH_REQUIREMENTS -> ApiError.Events.PublishRequirements
     ApiErrorCodes.EVENT_NOT_PUBLISHED -> ApiError.Events.NotPublished
     ApiErrorCodes.EVENT_REGISTRATION_SETTLED -> ApiError.Events.RegistrationSettled
+    ApiErrorCodes.STORE_INSUFFICIENT_STOCK -> ApiError.Store.InsufficientStock
+    ApiErrorCodes.STORE_SIZE_REQUIRED -> ApiError.Store.SizeRequired
+    ApiErrorCodes.STORE_SIZE_INVALID -> ApiError.Store.SizeInvalid
+    ApiErrorCodes.STORE_PRODUCT_NOT_PURCHASABLE -> ApiError.Store.ProductNotPurchasable
+    ApiErrorCodes.STORE_ORDER_NOT_CANCELABLE -> ApiError.Store.OrderNotCancelable
+    ApiErrorCodes.STORE_ORDER_INVALID_TRANSITION -> ApiError.Store.OrderInvalidTransition
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden

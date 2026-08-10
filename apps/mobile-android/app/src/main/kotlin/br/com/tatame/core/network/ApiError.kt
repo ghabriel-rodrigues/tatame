@@ -70,6 +70,14 @@ object ApiErrorCodes {
     const val EVENT_PUBLISH_REQUIREMENTS = "event.publish_requirements"
     const val EVENT_NOT_PUBLISHED = "event.not_published"
     const val EVENT_REGISTRATION_SETTLED = "event.registration_settled"
+
+    // Store slice (spec 009) additions.
+    const val STORE_INSUFFICIENT_STOCK = "store.insufficient_stock"
+    const val STORE_SIZE_REQUIRED = "store.size_required"
+    const val STORE_SIZE_INVALID = "store.size_invalid"
+    const val STORE_PRODUCT_NOT_PURCHASABLE = "store.product_not_purchasable"
+    const val STORE_ORDER_NOT_CANCELABLE = "store.order_not_cancelable"
+    const val STORE_ORDER_INVALID_TRANSITION = "store.order_invalid_transition"
 }
 
 /**
@@ -186,6 +194,27 @@ sealed interface ApiError {
 
         /** `event.registration_settled` — self-cancel of a paid confirmed registration. */
         data object RegistrationSettled : Events
+    }
+
+    /** Store-slice stable codes (spec 009) the vitrine/compra UX maps to PT-BR copy. */
+    sealed interface Store : ApiError {
+        /** `store.insufficient_stock` — quantity > current stock at order creation. */
+        data object InsufficientStock : Store
+
+        /** `store.size_required` — sized product ordered without a size. */
+        data object SizeRequired : Store
+
+        /** `store.size_invalid` — size not among the product's pills. */
+        data object SizeInvalid : Store
+
+        /** `store.product_not_purchasable` — archived or otherwise unbuyable product. */
+        data object ProductNotPurchasable : Store
+
+        /** `store.order_not_cancelable` — buyer cancel of an already-paid order. */
+        data object OrderNotCancelable : Store
+
+        /** `store.order_invalid_transition` — admin board path (web console). */
+        data object OrderInvalidTransition : Store
     }
 
     /** 422 `validation.failed` with field-level errors. */

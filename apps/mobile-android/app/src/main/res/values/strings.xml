@@ -353,6 +353,36 @@
     <string name="error_event_not_published">Este evento não está mais disponível.</string>
     <string name="error_event_registration_settled">Inscrição paga só pode ser cancelada pela academia.</string>
 
+    <!-- Store (STO.12/13, spec 009 — aluno-16/17 / professor-13) -->
+    <string name="store_title">Loja %1$s</string>
+    <string name="store_title_fallback">Loja da academia</string>
+    <string name="store_subtitle">Produtos oficiais · retirada na recepção</string>
+    <string name="store_search_placeholder">Buscar por nome ou tag (ex: kimono, treino)</string>
+    <string name="store_chip_all">Tudo</string>
+    <string name="store_empty">Nenhum produto encontrado.</string>
+    <string name="store_meus_pedidos_entry">Meus pedidos ›</string>
+    <string name="store_foto_indicator">Foto %1$d de 3</string>
+    <string name="store_size_label">Tamanho</string>
+    <string name="store_qty_label">Quantidade</string>
+    <string name="store_esgotado_line">Esgotado · avise a recepção para saber quando volta.</string>
+    <string name="store_buy_cta">Comprar com Pix · %1$s</string>
+    <string name="store_paid_banner">Pedido pago — retire na recepção da academia.</string>
+    <string name="store_pedidos_title">Meus pedidos</string>
+    <string name="store_pedidos_empty">Você ainda não fez pedidos na loja.</string>
+    <string name="store_pay_cta">Pagar</string>
+    <string name="store_cancel_cta">Cancelar pedido</string>
+    <string name="store_home_strip_title">Loja da academia</string>
+    <string name="store_ver_tudo">Ver tudo</string>
+    <string name="store_perfil_row_title">Loja da academia</string>
+    <string name="store_perfil_novo">Novo</string>
+
+    <!-- Store errors (stable codes → PT-BR copy) -->
+    <string name="error_store_insufficient_stock">Estoque insuficiente para essa quantidade.</string>
+    <string name="error_store_size_required">Escolha um tamanho para continuar.</string>
+    <string name="error_store_size_invalid">Tamanho indisponível para este produto.</string>
+    <string name="error_store_product_not_purchasable">Este produto não está mais disponível na loja.</string>
+    <string name="error_store_order_not_cancelable">Pedido pago só pode ser cancelado pela academia.</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>

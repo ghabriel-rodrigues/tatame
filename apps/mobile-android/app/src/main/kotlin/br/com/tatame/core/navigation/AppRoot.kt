@@ -108,6 +108,7 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 0 to { selectTab ->
                     AlunoHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
+                        academyName = me.academy?.name,
                         onOpenCarteira = { selectTab(3) },
                         onOpenAgenda = { selectTab(1) },
                     )
@@ -118,6 +119,7 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 2 to { selectTab ->
                     AlunoHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
+                        academyName = me.academy?.name,
                         openCheckinOnEnter = true,
                         onOpenCarteira = { selectTab(3) },
                         onOpenAgenda = { selectTab(1) },

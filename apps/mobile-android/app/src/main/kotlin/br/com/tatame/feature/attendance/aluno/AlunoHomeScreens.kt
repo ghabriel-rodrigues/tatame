@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import br.com.tatame.R
 import br.com.tatame.core.designsystem.components.BeltBar
@@ -50,6 +51,7 @@ import br.com.tatame.core.network.dto.AlunoHomeResponse
 import br.com.tatame.core.network.dto.AlunoTodayClass
 import br.com.tatame.core.network.dto.MensalidadeAlert
 import br.com.tatame.core.network.dto.AlunoEventItem
+import br.com.tatame.core.network.dto.ProductCard
 import br.com.tatame.feature.billing.BillingFormat
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.EnrollmentNotice
@@ -61,6 +63,9 @@ import br.com.tatame.feature.events.aluno.EventDetailScreen
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.aluno.AlunoGraduacaoScreen
 import br.com.tatame.feature.graduation.toBeltDisplay
+import br.com.tatame.feature.store.MonogramTile
+import br.com.tatame.feature.store.StoreFormat
+import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
@@ -79,6 +84,7 @@ import org.koin.androidx.compose.koinViewModel
 fun AlunoHomeTab(
     firstName: String,
     modifier: Modifier = Modifier,
+    academyName: String? = null,
     openCheckinOnEnter: Boolean = false,
     onOpenCarteira: () -> Unit = {},
     onOpenAgenda: () -> Unit = {},
@@ -87,6 +93,8 @@ fun AlunoHomeTab(
     val state by viewModel.uiState.collectAsState()
     var graduacaoOpen by rememberSaveable { mutableStateOf(false) }
     var eventOpen by rememberSaveable { mutableStateOf<String?>(null) }
+    var storeOpen by rememberSaveable { mutableStateOf(false) }
+    var storeProductOpen by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(openCheckinOnEnter) {
         if (openCheckinOnEnter) viewModel.openCheckinSheet()
@@ -105,6 +113,23 @@ fun AlunoHomeTab(
             eventId = eventId,
             onBack = {
                 eventOpen = null
+                viewModel.refresh()
+            },
+            modifier = modifier,
+        )
+        return
+    }
+
+    // STO.12 — the "Loja da academia" strip enters the shared storefront:
+    // "Ver tudo" opens the vitrine, a product card its detail. The home
+    // refetches on return (a settled purchase may change the strip).
+    if (storeOpen || storeProductOpen != null) {
+        StoreFlowScreen(
+            academyName = academyName,
+            initialProductId = storeProductOpen,
+            onBack = {
+                storeOpen = false
+                storeProductOpen = null
                 viewModel.refresh()
             },
             modifier = modifier,
@@ -134,6 +159,8 @@ fun AlunoHomeTab(
                 onOpenCarteira = onOpenCarteira,
                 onOpenAgenda = onOpenAgenda,
                 onOpenEvent = { eventOpen = it },
+                onOpenStore = { storeOpen = true },
+                onOpenStoreProduct = { storeProductOpen = it },
             )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
@@ -187,6 +214,8 @@ private fun AlunoHomeContent(
     onOpenCarteira: () -> Unit,
     onOpenAgenda: () -> Unit,
     onOpenEvent: (String) -> Unit,
+    onOpenStore: () -> Unit,
+    onOpenStoreProduct: (String) -> Unit,
 ) {
     HeroCard(todayClass = home.todayClass, onCheckin = onCheckin, onOpenAgenda = onOpenAgenda)
     // Real "mensalidade em aberto" alert (spec 006, story 7) — deep-links
@@ -208,6 +237,87 @@ private fun AlunoHomeContent(
     if (home.upcomingEvents.isNotEmpty()) {
         Spacer(Modifier.height(LumiraTokens.Space.S5))
         UpcomingEventsSection(events = home.upcomingEvents, onOpenEvent = onOpenEvent)
+    }
+    // STO.12 — "Loja da academia" strip: the first 3 active store products +
+    // "Ver tudo" (spec 009); the section hides when the catalog is empty.
+    if (home.storeStrip.isNotEmpty()) {
+        Spacer(Modifier.height(LumiraTokens.Space.S5))
+        StoreStripSection(
+            products = home.storeStrip,
+            onVerTudo = onOpenStore,
+            onOpenProduct = onOpenStoreProduct,
+        )
+    }
+}
+
+@Composable
+private fun StoreStripSection(
+    products: List<ProductCard>,
+    onVerTudo: () -> Unit,
+    onOpenProduct: (String) -> Unit,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = stringResource(R.string.store_home_strip_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = stringResource(R.string.store_ver_tudo),
+            style = MaterialTheme.typography.labelSmall,
+            color = LumiraTokens.Colors.Purple700,
+            modifier = Modifier
+                .clickable(onClick = onVerTudo)
+                .padding(LumiraTokens.Space.S1),
+        )
+    }
+    Spacer(Modifier.height(LumiraTokens.Space.S3))
+    Row(horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2)) {
+        products.take(3).forEach { product ->
+            StoreStripCard(
+                product = product,
+                onClick = { onOpenProduct(product.id) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+/** One home-strip mini card: monogram gradient tile + name + price. */
+@Composable
+private fun StoreStripCard(
+    product: ProductCard,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        shape = RoundedCornerShape(LumiraTokens.Radius.Md),
+        color = MaterialTheme.colorScheme.surface,
+        modifier = modifier.clickable(onClick = onClick),
+    ) {
+        Column(modifier = Modifier.padding(LumiraTokens.Space.S2)) {
+            MonogramTile(
+                monogram = product.monogram,
+                gradientPreset = product.gradientPreset,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(LumiraTokens.Space.S16),
+            )
+            Spacer(Modifier.height(LumiraTokens.Space.S1))
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = StoreFormat.priceBRL(product.priceCents),
+                style = MaterialTheme.typography.labelSmall,
+                color = LumiraTokens.Colors.Purple700,
+            )
+        }
     }
 }
 

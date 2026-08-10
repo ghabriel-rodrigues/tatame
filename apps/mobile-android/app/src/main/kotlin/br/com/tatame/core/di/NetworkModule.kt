@@ -14,6 +14,7 @@ import br.com.tatame.core.network.GraduationApi
 import br.com.tatame.core.network.ProblemJson
 import br.com.tatame.core.network.RefreshAuthenticator
 import br.com.tatame.core.network.SessionTokenProvider
+import br.com.tatame.core.network.StoreApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -89,6 +90,9 @@ val networkModule = module {
     }
     single<EventsApi> {
         buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(EventsApi::class.java)
+    }
+    single<StoreApi> {
+        buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(StoreApi::class.java)
     }
 }
 

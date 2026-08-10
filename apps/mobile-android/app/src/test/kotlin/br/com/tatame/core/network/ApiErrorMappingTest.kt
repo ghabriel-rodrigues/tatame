@@ -126,6 +126,34 @@ class ApiErrorMappingTest {
     }
 
     @Test
+    fun `store codes map to the dedicated errors`() {
+        assertEquals(
+            ApiError.Store.InsufficientStock,
+            mapHttpError(409, """{"status":409,"code":"store.insufficient_stock"}"""),
+        )
+        assertEquals(
+            ApiError.Store.SizeRequired,
+            mapHttpError(422, """{"status":422,"code":"store.size_required"}"""),
+        )
+        assertEquals(
+            ApiError.Store.SizeInvalid,
+            mapHttpError(422, """{"status":422,"code":"store.size_invalid"}"""),
+        )
+        assertEquals(
+            ApiError.Store.ProductNotPurchasable,
+            mapHttpError(409, """{"status":409,"code":"store.product_not_purchasable"}"""),
+        )
+        assertEquals(
+            ApiError.Store.OrderNotCancelable,
+            mapHttpError(409, """{"status":409,"code":"store.order_not_cancelable"}"""),
+        )
+        assertEquals(
+            ApiError.Store.OrderInvalidTransition,
+            mapHttpError(409, """{"status":409,"code":"store.order_invalid_transition"}"""),
+        )
+    }
+
+    @Test
     fun `enrollment codes never regress plain conflicts`() {
         assertEquals(
             ApiError.Conflict,
