@@ -2,8 +2,9 @@
  * Aluno Agenda tab (AGD.5, aluno-11): day pills defaulting to today +
  * weekday-parameterized fetch, class card anatomy, the check-in affordance
  * rule (today/not-today/checked) handing off to the ATT.15 sheet, the
- * "Sem aulas neste dia" empty state, the honest "Eventos do mês" placeholder
- * and the home hero "Ver agenda" CTA landing on the real tab.
+ * "Sem aulas neste dia" empty state, the real "Eventos do mês" section
+ * (EVT.10 — state chips, tap → detail) and the home hero "Ver agenda" CTA
+ * landing on the real tab.
  */
 
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
@@ -13,6 +14,13 @@ import { sessionTestApi } from '../../src/session/session-store';
 import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
 import { OPEN_MAT_CLASS_ID, makeAlunoHome } from '../helpers/attendance';
 import { makeAgenda, makeAgendaClass, type AgendaOptions } from '../helpers/agenda';
+import {
+  OPEN_MAT_EVENT_ID,
+  makeAlunoEventDetail,
+  makeAlunoEventItem,
+  makePaidEventItem,
+  makeRegistration,
+} from '../helpers/events';
 
 jest.useFakeTimers();
 // Monday 2026-08-03 — pins "today" for the default pill and isToday flows.
@@ -135,13 +143,46 @@ describe('aluno Agenda (AGD.5)', () => {
     expect(screen.queryByText('Check-in')).toBeNull();
   });
 
-  it('ships the honest "Eventos do mês" empty section wired to the events array', async () => {
+  it('keeps the "Eventos do mês" empty state when the month has no events', async () => {
     renderAgenda(() => ({}));
     await openAgendaTab();
 
     await waitFor(() => expect(screen.getByText('Eventos do mês')).toBeTruthy());
     expect(screen.getByTestId('events-empty')).toBeTruthy();
     expect(screen.getByText('Nenhum evento neste mês')).toBeTruthy();
+  });
+
+  it('lists the month events with the own-state chip and pushes the detail (EVT.10)', async () => {
+    renderAgenda(
+      () => ({
+        events: [
+          makeAlunoEventItem({ registration: makeRegistration() }),
+          makePaidEventItem(),
+        ],
+      }),
+      (request) =>
+        request.method === 'GET' &&
+        request.path === `/v1/aluno/events/${OPEN_MAT_EVENT_ID}`
+          ? json(200, makeAlunoEventDetail())
+          : null,
+    );
+    await openAgendaTab();
+
+    await waitFor(() =>
+      expect(screen.getByTestId(`agenda-event-${OPEN_MAT_EVENT_ID}`)).toBeTruthy(),
+    );
+    // Own state wins over the valor chip; the paid card shows the price.
+    expect(screen.getByText('Confirmado')).toBeTruthy();
+    expect(screen.getByText('Festival Kids')).toBeTruthy();
+    expect(screen.getByText('R$ 60,00')).toBeTruthy();
+    expect(screen.queryByTestId('events-empty')).toBeNull();
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('Open mat de verão'));
+    });
+
+    await waitFor(() => expect(screen.getByTestId('event-info-card')).toBeTruthy());
+    expect(screen.getByText('Responsável: Prof. Rafael Nunes')).toBeTruthy();
   });
 
   it('home hero "Ver agenda" CTA navigates to the real Agenda tab', async () => {

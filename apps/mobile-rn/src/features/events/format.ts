@@ -160,6 +160,15 @@ export function dependentChipAction(
   return 'none'; // paid + confirmed: only the admin refund undoes it
 }
 
+/** "32 confirmados · gratuito" / "18 confirmados · R$ 120,00" (professor-02). */
+export function confirmadosLine(
+  confirmedCount: number,
+  priceCents: number | null | undefined,
+): string {
+  const price = priceCents == null ? 'gratuito' : formatBRL(priceCents);
+  return `${confirmedCount} confirmados · ${price}`;
+}
+
 /** Day-of-month → events map for one rendered "YYYY-MM" month (pink dots). */
 export function eventDayMap(
   events: CalendarEventItem[],

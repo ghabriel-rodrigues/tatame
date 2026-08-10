@@ -47,6 +47,8 @@ export interface AlunoHomeOptions {
   graduation?: null;
   /** Real "mensalidade em aberto" alert payload (BIL.16, story 7). */
   mensalidade?: AlunoHomeResponse['mensalidade'];
+  /** "Próximos eventos" cards (EVT.10, spec 008); defaults to none. */
+  upcomingEvents?: AlunoHomeResponse['upcomingEvents'];
 }
 
 /** aluno-03/09: Open mat today at 10:00; faixa azul 2 graus, 26 de 40. */
@@ -67,6 +69,7 @@ export function makeAlunoHome(options: AlunoHomeOptions = {}): AlunoHomeResponse
       ? {}
       : { graduation: { belt: makeBeltView(), progress: makeProgress() } }),
     ...(options.mensalidade ? { mensalidade: options.mensalidade } : {}),
+    upcomingEvents: options.upcomingEvents ?? [],
   };
 }
 
@@ -206,6 +209,8 @@ export function makeDashboard(
       checkedInCount: 18,
     },
     todayClasses: [],
+    upcomingEventsCount: 0,
+    upcomingEvents: [],
     ...overrides,
   };
 }

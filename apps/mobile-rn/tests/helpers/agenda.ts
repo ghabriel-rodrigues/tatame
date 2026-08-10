@@ -39,6 +39,8 @@ export interface AgendaOptions {
   weekday?: number;
   isToday?: boolean;
   classes?: AlunoAgendaClass[];
+  /** "Eventos do mês" cards (EVT.10, spec 008); defaults to none. */
+  events?: AlunoAgendaResponse['events'];
 }
 
 export function makeAgenda(options: AgendaOptions = {}): AlunoAgendaResponse {
@@ -46,7 +48,7 @@ export function makeAgenda(options: AgendaOptions = {}): AlunoAgendaResponse {
     weekday: options.weekday ?? 1,
     isToday: options.isToday ?? true,
     classes: options.classes ?? [makeAgendaClass()],
-    events: [],
+    events: options.events ?? [],
   };
 }
 
@@ -69,10 +71,11 @@ export function makeBuckets(partial: Partial<CalendarBuckets> = {}): CalendarBuc
 export function makeCalendar(
   partialBuckets: Partial<CalendarBuckets> = {},
   month = '2026-08',
+  events: CalendarResponse['events'] = [],
 ): CalendarResponse {
   return {
     month,
     classesByWeekday: makeBuckets(partialBuckets),
-    events: [],
+    events,
   };
 }

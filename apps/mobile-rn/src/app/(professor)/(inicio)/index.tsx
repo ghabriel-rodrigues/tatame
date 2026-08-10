@@ -1,10 +1,12 @@
 /**
  * Professor dashboard (ATT.18, professor-02): live tiles from
- * GET /v1/professor/dashboard — alunos hoje, presença média and the
- * eventos placeholder — plus the next-class hero with its checked-in count
- * and "Iniciar chamada" (→ ATT.17 live chamada). The remaining sections
- * (próximos da graduação, pagamentos) stay explicit placeholders owned by
- * their slices.
+ * GET /v1/professor/dashboard — alunos hoje, presença média and the real
+ * "eventos futuros" count (EVT.11, spec 008 story 22) — plus the next-class
+ * hero with its checked-in count and "Iniciar chamada" (→ ATT.17 live
+ * chamada), and the read-only "Eventos futuros" list (date square, name,
+ * "N confirmados · gratuito/R$ X" — academy-wide data, no professor event
+ * actions by design). "Próximos da graduação" stays an explicit placeholder
+ * owned by its slice.
  */
 
 import { Pressable, ScrollView, View } from 'react-native';
@@ -24,6 +26,8 @@ import { api } from '../../../api/query';
 import { greetingPt } from '../../../features/attendance/format';
 import { longDatePt } from '../../../features/enrollment/format';
 import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollment/ui';
+import { confirmadosLine, eventDateLine } from '../../../features/events/format';
+import { EventDateSquare } from '../../../features/events/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
 
 export default function ProfessorInicioScreen() {
@@ -99,7 +103,11 @@ export default function ProfessorInicioScreen() {
                     value={`${dashboard.presencaMediaPct}%`}
                     label="presença média"
                   />
-                  <StatTile testID="tile-eventos" value="—" label="eventos futuros" note="Em breve" />
+                  <StatTile
+                    testID="tile-eventos"
+                    value={`${dashboard.upcomingEventsCount ?? 0}`}
+                    label="eventos futuros"
+                  />
                 </View>
 
                 <Card variant="hero" testID="professor-hero">
@@ -160,6 +168,41 @@ export default function ProfessorInicioScreen() {
                     )}
                   </View>
                 </Card>
+
+                {(dashboard.upcomingEvents ?? []).length > 0 ? (
+                  // EVT.11 (story 22): read-only academy events from Início.
+                  <View style={{ gap: theme.space['3'] }}>
+                    <Text variant="subtitle">Eventos futuros</Text>
+                    {dashboard.upcomingEvents.map((event) => (
+                      <Card
+                        key={event.id}
+                        padding={theme.space['4']}
+                        testID={`professor-event-${event.id}`}
+                      >
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: theme.space['3'],
+                          }}
+                        >
+                          <EventDateSquare date={event.date} bannerPreset={event.bannerPreset} />
+                          <View style={{ flex: 1, gap: 3 }}>
+                            <Text variant="label" numberOfLines={1}>
+                              {event.name}
+                            </Text>
+                            <Text variant="caption" numberOfLines={1} style={{ fontSize: 11.5 }}>
+                              {eventDateLine(event.date, event.time)}
+                            </Text>
+                            <Text variant="caption" numberOfLines={1} style={{ fontSize: 11.5 }}>
+                              {confirmadosLine(event.confirmedCount, event.priceCents)}
+                            </Text>
+                          </View>
+                        </View>
+                      </Card>
+                    ))}
+                  </View>
+                ) : null}
 
                 <Card>
                   <View style={{ gap: 4 }}>

@@ -29,6 +29,8 @@ function renderPerfil(override?: FetchHandler): void {
         presencaMediaPct: 0,
         nextClass: null,
         todayClasses: [],
+        upcomingEventsCount: 0,
+        upcomingEvents: [],
       });
     }
     return null;

@@ -216,8 +216,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] EVT.7 Backend: AGD contracts filled — agenda "Eventos do mês" + dated month events in all three persona calendars, tenant-timezone bucketing, published-only visibility
 - [x] EVT.8 Backend: e2e suite green — lifecycle + publish validation, free/paid/refund registration transitions through the handler contract, charge cancel on registration cancel, guardian scoping 404s, month windows, announce gating, RBAC/RLS/read-only + CI route assertions
 - [x] EVT.9 Web: /admin/eventos console page + nav link per admin-13 — gradient-preset cards with valor chip and inscritos line, criar/editar/publicar/cancelar form (valor vazio = gratuito), inscritos view, Comunicar toast; admin calendar pink dots real
-- [ ] EVT.10 RN: aluno — home Próximos eventos section, Agenda Eventos do mês real, event detail per aluno-10 (Confirmar presença / Pagar inscrição → existing Pix sheet + simulate / Cancelar participação / confirmed banner), calendar event dots + day Evento entries
-- [ ] EVT.11 RN: responsável Eventos tab real per responsavel-06 (per-dependent chips with check, Pix per dependent) + professor dashboard eventos-futuros tile and list + professor calendar event dots
+- [x] EVT.10 RN: aluno — home Próximos eventos section, Agenda Eventos do mês real, event detail per aluno-10 (Confirmar presença / Pagar inscrição → existing Pix sheet + simulate / Cancelar participação / confirmed banner), calendar event dots + day Evento entries
+- [x] EVT.11 RN: responsável Eventos tab real per responsavel-06 (per-dependent chips with check, Pix per dependent) + professor dashboard eventos-futuros tile and list + professor calendar event dots
 - [ ] EVT.12 Android: aluno events (same scope as EVT.10)
 - [ ] EVT.13 Android: responsável + professor events (same scope as EVT.11)
 - [ ] EVT.14 iOS: aluno events (same scope as EVT.10)

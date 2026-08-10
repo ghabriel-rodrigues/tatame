@@ -196,7 +196,10 @@ export function DependentChip({
       }}
     >
       {confirmed ? (
-        <Check size={13} color={color} strokeWidth={3} testID={testID ? `${testID}-check` : undefined} />
+        // testID on a wrapping View — the SVG icon drops unknown props.
+        <View testID={testID ? `${testID}-check` : undefined}>
+          <Check size={13} color={color} strokeWidth={3} />
+        </View>
       ) : null}
       <Text variant="caption" weight="bold" color={color} style={{ fontSize: 12 }} numberOfLines={1}>
         {name}

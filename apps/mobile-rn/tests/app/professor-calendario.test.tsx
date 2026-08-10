@@ -2,6 +2,8 @@
  * Professor month calendar (AGD.6, professor-04): reached from the dashboard
  * header's calendar icon — own-class dots, "aula recorrente" legend, day
  * items with time and occupancy, and the professor free-day copy.
+ * EVT.11 (spec 008 story 23): event days carry the pink dot and Evento
+ * entries (read-only — no aluno-style detail push for the professor).
  */
 
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
@@ -11,6 +13,8 @@ import { sessionTestApi } from '../../src/session/session-store';
 import { installFetchMock, json, makeMe } from '../helpers/session';
 import { makeDashboard } from '../helpers/attendance';
 import { makeCalendar, makeCalendarItem } from '../helpers/agenda';
+import { OPEN_MAT_EVENT_ID, makeCalendarEvent } from '../helpers/events';
+import type { CalendarEventItem } from '../../src/features/events/types';
 
 jest.useFakeTimers();
 // Monday 2026-08-03 — same pinned month as the aluno calendar suite.
@@ -18,13 +22,13 @@ jest.setSystemTime(new Date('2026-08-03T12:00:00'));
 
 const secure = SecureStore as unknown as { __reset: () => void };
 
-function renderProfessorCalendario(): void {
+function renderProfessorCalendario(events: CalendarEventItem[] = []): void {
   installFetchMock((request) => {
     if (request.method === 'GET' && request.path === '/v1/professor/dashboard') {
       return json(200, makeDashboard());
     }
     if (request.method === 'GET' && request.path === '/v1/professor/calendar') {
-      return json(200, makeCalendar({ 1: [makeCalendarItem()] }));
+      return json(200, makeCalendar({ 1: [makeCalendarItem()] }, '2026-08', events));
     }
     return null;
   });
@@ -79,6 +83,24 @@ describe('professor month calendar (AGD.6)', () => {
     expect(screen.getByText('19:00 – 20:00 · 14 de 20 vagas')).toBeTruthy();
     // Aluno-only tag stays out of the professor view.
     expect(screen.queryByText('Aula')).toBeNull();
+  });
+
+  it('marks event days with the pink dot and lists read-only Evento entries (EVT.11)', async () => {
+    renderProfessorCalendario([makeCalendarEvent()]);
+    await openCalendario();
+
+    await waitFor(() => expect(screen.getByTestId('event-dot-15')).toBeTruthy());
+    expect(screen.queryByTestId('event-dot-14')).toBeNull();
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('Dia 15'));
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId(`calendar-event-${OPEN_MAT_EVENT_ID}`)).toBeTruthy(),
+    );
+    expect(screen.getByText('Open mat de verão')).toBeTruthy();
+    expect(screen.getByText('Evento')).toBeTruthy();
   });
 
   it('selecting a free day shows "Dia livre — bom descanso."', async () => {
