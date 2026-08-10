@@ -60,3 +60,10 @@ export {
   STORE_ORDER_READY,
   STORE_PRODUCT_LOW_STOCK,
 } from './modules/store/store.events.js';
+// Graduation + notifications seam (spec 010) — e2e pins the award
+// announcement and the listener-failure isolation contract.
+export {
+  GRADUATION_AWARDED,
+  type GraduationAwardedEvent,
+} from './modules/graduation/graduation.events.js';
+export { NotificationsFanoutListener } from './modules/notifications/notifications-fanout.listener.js';

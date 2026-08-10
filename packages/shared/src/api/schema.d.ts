@@ -1866,6 +1866,104 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Own notifications, newest first — the Notificações screen feed
+         * @description Cursor-paged (~30). Rows are render-ready PT-BR (title/body/chip composed at insert time); `route` is a semantic hint mapped to each shell's navigation client-side.
+         */
+        get: operations["NotificationsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Unread badge count — 0 while the membership is muted
+         * @description The bell dot source, refetched on screen focus. Mute suppresses the count only: rows keep being written underneath (the feed doubles as the receipt trail).
+         */
+        get: operations["NotificationsController_unreadCount_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The perfil "Notificações" switch state (active membership) */
+        get: operations["NotificationsController_getSettings_v1"];
+        /**
+         * Flip the per-membership mute switch
+         * @description @BypassReadOnly: a delinquent (read-only) academy's members still manage their own switch.
+         */
+        put: operations["NotificationsController_updateSettings_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every own notification read — fired on screen open, kills the dot */
+        post: operations["NotificationsController_readAll_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark one notification read (idempotent)
+         * @description Foreign or cross-tenant ids behave as 404 — no existence leak.
+         */
+        post: operations["NotificationsController_read_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4000,6 +4098,58 @@ export interface components {
             revocationId: string;
             /** @description Restored current belt after the reversal */
             belt: components["schemas"]["BeltViewDto"];
+        };
+        NotificationDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            category: "payment" | "event" | "graduation" | "attendance" | "store";
+            /**
+             * @description Pre-rendered chip label ("R$", "15", "2º", initials); null = client falls back to the category icon
+             * @example R$
+             */
+            chip?: string | null;
+            /** @example Mensalidade de agosto disponível */
+            title: string;
+            /** @example Vence em 05/08 · R$ 180,00 */
+            body?: string | null;
+            /**
+             * @description Semantic deep-link hint (wallet, event/{eventId}, graduation, orders, store) — mapped to each shell's local navigation; unknown/null routes are inert
+             * @example wallet
+             */
+            route?: string | null;
+            /** Format: date-time */
+            readAt?: string | null;
+            /**
+             * Format: date-time
+             * @description Clients render the relative PT-BR timestamp
+             */
+            createdAt: string;
+        };
+        NotificationsListResponseDto: {
+            /** @description Own rows, newest first (~30 per page) */
+            notifications: components["schemas"]["NotificationDto"][];
+            /** @description Opaque keyset cursor for the next page; null = no further pages */
+            nextCursor?: string | null;
+        };
+        UnreadCountResponseDto: {
+            /** @description 0 while the active membership is muted */
+            count: number;
+        };
+        NotificationSettingsResponseDto: {
+            /** @description The active membership's notifications_enabled flag */
+            enabled: boolean;
+        };
+        UpdateNotificationSettingsDto: {
+            /** @description The perfil "Notificações" switch — false mutes the badge (rows keep being written; the feed doubles as the receipt trail). */
+            enabled: boolean;
+        };
+        MarkAllReadResponseDto: {
+            /** @description Rows flipped unread → read by this call */
+            updated: number;
+        };
+        MarkReadResponseDto: {
+            notification: components["schemas"]["NotificationDto"];
         };
     };
     responses: never;
@@ -6590,6 +6740,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentNoteResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_list_v1: {
+        parameters: {
+            query?: {
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationsListResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_unreadCount_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnreadCountResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_getSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_updateSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_readAll_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkAllReadResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsController_read_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarkReadResponseDto"];
                 };
             };
         };

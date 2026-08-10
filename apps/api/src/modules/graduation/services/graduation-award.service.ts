@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { and, eq, sql } from 'drizzle-orm';
 import {
   studentGraduations,
@@ -10,6 +11,7 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
+import { GRADUATION_AWARDED, type GraduationAwardedEvent } from '../graduation.events.js';
 import type { BeltView, GraduationEntry } from '../graduation.types.js';
 import { GraduationQueryService } from './graduation-query.service.js';
 import { GraduationRulesService } from './graduation-rules.service.js';
@@ -52,6 +54,7 @@ export class GraduationAwardService {
     @Inject(APP_DB) private readonly appDb: DbHandle,
     private readonly query: GraduationQueryService,
     private readonly rules: GraduationRulesService,
+    private readonly emitter: EventEmitter2,
   ) {}
 
   /**
@@ -65,9 +68,14 @@ export class GraduationAwardService {
     studentId: string,
     input: AwardInput,
   ): Promise<AwardResult> {
-    return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
+    let awarded: GraduationAwardedEvent | null = null;
+    const result = await withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const [student] = await tx
-        .select({ id: students.id })
+        .select({
+          id: students.id,
+          fullName: students.fullName,
+          guardianId: students.guardianId,
+        })
         .from(students)
         .where(and(eq(students.id, studentId), eq(students.status, 'active')));
       // Cross-tenant ids are invisible under RLS — same 404 as nonexistent.
@@ -105,8 +113,24 @@ export class GraduationAwardService {
       const timeline = await this.query.timeline(tx, studentId);
       const graduation = timeline.find((entry) => entry.id === graduationId);
       if (!graduation) throw problem(500, ErrorCodes.INTERNAL, 'Award row missing after insert');
+
+      // The announcement payload (spec 010) — emitted post-commit below, so
+      // the notifications listener only ever sees committed awards. Never
+      // built for the initial-belt seed nor for revocations.
+      awarded = {
+        tenantId: ctx.tenantId,
+        studentId: student.id,
+        studentName: student.fullName,
+        guardianId: student.guardianId,
+        beltName: graduation.belt.name,
+        degree: graduation.degree,
+        kind: input.kind,
+        awardedByName: graduation.awardedBy.fullName,
+      };
       return { graduation, belt: await this.query.currentBelt(tx, studentId) };
     });
+    if (awarded) this.emitter.emit(GRADUATION_AWARDED, awarded);
+    return result;
   }
 
   /**

@@ -18,6 +18,14 @@ export const BILLING_CHARGE_REFUNDED = 'billing.charge.refunded';
 interface ChargeEventBase {
   tenantId: string;
   chargeId: string;
+  /**
+   * What the charge bills for (spec 010 delta): listeners filter on it —
+   * notifications ride `billing.charge.*` only for plan-origin charges;
+   * event/order settlements are covered by their own richer events
+   * (`events.registration.confirmed`, `store.order.paid`), so without the
+   * filter every event/order payment would double-notify.
+   */
+  origin: 'plan' | 'event' | 'order';
   /** Null only on order-origin charges of a professor buyer (spec 009). */
   studentId: string | null;
   /** Bill-to guardian (minors); null = student pays self. */

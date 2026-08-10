@@ -137,6 +137,19 @@ export const orderStatus = pgEnum('order_status', [
   'canceled',
 ]);
 
+/**
+ * Notification category (spec 010) — the closed icon vocabulary of the
+ * prototypes (R$ chip, date chip, grau chip, initials chip, store chip).
+ * English in schema per charter; clients render PT-BR.
+ */
+export const notificationCategory = pgEnum('notification_category', [
+  'payment',
+  'event',
+  'graduation',
+  'attendance',
+  'store',
+]);
+
 /** Academy status: Trial / Ativa / Inadimplente / Suspensa. */
 export const academyStatus = pgEnum('academy_status', [
   'trial',

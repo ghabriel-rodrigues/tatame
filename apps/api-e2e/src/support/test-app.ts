@@ -21,6 +21,7 @@ import {
   seedBillingFixtures,
   seedDevFixtures,
   seedEventFixtures,
+  seedNotificationFixtures,
   seedPlatformPlans,
   seedStoreFixtures,
   testAdminUrl,
@@ -77,6 +78,9 @@ export async function createTestApp(overrides?: {
   // Store fixtures (spec 009, STO.3): the prototype catalog (GI/RG/FX/TS/MC/
   // PB, PB low-stock) with mixed lifecycle orders and their order charges.
   await seedStoreFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+  // Notification fixtures (spec 010, NOT.2): mixed read/unread rows across
+  // all five categories so the feed/badge surfaces are demoable.
+  await seedNotificationFixtures({ appDb: appDb.db, platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;
   process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';

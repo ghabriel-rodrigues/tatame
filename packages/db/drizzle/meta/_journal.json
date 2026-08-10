@@ -162,6 +162,20 @@
       "when": 1786386304673,
       "tag": "0022_store_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1786392066890,
+      "tag": "0023_notifications_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1786392082531,
+      "tag": "0024_notifications_hardening",
+      "breakpoints": true
     }
   ]
 }

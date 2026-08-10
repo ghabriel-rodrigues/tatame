@@ -53,6 +53,8 @@ const EVENTS_TABLES = ['events', 'event_registrations'];
 
 const STORE_TABLES = ['product_categories', 'products', 'orders', 'order_items'];
 
+const NOTIFICATIONS_TABLES = ['notifications'];
+
 const AUTH_FUNCTIONS = [
   'auth_login_lookup',
   'auth_user_memberships',
@@ -84,7 +86,7 @@ describe('migrations', () => {
     await expect(runMigrations(fresh.url)).resolves.toBeUndefined();
   });
 
-  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables, the 6 graduation tables, the 5 billing tables, the 2 events tables and the 4 store tables', async () => {
+  it('creates all 12 auth-critical tables, the 5 enrollment tables, the 3 attendance tables, the 6 graduation tables, the 5 billing tables, the 2 events tables, the 4 store tables and the notifications table', async () => {
     const res = await client.query(
       `SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename`,
     );
@@ -97,12 +99,13 @@ describe('migrations', () => {
       ...BILLING_TABLES,
       ...EVENTS_TABLES,
       ...STORE_TABLES,
+      ...NOTIFICATIONS_TABLES,
     ]) {
       expect(names).toContain(table);
     }
   });
 
-  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance, graduation, billing, events and store table', async () => {
+  it('has RLS enabled AND forced on every auth-critical, enrollment, attendance, graduation, billing, events, store and notifications table', async () => {
     const allTables = [
       ...AUTH_TABLES,
       ...ENROLLMENT_TABLES,
@@ -111,6 +114,7 @@ describe('migrations', () => {
       ...BILLING_TABLES,
       ...EVENTS_TABLES,
       ...STORE_TABLES,
+      ...NOTIFICATIONS_TABLES,
     ];
     const res = await client.query(
       `SELECT relname, relrowsecurity, relforcerowsecurity
@@ -151,6 +155,7 @@ describe('migrations', () => {
       ...BILLING_TABLES,
       ...EVENTS_TABLES,
       ...STORE_TABLES,
+      ...NOTIFICATIONS_TABLES,
     ]) {
       expect(names, `meta-test must cover ${table}`).toContain(table);
     }

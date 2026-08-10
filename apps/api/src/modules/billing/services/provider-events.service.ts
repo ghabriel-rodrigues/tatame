@@ -138,6 +138,7 @@ export class ProviderEventsService {
           paid = {
             tenantId: event.tenantId,
             chargeId: charge.id,
+            origin: charge.origin,
             studentId: charge.studentId,
             guardianId: charge.guardianId,
             audience: charge.guardianId ? 'guardian' : 'student',
@@ -261,6 +262,7 @@ export class ProviderEventsService {
           refunded = {
             tenantId: event.tenantId,
             chargeId: charge.id,
+            origin: charge.origin,
             studentId: charge.studentId,
             guardianId: charge.guardianId,
             audience: charge.guardianId ? 'guardian' : 'student',

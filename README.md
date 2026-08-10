@@ -243,12 +243,12 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 10 — Notifications ([spec 010](docs/specs/010-notifications.md))
 
-- [ ] NOT.1 DB: notification_category enum + notifications table (user_id recipient FK, category/chip/title/body/route/read_at, list + partial-unread indexes, forced tenant RLS) + memberships.notifications_enabled flag
-- [ ] NOT.2 DB: dev seeds — mixed read/unread notifications across all five categories for the fixture personas in both academies (badge and list demoable on first login)
-- [ ] NOT.3 Backend: emitter deltas — origin field on billing charge events + new graduation.awarded post-commit event (student+guardian audience, not emitted for initial-belt seed or revocations)
-- [ ] NOT.4 Backend: notifications module fan-out listeners for the full mapping table (payer/guardian addressing, plan-origin filter, tenant-wide publish fan-out with dedup, inscritos announce, guardian check-in, buyer order lifecycle, admin low stock; skip recipients without login; batch insert, catch-and-log)
-- [ ] NOT.5 Backend: read API — cursor list, unread-count (0 when muted), mark-read single + all, settings get/put on the active membership, @BypassReadOnly on mark-read/settings, OpenAPI updated
-- [ ] NOT.6 Backend: e2e suite green — fan-out via real flows per event, origin double-notify guard, mute semantics, RBAC/RLS/cross-tenant 404s, read-only bypass, listener failure isolation
+- [x] NOT.1 DB: notification_category enum + notifications table (user_id recipient FK, category/chip/title/body/route/read_at, list + partial-unread indexes, forced tenant RLS) + memberships.notifications_enabled flag
+- [x] NOT.2 DB: dev seeds — mixed read/unread notifications across all five categories for the fixture personas in both academies (badge and list demoable on first login)
+- [x] NOT.3 Backend: emitter deltas — origin field on billing charge events + new graduation.awarded post-commit event (student+guardian audience, not emitted for initial-belt seed or revocations)
+- [x] NOT.4 Backend: notifications module fan-out listeners for the full mapping table (payer/guardian addressing, plan-origin filter, tenant-wide publish fan-out with dedup, inscritos announce, guardian check-in, buyer order lifecycle, admin low stock; skip recipients without login; batch insert, catch-and-log)
+- [x] NOT.5 Backend: read API — cursor list, unread-count (0 when muted), mark-read single + all, settings get/put on the active membership, @BypassReadOnly on mark-read/settings, OpenAPI updated
+- [x] NOT.6 Backend: e2e suite green — fan-out via real flows per event, origin double-notify guard, mute semantics, RBAC/RLS/cross-tenant 404s, read-only bypass, listener failure isolation
 - [ ] NOT.7 Web: admin ConsoleShell bell + unread dot + notifications panel (cards, read-all on open); no bell on plataforma surface (platform notifications recorded debt)
 - [ ] NOT.8 RN: aluno — home header bell with dot, Notificações screen per aluno-20 (chips, relative timestamps, pagination, read-all on open, route taps), perfil Notificações switch wired to settings
 - [ ] NOT.9 RN: professor + responsável — same bell/screen/switch scope per shell (responsavel-09; guardian routes map to Pagamentos/dependents)

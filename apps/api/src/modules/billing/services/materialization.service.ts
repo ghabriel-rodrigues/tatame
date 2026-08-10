@@ -171,6 +171,7 @@ export class MaterializationService {
       const event: ChargeCreatedEvent = {
         tenantId: actor.tenantId,
         chargeId: row.id,
+        origin: 'plan',
         studentId: row.studentId,
         guardianId: row.guardianId,
         audience: row.guardianId ? 'guardian' : 'student',
@@ -185,6 +186,7 @@ export class MaterializationService {
       const event: ChargeOverdueEvent = {
         tenantId: actor.tenantId,
         chargeId: row.id,
+        origin: 'plan',
         studentId: row.studentId,
         guardianId: row.guardianId,
         audience: row.guardianId ? 'guardian' : 'student',

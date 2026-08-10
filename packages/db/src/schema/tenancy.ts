@@ -112,6 +112,13 @@ export const memberships = pgTable(
      */
     beltId: uuid('belt_id').references(() => belts.id),
     beltDegree: smallint('belt_degree'),
+    /**
+     * The perfil "Notificações" switch (spec 010) — per-user mute at the
+     * (user, academy) grain. Mute does NOT gate insertion: rows keep being
+     * written (the feed doubles as the receipt/history trail); it suppresses
+     * the unread count (endpoint returns 0) and any future push.
+     */
+    notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
     ...timestamps,
   },
   (t) => [

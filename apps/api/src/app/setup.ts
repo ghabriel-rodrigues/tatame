@@ -33,6 +33,7 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       .addTag('responsavel')
       .addTag('billing')
       .addTag('store')
+      .addTag('notifications')
       .addTag('platform')
       .build(),
   );

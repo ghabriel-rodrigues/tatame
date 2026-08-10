@@ -23,6 +23,7 @@ import {
   guardians,
   martialArts,
   memberships,
+  notifications,
   orderItems,
   orders,
   paymentMandates,
@@ -43,6 +44,7 @@ import {
   seedBillingFixtures,
   seedDevFixtures,
   seedEventFixtures,
+  seedNotificationFixtures,
   seedPlatformPlans,
   seedStoreFixtures,
 } from '../seed/index.js';
@@ -63,6 +65,7 @@ describe('seeds', () => {
     await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
     await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
     await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedNotificationFixtures({ appDb: app.db, platformDb: platform.db });
   });
 
   afterAll(async () => {
@@ -907,10 +910,11 @@ describe('seeds', () => {
         const [pr] = await tx.select({ n: sql<number>`count(*)::int` }).from(products);
         const [or] = await tx.select({ n: sql<number>`count(*)::int` }).from(orders);
         const [oi] = await tx.select({ n: sql<number>`count(*)::int` }).from(orderItems);
+        const [nt] = await tx.select({ n: sql<number>`count(*)::int` }).from(notifications);
         return [
           u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n,
           b!.n, gr!.n, sg!.n, sn!.n, ap!.n, ch!.n, pay!.n, pm!.n, bc!.n, ac!.n, ev!.n, er!.n,
-          pc!.n, pr!.n, or!.n, oi!.n,
+          pc!.n, pr!.n, or!.n, oi!.n, nt!.n,
         ];
       });
 
@@ -921,6 +925,7 @@ describe('seeds', () => {
     await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
     await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
     await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedNotificationFixtures({ appDb: app.db, platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);
   });

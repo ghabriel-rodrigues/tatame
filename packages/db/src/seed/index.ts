@@ -11,3 +11,7 @@ export { DEV_PASSWORD, hashDevPassword, seedDevFixtures, type SeedDevHandles } f
 export { seedBillingFixtures, type SeedBillingHandles } from './billing.js';
 export { seedEventFixtures, type SeedEventHandles } from './events.js';
 export { seedStoreFixtures, type SeedStoreHandles } from './store.js';
+export {
+  seedNotificationFixtures,
+  type SeedNotificationHandles,
+} from './notifications.js';

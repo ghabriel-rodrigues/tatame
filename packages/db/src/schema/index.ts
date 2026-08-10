@@ -10,6 +10,7 @@ export * from './store.js';
 export * from './billing.js';
 export * from './attendance.js';
 export * from './graduation.js';
+export * from './notifications.js';
 export * from './append-only.js';
 export * from './tenancy.js';
 export * from './platform.js';
