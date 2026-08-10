@@ -27,6 +27,7 @@ import br.com.tatame.feature.enrollment.AvatarBubble
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
+import br.com.tatame.core.theme.ThemePerfilRow
 import br.com.tatame.feature.notifications.NotificationsPerfilRow
 import br.com.tatame.feature.store.StorePerfilRow
 import br.com.tatame.feature.store.vitrine.StoreFlowScreen
@@ -111,6 +112,11 @@ fun AlunoPerfilTab(
         // mute (spec 010 story 9: badge dies, history stays).
         Spacer(Modifier.height(LumiraTokens.Space.S3))
         NotificationsPerfilRow()
+
+        // CFG.15 — the "Tema escuro" switch, finally real: persisted
+        // per-device preference, whole shell flips per aluno-21.
+        Spacer(Modifier.height(LumiraTokens.Space.S3))
+        ThemePerfilRow()
 
         Spacer(Modifier.weight(1f))
         OutlinedButton(

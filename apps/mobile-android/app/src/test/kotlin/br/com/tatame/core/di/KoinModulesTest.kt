@@ -50,6 +50,11 @@ class KoinModulesTest {
             okhttp3.OkHttpClient::class,
             kotlinx.serialization.json.Json::class,
             br.com.tatame.core.auth.SessionManager::class,
+            // themeModule (CFG.14/15): session Flow fed inside the definition
+            // lambda; DataStore + app scope provided by sessionModule.
+            kotlinx.coroutines.flow.Flow::class,
+            androidx.datastore.core.DataStore::class,
+            kotlinx.coroutines.CoroutineScope::class,
         )
         appModules.forEach { it.verify(extraTypes = extraTypes) }
     }

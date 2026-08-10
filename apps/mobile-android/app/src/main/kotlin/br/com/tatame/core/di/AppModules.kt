@@ -19,7 +19,7 @@ import org.koin.core.module.Module
  * Scope conventions: `single` for stateless infra, `viewModel` for every
  * ViewModel, `factory` for per-use stateful helpers. No custom session scopes.
  */
-val coreModules: List<Module> = listOf(networkModule, sessionModule)
+val coreModules: List<Module> = listOf(networkModule, sessionModule, themeModule)
 
 val featureModules: List<Module> = listOf(
     authFeatureModule,

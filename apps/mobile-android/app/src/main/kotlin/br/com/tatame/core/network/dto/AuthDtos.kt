@@ -5,7 +5,6 @@
 package br.com.tatame.core.network.dto
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
 
 /** `LoginDto` — mobile always requests `transport = "body"`. */
 @Serializable
@@ -95,9 +94,20 @@ data class MeUser(
 )
 
 /**
- * `MeAcademyDto` — `theme` is the raw white-label 3-color brand JSON
- * (`additionalProperties: true` in the spec); kept opaque as [JsonObject]
- * until the white-label slice consumes it via DerivePalette.
+ * `BrandThemeDto` — white-label 3-color brand triplet (`#RRGGBB` uppercase,
+ * CFG.3: the former untyped placeholder became this typed shape). Consumed by
+ * the theme engine via DerivePalette (CFG.14).
+ */
+@Serializable
+data class BrandTheme(
+    val deep: String,
+    val vibrant: String,
+    val accent: String,
+)
+
+/**
+ * `MeAcademyDto` — `theme` is the typed white-label brand triplet;
+ * null = academy never configured branding = default Tatame brand.
  */
 @Serializable
 data class MeAcademy(
@@ -106,7 +116,7 @@ data class MeAcademy(
     val slug: String,
     val status: String, // trial | active | delinquent | suspended
     val logoUrl: String?,
-    val theme: JsonObject?,
+    val theme: BrandTheme?,
 )
 
 /** `MeImpersonationDto` */

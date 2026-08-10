@@ -389,6 +389,10 @@
     <string name="notifications_perfil_row_title">Notificações</string>
     <string name="notifications_perfil_row_subtitle">Silencie os alertas sem apagar o histórico</string>
 
+    <!-- Theme (CFG.15, spec 011 — aluno-21 tema escuro) -->
+    <string name="theme_perfil_row_title">Tema escuro</string>
+    <string name="theme_perfil_row_subtitle">Aplica o tema escuro em todo o app</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>
