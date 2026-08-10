@@ -28,6 +28,7 @@ import {
   chargeChip,
   dueLabel,
   formatBRL,
+  historyTitle,
   isPayable,
   mensalidadeTitle,
   monthNamePt,
@@ -228,7 +229,7 @@ export default function AlunoCarteiraScreen() {
                     <HistoryRow
                       key={entry.paymentId}
                       testID={`history-${entry.paymentId}`}
-                      title={`Mensalidade · ${monthNamePt(entry.periodStart ?? entry.paidAt ?? '')}`}
+                      title={historyTitle(entry)}
                       subtitle={paidLine(entry.method, entry.paidAt)}
                       amountCents={entry.amountCents}
                       divider={index < history.length - 1}

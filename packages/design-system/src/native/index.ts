@@ -29,6 +29,12 @@ export { fadeUp, rise, pop, usePressScale, easeOut, easeSpring, durations } from
 export { shadowStyle, type ShadowLayer } from './lib/shadows.ts';
 export { hexToRgba } from './lib/color.ts';
 export { eventGradientColors, EVENT_GRADIENT_DEFAULT } from './lib/event-gradients.ts';
+export {
+  storeGradientColors,
+  storeGalleryPresets,
+  STORE_GRADIENT_DEFAULT,
+  STORE_GRADIENT_PRESETS,
+} from './lib/store-gradients.ts';
 
 /* P0 components */
 export * from './components/index.ts';

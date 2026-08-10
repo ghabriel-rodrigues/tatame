@@ -1,9 +1,11 @@
 /**
  * Payment-flow plumbing shared by the three sheets (BIL.17/18): the
  * scope-aware create-payment mutation (aluno wallet vs responsável
- * per-dependent path) and the post-settlement invalidation list — wallet +
- * home alert for the aluno, payments + dependent cards for the responsável.
- * Server truth only: settlement lands via refetch, never optimistic.
+ * per-dependent path vs the persona-neutral store order route — spec 009)
+ * and the post-settlement invalidation list — wallet + home alert for the
+ * aluno, payments + dependent cards for the responsável, orders + vitrine
+ * stock + home strip for the store. Server truth only: settlement lands
+ * via refetch, never optimistic.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -12,13 +14,22 @@ import { api } from '../../api/query';
 import { billingErrorMessage } from './copy';
 import type { PaymentCreatedResponse, PaymentView } from './types';
 
-/** Which persona surface the sheet was opened from. */
-export type PaymentScope = 'aluno' | 'responsavel';
+/** Which persona surface the sheet was opened from. `store` is the
+ *  persona-neutral order-charge route shared by aluno and professor. */
+export type PaymentScope = 'aluno' | 'responsavel' | 'store';
 
 /** Create-payment mutation for the scope's endpoint (same body/response). */
 export function useCreatePayment(scope: PaymentScope) {
   const aluno = api.useMutation('post', '/v1/aluno/wallet/charges/{id}/payments');
   const responsavel = api.useMutation('post', '/v1/responsavel/payments/charges/{id}/payments');
+  const store = api.useMutation('post', '/v1/store/charges/{id}/payments');
+  if (scope === 'store') {
+    // The store contract accepts pix only (spec 009 — single CTA); widening
+    // to the wallet mutation type keeps the sheets' call sites unchanged.
+    // Only the Pix sheet ever opens with the store scope, and the server
+    // rejects any other method on the route regardless.
+    return store as unknown as typeof aluno;
+  }
   return scope === 'aluno' ? aluno : responsavel;
 }
 
@@ -91,6 +102,15 @@ export function useSettleInvalidation(scope: PaymentScope): () => void {
     if (scope === 'aluno') {
       void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/wallet'] });
       void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
+    } else if (scope === 'store') {
+      // Settlement flips the order to paid and decrements stock server-side
+      // (spec 009): orders list, vitrine/detail stock, home strip, and the
+      // aluno Carteira histórico (order payments are wallet history rows).
+      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/orders'] });
+      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products'] });
+      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products/{id}'] });
+      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
+      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/wallet'] });
     } else {
       void queryClient.invalidateQueries({ queryKey: ['get', '/v1/responsavel/payments'] });
       void queryClient.invalidateQueries({ queryKey: ['get', '/v1/responsavel/dependents'] });

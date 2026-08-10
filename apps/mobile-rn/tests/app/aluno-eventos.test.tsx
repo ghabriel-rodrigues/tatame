@@ -31,7 +31,7 @@ import {
   makePendingRegistration,
   makeRegistration,
 } from '../helpers/events';
-import type { AlunoEventDetail } from '../../src/features/events/types';
+import type { AlunoEventDetail, AlunoEventItem } from '../../src/features/events/types';
 
 jest.useFakeTimers();
 
@@ -59,7 +59,7 @@ function renderAlunoEvents(
     const overridden = override?.(request);
     if (overridden) return overridden;
     if (request.method === 'GET' && request.path === '/v1/aluno/home') {
-      const cards = [
+      const cards: AlunoEventItem[] = [
         {
           ...makeAlunoEventItem(),
           id: detail.id,

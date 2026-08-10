@@ -73,7 +73,11 @@ export function ReceiptSheet({ open, onClose, paymentId }: ReceiptSheetProps) {
             {receipt.academyName ? ` · ${receipt.academyName}` : ''}
           </Text>
           <View style={{ marginTop: theme.space['2'] }}>
-            <ReceiptRow label="Aluno" value={receipt.studentName} />
+            {/* Optional since spec 009: order receipts of a professor buyer
+                carry no student (charges.student_id relaxation). */}
+            {receipt.studentName ? (
+              <ReceiptRow label="Aluno" value={receipt.studentName} />
+            ) : null}
             {receipt.planName ? <ReceiptRow label="Plano" value={receipt.planName} /> : null}
             <ReceiptRow label="Competência" value={mensalidadeTitle(receipt.charge)} />
             <ReceiptRow label="Método" value={METHOD_LABELS[receipt.payment.method]} />

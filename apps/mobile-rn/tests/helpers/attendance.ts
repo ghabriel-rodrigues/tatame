@@ -49,6 +49,8 @@ export interface AlunoHomeOptions {
   mensalidade?: AlunoHomeResponse['mensalidade'];
   /** "Próximos eventos" cards (EVT.10, spec 008); defaults to none. */
   upcomingEvents?: AlunoHomeResponse['upcomingEvents'];
+  /** "Loja da academia" strip products (STO.10, spec 009); defaults to none. */
+  storeStrip?: AlunoHomeResponse['storeStrip'];
 }
 
 /** aluno-03/09: Open mat today at 10:00; faixa azul 2 graus, 26 de 40. */
@@ -70,6 +72,7 @@ export function makeAlunoHome(options: AlunoHomeOptions = {}): AlunoHomeResponse
       : { graduation: { belt: makeBeltView(), progress: makeProgress() } }),
     ...(options.mensalidade ? { mensalidade: options.mensalidade } : {}),
     upcomingEvents: options.upcomingEvents ?? [],
+    storeStrip: options.storeStrip ?? [],
   };
 }
 

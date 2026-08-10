@@ -7,7 +7,10 @@
  * the real academy target (GRD.16 — supersedes the Phase-4 placeholder),
  * linking to the Graduação screen. "Próximos eventos" (EVT.10, spec 008):
  * the next 2 published events with own registration state, tapping a card
- * pushes the event detail. Ranking stays an explicit placeholder card.
+ * pushes the event detail. "Loja da academia" strip (STO.10, spec 009): the
+ * first 3 active products from the home payload with "Ver tudo" opening the
+ * vitrine, cards pushing the product detail. Ranking stays an explicit
+ * placeholder card.
  */
 
 import { Pressable, ScrollView, View } from 'react-native';
@@ -32,6 +35,8 @@ import { longDatePt, scheduleTimeRange } from '../../../features/enrollment/form
 import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../features/enrollment/ui';
 import { UPCOMING_EVENTS_TITLE } from '../../../features/events/copy';
 import { EventCard } from '../../../features/events/ui';
+import { STORE_ROW_TITLE } from '../../../features/store/copy';
+import { StoreStripCard } from '../../../features/store/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
 
 export default function AlunoInicioScreen() {
@@ -50,6 +55,7 @@ export default function AlunoInicioScreen() {
   const graduation = home?.graduation ?? null;
   const mensalidade = home?.mensalidade ?? null;
   const upcomingEvents = home?.upcomingEvents ?? [];
+  const storeStrip = home?.storeStrip ?? [];
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -279,6 +285,41 @@ export default function AlunoInicioScreen() {
                     onPress={() => router.push(`/evento/${event.id}`)}
                   />
                 ))}
+              </View>
+            ) : null}
+
+            {storeStrip.length > 0 ? (
+              // STO.10: the first 3 active products + "Ver tudo" (spec 009).
+              <View style={{ gap: theme.space['3'] }} testID="store-strip">
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Text variant="subtitle">{STORE_ROW_TITLE}</Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Ver tudo"
+                    onPress={() => router.push('/loja')}
+                    hitSlop={8}
+                  >
+                    <Text variant="caption" weight="bold" color={theme.color.brand['1']}>
+                      Ver tudo
+                    </Text>
+                  </Pressable>
+                </View>
+                <View style={{ flexDirection: 'row', gap: theme.space['3'] }}>
+                  {storeStrip.map((product) => (
+                    <StoreStripCard
+                      key={product.id}
+                      product={product}
+                      testID={`home-store-${product.id}`}
+                      onPress={() => router.push(`/loja/produto/${product.id}`)}
+                    />
+                  ))}
+                </View>
               </View>
             ) : null}
 

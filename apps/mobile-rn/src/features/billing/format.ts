@@ -64,6 +64,20 @@ export function mensalidadeTitle(charge: {
   return `Mensalidade · ${monthNamePt(charge.periodStart ?? charge.dueDate)}`;
 }
 
+/**
+ * Histórico row title. Plan charges carry a competência (`periodStart`) →
+ * "Mensalidade · agosto"; event/order-origin charges have none (spec
+ * 008/009 — they surface in the same histórico via billing) → the neutral
+ * "Pagamento avulso" instead of a fabricated mensalidade label.
+ */
+export function historyTitle(entry: {
+  periodStart?: string | null;
+  paidAt?: string | null;
+}): string {
+  if (entry.periodStart) return `Mensalidade · ${monthNamePt(entry.periodStart)}`;
+  return 'Pagamento avulso';
+}
+
 /** "Vence em 10 de agosto" (aluno-12 mensalidade card). */
 export function dueLabel(dueDate: string): string {
   return `Vence em ${longDayMonthPt(dueDate)}`;

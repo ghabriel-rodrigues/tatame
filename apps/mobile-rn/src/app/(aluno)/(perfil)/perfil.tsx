@@ -1,16 +1,25 @@
 /**
- * aluno perfil tab (AUTH.20 + GRD.16): session identity + the derived belt
- * chip (fed by the home graduation payload — rank consistent everywhere,
- * story 7) with a "Ver graduação" entry into the Graduação screen +
- * "Sair".
+ * aluno perfil tab (AUTH.20 + GRD.16 + STO.10): session identity + the
+ * derived belt chip (fed by the home graduation payload — rank consistent
+ * everywhere, story 7) with a "Ver graduação" entry into the Graduação
+ * screen, the "Loja da academia" row with its "Novo" pill opening the
+ * vitrine (spec 009 story 16 — the dead shortcut finally works) + "Sair".
  */
 
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BeltChip, TatameButton, useTheme } from '@tatame/design-system/native';
+import {
+  BeltChip,
+  Card,
+  Chip,
+  ListRow,
+  TatameButton,
+  useTheme,
+} from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { ProfileScreen } from '../../../components/ProfileScreen';
 import { beltChipLabel } from '../../../features/graduation/format';
+import { STORE_ROW_TITLE, STORE_SUBTITLE } from '../../../features/store/copy';
 
 export default function AlunoPerfilScreen() {
   const theme = useTheme();
@@ -40,6 +49,18 @@ export default function AlunoPerfilScreen() {
           </View>
         ) : null
       }
-    />
+    >
+      <Card padding={0}>
+        <ListRow
+          title={STORE_ROW_TITLE}
+          subtitle={STORE_SUBTITLE}
+          trailing={<Chip label="Novo" tone="brand" testID="loja-novo-pill" />}
+          chevron
+          divider={false}
+          onPress={() => router.push('/loja')}
+          testID="perfil-loja-row"
+        />
+      </Card>
+    </ProfileScreen>
   );
 }

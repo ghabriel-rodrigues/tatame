@@ -234,8 +234,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] STO.7 Backend: e2e suite green — catalog CRUD + vitrine scoping, full Pix purchase through the handler contract, stock decrement/restore idempotency + oversell race, transition matrix + board exclusions, overview math, RBAC/RLS/read-only + CI route assertions (professor consumer-only)
 - [x] STO.8 Web: /admin/loja Produtos — stat tiles, categorias chip row with nova/rename/guarded-delete, product rows per admin-03, produto form per admin-06 (categoria chips, tags→#chips, galeria monogram + disabled + Foto slots, Remover da loja = archive)
 - [x] STO.9 Web: /admin/loja Pedidos — board per admin-04 (Recebido/Em andamento/Entregue/Cancelado chips, pending excluded), status sheet per admin-05 with atual marker, transitions and Cancelado→refund confirm
-- [ ] STO.10 RN: shared vitrine + detail in both shells — aluno home Loja strip + perfil row, professor perfil row, vitrine per aluno-16/professor-13 with working chip carousel and unclipped grid, detail per aluno-17 (gallery variants, size pills, qty stepper capped, Comprar com Pix → existing Pix sheet + simulate)
-- [ ] STO.11 RN: Meus pedidos with status chips + retirada note + pending cancel, pedido-pago success toast, Carteira histórico showing aluno order payments
+- [x] STO.10 RN: shared vitrine + detail in both shells — aluno home Loja strip + perfil row, professor perfil row, vitrine per aluno-16/professor-13 with working chip carousel and unclipped grid, detail per aluno-17 (gallery variants, size pills, qty stepper capped, Comprar com Pix → existing Pix sheet + simulate)
+- [x] STO.11 RN: Meus pedidos with status chips + retirada note + pending cancel, pedido-pago success toast, Carteira histórico showing aluno order payments
 - [x] STO.12 Android: shared vitrine + detail + shell entries (same scope as STO.10)
 - [x] STO.13 Android: Meus pedidos + purchase feedback (same scope as STO.11)
 - [ ] STO.14 iOS: shared vitrine + detail + shell entries (same scope as STO.10)

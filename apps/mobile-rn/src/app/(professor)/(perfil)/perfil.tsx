@@ -3,17 +3,22 @@
  * own belt chip (display-only membership rank) + the "Graduações válidas"
  * card — the academy's merged régua as belt chips, kids belts reflecting
  * the admin toggles (dimmed when disabled) — fed by GET
- * /v1/professor/profile. "Sair" stays.
+ * /v1/professor/profile. "Loja da academia" row opening the shared vitrine
+ * (STO.10, spec 009 story 17 — per professor-13 the perfil row is the
+ * professor's entry; consumer-side only, no tab-bar change). "Sair" stays.
  */
 
 import { View } from 'react-native';
-import { BeltChip, Card, Text, useTheme } from '@tatame/design-system/native';
+import { useRouter } from 'expo-router';
+import { BeltChip, Card, ListRow, Text, useTheme } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { ProfileScreen } from '../../../components/ProfileScreen';
 import { beltChipLabel } from '../../../features/graduation/format';
+import { STORE_ROW_TITLE, STORE_SUBTITLE } from '../../../features/store/copy';
 
 export default function ProfessorPerfilScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const profileQuery = api.useQuery('get', '/v1/professor/profile');
   const profile = profileQuery.data;
   const belt = profile?.belt ?? null;
@@ -28,6 +33,16 @@ export default function ProfessorPerfilScreen() {
         ) : null
       }
     >
+      <Card padding={0}>
+        <ListRow
+          title={STORE_ROW_TITLE}
+          subtitle={STORE_SUBTITLE}
+          chevron
+          divider={false}
+          onPress={() => router.push('/loja')}
+          testID="perfil-loja-row"
+        />
+      </Card>
       {profile ? (
         <Card testID="valid-graduations-card">
           <View style={{ gap: theme.space['3'] }}>
