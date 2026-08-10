@@ -22,6 +22,7 @@ import {
 import { surfaceForMembership, writeLastSurface, type WebSurface } from '../auth/redirect';
 import { ROLE_LABELS } from '../auth/role-labels';
 import { BootSplash } from '../auth/guards';
+import { NotificationsBell } from './NotificationsBell';
 
 function ImpersonationBanner({ session }: { session: MeResponse }) {
   const navigate = useNavigate();
@@ -170,6 +171,8 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
           </Box>
         </Stack>
         <Stack direction="row" spacing="10px" sx={{ alignItems: 'center' }}>
+          {/* NOT.7: admin surface only — plataforma has no bell in v1. */}
+          {surface === '/admin' ? <NotificationsBell /> : null}
           {session.memberships.length > 1 && !impersonated ? (
             <MembershipSwitcher session={session} disabled={switching} onSwitch={handleSwitch} />
           ) : null}

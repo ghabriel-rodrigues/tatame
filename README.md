@@ -249,7 +249,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] NOT.4 Backend: notifications module fan-out listeners for the full mapping table (payer/guardian addressing, plan-origin filter, tenant-wide publish fan-out with dedup, inscritos announce, guardian check-in, buyer order lifecycle, admin low stock; skip recipients without login; batch insert, catch-and-log)
 - [x] NOT.5 Backend: read API — cursor list, unread-count (0 when muted), mark-read single + all, settings get/put on the active membership, @BypassReadOnly on mark-read/settings, OpenAPI updated
 - [x] NOT.6 Backend: e2e suite green — fan-out via real flows per event, origin double-notify guard, mute semantics, RBAC/RLS/cross-tenant 404s, read-only bypass, listener failure isolation
-- [ ] NOT.7 Web: admin ConsoleShell bell + unread dot + notifications panel (cards, read-all on open); no bell on plataforma surface (platform notifications recorded debt)
+- [x] NOT.7 Web: admin ConsoleShell bell + unread dot + notifications panel (cards, read-all on open); no bell on plataforma surface (platform notifications recorded debt)
 - [ ] NOT.8 RN: aluno — home header bell with dot, Notificações screen per aluno-20 (chips, relative timestamps, pagination, read-all on open, route taps), perfil Notificações switch wired to settings
 - [ ] NOT.9 RN: professor + responsável — same bell/screen/switch scope per shell (responsavel-09; guardian routes map to Pagamentos/dependents)
 - [ ] NOT.10 Android: aluno notifications (NOT.8 scope)

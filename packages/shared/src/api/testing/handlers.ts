@@ -30,6 +30,10 @@ import {
   type StoreCategoryFixture,
   type StoreOverview,
 } from './store-fixtures.js';
+import {
+  makeNotificationFeed,
+  type NotificationFixture,
+} from './notifications-fixtures.js';
 import type {
   AcademyPlan,
   AdminBillingOverview,
@@ -281,6 +285,53 @@ export function adminStoreHandlers(options: AdminStoreHandlerOptions = {}) {
       response(200).json({ products }),
     ),
     http.get('/v1/admin/store/orders', ({ response }) => response(200).json({ orders })),
+  ];
+}
+
+export interface NotificationsHandlerOptions {
+  /** Feed rows, newest first (NOT.2-shaped mixed feed when omitted). */
+  notifications?: NotificationFixture[];
+  /** Badge count (unread rows in the feed when omitted). */
+  unreadCount?: number;
+  /** The membership's notifications_enabled flag (true when omitted). */
+  settingsEnabled?: boolean;
+}
+
+/**
+ * Happy-path handlers for the notifications read API (NOT.7, spec 010):
+ * feed list, unread-count badge, read-all/read-one and the settings pair.
+ * Per-test overrides (read-all spies, mutated counts) via `server.use(...)`.
+ */
+export function notificationsHandlers(options: NotificationsHandlerOptions = {}) {
+  const notifications = options.notifications ?? makeNotificationFeed();
+  const unreadCount =
+    options.unreadCount ?? notifications.filter((row) => !row.readAt).length;
+  const enabled = options.settingsEnabled ?? true;
+
+  return [
+    http.get('/v1/notifications', ({ response }) =>
+      response(200).json({ notifications, nextCursor: null }),
+    ),
+    http.get('/v1/notifications/unread-count', ({ response }) =>
+      response(200).json({ count: unreadCount }),
+    ),
+    http.post('/v1/notifications/read-all', ({ response }) =>
+      response(200).json({ updated: unreadCount }),
+    ),
+    http.post('/v1/notifications/{id}/read', ({ params, response }) => {
+      const found = notifications.find((row) => row.id === params.id);
+      if (!found) return response.untyped(problemResponse(404, 'resource.not_found'));
+      return response(200).json({
+        notification: { ...found, readAt: found.readAt ?? new Date().toISOString() },
+      });
+    }),
+    http.get('/v1/notifications/settings', ({ response }) =>
+      response(200).json({ enabled }),
+    ),
+    http.put('/v1/notifications/settings', async ({ request, response }) => {
+      const body = (await request.json()) as { enabled: boolean };
+      return response(200).json({ enabled: body.enabled });
+    }),
   ];
 }
 

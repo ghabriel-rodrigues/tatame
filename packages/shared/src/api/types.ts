@@ -95,6 +95,14 @@ export type AdminStoreOrder = ApiSchemas['AdminOrderDto'];
 export type AdminStoreOrdersResponse = ApiSchemas['AdminOrdersResponseDto'];
 export type StoreOrderStatus = AdminStoreOrder['status'];
 
+// Notifications feed (NOT.7 web surface, spec 010).
+export type NotificationView = ApiSchemas['NotificationDto'];
+export type NotificationCategory = NotificationView['category'];
+export type NotificationsListResponse = ApiSchemas['NotificationsListResponseDto'];
+export type UnreadCountResponse = ApiSchemas['UnreadCountResponseDto'];
+export type NotificationSettingsResponse = ApiSchemas['NotificationSettingsResponseDto'];
+export type UpdateNotificationSettings = ApiSchemas['UpdateNotificationSettingsDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;
