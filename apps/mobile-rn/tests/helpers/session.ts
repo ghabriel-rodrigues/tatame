@@ -35,6 +35,8 @@ export interface MeFixtureOptions {
   fullName?: string;
   /** Resolved toggle map from /auth/me (e.g. `dependents.register`). */
   permissions?: Record<string, boolean>;
+  /** Academy white-label brand (CFG.12); null = default Tatame brand. */
+  theme?: { deep: string; vibrant: string; accent: string } | null;
 }
 
 export function makeMe(options: MeFixtureOptions = {}): MeResponse {
@@ -62,7 +64,7 @@ export function makeMe(options: MeFixtureOptions = {}): MeResponse {
             slug: 'alpha-jj',
             status: options.academyStatus ?? 'active',
             logoUrl: null,
-            theme: null,
+            theme: options.theme ?? null,
           }
         : null,
     permissions: options.permissions ?? {},

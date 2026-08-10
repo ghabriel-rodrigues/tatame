@@ -12,16 +12,23 @@
  * Splash choreography (AUTH.17): the SplashOverlay covers the tree while
  * the cold-start boot (secure-store refresh token -> silent refresh ->
  * /auth/me) runs, and for the handoff's ~1.9s minimum.
+ *
+ * Theming (CFG.12/13): AppThemeProvider feeds the DS ThemeProvider with the
+ * session academy brand (AsyncStorage last-brand cache hydrated before
+ * boot, so the cold start paints branded) and the persisted dark mode; the
+ * status bar style follows the active mode.
  */
 
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, useTheme } from '@tatame/design-system/native';
+import { useTheme } from '@tatame/design-system/native';
 import { SplashOverlay } from '../components/SplashOverlay';
 import { queryClient } from '../session/api';
 import { boot, resolveGate, useSession } from '../session/session-store';
+import { AppThemeProvider } from '../theme/AppThemeProvider';
+import { hydrateTheme, useThemePreferences } from '../theme/theme-store';
 
 /** Handoff auto-advance: splash holds ~1.9s minimum (aluno-01). */
 export const SPLASH_MIN_MS = 1900;
@@ -65,10 +72,13 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const session = useSession();
+  const { mode } = useThemePreferences();
   const [minElapsed, setMinElapsed] = useState(false);
 
   useEffect(() => {
-    void boot();
+    // Hydrate the cached brand/mode first so boot's session verdict is the
+    // only thing that can overwrite the branded cold-start frame.
+    void hydrateTheme().then(() => boot());
     const timer = setTimeout(() => setMinElapsed(true), SPLASH_MIN_MS);
     return () => clearTimeout(timer);
   }, []);
@@ -76,12 +86,13 @@ export default function RootLayout() {
   const showSplash = session.status === 'booting' || !minElapsed;
 
   return (
-    <ThemeProvider>
+    <AppThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style={showSplash ? 'light' : 'dark'} />
+        {/* Splash is a brand gradient; afterwards the mode decides. */}
+        <StatusBar style={showSplash || mode === 'dark' ? 'light' : 'dark'} />
         <RootNavigator />
         <SplashOverlay visible={showSplash} />
       </QueryClientProvider>
-    </ThemeProvider>
+    </AppThemeProvider>
   );
 }

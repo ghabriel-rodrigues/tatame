@@ -3,7 +3,8 @@
  * derived belt chip (fed by the home graduation payload — rank consistent
  * everywhere, story 7) with a "Ver graduação" entry into the Graduação
  * screen, the "Loja da academia" row with its "Novo" pill opening the
- * vitrine (spec 009 story 16 — the dead shortcut finally works) + "Sair".
+ * vitrine (spec 009 story 16 — the dead shortcut finally works) + the real
+ * "Tema escuro" switch (CFG.13, spec 011) + "Sair".
  */
 
 import { View } from 'react-native';
@@ -21,6 +22,7 @@ import { ProfileScreen } from '../../../components/ProfileScreen';
 import { beltChipLabel } from '../../../features/graduation/format';
 import { NotificationsSettingsRow } from '../../../features/notifications/NotificationsSettingsRow';
 import { STORE_ROW_TITLE, STORE_SUBTITLE } from '../../../features/store/copy';
+import { DarkThemeRow } from '../../../theme/DarkThemeRow';
 
 export default function AlunoPerfilScreen() {
   const theme = useTheme();
@@ -64,6 +66,8 @@ export default function AlunoPerfilScreen() {
       </Card>
       {/* NOT.8: the per-membership mute switch (spec 010 story 9). */}
       <NotificationsSettingsRow />
+      {/* CFG.13: the real dark-theme switch (per-device, persisted). */}
+      <DarkThemeRow />
     </ProfileScreen>
   );
 }

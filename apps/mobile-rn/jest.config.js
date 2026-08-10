@@ -39,5 +39,6 @@ module.exports = {
     '^expo-camera$': '<rootDir>/tests/mocks/expo-camera.js',
     '^expo-clipboard$': '<rootDir>/tests/mocks/expo-clipboard.js',
     '^expo-glass-effect$': '<rootDir>/tests/mocks/expo-glass-effect.js',
+    '^@react-native-async-storage/async-storage$': '<rootDir>/tests/mocks/async-storage.js',
   },
 };
