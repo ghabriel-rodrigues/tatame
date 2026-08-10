@@ -103,6 +103,16 @@ export type UnreadCountResponse = ApiSchemas['UnreadCountResponseDto'];
 export type NotificationSettingsResponse = ApiSchemas['NotificationSettingsResponseDto'];
 export type UpdateNotificationSettings = ApiSchemas['UpdateNotificationSettingsDto'];
 
+// White-label config web surface (CFG.8-11, spec 011).
+export type BrandTheme = ApiSchemas['BrandThemeDto'];
+export type AdminAcademyResponse = ApiSchemas['AdminAcademyResponseDto'];
+export type UpdateAcademyRequest = ApiSchemas['UpdateAcademyDto'];
+export type ResolvedPermission = ApiSchemas['ResolvedPermissionDto'];
+export type RoleMemberCounts = ApiSchemas['RoleMemberCountsDto'];
+export type PermissionMatrixResponse = ApiSchemas['PermissionMatrixResponseDto'];
+export type PermissionEntry = ApiSchemas['PermissionEntryDto'];
+export type UpdatePermissionsRequest = ApiSchemas['UpdatePermissionsDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

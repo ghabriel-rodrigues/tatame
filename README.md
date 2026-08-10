@@ -266,10 +266,10 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] CFG.5 Backend: notification fan-out gated on `auto_notifications_enabled` (closes the 010 deferral — no rows written when off; per-user mute semantics untouched)
 - [x] CFG.6 Backend: `GET /admin/permissions` response extended with per-role active-member counts (admin-17 group headers)
 - [x] CFG.7 Backend: e2e suite green — branding validation/audit/RBAC/cross-tenant, me + invite propagation, fan-out gate via a real emitting flow, permission counts
-- [ ] CFG.8 Web: session-driven branding — `derivePalette` + `applyBrand` + MUI theme rebuilt from the session academy brand on login/restore/context change; default brand for plataforma and logged-out; invite flow unchanged
-- [ ] CFG.9 Web: `/admin/configuracoes` hub per admin-15 — identidade card (monogram, name edit, 4 preset swatches with live preview, Salvar/Cancelar revert), toggles (Tema escuro, Notificações automáticas wired, geolocalização disabled stub), entry rows to Permissões/Integrações-stub/Planos/Regras de graduação
-- [ ] CFG.10 Web: console dark theme — `data-theme` flip + dark MUI theme from the config toggle, persisted in localStorage
-- [ ] CFG.11 Web: `/admin/permissoes` per admin-17 — role groups with member-count chips, registry-driven toggle rows on the existing GET/PUT with optimistic save + rollback
+- [x] CFG.8 Web: session-driven branding — `derivePalette` + `applyBrand` + MUI theme rebuilt from the session academy brand on login/restore/context change; default brand for plataforma and logged-out; invite flow unchanged
+- [x] CFG.9 Web: `/admin/configuracoes` hub per admin-15 — identidade card (monogram, name edit, 4 preset swatches with live preview, Salvar/Cancelar revert), toggles (Tema escuro, Notificações automáticas wired, geolocalização disabled stub), entry rows to Permissões/Integrações-stub/Planos/Regras de graduação
+- [x] CFG.10 Web: console dark theme — `data-theme` flip + dark MUI theme from the config toggle, persisted in localStorage
+- [x] CFG.11 Web: `/admin/permissoes` per admin-17 — role groups with member-count chips, registry-driven toggle rows on the existing GET/PUT with optimistic save + rollback
 - [x] CFG.12 RN: brand wiring — root ThemeProvider fed from the session academy brand with AsyncStorage last-brand cache (branded cold start, Tatame fallback); all three shells inherit
 - [x] CFG.13 RN: aluno perfil Tema escuro switch real — persisted mode, full dark shell per aluno-21, status bar follows mode
 - [x] CFG.14 Android: brand wiring — Compose color scheme built from the DerivePalette port on the session brand, DataStore last-brand cache

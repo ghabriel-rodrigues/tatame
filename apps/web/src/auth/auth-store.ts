@@ -91,6 +91,22 @@ export async function adoptSession(accessToken: string): Promise<MeResponse | nu
   return session;
 }
 
+/**
+ * CFG.9: after a successful `/admin/academy` save the console keeps its
+ * branding without a re-login — patch the cached session academy in place
+ * (name/theme) so the theme provider re-derives immediately.
+ */
+export function patchSessionAcademy(patch: Partial<NonNullable<MeResponse['academy']>>): void {
+  if (state.status !== 'authed' || !state.session?.academy) return;
+  setState({
+    ...state,
+    session: {
+      ...state.session,
+      academy: { ...state.session.academy, ...patch },
+    },
+  });
+}
+
 /** Re-reads `/auth/me` without a boundary clear (e.g. after profile edits). */
 export async function refreshSession(): Promise<MeResponse | null> {
   const session = await fetchSession();

@@ -1,7 +1,5 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 
@@ -14,22 +12,13 @@ import '@fontsource/quicksand/700.css';
 // Lumira CSS custom properties (glass, brand, belts) — the non-MUI var layer.
 import '@tatame/design-system/tokens.css';
 
-import {
-  applyBrand,
-  createTatameTheme,
-  derivePalette,
-  TATAME_DEFAULT_BRAND,
-} from '@tatame/design-system';
 import { queryClient } from './api/api';
 import { boot } from './auth/auth-store';
 import { appRoutes } from './app/routes';
-
-// One derivePalette() output feeds BOTH variable layers (ds-02): the Lumira
-// vars via applyBrand and the MUI vars via createTatameTheme. Tenant branding
-// (white-label) swaps TATAME_DEFAULT_BRAND per surface (e.g. /convite).
-const derived = derivePalette(TATAME_DEFAULT_BRAND, 'light');
-applyBrand(derived);
-const theme = createTatameTheme(derived, 'light');
+// CFG.8: theming is session-driven — the provider derives the palette from
+// the active academy brand (default for plataforma/logged-out) and flips
+// dark mode (CFG.10) from the persisted preference.
+import { AppThemeProvider } from './app/AppThemeProvider';
 
 // Silent session restore starts immediately; guards render the boot splash
 // until the store leaves `booting` (web-04 boot sequence).
@@ -43,11 +32,10 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <AppThemeProvider>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>
-    </ThemeProvider>
+    </AppThemeProvider>
   </StrictMode>,
 );

@@ -34,12 +34,17 @@ import {
   makeNotificationFeed,
   type NotificationFixture,
 } from './notifications-fixtures.js';
+import { makeAdminAcademy, makePermissionMatrix } from './config-fixtures.js';
 import type {
   AcademyPlan,
+  AdminAcademyResponse,
   AdminBillingOverview,
   GraduationEntry,
   GraduationRuleRow,
+  PermissionMatrixResponse,
   RepassesResponse,
+  UpdateAcademyRequest,
+  UpdatePermissionsRequest,
 } from '../types.js';
 
 /**
@@ -372,5 +377,48 @@ export function graduationHandlers(options: GraduationHandlerOptions = {}) {
     http.get('/v1/admin/students/{id}/graduations', ({ params, response }) =>
       response(200).json({ graduations: histories[params.id] ?? [] }),
     ),
+  ];
+}
+
+export interface AdminConfigHandlerOptions {
+  /** `/admin/academy` document (brand-null default when omitted). */
+  academy?: AdminAcademyResponse;
+  /** Permission matrix + counts (registry defaults when omitted). */
+  matrix?: PermissionMatrixResponse;
+}
+
+/**
+ * Happy-path handlers for the admin config surface (CFG.9-11, spec 011):
+ * academy identity GET/PUT (PUT echoes the submitted document) and the
+ * permissions matrix GET/PUT (PUT merges the entries over the rows).
+ * Negative paths stay per-test via `server.use(...)`.
+ */
+export function adminConfigHandlers(options: AdminConfigHandlerOptions = {}) {
+  const academy = options.academy ?? makeAdminAcademy();
+  const matrix = options.matrix ?? makePermissionMatrix();
+
+  return [
+    http.get('/v1/admin/academy', ({ response }) => response(200).json(academy)),
+    http.put('/v1/admin/academy', async ({ request, response }) => {
+      const body = (await request.json()) as UpdateAcademyRequest;
+      return response(200).json({
+        ...academy,
+        name: body.name,
+        brand: body.brand,
+        autoNotificationsEnabled: body.autoNotificationsEnabled,
+      });
+    }),
+    http.get('/v1/admin/permissions', ({ response }) => response(200).json(matrix)),
+    http.put('/v1/admin/permissions', async ({ request, response }) => {
+      const body = (await request.json()) as UpdatePermissionsRequest;
+      const byKey = new Map(body.entries.map((e) => [`${e.role}:${e.key}`, e.allowed]));
+      return response(200).json({
+        ...matrix,
+        permissions: matrix.permissions.map((row) => {
+          const next = byKey.get(`${row.role}:${row.key}`);
+          return next === undefined ? row : { ...row, allowed: next };
+        }),
+      });
+    }),
   ];
 }

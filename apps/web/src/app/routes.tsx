@@ -11,9 +11,11 @@ import { InvitePage } from '../pages/InvitePage';
 import { LoginPage } from '../pages/LoginPage';
 import { CadastrosPage } from '../pages/admin/CadastrosPage';
 import { CalendarioPage } from '../pages/admin/CalendarioPage';
+import { ConfiguracoesPage } from '../pages/admin/ConfiguracoesPage';
 import { EventosPage } from '../pages/admin/EventosPage';
 import { GraduationRulesPage } from '../pages/admin/GraduationRulesPage';
 import { LojaPage } from '../pages/admin/LojaPage';
+import { PermissoesPage } from '../pages/admin/PermissoesPage';
 import { PlansPage } from '../pages/admin/PlansPage';
 import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
 import { VisaoFinanceiraPage } from '../pages/admin/VisaoFinanceiraPage';
@@ -37,11 +39,15 @@ export const appRoutes: RouteObject[] = [
           { path: 'cadastros', element: <CadastrosPage /> },
           // AGD.4: the admin console month calendar (admin-14, spec 007).
           { path: 'calendario', element: <CalendarioPage /> },
+          // CFG.9: the Configurações hub (admin-15, spec 011).
+          { path: 'configuracoes', element: <ConfiguracoesPage /> },
           // EVT.9: the admin events console (admin-13, spec 008).
           { path: 'eventos', element: <EventosPage /> },
           { path: 'graduacao', element: <GraduationRulesPage /> },
           // STO.8-9: the admin Loja console (admin-03/04/05/06, spec 009).
           { path: 'loja', element: <LojaPage /> },
+          // CFG.11: per-role permission toggles (admin-17, spec 011).
+          { path: 'permissoes', element: <PermissoesPage /> },
           { path: 'planos', element: <PlansPage /> },
           { path: 'turmas/:id', element: <TurmaDetailPage /> },
           { path: '*', element: <UnderConstruction surfaceLabel="Painel da academia" /> },

@@ -6,4 +6,5 @@ export * from './agenda-fixtures.js';
 export * from './events-fixtures.js';
 export * from './store-fixtures.js';
 export * from './notifications-fixtures.js';
+export * from './config-fixtures.js';
 export * from './handlers.js';

@@ -8,6 +8,7 @@ import { cleanup } from '@testing-library/react';
 import { notificationsHandlers, setupTestServer } from '@tatame/shared/testing';
 import { queryClient } from '../api/api';
 import { authTestApi } from '../auth/auth-store';
+import { resetThemeState } from '../app/theme-store';
 
 export const server = setupTestServer();
 
@@ -25,6 +26,8 @@ afterEach(() => {
   queryClient.clear();
   authTestApi.reset();
   localStorage.clear();
+  resetThemeState();
+  document.documentElement.removeAttribute('data-theme');
 });
 
 afterAll(() => server.close());

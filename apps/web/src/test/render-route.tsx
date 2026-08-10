@@ -4,20 +4,15 @@
  * seeded. Assertions are on what the user sees, never hook internals.
  */
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '@mui/material/styles';
 import { render, type RenderResult } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { MeResponse } from '@tatame/shared';
-import {
-  createTatameTheme,
-  derivePalette,
-  TATAME_DEFAULT_BRAND,
-} from '@tatame/design-system';
 import { appRoutes } from '../app/routes';
 import { queryClient } from '../api/api';
 import { authTestApi } from '../auth/auth-store';
-
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
+// CFG.8: tests render through the real session-driven theme provider so
+// branding assertions exercise the production path.
+import { AppThemeProvider } from '../app/AppThemeProvider';
 
 export interface RenderRouteOptions {
   /**
@@ -41,11 +36,11 @@ export function renderRoute(path: string, options: RenderRouteOptions = {}): Ren
 
   const router = createMemoryRouter(appRoutes, { initialEntries: [path] });
   const utils = render(
-    <ThemeProvider theme={theme}>
+    <AppThemeProvider>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>
-    </ThemeProvider>,
+    </AppThemeProvider>,
   );
   return { router, ...utils };
 }
