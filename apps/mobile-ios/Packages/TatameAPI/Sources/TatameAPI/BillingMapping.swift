@@ -62,7 +62,7 @@ extension Charge {
     init(dto: Components.Schemas.ChargeWithPaymentsDto) throws {
         self.init(
             id: try uuid(dto.id, "charge id"),
-            studentId: try uuid(dto.studentId, "student id"),
+            studentId: try dto.studentId.map { try uuid($0, "student id") },
             guardianId: try dto.guardianId.map { try uuid($0, "guardian id") },
             status: ChargeStatus(rawValue: dto.status.rawValue) ?? .open,
             overdue: dto.overdue,
@@ -79,7 +79,7 @@ extension Charge {
     init(dto: Components.Schemas.ChargeDto) throws {
         self.init(
             id: try uuid(dto.id, "charge id"),
-            studentId: try uuid(dto.studentId, "student id"),
+            studentId: try dto.studentId.map { try uuid($0, "student id") },
             guardianId: try dto.guardianId.map { try uuid($0, "guardian id") },
             status: ChargeStatus(rawValue: dto.status.rawValue) ?? .open,
             overdue: dto.overdue,

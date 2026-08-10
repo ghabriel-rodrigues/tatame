@@ -11,6 +11,7 @@ import BillingFeature
 import EnrollmentFeature
 import EventsFeature
 import GraduationFeature
+import StoreFeature
 import SwiftUI
 import TatameAPI
 import TatameCore
@@ -29,6 +30,7 @@ struct TatameApp: App {
                 .environment(\.billingRepository, composition.billingRepository)
                 .environment(\.agendaRepository, composition.agendaRepository)
                 .environment(\.eventsRepository, composition.eventsRepository)
+                .environment(\.storeRepository, composition.storeRepository)
         }
     }
 }
@@ -57,6 +59,7 @@ final class AppComposition {
     let billingRepository: any BillingRepository
     let agendaRepository: any AgendaRepository
     let eventsRepository: any EventsRepository
+    let storeRepository: any StoreRepository
 
     init() {
         // Dev server URL. Environment-specific .xcconfig wiring is ticket 08
@@ -83,5 +86,6 @@ final class AppComposition {
         billingRepository = stack.billingRepository
         agendaRepository = stack.agendaRepository
         eventsRepository = stack.eventsRepository
+        storeRepository = stack.storeRepository
     }
 }

@@ -84,7 +84,11 @@ struct ComprovanteSheet: View {
                 .foregroundStyle(LumiraTokens.Colors.fg2)
 
             VStack(spacing: LumiraTokens.Space.s2) {
-                row("Aluno", receipt.studentName)
+                // Nil on professor order-charge receipts (spec 009 — no
+                // student row behind the buyer); the row simply hides.
+                if let studentName = receipt.studentName {
+                    row("Aluno", studentName)
+                }
                 if let planName = receipt.planName {
                     row("Plano", planName)
                 }

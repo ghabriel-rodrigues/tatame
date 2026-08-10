@@ -15,6 +15,7 @@ import DesignSystem
 import EnrollmentFeature
 import EventsFeature
 import GraduationFeature
+import StoreFeature
 import SwiftUI
 import TatameCore
 
@@ -63,12 +64,20 @@ struct PersonaShellView: View {
     /// Event detail pushed from the Agenda "Eventos do mês" cards and the
     /// month calendar's Evento entries (EVT.14).
     @State private var agendaEventTarget: EventDetailTarget?
+    /// Vitrine pushed from the home strip's "Ver tudo" (STO.14, spec 009).
+    @State private var homeStoreOpen = false
+    /// Product detail pushed straight from a home strip card (STO.14).
+    @State private var homeStoreProductTarget: StoreProductTarget?
+    /// Vitrine pushed from the perfil "Loja da academia" row (STO.14 —
+    /// aluno and professor share the entry state; one perfil tab each).
+    @State private var perfilStoreOpen = false
     @Environment(SessionStore.self) private var session
     @Environment(\.enrollmentRepository) private var enrollmentRepository
     @Environment(\.attendanceRepository) private var attendanceRepository
     @Environment(\.billingRepository) private var billingRepository
     @Environment(\.agendaRepository) private var agendaRepository
     @Environment(\.eventsRepository) private var eventsRepository
+    @Environment(\.storeRepository) private var storeRepository
 
     var body: some View {
         TabView(selection: $selection) {
@@ -87,7 +96,12 @@ struct PersonaShellView: View {
                             // tab (spec 007 — the recorded debt closes).
                             onOpenAgenda: { selection = .agenda },
                             // "Próximos eventos" card → event detail (EVT.14).
-                            onOpenEvent: { homeEventTarget = EventDetailTarget(id: $0.id) }
+                            onOpenEvent: { homeEventTarget = EventDetailTarget(id: $0.id) },
+                            // "Loja da academia" strip (STO.14, spec 009):
+                            // "Ver tudo" opens the vitrine, cards push the
+                            // product detail.
+                            onOpenStore: { homeStoreOpen = true },
+                            onOpenStoreProduct: { homeStoreProductTarget = StoreProductTarget(id: $0.id) }
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showGraduation) {
@@ -95,6 +109,15 @@ struct PersonaShellView: View {
                         }
                         .navigationDestination(item: $homeEventTarget) { target in
                             AlunoEventDetailView(eventId: target.id, repository: eventsRepository)
+                        }
+                        .navigationDestination(isPresented: $homeStoreOpen) {
+                            StoreVitrineView(
+                                academyName: context.activeMembership.academyName,
+                                repository: storeRepository
+                            )
+                        }
+                        .navigationDestination(item: $homeStoreProductTarget) { target in
+                            StoreProductDetailView(productId: target.id, repository: storeRepository)
                         }
                     }
                 }
@@ -177,18 +200,22 @@ struct PersonaShellView: View {
         .tint(LumiraTokens.Colors.inkPurple)
     }
 
-    /// Perfil tab: aluno gets the belt-chip header (spec 005 story 7),
-    /// professor the professor-12 profile (belt chip + graduações válidas);
-    /// responsável keeps the session card until its slice lands.
+    /// Perfil tab: aluno gets the belt-chip header (spec 005 story 7) and
+    /// the "Loja da academia" row with its "Novo" pill (spec 009 story 16 —
+    /// the dead shortcut finally works); professor the professor-12 profile
+    /// (belt chip + graduações válidas) with the same Loja row (story 17 —
+    /// per professor-13 the perfil row is the professor's entry, consumer-
+    /// side only, no tab-bar change); responsável keeps the session card
+    /// until its slice lands.
     @ViewBuilder
     private var perfilTab: some View {
         switch persona {
         case .aluno:
-            shellTab(title: "Perfil", icon: "person.crop.circle") {
+            perfilTabWithStore(showsNovoPill: true) {
                 AlunoProfileHeader(fullName: context.user.fullName)
             }
         case .professor:
-            shellTab(title: "Perfil", icon: "person.crop.circle") {
+            perfilTabWithStore(showsNovoPill: false) {
                 ProfessorProfileView(
                     fullName: context.user.fullName,
                     academyName: context.activeMembership.academyName
@@ -198,6 +225,44 @@ struct PersonaShellView: View {
             shellTab(title: "Perfil", icon: "person.crop.circle") {
                 EmptyView()
             }
+        }
+    }
+
+    /// Aluno/professor perfil: the shell scroll wrapped in a NavigationStack
+    /// so the "Loja da academia" row pushes the shared vitrine (STO.14).
+    private func perfilTabWithStore(
+        showsNovoPill: Bool,
+        @ViewBuilder header: () -> some View
+    ) -> some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                if readOnly {
+                    ReadOnlyBanner()
+                }
+                ScrollView {
+                    VStack(spacing: LumiraTokens.Space.s4) {
+                        header()
+                        StoreEntryRow(showsNovoPill: showsNovoPill) {
+                            perfilStoreOpen = true
+                        }
+                        SessionContextCard(context: context, shellTitle: persona.titlePTBR)
+                        LogoutButton()
+                    }
+                    .padding(LumiraTokens.Space.s6)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .background(LumiraTokens.Colors.bgApp)
+            .navigationBarHiddenOnIOS()
+            .navigationDestination(isPresented: $perfilStoreOpen) {
+                StoreVitrineView(
+                    academyName: context.activeMembership.academyName,
+                    repository: storeRepository
+                )
+            }
+        }
+        .tabItem {
+            Label("Perfil", systemImage: "person.crop.circle")
         }
     }
 

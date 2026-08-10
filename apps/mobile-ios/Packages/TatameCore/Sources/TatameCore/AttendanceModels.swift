@@ -73,6 +73,9 @@ public struct AlunoHome: Sendable, Equatable {
     /// "Próximos eventos": the next 2 published events with own registration
     /// state (spec 008, EVT.14).
     public let upcomingEvents: [EventListItem]
+    /// "Loja da academia" strip: the first 3 active store products +
+    /// "Ver tudo" (spec 009, STO.14); empty hides the strip.
+    public let storeStrip: [StoreProductCard]
 
     public init(
         studentId: UUID,
@@ -81,7 +84,8 @@ public struct AlunoHome: Sendable, Equatable {
         stats: AlunoStats,
         graduation: AlunoHomeGraduation? = nil,
         mensalidade: MensalidadeAlert? = nil,
-        upcomingEvents: [EventListItem] = []
+        upcomingEvents: [EventListItem] = [],
+        storeStrip: [StoreProductCard] = []
     ) {
         self.studentId = studentId
         self.studentName = studentName
@@ -90,6 +94,7 @@ public struct AlunoHome: Sendable, Equatable {
         self.graduation = graduation
         self.mensalidade = mensalidade
         self.upcomingEvents = upcomingEvents
+        self.storeStrip = storeStrip
     }
 
     /// Copy with the hero flipped and the stats refreshed (post-check-in).
@@ -111,7 +116,8 @@ public struct AlunoHome: Sendable, Equatable {
             stats: result.stats,
             graduation: bumped,
             mensalidade: mensalidade,
-            upcomingEvents: upcomingEvents
+            upcomingEvents: upcomingEvents,
+            storeStrip: storeStrip
         )
     }
 }

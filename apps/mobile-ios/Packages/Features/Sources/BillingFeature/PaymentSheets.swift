@@ -20,6 +20,9 @@ public struct PixSheet: View {
     let subtitleOverride: String?
     /// Success pop title; defaults to the mensalidade copy.
     let successTitle: String
+    /// Extra success line — the store passes "Pedido pago — retire na
+    /// recepção da academia." (spec 009 story 26 fixed copy).
+    let successCaption: String?
 
     @Environment(\.dismiss) private var dismiss
 
@@ -28,15 +31,23 @@ public struct PixSheet: View {
         self.subtitleContext = subtitleContext
         subtitleOverride = nil
         successTitle = "Mensalidade paga"
+        successCaption = nil
     }
 
-    /// The events entry point: the same sheet, simulate gating and success
-    /// pop, addressed "Inscrição · <evento>" (spec 008 stories 13-14).
-    public init(model: PaymentFlowModel, subtitle: String, successTitle: String) {
+    /// The events/store entry point: the same sheet, simulate gating and
+    /// success pop, addressed "Inscrição · <evento>" (spec 008 stories
+    /// 13-14) or "Pedido #NNNN · <produto>" (spec 009 story 25).
+    public init(
+        model: PaymentFlowModel,
+        subtitle: String,
+        successTitle: String,
+        successCaption: String? = nil
+    ) {
         _model = State(initialValue: model)
         subtitleContext = nil
         subtitleOverride = subtitle
         self.successTitle = successTitle
+        self.successCaption = successCaption
     }
 
     public var body: some View {
@@ -46,7 +57,8 @@ public struct PixSheet: View {
                 PaymentSuccessView(
                     payment: payment,
                     mandateCreated: false,
-                    title: successTitle
+                    title: successTitle,
+                    caption: successCaption
                 ) { dismiss() }
             default:
                 header
@@ -380,6 +392,7 @@ struct PaymentSuccessView: View {
     let payment: Payment
     let mandateCreated: Bool
     var title = "Mensalidade paga"
+    var caption: String?
     let close: () -> Void
 
     var body: some View {
@@ -394,6 +407,13 @@ struct PaymentSuccessView: View {
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
                 .foregroundStyle(LumiraTokens.Colors.fg3)
                 .multilineTextAlignment(.center)
+            if let caption {
+                Text(caption)
+                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .multilineTextAlignment(.center)
+                    .accessibilityIdentifier("payment-success-caption")
+            }
             if mandateCreated {
                 Text("Recorrência ativada no cartão — as próximas mensalidades são pagas automaticamente.")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))

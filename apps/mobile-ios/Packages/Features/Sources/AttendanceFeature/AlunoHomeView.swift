@@ -15,19 +15,25 @@ public struct AlunoHomeView: View {
     private let onOpenCarteira: (() -> Void)?
     private let onOpenAgenda: (() -> Void)?
     private let onOpenEvent: ((EventListItem) -> Void)?
+    private let onOpenStore: (() -> Void)?
+    private let onOpenStoreProduct: ((StoreProductCard) -> Void)?
 
     public init(
         repository: any AttendanceRepository,
         onOpenGraduation: (() -> Void)? = nil,
         onOpenCarteira: (() -> Void)? = nil,
         onOpenAgenda: (() -> Void)? = nil,
-        onOpenEvent: ((EventListItem) -> Void)? = nil
+        onOpenEvent: ((EventListItem) -> Void)? = nil,
+        onOpenStore: (() -> Void)? = nil,
+        onOpenStoreProduct: ((StoreProductCard) -> Void)? = nil
     ) {
         _model = State(initialValue: AlunoHomeModel(repository: repository))
         self.onOpenGraduation = onOpenGraduation
         self.onOpenCarteira = onOpenCarteira
         self.onOpenAgenda = onOpenAgenda
         self.onOpenEvent = onOpenEvent
+        self.onOpenStore = onOpenStore
+        self.onOpenStoreProduct = onOpenStoreProduct
     }
 
     public var body: some View {
@@ -36,7 +42,9 @@ public struct AlunoHomeView: View {
             onOpenGraduation: onOpenGraduation,
             onOpenCarteira: onOpenCarteira,
             onOpenAgenda: onOpenAgenda,
-            onOpenEvent: onOpenEvent
+            onOpenEvent: onOpenEvent,
+            onOpenStore: onOpenStore,
+            onOpenStoreProduct: onOpenStoreProduct
         )
     }
 }
@@ -47,6 +55,8 @@ struct AlunoHomeContent: View {
     var onOpenCarteira: (() -> Void)?
     var onOpenAgenda: (() -> Void)?
     var onOpenEvent: ((EventListItem) -> Void)?
+    var onOpenStore: (() -> Void)?
+    var onOpenStoreProduct: ((StoreProductCard) -> Void)?
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
 
@@ -67,6 +77,7 @@ struct AlunoHomeContent: View {
                     statTiles(home)
                     graduationCard(home)
                     upcomingEventsSection(home)
+                    storeStripSection(home)
                     rankingPlaceholder
                     mensalidadeAlert(home)
                 }
@@ -359,6 +370,38 @@ struct AlunoHomeContent: View {
         }
     }
 
+    // MARK: Loja da academia strip (spec 009, STO.14 — story 15: the first
+    // active products from the home payload + "Ver tudo" into the vitrine;
+    // hidden when the store has nothing to show)
+
+    @ViewBuilder
+    private func storeStripSection(_ home: AlunoHome) -> some View {
+        if !home.storeStrip.isEmpty {
+            VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
+                HStack {
+                    Text("Loja da academia")
+                        .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                    Spacer()
+                    Button("Ver tudo") {
+                        onOpenStore?()
+                    }
+                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .accessibilityIdentifier("loja-ver-tudo")
+                }
+                HStack(alignment: .top, spacing: LumiraTokens.Space.s3) {
+                    ForEach(home.storeStrip) { product in
+                        StoreStripCard(product: product) {
+                            onOpenStoreProduct?(product)
+                        }
+                    }
+                }
+            }
+            .accessibilityIdentifier("store-strip")
+        }
+    }
+
     private var rankingPlaceholder: some View {
         HStack(spacing: LumiraTokens.Space.s3) {
             Image(systemName: "chart.bar.fill")
@@ -384,6 +427,46 @@ struct AlunoHomeContent: View {
                 .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
         )
         .opacity(0.7)
+    }
+}
+
+/// One card of the home "Loja da academia" strip (spec 009): the monogram
+/// gradient tile + name + price, pushing the product detail.
+struct StoreStripCard: View {
+    let product: StoreProductCard
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
+                StoreMonogramTile(
+                    monogram: product.monogram,
+                    gradientPreset: product.gradientPreset,
+                    monogramSize: LumiraTokens.FontSize.textMd
+                )
+                .frame(height: 72)
+                .frame(maxWidth: .infinity)
+                Text(product.name)
+                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(BillingFormatters.amountBRL(product.priceCents))
+                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+            }
+            .padding(LumiraTokens.Space.s2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(LumiraTokens.Colors.bgSurface)
+            .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("home-store-\(product.id.uuidString.lowercased())")
     }
 }
 

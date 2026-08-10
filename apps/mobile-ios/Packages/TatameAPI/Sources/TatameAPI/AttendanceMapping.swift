@@ -43,7 +43,8 @@ extension AlunoHome {
             stats: AlunoStats(dto: dto.stats),
             graduation: try dto.graduation.map { try AlunoHomeGraduation(dto: $0.value1) },
             mensalidade: try dto.mensalidade.map { try MensalidadeAlert(dto: $0.value1) },
-            upcomingEvents: try dto.upcomingEvents.map(EventListItem.init(dto:))
+            upcomingEvents: try dto.upcomingEvents.map(EventListItem.init(dto:)),
+            storeStrip: try dto.storeStrip.map(StoreProductCard.init(dto:))
         )
     }
 }

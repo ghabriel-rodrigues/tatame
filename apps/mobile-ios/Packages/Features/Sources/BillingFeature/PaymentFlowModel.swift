@@ -12,10 +12,15 @@ import TatameCore
 @MainActor
 @Observable
 public final class PaymentFlowModel {
-    /// Who is paying — picks the aluno or responsável endpoint.
+    /// Who is paying — picks the aluno or responsável endpoint. `store` is
+    /// the persona-neutral order-charge route shared by aluno and professor
+    /// (spec 009): creation is injected as a closure so BillingFeature keeps
+    /// no dependency on the store seam, while the sheet, simulate gating and
+    /// success pop stay the exact same rails.
     public enum Payer: Sendable, Equatable {
         case aluno
         case responsavel
+        case store
     }
 
     public enum Phase: Equatable, Sendable {
@@ -51,6 +56,9 @@ public final class PaymentFlowModel {
 
     @ObservationIgnored private let repository: any BillingRepository
     @ObservationIgnored private let onSettled: @MainActor () -> Void
+    /// The store payer's payment creation (POST /store/charges/:id/payments
+    /// behind StoreRepository) — nil for the aluno/responsável payers.
+    @ObservationIgnored private let createOrderPayment: (@MainActor () async throws -> PaymentCreated)?
 
     public init(
         charge: Charge,
@@ -64,6 +72,24 @@ public final class PaymentFlowModel {
         self.payer = payer
         self.repository = repository
         self.onSettled = onSettled
+        createOrderPayment = nil
+    }
+
+    /// The store entry point (spec 009, STO.14-15): Pix on an order-origin
+    /// charge — creation goes through the injected closure (the persona-
+    /// neutral store route), settlement through the same simulate endpoint.
+    public init(
+        orderCharge: Charge,
+        repository: any BillingRepository,
+        createOrderPayment: @escaping @MainActor () async throws -> PaymentCreated,
+        onSettled: @escaping @MainActor () -> Void = {}
+    ) {
+        charge = orderCharge
+        method = .pix
+        payer = .store
+        self.repository = repository
+        self.onSettled = onSettled
+        self.createOrderPayment = createOrderPayment
     }
 
     /// The created pending payment, when any.
@@ -176,19 +202,27 @@ public final class PaymentFlowModel {
     private func pay(recurrence: Bool, card: CardDetails?) async throws -> PaymentCreated {
         switch payer {
         case .aluno:
-            try await repository.payCharge(
+            return try await repository.payCharge(
                 chargeId: charge.id,
                 method: method,
                 recurrence: recurrence,
                 card: card
             )
         case .responsavel:
-            try await repository.payDependentCharge(
+            return try await repository.payDependentCharge(
                 chargeId: charge.id,
                 method: method,
                 recurrence: recurrence,
                 card: card
             )
+        case .store:
+            guard let createOrderPayment else {
+                // Only reachable by constructing a store payer through the
+                // non-store init — a programmer error, surfaced as a stable
+                // failure instead of trapping the sheet.
+                throw ApiError.unknown(status: 0, code: nil)
+            }
+            return try await createOrderPayment()
         }
     }
 }

@@ -133,10 +133,12 @@ public struct Payment: Sendable, Equatable, Identifiable {
 }
 
 /// One receivable (`charges` row). `overdue` is the derived truth flag —
-/// never the lazily flipped status column (spec doctrine).
+/// never the lazily flipped status column (spec doctrine). `studentId` went
+/// nullable with the spec-009 order-origin relaxation: professor order
+/// charges have no student row.
 public struct Charge: Sendable, Equatable, Identifiable {
     public let id: UUID
-    public let studentId: UUID
+    public let studentId: UUID?
     public let guardianId: UUID?
     public let status: ChargeStatus
     public let overdue: Bool
@@ -153,7 +155,7 @@ public struct Charge: Sendable, Equatable, Identifiable {
 
     public init(
         id: UUID,
-        studentId: UUID,
+        studentId: UUID?,
         guardianId: UUID? = nil,
         status: ChargeStatus,
         overdue: Bool,
@@ -318,17 +320,19 @@ public struct SimulatedSettlement: Sendable, Equatable {
 }
 
 /// GET /billing/payments/:id/receipt — the comprovante render payload.
+/// `studentName` is nil on professor order-charge receipts (spec 009 —
+/// no student row behind the buyer).
 public struct PaymentReceipt: Sendable, Equatable {
     public let payment: Payment
     public let charge: Charge
-    public let studentName: String
+    public let studentName: String?
     public let planName: String?
     public let academyName: String?
 
     public init(
         payment: Payment,
         charge: Charge,
-        studentName: String,
+        studentName: String?,
         planName: String? = nil,
         academyName: String? = nil
     ) {

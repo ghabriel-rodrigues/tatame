@@ -80,6 +80,11 @@ struct LiveAttendanceRepositoryTests {
              "priceCents": null,
              "registration": {"id": "\(Self.registrationId.uuidString.lowercased())",
                               "status": "confirmed", "chargeId": null}}
+         ],
+         "storeStrip": [
+            {"id": "\(Self.classId.uuidString.lowercased())", "name": "Kimono oficial",
+             "priceCents": 38900, "monogram": "GI", "gradientPreset": "store-blue-purple",
+             "categoryId": null, "categoryName": "Kimonos"}
          ]}
         """
         let (repository, transport) = makeRepository([ok(json)])
@@ -100,6 +105,11 @@ struct LiveAttendanceRepositoryTests {
         #expect(home.upcomingEvents[0].id == Self.eventId)
         #expect(home.upcomingEvents[0].priceCents == nil)
         #expect(home.upcomingEvents[0].isConfirmed)
+        // spec 009 — the "Loja da academia" strip (first active products).
+        #expect(home.storeStrip.count == 1)
+        #expect(home.storeStrip[0].name == "Kimono oficial")
+        #expect(home.storeStrip[0].monogram == "GI")
+        #expect(home.storeStrip[0].gradientPreset == "store-blue-purple")
     }
 
     @Test("alunoHome maps a day without class and the gamification-off streak")
@@ -109,7 +119,7 @@ struct LiveAttendanceRepositoryTests {
          "todayClass": null,
          "stats": {"monthPresencePct": 50, "monthAttendedSessions": 1, "monthTotalSessions": 2,
                    "streak": null, "totalLessons": 3},
-         "upcomingEvents": []}
+         "upcomingEvents": [], "storeStrip": []}
         """
         let (repository, _) = makeRepository([ok(json)])
 

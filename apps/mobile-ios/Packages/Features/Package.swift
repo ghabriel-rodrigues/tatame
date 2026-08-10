@@ -26,6 +26,7 @@ let package = Package(
         .library(name: "BillingFeature", targets: ["BillingFeature"]),
         .library(name: "EventsFeature", targets: ["EventsFeature"]),
         .library(name: "AgendaFeature", targets: ["AgendaFeature"]),
+        .library(name: "StoreFeature", targets: ["StoreFeature"]),
         .library(name: "AppShell", targets: ["AppShell"]),
     ],
     dependencies: [
@@ -95,6 +96,18 @@ let package = Package(
             ]
         ),
         .target(
+            // Store slice (spec 009, STO.14-15): the one storefront shared
+            // by the aluno and professor shells (vitrine, product detail,
+            // Meus pedidos). Depends on BillingFeature so "Comprar com Pix"
+            // reuses the existing Pix sheet + simulate rails.
+            name: "StoreFeature",
+            dependencies: [
+                "BillingFeature",
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
             name: "AppShell",
             dependencies: [
                 "AuthFeature",
@@ -104,6 +117,7 @@ let package = Package(
                 "BillingFeature",
                 "EventsFeature",
                 "AgendaFeature",
+                "StoreFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -118,6 +132,7 @@ let package = Package(
                 "BillingFeature",
                 "EventsFeature",
                 "AgendaFeature",
+                "StoreFeature",
                 "AppShell",
                 .product(name: "TatameCore", package: "TatameCore"),
             ]

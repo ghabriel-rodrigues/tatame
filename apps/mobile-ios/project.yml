@@ -45,6 +45,8 @@ targets:
         product: AgendaFeature
       - package: Features
         product: EventsFeature
+      - package: Features
+        product: StoreFeature
       - package: TatameAPI
         product: TatameAPI
       - package: TatameCore

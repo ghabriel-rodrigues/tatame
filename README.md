@@ -238,7 +238,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] STO.11 RN: Meus pedidos with status chips + retirada note + pending cancel, pedido-pago success toast, Carteira histórico showing aluno order payments
 - [x] STO.12 Android: shared vitrine + detail + shell entries (same scope as STO.10)
 - [x] STO.13 Android: Meus pedidos + purchase feedback (same scope as STO.11)
-- [ ] STO.14 iOS: shared vitrine + detail + shell entries (same scope as STO.10)
-- [ ] STO.15 iOS: Meus pedidos + purchase feedback (same scope as STO.11)
+- [x] STO.14 iOS: shared vitrine + detail + shell entries (same scope as STO.10)
+- [x] STO.15 iOS: Meus pedidos + purchase feedback (same scope as STO.11)
 
 _Next phases (notifications, white-label config, platform console, reports, release) get their specs as each phase ships._
