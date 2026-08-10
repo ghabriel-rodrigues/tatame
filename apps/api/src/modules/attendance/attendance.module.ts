@@ -3,6 +3,7 @@ import { DbModule } from '../../infra/db/db.module.js';
 import { EventsModule } from '../events/events.module.js';
 import { GraduationCoreModule } from '../graduation/graduation-core.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import { StoreModule } from '../store/store.module.js';
 import { AdminAttendanceController } from './controllers/admin-attendance.controller.js';
 import { AlunoAttendanceController } from './controllers/aluno-attendance.controller.js';
 import { ProfessorDashboardController } from './controllers/professor-dashboard.controller.js';
@@ -28,8 +29,9 @@ import { StatsService } from './services/stats.service.js';
  */
 @Module({
   // EventsModule feeds the home "Próximos eventos" section and the professor
-  // dashboard "Eventos futuros" tile (spec 008 — controller-level merge).
-  imports: [DbModule, IdentityModule, GraduationCoreModule, EventsModule],
+  // dashboard "Eventos futuros" tile (spec 008 — controller-level merge);
+  // StoreModule feeds the home "Loja da academia" strip (spec 009, same merge).
+  imports: [DbModule, IdentityModule, GraduationCoreModule, EventsModule, StoreModule],
   controllers: [
     AlunoAttendanceController,
     ProfessorLiveController,

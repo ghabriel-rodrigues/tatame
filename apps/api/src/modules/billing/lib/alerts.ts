@@ -50,7 +50,9 @@ export async function mensalidadeAlerts(
     )
     .orderBy(asc(charges.dueDate));
   for (const row of rows) {
-    if (map.has(row.studentId)) continue; // earliest due wins
+    // Plan charges always carry their student; the null branch is unreachable
+    // here (order charges are filtered out) but keeps the types honest.
+    if (!row.studentId || map.has(row.studentId)) continue; // earliest due wins
     map.set(row.studentId, {
       chargeId: row.id,
       amountCents: row.amountCents,

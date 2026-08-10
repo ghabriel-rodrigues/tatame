@@ -18,7 +18,8 @@ export const BILLING_CHARGE_REFUNDED = 'billing.charge.refunded';
 interface ChargeEventBase {
   tenantId: string;
   chargeId: string;
-  studentId: string;
+  /** Null only on order-origin charges of a professor buyer (spec 009). */
+  studentId: string | null;
   /** Bill-to guardian (minors); null = student pays self. */
   guardianId: string | null;
   /** Who the notification addresses — the guardian variant switch. */

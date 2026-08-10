@@ -51,3 +51,12 @@ export {
   EVENTS_REGISTRATION_CANCELED,
   EVENTS_REGISTRATION_CONFIRMED,
 } from './modules/events/events.events.js';
+// Store seam (spec 009) — e2e asserts the handler-driven order transitions,
+// the low-stock crossing emission and the board/status lifecycle events.
+export {
+  STORE_ORDER_CANCELED,
+  STORE_ORDER_DELIVERED,
+  STORE_ORDER_PAID,
+  STORE_ORDER_READY,
+  STORE_PRODUCT_LOW_STOCK,
+} from './modules/store/store.events.js';

@@ -10,8 +10,10 @@ export {
   seedDevFixtures,
   seedEventFixtures,
   seedPlatformPlans,
+  seedStoreFixtures,
   PLATFORM_PLAN_CATALOG,
   type SeedBillingHandles,
   type SeedDevHandles,
   type SeedEventHandles,
+  type SeedStoreHandles,
 } from '../seed/index.js';

@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MensalidadeAlertDto } from '../../billing/dto/responses.dto.js';
 import { ScheduleSlotViewDto } from '../../enrollment/dto/responses.dto.js';
 import { AlunoEventItemDto, ProfessorUpcomingEventDto } from '../../events/dto/responses.dto.js';
+import { ProductCardDto } from '../../store/dto/responses.dto.js';
 import { BeltViewDto, GraduationProgressDto } from '../../graduation/dto/belt.dto.js';
 
 /**
@@ -137,6 +138,13 @@ export class AlunoHomeResponseDto {
       '"Próximos eventos": the next 2 published events with own registration state (spec 008)',
   })
   upcomingEvents!: AlunoEventItemDto[];
+
+  @ApiProperty({
+    type: [ProductCardDto],
+    description:
+      '"Loja da academia" strip: the first 3 active store products + "Ver tudo" (spec 009 — additive)',
+  })
+  storeStrip!: ProductCardDto[];
 }
 
 export class LiveSessionDto {

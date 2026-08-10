@@ -32,6 +32,7 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       .addTag('aluno')
       .addTag('responsavel')
       .addTag('billing')
+      .addTag('store')
       .addTag('platform')
       .build(),
   );

@@ -58,6 +58,21 @@ export const ErrorCodes = {
   EVENT_NOT_PUBLISHED: 'event.not_published',
   /** Self-cancel of a paid, settled (confirmed) registration — admin refund is the only way back. */
   EVENT_REGISTRATION_SETTLED: 'event.registration_settled',
+  // store (spec 009)
+  /** Category delete while products still reference it (restrict FK's friendly face). */
+  STORE_CATEGORY_IN_USE: 'category.in_use',
+  /** Purchase against an archived (or otherwise non-purchasable) product. */
+  STORE_PRODUCT_NOT_PURCHASABLE: 'store.product_not_purchasable',
+  /** The product defines sizes and the order carries none. */
+  STORE_SIZE_REQUIRED: 'store.size_required',
+  /** The given size is not one of the product's size pills (or the product is sizeless). */
+  STORE_SIZE_INVALID: 'store.size_invalid',
+  /** quantity > stock_qty at order creation (no reservation, no partial fulfillment). */
+  STORE_INSUFFICIENT_STOCK: 'store.insufficient_stock',
+  /** Buyer cancel outside `pending` — a paid order is undone only by the admin refund. */
+  STORE_ORDER_NOT_CANCELABLE: 'store.order_not_cancelable',
+  /** Board transition outside paid → ready → delivered (+ canceled from paid/ready). */
+  STORE_ORDER_INVALID_TRANSITION: 'store.order_invalid_transition',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',

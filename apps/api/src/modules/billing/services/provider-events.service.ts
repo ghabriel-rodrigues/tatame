@@ -5,7 +5,10 @@ import {
   charges,
   eventRegistrations,
   events as eventsTable,
+  orderItems,
+  orders,
   payments,
+  products,
   withTenant,
   type DbHandle,
   type DbTransaction,
@@ -18,6 +21,14 @@ import {
   type RegistrationCanceledEvent,
   type RegistrationConfirmedEvent,
 } from '../../events/events.events.js';
+import {
+  STORE_ORDER_CANCELED,
+  STORE_ORDER_PAID,
+  STORE_PRODUCT_LOW_STOCK,
+  type OrderCanceledEvent,
+  type OrderPaidEvent,
+  type ProductLowStockEvent,
+} from '../../store/store.events.js';
 import {
   BILLING_CHARGE_PAID,
   BILLING_CHARGE_REFUNDED,
@@ -84,6 +95,8 @@ export class ProviderEventsService {
   ): Promise<ProviderEventOutcome> {
     let paid: ChargePaidEvent | null = null;
     let registrationConfirmed: RegistrationConfirmedEvent | null = null;
+    let orderPaid: OrderPaidEvent | null = null;
+    let lowStock: ProductLowStockEvent[] = [];
     const outcome = await withTenant(
       this.appDb.db,
       { tenantId: event.tenantId, userId: actor.userId },
@@ -146,6 +159,21 @@ export class ProviderEventsService {
             actor,
             charge,
           );
+          // Spec 009: settlement of an order-origin charge ALSO flips the
+          // order pending → paid and decrements stock — same handler, same
+          // transaction, idempotent by the order-status transition itself.
+          const settled = await this.settleOrder(
+            tx,
+            event.tenantId,
+            actor,
+            charge,
+            payment.id,
+            paidAt,
+          );
+          if (settled) {
+            orderPaid = settled.paid;
+            lowStock = settled.lowStock;
+          }
         }
         return { applied: true, paymentId: payment.id, chargeId: charge.id };
       },
@@ -155,6 +183,8 @@ export class ProviderEventsService {
     if (registrationConfirmed) {
       this.events.emit(EVENTS_REGISTRATION_CONFIRMED, registrationConfirmed);
     }
+    if (orderPaid) this.events.emit(STORE_ORDER_PAID, orderPaid);
+    for (const event_ of lowStock) this.events.emit(STORE_PRODUCT_LOW_STOCK, event_);
     return outcome;
   }
 
@@ -181,6 +211,7 @@ export class ProviderEventsService {
   ): Promise<ProviderEventOutcome> {
     let refunded: ChargeRefundedEvent | null = null;
     let registrationCanceled: RegistrationCanceledEvent | null = null;
+    let orderCanceled: OrderCanceledEvent | null = null;
     const outcome = await withTenant(
       this.appDb.db,
       { tenantId: event.tenantId, userId: actor.userId },
@@ -249,6 +280,10 @@ export class ProviderEventsService {
             actor,
             charge,
           );
+          // Spec 009: refunding an order-origin charge cancels its order and
+          // restores the stock — cancellation and money never disagree, and
+          // re-delivery no-ops on the already-canceled order.
+          orderCanceled = await this.cancelOrderFromRefund(tx, event.tenantId, actor, charge);
         }
         return { applied: true, paymentId: payment.id, chargeId: charge.id };
       },
@@ -257,6 +292,7 @@ export class ProviderEventsService {
     if (registrationCanceled) {
       this.events.emit(EVENTS_REGISTRATION_CANCELED, registrationCanceled);
     }
+    if (orderCanceled) this.events.emit(STORE_ORDER_CANCELED, orderCanceled);
     return outcome;
   }
 
@@ -335,6 +371,135 @@ export class ProviderEventsService {
       audience: charge.guardianId ? 'guardian' : 'student',
       priceCents: registration.priceCents,
       via: 'refund',
+    };
+  }
+
+  /**
+   * `payment.succeeded` on an order charge (spec 009): pending → paid + stock
+   * decrement, exactly once. Idempotency rides the order-status transition —
+   * a `paid` order is never re-decremented under event re-delivery. The
+   * decrement is an atomic SQL update (no read-then-write) so two settlements
+   * on the same product never lose an update; there is deliberately NO floor:
+   * the oversell race drives stock negative rather than failing a paid
+   * payment (story 34), surfaced on the admin board. A decrement that crosses
+   * the product's threshold collects the low-stock event (story: emitted
+   * exactly on the crossing, not on every low read).
+   */
+  private async settleOrder(
+    tx: DbTransaction,
+    tenantId: string,
+    actor: BillingActor,
+    charge: typeof charges.$inferSelect,
+    paymentId: string,
+    paidAt: Date,
+  ): Promise<{ paid: OrderPaidEvent; lowStock: ProductLowStockEvent[] } | null> {
+    if (charge.origin !== 'order' || !charge.orderId) return null;
+    const [order] = await tx.select().from(orders).where(eq(orders.id, charge.orderId));
+    if (!order || order.status !== 'pending') return null;
+
+    await tx
+      .update(orders)
+      .set({ status: 'paid', updatedAt: new Date() })
+      .where(eq(orders.id, order.id));
+
+    const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+    const lowStock: ProductLowStockEvent[] = [];
+    let productName = '';
+    for (const item of items) {
+      const [updated] = await tx
+        .update(products)
+        .set({
+          stockQty: sql`${products.stockQty} - ${item.quantity}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(products.id, item.productId))
+        .returning();
+      if (!updated) continue;
+      productName = productName || updated.name;
+      const before = updated.stockQty + item.quantity;
+      if (
+        updated.status === 'active' &&
+        before > updated.lowStockThreshold &&
+        updated.stockQty <= updated.lowStockThreshold
+      ) {
+        lowStock.push({
+          tenantId,
+          productId: updated.id,
+          name: updated.name,
+          stockQty: updated.stockQty,
+          lowStockThreshold: updated.lowStockThreshold,
+        });
+      }
+    }
+
+    await this.audit(tx, tenantId, actor, 'store.order.status_changed', 'order', order.id, {
+      from: 'pending',
+      to: 'paid',
+      via: 'payment',
+      charge_id: charge.id,
+      payment_id: paymentId,
+    });
+    return {
+      paid: {
+        tenantId,
+        orderId: order.id,
+        number: order.number,
+        buyerUserId: order.buyerUserId,
+        totalCents: order.totalCents,
+        chargeId: charge.id,
+        paymentId,
+        productName,
+        paidAt: paidAt.toISOString(),
+      },
+      lowStock,
+    };
+  }
+
+  /**
+   * `payment.refunded` on an order charge (spec 009): the paid (or further
+   * along) order flips to canceled and the stock is restored, exactly once —
+   * a `canceled` order no-ops under re-delivery. Pending orders never reach
+   * here (their charge was never paid).
+   */
+  private async cancelOrderFromRefund(
+    tx: DbTransaction,
+    tenantId: string,
+    actor: BillingActor,
+    charge: typeof charges.$inferSelect,
+  ): Promise<OrderCanceledEvent | null> {
+    if (charge.origin !== 'order' || !charge.orderId) return null;
+    const [order] = await tx.select().from(orders).where(eq(orders.id, charge.orderId));
+    if (!order || order.status === 'canceled' || order.status === 'pending') return null;
+
+    await tx
+      .update(orders)
+      .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+      .where(eq(orders.id, order.id));
+
+    const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+    for (const item of items) {
+      await tx
+        .update(products)
+        .set({
+          stockQty: sql`${products.stockQty} + ${item.quantity}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(products.id, item.productId));
+    }
+
+    await this.audit(tx, tenantId, actor, 'store.order.canceled', 'order', order.id, {
+      from: order.status,
+      via: 'refund',
+      charge_id: charge.id,
+      stock_restored: true,
+    });
+    return {
+      tenantId,
+      orderId: order.id,
+      number: order.number,
+      buyerUserId: order.buyerUserId,
+      totalCents: order.totalCents,
+      refunded: true,
     };
   }
 

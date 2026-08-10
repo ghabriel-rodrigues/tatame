@@ -169,7 +169,8 @@ export class AdminOverviewService {
     const rows = await tx
       .select({
         chargeId: charges.id,
-        studentId: charges.studentId,
+        // The inner join guarantees the student — select its non-null id.
+        studentId: students.id,
         studentName: students.fullName,
         amountCents: charges.amountCents,
         dueDate: charges.dueDate,
@@ -214,7 +215,8 @@ export class AdminOverviewService {
   private async delinquents(tx: DbTransaction, today: string): Promise<OverviewView['inadimplentes']> {
     const rows = await tx
       .select({
-        studentId: charges.studentId,
+        // The inner join guarantees the student — select its non-null id.
+        studentId: students.id,
         fullName: students.fullName,
         totalCents: sql<string>`SUM(${charges.amountCents})`,
         oldestDueDate: sql<string>`MIN(${charges.dueDate})`,
@@ -232,7 +234,7 @@ export class AdminOverviewService {
           lt(charges.dueDate, today),
         ),
       )
-      .groupBy(charges.studentId, students.fullName)
+      .groupBy(students.id, students.fullName)
       .orderBy(sql`MIN(${charges.dueDate})`);
     return rows.map((row) => ({
       studentId: row.studentId,

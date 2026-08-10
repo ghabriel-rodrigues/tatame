@@ -85,8 +85,13 @@ export class ChargeDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 
-  @ApiProperty({ format: 'uuid' })
-  studentId!: string;
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    type: String,
+    description: 'Null only on order-origin charges of a professor buyer (spec 009)',
+  })
+  studentId!: string | null;
 
   @ApiPropertyOptional({ format: 'uuid', nullable: true, type: String })
   guardianId!: string | null;
@@ -221,8 +226,12 @@ export class ReceiptResponseDto {
   @ApiProperty({ type: ChargeDto })
   charge!: ChargeDto;
 
-  @ApiProperty()
-  studentName!: string;
+  @ApiPropertyOptional({
+    nullable: true,
+    type: String,
+    description: 'Null on order-origin receipts of a professor buyer (no student row)',
+  })
+  studentName!: string | null;
 
   @ApiPropertyOptional({ nullable: true, type: String })
   planName!: string | null;

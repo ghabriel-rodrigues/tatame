@@ -216,7 +216,8 @@ export async function settledHistory(
     )
     .orderBy(desc(payments.paidAt));
   return rows.map((row) => ({
-    studentId: row.charge.studentId,
+    // The `inArray(charges.studentId, studentIds)` filter guarantees it.
+    studentId: row.charge.studentId!,
     chargeId: row.charge.id,
     periodStart: row.charge.periodStart,
     amountCents: row.charge.amountCents,

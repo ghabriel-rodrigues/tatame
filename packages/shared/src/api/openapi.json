@@ -1538,7 +1538,7 @@
     },
     "/v1/aluno/home": {
       "get": {
-        "description": "Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7). `upcomingEvents` is the \"Próximos eventos\" section: the next 2 published events with the caller's own registration state (spec 008 — additive).",
+        "description": "Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7). `upcomingEvents` is the \"Próximos eventos\" section: the next 2 published events with the caller's own registration state (spec 008 — additive). `storeStrip` is the \"Loja da academia\" strip: the first 3 active store products + \"Ver tudo\" (spec 009 — additive).",
         "operationId": "AlunoAttendanceController_home_v1",
         "parameters": [],
         "responses": {
@@ -2683,7 +2683,7 @@
     },
     "/v1/billing/payments/{id}/simulate": {
       "post": {
-        "description": "Exists ONLY when the simulated provider is configured (404 otherwise — a driver affordance, never a production backdoor). Synthesizes `payment.succeeded` through the exact normalized-event handler the Stripe webhook will use.",
+        "description": "Exists ONLY when the simulated provider is configured (404 otherwise — a driver affordance, never a production backdoor). Synthesizes `payment.succeeded` through the exact normalized-event handler the Stripe webhook will use. The professor role is admitted for store purchases only (spec 009) — authorization stays ownership of the underlying charge, and a professor owns nothing but their own order charges.",
         "operationId": "BillingSharedController_simulate_v1",
         "parameters": [
           {
@@ -3028,6 +3028,612 @@
         "summary": "Repasse read model: gross − fee_bps = net, Retido on delinquent academies",
         "tags": [
           "platform"
+        ]
+      }
+    },
+    "/v1/admin/store/overview": {
+      "get": {
+        "description": "All derived on read in the tenant timezone. Vendas is a standalone store aggregate — the billing Visão financeira keeps its all-payments derivation untouched (nothing double-counted, each screen owns its number).",
+        "operationId": "AdminStoreController_overview_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOverviewResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Loja tiles: vendas do mês, pedidos no mês, estoque baixo",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/store/categories": {
+      "get": {
+        "operationId": "AdminStoreController_listCategories_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCategoriesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "\"Categorias da loja\" — one chip per category with its count",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "AdminStoreController_createCategory_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCategoryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "\"+ Nova categoria\" (name unique per academy — 409 on duplicate)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/store/categories/{id}": {
+      "patch": {
+        "operationId": "AdminStoreController_renameCategory_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCategoryDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename a category (audited)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "description": "Referenced (archived products included) → 409 `category.in_use`.",
+        "operationId": "AdminStoreController_deleteCategory_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a category — only while no product references it",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/store/products": {
+      "get": {
+        "description": "Vendidos is derived from real paid+ orders — truth, not a counter (story 8).",
+        "operationId": "AdminStoreController_listProducts_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Produto rows per admin-03: tile, price, \"N em estoque · N vendidos\"",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "description": "Monogram derives from the name and the gradient preset cycles the design-system catalog when omitted. No image upload in v1 (recorded debt) — the galeria renders monogram-tile variants derived client-side.",
+        "operationId": "AdminStoreController_createProduct_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "\"Novo produto\" per admin-06",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/store/products/{id}": {
+      "patch": {
+        "operationId": "AdminStoreController_updateProduct_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "\"Editar produto\" (archived products are frozen — 409)",
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "description": "Order history referencing the product stays intact; the vitrine stops showing it.",
+        "operationId": "AdminStoreController_archiveProduct_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "\"Remover da loja\" — archives, never hard-deletes (story 6)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/store/orders": {
+      "get": {
+        "description": "Only sales that actually happened reach the board (story 13).",
+        "operationId": "AdminStoreController_board_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrdersResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pedidos board per admin-04 — pending excluded, newest first",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/store/orders/{id}/status": {
+      "post": {
+        "description": "No skips, no backward moves, delivered is terminal (409 `store.order_invalid_transition` otherwise). Cancelado runs the audited full Pix refund; the order flip + stock restore ride the resulting `payment.refunded` event (\"Estorno do Pix em até 1 dia útil\"). `paid` is never set by hand — payment truth comes only from the handler.",
+        "operationId": "AdminStoreController_transition_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderStatusTransitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Status sheet per admin-05: paid → ready → delivered; canceled refunds",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/store/products": {
+      "get": {
+        "description": "\"Buscar por nome ou tag\" via ?search= (name AND tags), one chip via ?categoryId=. Archived products exist only in order history — never here (story 31).",
+        "operationId": "StorefrontController_list_v1",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VitrineResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vitrine: active products + the category chip carousel data",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/v1/store/products/{id}": {
+      "get": {
+        "description": "The 3 \"fotos\" are deterministic monogram-tile variants derived client-side from `gradientPreset` + `monogram` (no image upload in v1 — recorded debt).",
+        "operationId": "StorefrontController_detail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Product detail: gallery derivation inputs, size pills, stock, price",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/v1/store/orders": {
+      "post": {
+        "description": "Validates active product, size ∈ sizes (required iff the product has sizes) and quantity ≤ stock (no reservation — stock moves only at paid). Assigns the per-tenant #NNNN, snapshots the unit price, and returns the chargeId for the existing Pix sheet.",
+        "operationId": "StorefrontController_createOrder_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOrderResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "\"Comprar com Pix · R$ X\" — pending order + order-origin charge",
+        "tags": [
+          "store"
+        ]
+      },
+      "get": {
+        "operationId": "StorefrontController_myOrders_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Meus pedidos — own orders with status chips and the retirada note",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/v1/store/orders/{id}": {
+      "delete": {
+        "description": "Pending only — a paid order is undone exclusively by the admin refund path (409 `store.order_not_cancelable`).",
+        "operationId": "StorefrontController_cancelOrder_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel an own order still awaiting payment (voids its open charge)",
+        "tags": [
+          "store"
+        ]
+      }
+    },
+    "/v1/store/charges/{id}/payments": {
+      "post": {
+        "description": "Ownership is the order's buyer (student or professor alike). Returns the render-ready Pix payload; settlement flows only through \"Simular pagamento\" (or the future webhook) via the normalized provider-event handler. @BypassReadOnly: paying an existing charge always works, even for delinquent academies.",
+        "operationId": "StorefrontController_pay_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderChargePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentCreatedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pix payment on an own order charge — persona-neutral wallet twin",
+        "tags": [
+          "store"
         ]
       }
     },
@@ -3715,6 +4321,10 @@
     },
     {
       "name": "billing",
+      "description": ""
+    },
+    {
+      "name": "store",
       "description": ""
     },
     {
@@ -6045,6 +6655,49 @@
           "bannerPreset"
         ]
       },
+      "ProductCardDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Kimono Oficial"
+          },
+          "priceCents": {
+            "type": "number",
+            "description": "Integer cents"
+          },
+          "monogram": {
+            "type": "string",
+            "example": "GI",
+            "description": "1–3 letters on the gradient tile"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-blue-purple",
+            "description": "Design-system gradient slug"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "categoryName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "priceCents",
+          "monogram",
+          "gradientPreset"
+        ]
+      },
       "AlunoHomeResponseDto": {
         "type": "object",
         "properties": {
@@ -6087,12 +6740,20 @@
             "items": {
               "$ref": "#/components/schemas/AlunoEventItemDto"
             }
+          },
+          "storeStrip": {
+            "description": "\"Loja da academia\" strip: the first 3 active store products + \"Ver tudo\" (spec 009 — additive)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCardDto"
+            }
           }
         },
         "required": [
           "student",
           "stats",
-          "upcomingEvents"
+          "upcomingEvents",
+          "storeStrip"
         ]
       },
       "LiveSessionDto": {
@@ -7411,7 +8072,9 @@
           },
           "studentId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null only on order-origin charges of a professor buyer (spec 009)"
           },
           "guardianId": {
             "type": "string",
@@ -7467,7 +8130,6 @@
         },
         "required": [
           "id",
-          "studentId",
           "status",
           "overdue",
           "amountCents",
@@ -7642,7 +8304,9 @@
           },
           "studentId": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "nullable": true,
+            "description": "Null only on order-origin charges of a professor buyer (spec 009)"
           },
           "guardianId": {
             "type": "string",
@@ -7692,7 +8356,6 @@
         },
         "required": [
           "id",
-          "studentId",
           "status",
           "overdue",
           "amountCents",
@@ -7871,7 +8534,9 @@
             "$ref": "#/components/schemas/ChargeDto"
           },
           "studentName": {
-            "type": "string"
+            "type": "string",
+            "nullable": true,
+            "description": "Null on order-origin receipts of a professor buyer (no student row)"
           },
           "planName": {
             "type": "string",
@@ -7884,8 +8549,7 @@
         },
         "required": [
           "payment",
-          "charge",
-          "studentName"
+          "charge"
         ]
       },
       "RevenueMonthDto": {
@@ -8269,6 +8933,758 @@
         "required": [
           "totals",
           "repasses"
+        ]
+      },
+      "LowStockProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "monogram": {
+            "type": "string",
+            "example": "PB"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-teal-green"
+          },
+          "stockQty": {
+            "type": "number",
+            "description": "May be negative — the recorded oversell surfaced here"
+          },
+          "lowStockThreshold": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "monogram",
+          "gradientPreset",
+          "stockQty",
+          "lowStockThreshold"
+        ]
+      },
+      "LowStockDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LowStockProductDto"
+            }
+          }
+        },
+        "required": [
+          "count",
+          "products"
+        ]
+      },
+      "StoreOverviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-08",
+            "description": "Tenant-local month"
+          },
+          "vendasMesCents": {
+            "type": "number",
+            "description": "\"R$ N vendas no mês\" — settled order payments by paid_at"
+          },
+          "pedidosMesCount": {
+            "type": "number",
+            "description": "\"N pedidos no mês\" — orders that reached paid in the month"
+          },
+          "lowStock": {
+            "$ref": "#/components/schemas/LowStockDto"
+          }
+        },
+        "required": [
+          "month",
+          "vendasMesCents",
+          "pedidosMesCount",
+          "lowStock"
+        ]
+      },
+      "StoreCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Kimonos"
+          },
+          "productCount": {
+            "type": "number",
+            "description": "The chip count, derived on read"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "productCount"
+        ]
+      },
+      "StoreCategoriesResponseDto": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreCategoryDto"
+            }
+          }
+        },
+        "required": [
+          "categories"
+        ]
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Kimonos",
+            "description": "\"+ Nova categoria\" — unique per academy"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "RenameCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Kimonos",
+            "description": "\"+ Nova categoria\" — unique per academy"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "AdminProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Kimono Oficial"
+          },
+          "priceCents": {
+            "type": "number",
+            "description": "Integer cents"
+          },
+          "monogram": {
+            "type": "string",
+            "example": "GI",
+            "description": "1–3 letters on the gradient tile"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-blue-purple",
+            "description": "Design-system gradient slug"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "categoryName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Rendered as #chips",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizes": {
+            "description": "Size pills; empty = no sizes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stockQty": {
+            "type": "number",
+            "description": "Caps the quantity stepper; may go negative (recorded oversell)"
+          },
+          "lowStockThreshold": {
+            "type": "number",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          },
+          "lowStock": {
+            "type": "boolean",
+            "description": "Derived: active AND stock_qty <= low_stock_threshold"
+          },
+          "soldCount": {
+            "type": "number",
+            "description": "\"N vendidos\" — Σ quantities across paid/ready/delivered orders"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "priceCents",
+          "monogram",
+          "gradientPreset",
+          "tags",
+          "sizes",
+          "stockQty",
+          "lowStockThreshold",
+          "status",
+          "lowStock",
+          "soldCount"
+        ]
+      },
+      "AdminProductsResponseDto": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProductDto"
+            }
+          }
+        },
+        "required": [
+          "products"
+        ]
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Kimono Oficial"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceCents": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Integer cents — a product always costs something"
+          },
+          "stockQty": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          },
+          "lowStockThreshold": {
+            "type": "number",
+            "minimum": 0,
+            "default": 5,
+            "description": "Per-product \"estoque baixo\" cut-off (story 7)"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Rendered as #chips, searched by the vitrine",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizes": {
+            "description": "Size pills; empty = product has no sizes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monogram": {
+            "type": "string",
+            "example": "GI",
+            "description": "1–3 letters; derived from the name when omitted"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-blue-purple",
+            "description": "Design-system gradient catalog slug; cycles the catalog when omitted"
+          }
+        },
+        "required": [
+          "name",
+          "priceCents"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceCents": {
+            "type": "number",
+            "minimum": 1
+          },
+          "stockQty": {
+            "type": "number",
+            "minimum": 0
+          },
+          "lowStockThreshold": {
+            "type": "number",
+            "minimum": 0
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "monogram": {
+            "type": "string",
+            "example": "GI"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-teal-green"
+          }
+        }
+      },
+      "OrderItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productName": {
+            "type": "string",
+            "example": "Kimono Oficial"
+          },
+          "monogram": {
+            "type": "string",
+            "example": "GI"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-blue-purple"
+          },
+          "size": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for sizeless products"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          },
+          "unitPriceCents": {
+            "type": "number",
+            "description": "Price snapshot at purchase — never the live price"
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "monogram",
+          "gradientPreset",
+          "quantity",
+          "unitPriceCents"
+        ]
+      },
+      "OrderBuyerDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Ana Aluna"
+          }
+        },
+        "required": [
+          "userId",
+          "fullName"
+        ]
+      },
+      "AdminOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "number",
+            "example": 2431,
+            "description": "Per-tenant sequential, rendered #2431"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "ready",
+              "delivered",
+              "canceled"
+            ]
+          },
+          "totalCents": {
+            "type": "number",
+            "description": "unit_price × quantity from the snapshot"
+          },
+          "pickupNote": {
+            "type": "string",
+            "example": "Retirada na recepção"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "item": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderItemDto"
+              }
+            ]
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Open order charge to pay (pending only) — drives the Pix sheet"
+          },
+          "buyer": {
+            "description": "Student or professor buyer",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderBuyerDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "totalCents",
+          "pickupNote",
+          "createdAt",
+          "buyer"
+        ]
+      },
+      "AdminOrdersResponseDto": {
+        "type": "object",
+        "properties": {
+          "orders": {
+            "description": "The pedidos board — pending excluded, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminOrderDto"
+            }
+          }
+        },
+        "required": [
+          "orders"
+        ]
+      },
+      "OrderStatusTransitionDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "delivered",
+              "canceled"
+            ],
+            "description": "ready = Em andamento (from paid), delivered = Entregue (from ready, terminal), canceled = Cancelado (from paid/ready — runs the audited Pix refund). `paid` is never set by hand: payment truth comes only from the provider-event handler."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "VitrineCategoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "VitrineResponseDto": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "description": "Active products only",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCardDto"
+            }
+          },
+          "categories": {
+            "description": "The \"Tudo + chips\" carousel data",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VitrineCategoryDto"
+            }
+          }
+        },
+        "required": [
+          "products",
+          "categories"
+        ]
+      },
+      "ProductDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Kimono Oficial"
+          },
+          "priceCents": {
+            "type": "number",
+            "description": "Integer cents"
+          },
+          "monogram": {
+            "type": "string",
+            "example": "GI",
+            "description": "1–3 letters on the gradient tile"
+          },
+          "gradientPreset": {
+            "type": "string",
+            "example": "store-blue-purple",
+            "description": "Design-system gradient slug"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "categoryName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Rendered as #chips",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sizes": {
+            "description": "Size pills; empty = no sizes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stockQty": {
+            "type": "number",
+            "description": "Caps the quantity stepper; may go negative (recorded oversell)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "priceCents",
+          "monogram",
+          "gradientPreset",
+          "tags",
+          "sizes",
+          "stockQty"
+        ]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "size": {
+            "type": "string",
+            "nullable": true,
+            "description": "Required iff the product defines sizes; must be one of its pills"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Capped by available stock at creation"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "OrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "number",
+            "example": 2431,
+            "description": "Per-tenant sequential, rendered #2431"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "ready",
+              "delivered",
+              "canceled"
+            ]
+          },
+          "totalCents": {
+            "type": "number",
+            "description": "unit_price × quantity from the snapshot"
+          },
+          "pickupNote": {
+            "type": "string",
+            "example": "Retirada na recepção"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "item": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderItemDto"
+              }
+            ]
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Open order charge to pay (pending only) — drives the Pix sheet"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "status",
+          "totalCents",
+          "pickupNote",
+          "createdAt"
+        ]
+      },
+      "CreateOrderResponseDto": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderDto"
+          },
+          "chargeId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The order-origin charge: pay it via POST /store/charges/{id}/payments (Pix) and the existing simulate button — addressed \"Pedido #NNNN · <produto>\""
+          }
+        },
+        "required": [
+          "order",
+          "chargeId"
+        ]
+      },
+      "OrdersResponseDto": {
+        "type": "object",
+        "properties": {
+          "orders": {
+            "description": "Meus pedidos — own orders, newest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderDto"
+            }
+          }
+        },
+        "required": [
+          "orders"
+        ]
+      },
+      "CreateOrderChargePaymentDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "pix"
+            ]
+          }
+        },
+        "required": [
+          "method"
         ]
       },
       "AgendaOccupancyDto": {

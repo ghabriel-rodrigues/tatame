@@ -22,6 +22,7 @@ import {
   seedDevFixtures,
   seedEventFixtures,
   seedPlatformPlans,
+  seedStoreFixtures,
   testAdminUrl,
   type FreshDb,
 } from '@tatame/db/testing';
@@ -73,6 +74,9 @@ export async function createTestApp(overrides?: {
   // Event fixtures (spec 008, EVT.3): draft + published free/paid events with
   // mixed registrations and their event-origin charges.
   await seedEventFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+  // Store fixtures (spec 009, STO.3): the prototype catalog (GI/RG/FX/TS/MC/
+  // PB, PB low-stock) with mixed lifecycle orders and their order charges.
+  await seedStoreFixtures({ appDb: appDb.db, platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;
   process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';

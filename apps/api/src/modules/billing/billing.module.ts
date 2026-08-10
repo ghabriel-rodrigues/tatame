@@ -10,6 +10,7 @@ import { PlatformRepassesController } from './controllers/platform-repasses.cont
 import { ResponsavelPaymentsController } from './controllers/responsavel-payments.controller.js';
 import { AdminOverviewService } from './services/admin-overview.service.js';
 import { EventChargesService } from './services/event-charges.service.js';
+import { OrderChargesService } from './services/order-charges.service.js';
 import { GuardianPaymentsService } from './services/guardian-payments.service.js';
 import { MaterializationService } from './services/materialization.service.js';
 import { PaymentFlowService } from './services/payment-flow.service.js';
@@ -47,9 +48,19 @@ import { WalletService } from './services/wallet.service.js';
     PlansService,
     RepassesService,
     EventChargesService,
+    OrderChargesService,
   ],
-  // EventChargesService is the internal seam the events module (spec 008)
-  // uses to issue/cancel event-origin charges — money stays billing's.
-  exports: [ProviderEventsService, MaterializationService, EventChargesService],
+  // EventChargesService / OrderChargesService are the internal seams the
+  // events (spec 008) and store (spec 009) modules use to issue/cancel their
+  // origin charges — money stays billing's. PaymentFlowService is exported for
+  // the store module's persona-neutral payment route and the admin Cancelado
+  // refund path (same audited rails as every other settlement).
+  exports: [
+    ProviderEventsService,
+    MaterializationService,
+    EventChargesService,
+    OrderChargesService,
+    PaymentFlowService,
+  ],
 })
 export class BillingModule {}

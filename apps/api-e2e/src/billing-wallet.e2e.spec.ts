@@ -64,15 +64,21 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
     expect(res.body.recurrence).toEqual({ active: false, nextChargeDueDate: null });
 
     // Histórico: the seeded previous-cycle Pix settlement + Ana's settled
-    // event inscription (spec 008 fixtures) — one record for all money.
-    expect(res.body.history.length).toBe(2);
+    // event inscription (spec 008) + her store order settlements (spec 009 —
+    // delivered #2427, refunded #2428, paid #2430) — one record for ALL money.
+    expect(res.body.history.length).toBe(5);
     for (const entry of res.body.history) {
-      expect(entry).toMatchObject({ method: 'pix', chargeStatus: 'paid' });
+      expect(entry.method).toBe('pix');
+      expect(['paid', 'refunded']).toContain(entry.chargeStatus);
       expect(entry.receiptUrl).toContain('/receipt');
     }
     expect(
       res.body.history.map((h: any) => h.amountCents).sort((a: number, b: number) => a - b),
-    ).toEqual([6000, 18000]);
+    ).toEqual([3900, 6000, 11800, 12900, 18000]);
+    // The refunded store order is the only refunded record.
+    expect(
+      res.body.history.filter((h: any) => h.chargeStatus === 'refunded').map((h: any) => h.amountCents),
+    ).toEqual([12900]);
   });
 
   it('materialization is idempotent: repeated and concurrent wallet opens never double-bill', async () => {
@@ -179,10 +185,10 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
     expect(event.paymentId).toBe(pixPaymentId);
 
     // The card flips to Paga and the histórico gains the settlement (on top
-    // of the seeded plan + event entries).
+    // of the seeded plan + event + store entries).
     const wallet = await t.http().get('/v1/aluno/wallet').set(bearer(aluno.accessToken));
     expect(wallet.body.currentCharge.status).toBe('paid');
-    expect(wallet.body.history.length).toBe(3);
+    expect(wallet.body.history.length).toBe(6);
 
     // Home alert now tells the truth: nothing open.
     const home = await t.http().get('/v1/aluno/home').set(bearer(aluno.accessToken));

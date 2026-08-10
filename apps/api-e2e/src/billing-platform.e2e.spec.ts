@@ -68,8 +68,10 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
     const totalGross = rows.reduce((sum: number, r: any) => sum + r.grossCents, 0);
     expect(totalGross).toBe(Number(truth!.gross));
     // Plan fixtures (Ana 18000 + Kiko 15000 + Lara 15000) + Ana's settled
-    // event inscription (spec 008 fixtures, 6000) — event money repasses too.
-    expect(Number(truth!.gross)).toBe(54000);
+    // event inscription (spec 008, 6000) + the settled store orders (spec 009:
+    // #2427 11800 + #2429 34900 + #2430 3900; the refunded #2428 excluded) —
+    // event and store money repasses too.
+    expect(Number(truth!.gross)).toBe(104_600);
     const totalStudents = rows.reduce((sum: number, r: any) => sum + r.studentCount, 0);
     expect(totalStudents).toBeGreaterThanOrEqual(Number(truth!.students));
 
@@ -138,6 +140,11 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
             Reflect.getMetadata(ROLES_KEY, metatype) ??
             [];
           expect(roles.length, `${metatype.name}.${name} must declare roles`).toBeGreaterThan(0);
+          // Spec 009 carve-out: the simulate driver affordance admits the
+          // professor for STORE purchases only — authorization stays ownership
+          // of the underlying charge (a professor owns nothing but their own
+          // order charges). Every other billing route still shuts them out.
+          if (`${metatype.name}.${name}` === 'BillingSharedController.simulate') continue;
           expect(roles, `${metatype.name}.${name} admits professor`).not.toContain('professor');
         }
       }

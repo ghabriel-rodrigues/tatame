@@ -19,6 +19,7 @@ import { EnrollmentModule } from '../modules/enrollment/enrollment.module.js';
 import { EventsModule } from '../modules/events/events.module.js';
 import { GraduationModule } from '../modules/graduation/graduation.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
+import { StoreModule } from '../modules/store/store.module.js';
 
 function flattenValidationErrors(
   errors: ValidationError[],
@@ -57,6 +58,7 @@ function flattenValidationErrors(
     GraduationModule,
     BillingModule,
     EventsModule,
+    StoreModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

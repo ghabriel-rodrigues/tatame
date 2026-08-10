@@ -21,7 +21,7 @@ export class BillingSharedController {
   ) {}
 
   @Post(':id/simulate')
-  @Roles('student', 'guardian')
+  @Roles('student', 'guardian', 'professor')
   @BypassReadOnly()
   @HttpCode(200)
   @ApiOperation({
@@ -29,7 +29,9 @@ export class BillingSharedController {
     description:
       'Exists ONLY when the simulated provider is configured (404 otherwise — a driver ' +
       'affordance, never a production backdoor). Synthesizes `payment.succeeded` through the ' +
-      'exact normalized-event handler the Stripe webhook will use.',
+      'exact normalized-event handler the Stripe webhook will use. The professor role is ' +
+      'admitted for store purchases only (spec 009) — authorization stays ownership of the ' +
+      'underlying charge, and a professor owns nothing but their own order charges.',
   })
   @ApiOkResponse({ type: SimulatePaymentResponseDto })
   async simulate(@Param('id', ParseUUIDPipe) paymentId: string) {

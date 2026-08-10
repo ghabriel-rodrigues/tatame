@@ -5,6 +5,7 @@ import {
   academyPlans,
   charges,
   guardians,
+  orders,
   paymentMandates,
   payments,
   students,
@@ -23,7 +24,12 @@ import {
 import { localDate } from '../../attendance/lib/time.js';
 import { ProviderEventsService, type BillingActor } from './provider-events.service.js';
 
-export type PayerKind = 'student' | 'guardian';
+/**
+ * `buyer` is the persona-neutral order-charge ownership (spec 009): the payer
+ * is whoever placed the order (student or professor), matched on the order's
+ * `buyer_user_id` — professors have no student row to match on.
+ */
+export type PayerKind = 'student' | 'guardian' | 'buyer';
 
 export interface CreatePaymentInput {
   method: 'pix' | 'boleto' | 'card';
@@ -47,7 +53,8 @@ export interface PaymentView {
 
 export interface ChargeView {
   id: string;
-  studentId: string;
+  /** Null only on order-origin charges of a professor buyer (spec 009). */
+  studentId: string | null;
   guardianId: string | null;
   status: 'open' | 'paid' | 'overdue' | 'canceled' | 'refunded';
   /** Derived truth (`open AND due_date < today`) — never trusts the flip. */
@@ -143,8 +150,20 @@ export class PaymentFlowService {
         let mandateCreated = false;
         let providerMandateId: string | null = null;
         if (input.method === 'card') {
-          const active = await this.activeMandate(tx, charge.studentId);
-          if (input.recurrence) {
+          // Mandates are per-student; a studentless (professor order) charge
+          // cannot anchor one. Card-inline settle would still work, but v1
+          // keeps store purchases Pix-only at the route DTO anyway.
+          if (input.recurrence && !charge.studentId) {
+            throw problem(
+              422,
+              ErrorCodes.BILLING_METHOD_MANDATE_MISMATCH,
+              'Recurrence requires a student-addressed charge',
+            );
+          }
+          const active = charge.studentId
+            ? await this.activeMandate(tx, charge.studentId)
+            : null;
+          if (input.recurrence && charge.studentId) {
             if (active) {
               throw problem(
                 409,
@@ -275,7 +294,15 @@ export class PaymentFlowService {
       async (tx) => {
         const [row] = await tx.select().from(payments).where(eq(payments.id, paymentId));
         if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Payment not found');
-        const payer = ctx.role === 'guardian' ? 'guardian' : 'student';
+        // Order charges are persona-neutral: ownership is the order's buyer
+        // (spec 009 — a professor buyer has no student row to match on).
+        const [target] = await tx.select().from(charges).where(eq(charges.id, row.chargeId));
+        const payer: PayerKind =
+          target?.origin === 'order'
+            ? 'buyer'
+            : ctx.role === 'guardian'
+              ? 'guardian'
+              : 'student';
         const charge = await this.ownedCharge(tx, ctx, payer, row.chargeId);
         this.assertPayable(charge);
         if (row.status !== 'pending') {
@@ -326,7 +353,7 @@ export class PaymentFlowService {
             charges,
             and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)),
           )
-          .innerJoin(
+          .leftJoin(
             students,
             and(eq(students.tenantId, charges.tenantId), eq(students.id, charges.studentId)),
           )
@@ -349,12 +376,13 @@ export class PaymentFlowService {
           }
         } else if (ctx.role === 'guardian') {
           const guardian = await this.guardianOf(tx, ctx.userId);
-          const [dependent] = guardian
+          const chargeStudentId = row.charge.studentId;
+          const [dependent] = guardian && chargeStudentId
             ? await tx
                 .select({ id: students.id })
                 .from(students)
                 .where(
-                  and(eq(students.id, row.charge.studentId), eq(students.guardianId, guardian.id)),
+                  and(eq(students.id, chargeStudentId), eq(students.guardianId, guardian.id)),
                 )
             : [];
           if (!dependent) throw problem(404, ErrorCodes.NOT_FOUND, 'Payment not found');
@@ -491,7 +519,16 @@ export class PaymentFlowService {
     // Foreign/unknown charge = 404, never 403 (no existence leak; RLS already
     // hides other tenants).
     if (!charge) throw problem(404, ErrorCodes.NOT_FOUND, 'Charge not found');
-    if (payer === 'student') {
+    if (payer === 'buyer') {
+      // Persona-neutral order-charge ownership (spec 009): the payer is the
+      // order's buyer, student or professor alike.
+      const [order] = charge.orderId
+        ? await tx.select().from(orders).where(eq(orders.id, charge.orderId))
+        : [];
+      if (charge.origin !== 'order' || !order || order.buyerUserId !== ctx.userId) {
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Charge not found');
+      }
+    } else if (payer === 'student') {
       const student = await this.studentOf(tx, ctx.userId);
       if (!student || charge.studentId !== student.id) {
         throw problem(404, ErrorCodes.NOT_FOUND, 'Charge not found');
