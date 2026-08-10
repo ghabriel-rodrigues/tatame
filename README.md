@@ -223,4 +223,22 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] EVT.14 iOS: aluno events (same scope as EVT.10)
 - [x] EVT.15 iOS: responsável + professor events (same scope as EVT.11)
 
-_Next phases (store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._
+### Phase 9 — Store ([spec 009](docs/specs/009-store.md))
+
+- [ ] STO.1 DB: order_status enum + product_categories (UNIQUE tenant+name, restrict-delete) + products (price_cents, stock_qty + low_stock_threshold, category FK, tags/sizes arrays, monogram + gradient_preset, active/archived) with forced tenant RLS
+- [ ] STO.2 DB: orders (per-tenant number, buyer_user_id student-or-professor, pending→paid→ready→delivered + canceled, pickup note) + order_items (size, qty, unit_price snapshot) + charges.order_id composite-FK hardening closing the last BIL.2 stub + charges.student_id order-origin relaxation
+- [ ] STO.3 DB: dev seeds — prototype category/product catalog (GI/RG/FX/TS/MC/PB monograms, tags, sizes, one low-stock product) with mixed orders (pending, paid, ready, delivered, canceled+refunded) and their order-origin charges per fixture academy
+- [ ] STO.4 Backend: store module admin — categories CRUD (guarded delete), products CRUD + archive, overview aggregates (vendas do mês tenant-tz, pedidos no mês, estoque baixo, vendidos derived)
+- [ ] STO.5 Backend: storefront shared student+professor — vitrine list (search name+tags, category filter, active only), product detail, order creation (stock/size validation, number, snapshot) issuing the order-origin charge, store payment route + professor simulate role, Meus pedidos, pending cancel
+- [ ] STO.6 Backend: orders lifecycle — normalized-event handler extended (succeeded→paid+stock decrement, refunded→canceled+restore, idempotent), admin board + ready/delivered transitions, admin cancel via audited refund, store.* domain events + low_stock emission + audit codes
+- [ ] STO.7 Backend: e2e suite green — catalog CRUD + vitrine scoping, full Pix purchase through the handler contract, stock decrement/restore idempotency + oversell race, transition matrix + board exclusions, overview math, RBAC/RLS/read-only + CI route assertions (professor consumer-only)
+- [ ] STO.8 Web: /admin/loja Produtos — stat tiles, categorias chip row with nova/rename/guarded-delete, product rows per admin-03, produto form per admin-06 (categoria chips, tags→#chips, galeria monogram + disabled + Foto slots, Remover da loja = archive)
+- [ ] STO.9 Web: /admin/loja Pedidos — board per admin-04 (Recebido/Em andamento/Entregue/Cancelado chips, pending excluded), status sheet per admin-05 with atual marker, transitions and Cancelado→refund confirm
+- [ ] STO.10 RN: shared vitrine + detail in both shells — aluno home Loja strip + perfil row, professor perfil row, vitrine per aluno-16/professor-13 with working chip carousel and unclipped grid, detail per aluno-17 (gallery variants, size pills, qty stepper capped, Comprar com Pix → existing Pix sheet + simulate)
+- [ ] STO.11 RN: Meus pedidos with status chips + retirada note + pending cancel, pedido-pago success toast, Carteira histórico showing aluno order payments
+- [ ] STO.12 Android: shared vitrine + detail + shell entries (same scope as STO.10)
+- [ ] STO.13 Android: Meus pedidos + purchase feedback (same scope as STO.11)
+- [ ] STO.14 iOS: shared vitrine + detail + shell entries (same scope as STO.10)
+- [ ] STO.15 iOS: Meus pedidos + purchase feedback (same scope as STO.11)
+
+_Next phases (notifications, white-label config, platform console, reports, release) get their specs as each phase ships._
