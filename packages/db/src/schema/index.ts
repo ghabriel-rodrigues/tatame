@@ -6,6 +6,7 @@ export * from './catalogs.js';
 export * from './academy-plans.js';
 export * from './enrollment.js';
 export * from './events.js';
+export * from './store.js';
 export * from './billing.js';
 export * from './attendance.js';
 export * from './graduation.js';

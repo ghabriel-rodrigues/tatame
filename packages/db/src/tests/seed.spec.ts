@@ -23,10 +23,14 @@ import {
   guardians,
   martialArts,
   memberships,
+  orderItems,
+  orders,
   paymentMandates,
   payments,
   platformPlans,
   platformUsers,
+  productCategories,
+  products,
   rolePermissions,
   studentGraduations,
   studentNotes,
@@ -40,6 +44,7 @@ import {
   seedDevFixtures,
   seedEventFixtures,
   seedPlatformPlans,
+  seedStoreFixtures,
 } from '../seed/index.js';
 import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
 
@@ -57,6 +62,7 @@ describe('seeds', () => {
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
     await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
     await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
   });
 
   afterAll(async () => {
@@ -523,10 +529,13 @@ describe('seeds', () => {
           .where(sql`${auditLogs.action} LIKE 'billing.%'`),
       );
       const actions = audit.map((a) => a.action);
-      // 7 plan charges (BIL.5) + 2 event charges (EVT.3); 3 plan settlements
-      // + 1 event settlement — money rows share the billing action codes.
-      expect(actions.filter((a) => a === 'billing.charge.created')).toHaveLength(9);
-      expect(actions.filter((a) => a === 'billing.charge.paid')).toHaveLength(4);
+      // 7 plan charges (BIL.5) + 2 event charges (EVT.3) + 5 order charges
+      // (STO.3); 3 plan + 1 event + 4 order settlements (the refunded order
+      // payment was paid first) — money rows share the billing action codes.
+      expect(actions.filter((a) => a === 'billing.charge.created')).toHaveLength(14);
+      expect(actions.filter((a) => a === 'billing.charge.paid')).toHaveLength(8);
+      // The canceled-after-paid order fixture rode the audited refund path.
+      expect(actions.filter((a) => a === 'billing.charge.refunded')).toHaveLength(1);
     }
   });
 
@@ -715,6 +724,158 @@ describe('seeds', () => {
     }
   });
 
+  it('seeds the prototype store catalog: 4 categories, 6 monogram products, one low-stock (STO.3)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const categoryRows = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(productCategories).orderBy(asc(productCategories.name)),
+      );
+      expect(categoryRows.map((c) => c.name)).toEqual([
+        'Acessorios',
+        'Faixas',
+        'Kimonos',
+        'Vestuario',
+      ]);
+
+      const rows = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(products).orderBy(asc(products.name)),
+      );
+      // The prototype's six tiles, all active with a real category and price.
+      expect(rows.map((p) => p.monogram).sort()).toEqual(['FX', 'GI', 'MC', 'PB', 'RG', 'TS']);
+      expect(rows.every((p) => p.status === 'active' && p.archivedAt === null)).toBe(true);
+      expect(rows.every((p) => p.categoryId !== null && p.priceCents > 0)).toBe(true);
+      expect(rows.every((p) => p.tags.length > 0 && p.gradientPreset.length > 0)).toBe(true);
+
+      // Sized apparel carries pills; mochila and protetor are sizeless.
+      const kimono = rows.find((p) => p.monogram === 'GI')!;
+      expect(kimono.sizes).toEqual(['A1', 'A2', 'A3', 'A4']);
+      const camiseta = rows.find((p) => p.monogram === 'TS')!;
+      expect(camiseta.sizes).toEqual(['P', 'M', 'G', 'GG']);
+      const mochila = rows.find((p) => p.monogram === 'MC')!;
+      expect(mochila.sizes).toEqual([]);
+
+      // Exactly one "estoque baixo" fixture: active AND stock <= threshold.
+      const lowStock = rows.filter((p) => p.stockQty <= p.lowStockThreshold);
+      expect(lowStock.map((p) => p.monogram)).toEqual(['PB']);
+
+      // Catalog mutations audited with the store action codes.
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ action: auditLogs.action })
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} LIKE 'store.%'`),
+      );
+      const actions = audit.map((a) => a.action);
+      expect(actions.filter((a) => a === 'store.category.created')).toHaveLength(4);
+      expect(actions.filter((a) => a === 'store.product.created')).toHaveLength(6);
+    }
+  });
+
+  it('seeds mixed lifecycle orders with their order-origin charges (STO.3)', async () => {
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+
+      const orderRows = await withTenant(app.db, tenantId, (tx) =>
+        tx.select().from(orders).orderBy(asc(orders.number)),
+      );
+      // The whole lifecycle, numbers ending at the prototype's #2431.
+      expect(orderRows.map((o) => [o.number, o.status])).toEqual([
+        [2427, 'delivered'],
+        [2428, 'canceled'],
+        [2429, 'ready'],
+        [2430, 'paid'],
+        [2431, 'pending'],
+      ]);
+      expect(orderRows.every((o) => o.pickupNote === 'Retirada na recepção')).toBe(true);
+      const canceled = orderRows.find((o) => o.status === 'canceled')!;
+      expect(canceled.canceledAt).not.toBeNull();
+
+      // Exactly one item per order (v1 single-product purchase) whose price
+      // snapshot derives the order total.
+      const items = await withTenant(app.db, tenantId, (tx) => tx.select().from(orderItems));
+      expect(items).toHaveLength(5);
+      const productRows = await withTenant(app.db, tenantId, (tx) => tx.select().from(products));
+      for (const order of orderRows) {
+        const item = items.find((i) => i.orderId === order.id)!;
+        expect(item).toBeDefined();
+        expect(order.totalCents).toBe(item.unitPriceCents * item.quantity);
+        const product = productRows.find((p) => p.id === item.productId)!;
+        expect(item.unitPriceCents).toBe(product.priceCents);
+        // Sized products carry a pill value on the item; sizeless stay NULL.
+        if (product.sizes.length === 0) {
+          expect(item.size).toBeNull();
+        } else {
+          expect(product.sizes).toContain(item.size);
+        }
+      }
+
+      // One order-origin charge per order, hardened linkage, no guardian.
+      const orderCharges = (
+        await withTenant(app.db, tenantId, (tx) => tx.select().from(charges))
+      ).filter((c) => c.origin === 'order');
+      expect(orderCharges).toHaveLength(5);
+      expect(orderCharges.every((c) => c.orderId !== null && c.guardianId === null)).toBe(true);
+      const chargeByOrder = new Map(orderCharges.map((c) => [c.orderId, c]));
+
+      // pending → open charge; paid/ready/delivered → paid + succeeded Pix;
+      // canceled-after-paid → refunded charge + refunded payment.
+      const paymentRows = await withTenant(app.db, tenantId, (tx) => tx.select().from(payments));
+      for (const order of orderRows) {
+        const charge = chargeByOrder.get(order.id)!;
+        expect(charge.amountCents).toBe(order.totalCents);
+        const settlement = paymentRows.find((p) => p.chargeId === charge.id);
+        if (order.status === 'pending') {
+          expect(charge.status).toBe('open');
+          expect(settlement).toBeUndefined();
+        } else if (order.status === 'canceled') {
+          expect(charge.status).toBe('refunded');
+          expect(settlement!.status).toBe('refunded');
+          expect(settlement!.refundedAt).not.toBeNull();
+          expect(settlement!.providerRefundId).toBe(`SIM-REFUND-${charge.id}`);
+        } else {
+          expect(charge.status).toBe('paid');
+          expect(settlement!.status).toBe('succeeded');
+          expect(settlement!.method).toBe('pix');
+          expect(settlement!.provider).toBe('simulated');
+          expect(settlement!.receiptUrl).not.toBeNull();
+        }
+      }
+
+      // The STO.2 relaxation in data: alpha mixes buyers — the professor's
+      // order charge (the 'ready' kimono) has no student row, the student
+      // buyer's charges keep the Carteira linkage. Bravo has no student
+      // login, so every charge is professor-addressed (student_id NULL).
+      const readyCharge = chargeByOrder.get(orderRows.find((o) => o.status === 'ready')!.id)!;
+      expect(readyCharge.studentId).toBeNull();
+      if (slug === 'alpha-jj') {
+        expect(orderCharges.filter((c) => c.studentId !== null)).toHaveLength(4);
+      } else {
+        expect(orderCharges.every((c) => c.studentId === null)).toBe(true);
+      }
+
+      // Order lifecycle audited: created ×5, the admin two-step transitions
+      // (paid→ready, ready→delivered ×1 each via the delivered fixture plus
+      // paid→ready via the ready fixture) and the refund-variant cancel.
+      const audit = await withTenant(app.db, tenantId, (tx) =>
+        tx
+          .select({ action: auditLogs.action })
+          .from(auditLogs)
+          .where(sql`${auditLogs.action} LIKE 'store.order.%'`),
+      );
+      const actions = audit.map((a) => a.action);
+      expect(actions.filter((a) => a === 'store.order.created')).toHaveLength(5);
+      expect(actions.filter((a) => a === 'store.order.status_changed')).toHaveLength(3);
+      expect(actions.filter((a) => a === 'store.order.canceled')).toHaveLength(1);
+    }
+  });
+
   it('is idempotent — re-running seeds changes no row counts', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
@@ -742,9 +903,14 @@ describe('seeds', () => {
         const [ac] = await tx.select({ n: sql<number>`count(*)::int` }).from(academies);
         const [ev] = await tx.select({ n: sql<number>`count(*)::int` }).from(events);
         const [er] = await tx.select({ n: sql<number>`count(*)::int` }).from(eventRegistrations);
+        const [pc] = await tx.select({ n: sql<number>`count(*)::int` }).from(productCategories);
+        const [pr] = await tx.select({ n: sql<number>`count(*)::int` }).from(products);
+        const [or] = await tx.select({ n: sql<number>`count(*)::int` }).from(orders);
+        const [oi] = await tx.select({ n: sql<number>`count(*)::int` }).from(orderItems);
         return [
           u!.n, m!.n, p!.n, s!.n, c!.n, cs!.n, st!.n, g!.n, e!.n, se!.n, at!.n, al!.n,
           b!.n, gr!.n, sg!.n, sn!.n, ap!.n, ch!.n, pay!.n, pm!.n, bc!.n, ac!.n, ev!.n, er!.n,
+          pc!.n, pr!.n, or!.n, oi!.n,
         ];
       });
 
@@ -754,6 +920,7 @@ describe('seeds', () => {
     await seedDevFixtures({ appDb: app.db, platformDb: platform.db });
     await seedBillingFixtures({ appDb: app.db, platformDb: platform.db });
     await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);
   });

@@ -17,6 +17,7 @@ import {
   events,
   guardians,
   invites,
+  orders,
   paymentMandates,
   payments,
   students,
@@ -181,8 +182,8 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
   describe('charges origin hardening (BIL.2)', () => {
     it('accepts one charge per origin with exactly its origin column set', async () => {
       await withTenant(app.db, tenantA, (tx) => tx.insert(charges).values(planCharge()));
-      // The event linkage is a composite FK since EVT.2 — a real registration
-      // is required; `order_id` stays a plain uuid until the store slice.
+      // Both non-plan linkages are composite FKs now — a real registration
+      // since EVT.2 and a real order since STO.2 closed the last BIL.2 stub.
       const registrationId = await withTenant(app.db, tenantA, async (tx) => {
         const [event] = await tx
           .insert(events)
@@ -219,6 +220,12 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
           }),
         ),
       );
+      const [order] = await withTenant(app.db, tenantA, (tx) =>
+        tx
+          .insert(orders)
+          .values({ tenantId: tenantA, number: 2431, buyerUserId: payerUserId, totalCents: 12_900 })
+          .returning({ id: orders.id }),
+      );
       await withTenant(app.db, tenantA, (tx) =>
         tx.insert(charges).values(
           planCharge({
@@ -226,7 +233,7 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
             academyPlanId: null,
             periodStart: null,
             periodEnd: null,
-            orderId: randomUUID(),
+            orderId: order!.id,
           }),
         ),
       );

@@ -21,6 +21,7 @@ import { academyPlans } from './academy-plans.js';
 import { users } from './auth.js';
 import { guardians, students } from './enrollment.js';
 import { eventRegistrations } from './events.js';
+import { orders } from './store.js';
 import {
   chargeOrigin,
   chargeStatus,
@@ -54,11 +55,10 @@ const tenantPolicy = (tenantId: AnyPgColumn) => ({
 /**
  * One receivable ("cobrança"), any origin. Origin is hardened to per-origin
  * columns + CHECK (polymorphic bare uuid rejected): exactly the column
- * matching `origin` is non-null. `academy_plan_id` and (since spec 008 EVT.2
- * closed the BIL.2 delta) `event_registration_id` are composite tenant FKs;
- * `order_id` ships as a plain nullable uuid column — its composite FK is
- * added by the store slice when that table exists (same hardening pattern as
- * the Phase-3 `invites.class_id` migration).
+ * matching `origin` is non-null. All three per-origin columns are composite
+ * tenant FKs — `academy_plan_id` since BIL.2, `event_registration_id` since
+ * spec 008 EVT.2, and `order_id` since spec 009 STO.2 closed the last BIL.2
+ * stub (same hardening pattern as the Phase-3 `invites.class_id` migration).
  */
 export const charges = pgTable(
   'charges',
@@ -67,8 +67,14 @@ export const charges = pgTable(
     tenantId: uuid('tenant_id')
       .notNull()
       .references(() => academies.id),
-    /** Who the charge is *about*. */
-    studentId: uuid('student_id').notNull(),
+    /**
+     * Who the charge is *about*. Required for plan/event origins; nullable
+     * only on order origin (spec 009 STO.2 relaxation): order charges are
+     * addressed by the order's buyer, and a professor buyer has no student
+     * row. A student buyer's order charge still sets it so the Carteira
+     * histórico picks the payment up.
+     */
+    studentId: uuid('student_id'),
     /**
      * Bill-to for minors, denormalized at issuance (the responsável is the
      * payer of record); NULL = student pays self.
@@ -79,7 +85,7 @@ export const charges = pgTable(
     academyPlanId: uuid('academy_plan_id'),
     /** Set iff origin = 'event' (composite tenant FK — spec 008 EVT.2). */
     eventRegistrationId: uuid('event_registration_id'),
-    /** Set iff origin = 'order'. Plain uuid until the store slice lands. */
+    /** Set iff origin = 'order' (composite tenant FK — spec 009 STO.2). */
     orderId: uuid('order_id'),
     /** Competência of a plan cycle (with period_end); NULL for other origins. */
     periodStart: date('period_start'),
@@ -108,6 +114,12 @@ export const charges = pgTable(
     // Plan charges always carry their competência — the idempotency key below
     // would silently admit duplicates on NULL period_start otherwise.
     check('charges_plan_period_ck', sql`${t.origin} <> 'plan' OR ${t.periodStart} IS NOT NULL`),
+    // student_id is optional only for order-origin charges (professor buyers
+    // have no student row); plan and event charges are always about a student.
+    check(
+      'charges_student_origin_ck',
+      sql`${t.origin} = 'order' OR ${t.studentId} IS NOT NULL`,
+    ),
     // Charge-materialization idempotency key (backend ticket 05): two
     // concurrent wallet opens insert-on-conflict-do-nothing against this.
     uniqueIndex('charges_plan_cycle_uq')
@@ -132,6 +144,11 @@ export const charges = pgTable(
       name: 'charges_event_registration_fk',
       columns: [t.tenantId, t.eventRegistrationId],
       foreignColumns: [eventRegistrations.tenantId, eventRegistrations.id],
+    }),
+    foreignKey({
+      name: 'charges_order_fk',
+      columns: [t.tenantId, t.orderId],
+      foreignColumns: [orders.tenantId, orders.id],
     }),
     pgPolicy('charges_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
   ],

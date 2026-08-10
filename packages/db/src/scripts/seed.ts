@@ -11,6 +11,7 @@ import {
   seedDevFixtures,
   seedEventFixtures,
   seedPlatformPlans,
+  seedStoreFixtures,
 } from '../seed/index.js';
 
 const databaseUrl = process.env['DATABASE_URL'];
@@ -33,6 +34,8 @@ try {
   console.log('Billing fixtures seeded.');
   await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
   console.log('Event fixtures seeded.');
+  await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
+  console.log('Store fixtures seeded.');
 } catch (error) {
   console.error(error);
   process.exitCode = 1;

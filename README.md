@@ -225,9 +225,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 9 — Store ([spec 009](docs/specs/009-store.md))
 
-- [ ] STO.1 DB: order_status enum + product_categories (UNIQUE tenant+name, restrict-delete) + products (price_cents, stock_qty + low_stock_threshold, category FK, tags/sizes arrays, monogram + gradient_preset, active/archived) with forced tenant RLS
-- [ ] STO.2 DB: orders (per-tenant number, buyer_user_id student-or-professor, pending→paid→ready→delivered + canceled, pickup note) + order_items (size, qty, unit_price snapshot) + charges.order_id composite-FK hardening closing the last BIL.2 stub + charges.student_id order-origin relaxation
-- [ ] STO.3 DB: dev seeds — prototype category/product catalog (GI/RG/FX/TS/MC/PB monograms, tags, sizes, one low-stock product) with mixed orders (pending, paid, ready, delivered, canceled+refunded) and their order-origin charges per fixture academy
+- [x] STO.1 DB: order_status enum + product_categories (UNIQUE tenant+name, restrict-delete) + products (price_cents, stock_qty + low_stock_threshold, category FK, tags/sizes arrays, monogram + gradient_preset, active/archived) with forced tenant RLS
+- [x] STO.2 DB: orders (per-tenant number, buyer_user_id student-or-professor, pending→paid→ready→delivered + canceled, pickup note) + order_items (size, qty, unit_price snapshot) + charges.order_id composite-FK hardening closing the last BIL.2 stub + charges.student_id order-origin relaxation
+- [x] STO.3 DB: dev seeds — prototype category/product catalog (GI/RG/FX/TS/MC/PB monograms, tags, sizes, one low-stock product) with mixed orders (pending, paid, ready, delivered, canceled+refunded) and their order-origin charges per fixture academy
 - [ ] STO.4 Backend: store module admin — categories CRUD (guarded delete), products CRUD + archive, overview aggregates (vendas do mês tenant-tz, pedidos no mês, estoque baixo, vendidos derived)
 - [ ] STO.5 Backend: storefront shared student+professor — vitrine list (search name+tags, category filter, active only), product detail, order creation (stock/size validation, number, snapshot) issuing the order-origin charge, store payment route + professor simulate role, Meus pedidos, pending cancel
 - [ ] STO.6 Backend: orders lifecycle — normalized-event handler extended (succeeded→paid+stock decrement, refunded→canceled+restore, idempotent), admin board + ready/delivered transitions, admin cancel via audited refund, store.* domain events + low_stock emission + audit codes

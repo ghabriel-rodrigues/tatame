@@ -10,3 +10,4 @@ export {
 export { DEV_PASSWORD, hashDevPassword, seedDevFixtures, type SeedDevHandles } from './dev.js';
 export { seedBillingFixtures, type SeedBillingHandles } from './billing.js';
 export { seedEventFixtures, type SeedEventHandles } from './events.js';
+export { seedStoreFixtures, type SeedStoreHandles } from './store.js';

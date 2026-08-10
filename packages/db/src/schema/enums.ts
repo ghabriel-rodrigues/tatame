@@ -116,6 +116,27 @@ export const eventRegistrationStatus = pgEnum('event_registration_status', [
   'canceled',
 ]);
 
+/**
+ * Product lifecycle — "Remover da loja" soft-archives (spec 009); archived
+ * products disappear from the vitrine but keep order history readable.
+ */
+export const productStatus = pgEnum('product_status', ['active', 'archived']);
+
+/**
+ * Order lifecycle — `pending → paid → ready → delivered` plus `canceled`
+ * (spec 009). PT-BR labels are client copy: paid = "Recebido", ready =
+ * "Em andamento", delivered = "Entregue". `paid` comes only from the
+ * normalized provider-event handler; `canceled` is buyer-cancel on `pending`
+ * or the audited admin refund path after payment.
+ */
+export const orderStatus = pgEnum('order_status', [
+  'pending',
+  'paid',
+  'ready',
+  'delivered',
+  'canceled',
+]);
+
 /** Academy status: Trial / Ativa / Inadimplente / Suspensa. */
 export const academyStatus = pgEnum('academy_status', [
   'trial',
