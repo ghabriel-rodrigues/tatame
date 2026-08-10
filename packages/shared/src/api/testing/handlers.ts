@@ -14,6 +14,12 @@ import { makeEnrollmentRegistry, type EnrollmentRegistryFixture } from './enroll
 import { makeGraduationRules } from './graduation-fixtures.js';
 import { makeAdminOverview, makePlanCatalog, makeRepasses } from './billing-fixtures.js';
 import { makeAdminCalendar, type CalendarResponse } from './agenda-fixtures.js';
+import {
+  makeAdminEventList,
+  makeAdminEventRegistrations,
+  type AdminEvent,
+  type AdminEventRegistrationsResponse,
+} from './events-fixtures.js';
 import type {
   AcademyPlan,
   AdminBillingOverview,
@@ -201,6 +207,36 @@ export function adminCalendarHandlers(data?: CalendarResponse) {
   const body = data ?? makeAdminCalendar();
   return [
     http.get('/v1/admin/calendar', ({ response }) => response(200).json(body)),
+  ];
+}
+
+export interface AdminEventsHandlerOptions {
+  /** Card catalog for GET /admin/events (admin-13 default when omitted). */
+  events?: AdminEvent[];
+  /** Inscritos payload per event id (shared default when omitted). */
+  registrations?: Record<string, AdminEventRegistrationsResponse>;
+  /** Responsável select options (fresh enrollment registry when omitted). */
+  professors?: EnrollmentRegistryFixture['professors'];
+}
+
+/**
+ * Happy-path GET handlers for the admin events console (EVT.9, spec 008):
+ * card list + inscritos view, plus the professors list the responsável
+ * select resolves from. Mutations stay per-test via `server.use(...)`.
+ */
+export function adminEventsHandlers(options: AdminEventsHandlerOptions = {}) {
+  const events = options.events ?? makeAdminEventList();
+  const registrations = options.registrations ?? {};
+  const professors = options.professors ?? makeEnrollmentRegistry().professors;
+
+  return [
+    http.get('/v1/admin/events', ({ response }) => response(200).json({ events })),
+    http.get('/v1/admin/events/{id}/registrations', ({ params, response }) =>
+      response(200).json(registrations[params.id] ?? makeAdminEventRegistrations()),
+    ),
+    http.get('/v1/admin/professors', ({ response }) =>
+      response(200).json({ professors }),
+    ),
   ];
 }
 

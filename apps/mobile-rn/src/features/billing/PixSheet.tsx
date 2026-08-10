@@ -24,15 +24,31 @@ export interface PixSheetProps {
   amountCents: number;
   /** "Mensalidade de agosto · Horizonte BJJ" / "· Pedro Silveira" (story 18). */
   subtitle: string;
+  /** Success-pop caption; defaults to the mensalidade copy (spec 008 events override it). */
+  successCaption?: string;
+  /** Extra invalidations after settlement (e.g. event registration queries, spec 008). */
+  onSettled?: () => void;
 }
 
-export function PixSheet({ open, onClose, scope, chargeId, amountCents, subtitle }: PixSheetProps) {
+export function PixSheet({
+  open,
+  onClose,
+  scope,
+  chargeId,
+  amountCents,
+  subtitle,
+  successCaption,
+  onSettled,
+}: PixSheetProps) {
   const theme = useTheme();
   const [copied, setCopied] = useState(false);
 
   const { payment, pending, error } = usePendingPayment({ scope, chargeId, method: 'pix' });
   const invalidate = useSettleInvalidation(scope);
-  const simulate = useSimulatePayment(invalidate);
+  const simulate = useSimulatePayment(() => {
+    invalidate();
+    onSettled?.();
+  });
 
   const qrPayload = payment ? providerField(payment, 'qrPayload') : null;
   const copiaECola = payment ? providerField(payment, 'copiaECola') : null;
@@ -46,7 +62,10 @@ export function PixSheet({ open, onClose, scope, chargeId, amountCents, subtitle
   return (
     <BottomSheet open={open} onClose={onClose} title="Pagar com Pix" subtitle={subtitle} testID="pix-sheet">
       {simulate.settled ? (
-        <PaymentSuccess caption="A mensalidade foi paga via Pix." onClose={onClose} />
+        <PaymentSuccess
+          caption={successCaption ?? 'A mensalidade foi paga via Pix.'}
+          onClose={onClose}
+        />
       ) : (
         <View style={{ gap: theme.space['4'], alignItems: 'stretch' }}>
           {pending ? <Text variant="caption">Gerando cobrança Pix…</Text> : null}

@@ -207,6 +207,7 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
           </NavLink>
           <NavLink to="/admin/cadastros">Cadastros</NavLink>
           <NavLink to="/admin/calendario">Calendário</NavLink>
+          <NavLink to="/admin/eventos">Eventos</NavLink>
           <NavLink to="/admin/graduacao">Graduação</NavLink>
           <NavLink to="/admin/planos">Planos</NavLink>
         </Box>

@@ -95,17 +95,16 @@ export function weekdayOf(year: number, month: number, day: number): Weekday {
 
 /**
  * Weekday buckets → per-day dot marks over the rendered month (spec 007:
- * "class dot iff that weekday's bucket is non-empty"). Events carry no
- * dates in this phase, so no event dots are expanded yet — the marks shape
- * is ready for them.
+ * "class dot iff that weekday's bucket is non-empty"). Event dots are
+ * merged in by the caller from the month's dated events (spec 008).
  */
 export function expandMonthMarks(
   buckets: CalendarBuckets,
   year: number,
   month: number,
-): Record<number, { classDot: boolean }> {
+): Record<number, { classDot?: boolean; eventDot?: boolean }> {
   const daysInMonth = new Date(year, month, 0).getDate();
-  const marks: Record<number, { classDot: boolean }> = {};
+  const marks: Record<number, { classDot?: boolean; eventDot?: boolean }> = {};
   for (let day = 1; day <= daysInMonth; day += 1) {
     if ((buckets[weekdayOf(year, month, day)] ?? []).length > 0) {
       marks[day] = { classDot: true };

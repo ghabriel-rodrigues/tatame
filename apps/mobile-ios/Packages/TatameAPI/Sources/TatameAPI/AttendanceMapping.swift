@@ -42,7 +42,8 @@ extension AlunoHome {
             todayClass: try dto.todayClass.map { try AlunoTodayClass(dto: $0.value1) },
             stats: AlunoStats(dto: dto.stats),
             graduation: try dto.graduation.map { try AlunoHomeGraduation(dto: $0.value1) },
-            mensalidade: try dto.mensalidade.map { try MensalidadeAlert(dto: $0.value1) }
+            mensalidade: try dto.mensalidade.map { try MensalidadeAlert(dto: $0.value1) },
+            upcomingEvents: try dto.upcomingEvents.map(EventListItem.init(dto:))
         )
     }
 }
@@ -218,7 +219,9 @@ extension ProfessorDashboard {
             alunosHoje: Int(dto.alunosHoje),
             presencaMediaPct: dto.presencaMediaPct,
             nextClass: try dto.nextClass.map { try ProfessorNextClass(dto: $0.value1) },
-            todayClasses: try dto.todayClasses.map(ProfessorTodayClass.init(dto:))
+            todayClasses: try dto.todayClasses.map(ProfessorTodayClass.init(dto:)),
+            upcomingEventsCount: Int(dto.upcomingEventsCount),
+            upcomingEvents: try dto.upcomingEvents.map(ProfessorUpcomingEvent.init(dto:))
         )
     }
 }

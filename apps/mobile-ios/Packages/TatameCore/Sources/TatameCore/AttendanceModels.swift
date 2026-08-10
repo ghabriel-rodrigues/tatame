@@ -70,6 +70,9 @@ public struct AlunoHome: Sendable, Equatable {
     /// Real "mensalidade em aberto" alert (spec 006, BIL.22) deep-linking
     /// into the Carteira; nil = nothing open.
     public let mensalidade: MensalidadeAlert?
+    /// "Próximos eventos": the next 2 published events with own registration
+    /// state (spec 008, EVT.14).
+    public let upcomingEvents: [EventListItem]
 
     public init(
         studentId: UUID,
@@ -77,7 +80,8 @@ public struct AlunoHome: Sendable, Equatable {
         todayClass: AlunoTodayClass?,
         stats: AlunoStats,
         graduation: AlunoHomeGraduation? = nil,
-        mensalidade: MensalidadeAlert? = nil
+        mensalidade: MensalidadeAlert? = nil,
+        upcomingEvents: [EventListItem] = []
     ) {
         self.studentId = studentId
         self.studentName = studentName
@@ -85,6 +89,7 @@ public struct AlunoHome: Sendable, Equatable {
         self.stats = stats
         self.graduation = graduation
         self.mensalidade = mensalidade
+        self.upcomingEvents = upcomingEvents
     }
 
     /// Copy with the hero flipped and the stats refreshed (post-check-in).
@@ -105,7 +110,8 @@ public struct AlunoHome: Sendable, Equatable {
             todayClass: flipped,
             stats: result.stats,
             graduation: bumped,
-            mensalidade: mensalidade
+            mensalidade: mensalidade,
+            upcomingEvents: upcomingEvents
         )
     }
 }
@@ -398,22 +404,31 @@ public struct ProfessorTodayClass: Sendable, Equatable, Identifiable {
     }
 }
 
-/// GET /professor/dashboard payload (spec 004 stories 34-36).
+/// GET /professor/dashboard payload (spec 004 stories 34-36; the eventos
+/// futuros tile + list joined with spec 008 story 22).
 public struct ProfessorDashboard: Sendable, Equatable {
     public let alunosHoje: Int
     public let presencaMediaPct: Double
     public let nextClass: ProfessorNextClass?
     public let todayClasses: [ProfessorTodayClass]
+    /// The "eventos futuros" stat tile (spec 008).
+    public let upcomingEventsCount: Int
+    /// "Eventos futuros" list — read-only academy-wide data (spec 008).
+    public let upcomingEvents: [ProfessorUpcomingEvent]
 
     public init(
         alunosHoje: Int,
         presencaMediaPct: Double,
         nextClass: ProfessorNextClass?,
-        todayClasses: [ProfessorTodayClass]
+        todayClasses: [ProfessorTodayClass],
+        upcomingEventsCount: Int = 0,
+        upcomingEvents: [ProfessorUpcomingEvent] = []
     ) {
         self.alunosHoje = alunosHoje
         self.presencaMediaPct = presencaMediaPct
         self.nextClass = nextClass
         self.todayClasses = todayClasses
+        self.upcomingEventsCount = upcomingEventsCount
+        self.upcomingEvents = upcomingEvents
     }
 }

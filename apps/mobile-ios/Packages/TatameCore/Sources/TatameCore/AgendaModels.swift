@@ -17,12 +17,8 @@ public struct AgendaOccupancy: Sendable, Equatable {
     }
 }
 
-/// Placeholder for the events phase — the API returns `events: []` in every
-/// spec-007 response; the contract (and this type) exists so that phase
-/// fills data, not plumbing.
-public struct AgendaEvent: Sendable, Equatable {
-    public init() {}
-}
+// The spec-007 `AgendaEvent` placeholder retired with spec 008: the events
+// arrays now carry real `EventListItem` values (EventsModels.swift).
 
 /// One schedule slot of an enrolled class on the aluno agenda. A class with
 /// two slots on the same weekday yields two items (spec 007 story 5), so
@@ -84,10 +80,12 @@ public struct AlunoAgenda: Sendable, Equatable {
     public let isToday: Bool
     /// Sorted by start time (server-side).
     public let classes: [AgendaClassItem]
-    /// Always empty in this phase (spec 007 story 33).
-    public let events: [AgendaEvent]
+    /// "Eventos do mês": the current tenant-local month's published events
+    /// with own registration state (spec 008 — the Phase-7 empty state
+    /// retires).
+    public let events: [EventListItem]
 
-    public init(weekday: Int, isToday: Bool, classes: [AgendaClassItem], events: [AgendaEvent]) {
+    public init(weekday: Int, isToday: Bool, classes: [AgendaClassItem], events: [EventListItem] = []) {
         self.weekday = weekday
         self.isToday = isToday
         self.classes = classes
@@ -155,10 +153,11 @@ public struct PersonaCalendar: Sendable, Equatable {
     public let month: String
     /// 0 = Sunday … 6 = Saturday; missing keys read as empty buckets.
     public let classesByWeekday: [Int: [CalendarClassItem]]
-    /// Always empty in this phase (spec 007 story 33).
-    public let events: [AgendaEvent]
+    /// The requested month's published events as dated items — the pink
+    /// dots (spec 008; aluno items carry own registration state).
+    public let events: [EventListItem]
 
-    public init(month: String, classesByWeekday: [Int: [CalendarClassItem]], events: [AgendaEvent]) {
+    public init(month: String, classesByWeekday: [Int: [CalendarClassItem]], events: [EventListItem] = []) {
         self.month = month
         self.classesByWeekday = classesByWeekday
         self.events = events
@@ -170,9 +169,23 @@ public struct PersonaCalendar: Sendable, Equatable {
         Set(classesByWeekday.filter { !$0.value.isEmpty }.keys)
     }
 
-    /// Selected-day agenda: the weekday bucket sorted by start time (events
-    /// would merge in here — none in v1, so the merge is the identity).
+    /// Selected-day agenda: the weekday bucket sorted by start time (Evento
+    /// entries merge in separately via `events(onDay:)`, spec 008 story 16).
     public func dayAgenda(weekday: Int) -> [CalendarClassItem] {
         (classesByWeekday[weekday] ?? []).sorted { $0.startTime < $1.startTime }
+    }
+
+    /// Days-of-month carrying at least one event — the pink-dot source
+    /// (spec 008; dates are tenant-local, bucketed server-side).
+    public var eventDays: Set<Int> {
+        Set(events.compactMap { $0.dayOfMonth(inMonth: month) })
+    }
+
+    /// The selected day's Evento entries, sorted by time (undated never
+    /// reaches published surfaces).
+    public func events(onDay day: Int) -> [EventListItem] {
+        events
+            .filter { $0.dayOfMonth(inMonth: month) == day }
+            .sorted { ($0.time ?? "") < ($1.time ?? "") }
     }
 }

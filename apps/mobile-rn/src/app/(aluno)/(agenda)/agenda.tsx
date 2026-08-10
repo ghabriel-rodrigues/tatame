@@ -3,8 +3,9 @@
  * over GET /v1/aluno/agenda?weekday= — class cards with time range, turma,
  * professor, level and occupancy chips; on today, the check-in affordance
  * (button → the ATT.15 sheet, green check when present). "Eventos do mês"
- * ships its honest empty state wired to the always-empty events array
- * (spec 007 — the events phase fills data, not UI plumbing).
+ * (EVT.10, spec 008 — retires the Phase-7 empty-state debt): the current
+ * month's published events as date-square cards with the own-state/valor
+ * chip; tapping pushes the event detail.
  */
 
 import { useState } from 'react';
@@ -30,6 +31,8 @@ import {
   vagasLabel,
 } from '../../../features/agenda/format';
 import type { AlunoAgendaClass } from '../../../features/agenda/types';
+import { MONTH_EVENTS_TITLE } from '../../../features/events/copy';
+import { EventCard } from '../../../features/events/ui';
 import { WEEKDAY_SHORT } from '../../../features/enrollment/format';
 import { QueryState } from '../../../features/enrollment/ui';
 import { useSession } from '../../../session/session-store';
@@ -168,12 +171,21 @@ export default function AlunoAgendaScreen() {
                   ))
                 )}
 
-                <Text variant="subtitle">Eventos do mês</Text>
+                <Text variant="subtitle">{MONTH_EVENTS_TITLE}</Text>
                 {events.length === 0 ? (
                   <Card testID="events-empty">
                     <Text variant="caption">Nenhum evento neste mês</Text>
                   </Card>
-                ) : null}
+                ) : (
+                  events.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      item={event}
+                      testID={`agenda-event-${event.id}`}
+                      onPress={() => router.push(`/evento/${event.id}`)}
+                    />
+                  ))
+                )}
               </>
             ) : null}
           </QueryState>

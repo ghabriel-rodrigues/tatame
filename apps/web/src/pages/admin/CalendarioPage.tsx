@@ -1,12 +1,13 @@
 /**
- * Calendário (AGD.4, admin-14) — the admin console month view over the
- * persona calendar read model (spec 007). The API returns the weekly
- * recurrence buckets (`classesByWeekday`) plus the always-empty `events`
- * list; this page expands them client-side over the rendered month grid —
- * a purple dot on every date whose weekday bucket is non-empty, a pink dot
- * on event dates (none in v1) — with the "aulas recorrentes"/"evento"
- * legend and the selected-day agenda sorted by time. Dots derive from
- * schedules, never sessions. The rendered month is the one the server
+ * Calendário (AGD.4 + EVT.9, admin-14) — the admin console month view over
+ * the persona calendar read model (specs 007/008). The API returns the
+ * weekly recurrence buckets (`classesByWeekday`) plus the month's published
+ * events as dated items (spec 008 filled the Phase-7 `events: []` contract);
+ * this page expands them client-side over the rendered month grid — a purple
+ * dot on every date whose weekday bucket is non-empty, a pink dot on event
+ * dates — with the "aulas recorrentes"/"evento" legend and the selected-day
+ * agenda (aulas + Evento entries) sorted by time. Dots derive from schedules
+ * and event dates, never sessions. The rendered month is the one the server
  * echoes (current tenant-local month) — month paging is out of scope; the
  * prototype chevron is mobile back navigation, so the console page has none.
  */
@@ -18,6 +19,7 @@ import { Card, ScreenHeader } from '@tatame/design-system';
 import type { ApiSchemas } from '@tatame/shared';
 import { $api } from '../../api/api';
 import { monthName } from '../billing-format';
+import { valorChipLabel, type CalendarEventItem } from './events-format';
 
 type CalendarClassItem = ApiSchemas['CalendarClassItemDto'];
 type CalendarBuckets = ApiSchemas['CalendarBucketsDto'];
@@ -108,12 +110,14 @@ function LegendEntry({ color, label }: { color: string; label: string }) {
 function DayCell({
   cell,
   hasClasses,
+  hasEvents,
   isToday,
   selected,
   onSelect,
 }: {
   cell: MonthGridCell;
   hasClasses: boolean;
+  hasEvents: boolean;
   isToday: boolean;
   selected: boolean;
   onSelect: (day: number) => void;
@@ -160,7 +164,12 @@ function DayCell({
             testId={`dot-aula-${cell.day}`}
           />
         ) : null}
-        {/* Event dots (pink) land with the events phase — `events` is empty in v1. */}
+        {hasEvents ? (
+          <Dot
+            color={selected ? 'var(--white, #FFFFFF)' : 'var(--pink-500)'}
+            testId={`dot-evento-${cell.day}`}
+          />
+        ) : null}
       </Box>
     </Box>
   );
@@ -213,12 +222,74 @@ function DayAgendaRow({ item }: { item: CalendarClassItem }) {
   );
 }
 
+function DayEventRow({ item }: { item: CalendarEventItem }) {
+  const details = [item.location, valorChipLabel(item.priceCents)]
+    .filter(Boolean)
+    .join(' · ');
+  return (
+    <Box
+      sx={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-1)',
+        borderRadius: '16px',
+        padding: '13px 15px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+      }}
+    >
+      <Box sx={{ flex: 'none', width: '46px', textAlign: 'center' }}>
+        <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--pink-ink)' }}>
+          {item.time ?? '—'}
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}>
+          {item.name}
+        </Typography>
+        <Typography sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '1px' }}>
+          {details}
+        </Typography>
+      </Box>
+      <Box
+        component="span"
+        sx={{
+          flex: 'none',
+          padding: '3px 9px',
+          borderRadius: '999px',
+          background: 'var(--pink-100)',
+          color: 'var(--pink-700)',
+          fontSize: 9.5,
+          fontWeight: 700,
+        }}
+      >
+        Evento
+      </Box>
+    </Box>
+  );
+}
+
+/** Month events bucketed by tenant-local day-of-month (the pink dots). */
+export function eventsByDay(
+  month: string,
+  events: CalendarEventItem[],
+): Map<number, CalendarEventItem[]> {
+  const byDay = new Map<number, CalendarEventItem[]>();
+  for (const event of events) {
+    if (!event.date || event.date.slice(0, 7) !== month) continue;
+    const day = Number(event.date.slice(8, 10));
+    byDay.set(day, [...(byDay.get(day) ?? []), event]);
+  }
+  return byDay;
+}
+
 export function CalendarioPage() {
   const calendar = $api.useQuery('get', '/v1/admin/calendar');
   const data = calendar.data;
   const [pickedDay, setPickedDay] = useState<number | null>(null);
 
   const grid = data ? buildMonthGrid(data.month) : null;
+  const monthEvents = data ? eventsByDay(data.month, data.events) : new Map<number, CalendarEventItem[]>();
 
   // Default selection: today when the rendered month is the current one
   // (it always is in v1 — the server echoes the current tenant-local
@@ -229,12 +300,23 @@ export function CalendarioPage() {
   const selectedDay = pickedDay ?? todayInMonth ?? 1;
 
   const selectedCell = grid?.cells.find((cell) => cell.day === selectedDay) ?? null;
-  const dayItems: CalendarClassItem[] =
+  const dayClasses: CalendarClassItem[] =
     data && selectedCell
       ? [...data.classesByWeekday[selectedCell.weekday]].sort((a, b) =>
           a.startTime.localeCompare(b.startTime),
         )
       : [];
+  const dayEvents: CalendarEventItem[] = selectedCell
+    ? (monthEvents.get(selectedCell.day) ?? [])
+    : [];
+  // Aulas + Evento entries merged into one agenda, sorted by start time.
+  const dayItems: Array<
+    { kind: 'aula'; time: string; item: CalendarClassItem }
+    | { kind: 'evento'; time: string; item: CalendarEventItem }
+  > = [
+    ...dayClasses.map((item) => ({ kind: 'aula' as const, time: item.startTime, item })),
+    ...dayEvents.map((item) => ({ kind: 'evento' as const, time: item.time ?? '', item })),
+  ].sort((a, b) => a.time.localeCompare(b.time));
 
   return (
     <Box sx={{ maxWidth: 560, margin: '0 auto' }}>
@@ -295,6 +377,7 @@ export function CalendarioPage() {
                     hasClasses={
                       (data.classesByWeekday as CalendarBuckets)[cell.weekday].length > 0
                     }
+                    hasEvents={monthEvents.has(cell.day)}
                     isToday={cell.day === todayInMonth}
                     selected={cell.day === selectedDay}
                     onSelect={setPickedDay}
@@ -340,9 +423,16 @@ export function CalendarioPage() {
                 </Typography>
               ) : (
                 <Stack spacing="8px">
-                  {dayItems.map((item, index) => (
-                    <DayAgendaRow key={`${item.classId}-${item.startTime}-${index}`} item={item} />
-                  ))}
+                  {dayItems.map((entry, index) =>
+                    entry.kind === 'aula' ? (
+                      <DayAgendaRow
+                        key={`${entry.item.classId}-${entry.time}-${index}`}
+                        item={entry.item}
+                      />
+                    ) : (
+                      <DayEventRow key={`${entry.item.id}-${index}`} item={entry.item} />
+                    ),
+                  )}
                 </Stack>
               )}
             </Box>

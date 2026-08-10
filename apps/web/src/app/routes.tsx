@@ -11,6 +11,7 @@ import { InvitePage } from '../pages/InvitePage';
 import { LoginPage } from '../pages/LoginPage';
 import { CadastrosPage } from '../pages/admin/CadastrosPage';
 import { CalendarioPage } from '../pages/admin/CalendarioPage';
+import { EventosPage } from '../pages/admin/EventosPage';
 import { GraduationRulesPage } from '../pages/admin/GraduationRulesPage';
 import { PlansPage } from '../pages/admin/PlansPage';
 import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
@@ -35,6 +36,8 @@ export const appRoutes: RouteObject[] = [
           { path: 'cadastros', element: <CadastrosPage /> },
           // AGD.4: the admin console month calendar (admin-14, spec 007).
           { path: 'calendario', element: <CalendarioPage /> },
+          // EVT.9: the admin events console (admin-13, spec 008).
+          { path: 'eventos', element: <EventosPage /> },
           { path: 'graduacao', element: <GraduationRulesPage /> },
           { path: 'planos', element: <PlansPage /> },
           { path: 'turmas/:id', element: <TurmaDetailPage /> },

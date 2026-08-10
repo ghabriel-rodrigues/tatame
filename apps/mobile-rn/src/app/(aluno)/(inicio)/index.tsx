@@ -5,8 +5,9 @@
  * mês, aulas seguidas — hidden when the academy disabled the streak toggle,
  * graus na faixa fed by the derived belt) and the graduation card fed by
  * the real academy target (GRD.16 — supersedes the Phase-4 placeholder),
- * linking to the Graduação screen. Ranking stays an explicit placeholder
- * card.
+ * linking to the Graduação screen. "Próximos eventos" (EVT.10, spec 008):
+ * the next 2 published events with own registration state, tapping a card
+ * pushes the event detail. Ranking stays an explicit placeholder card.
  */
 
 import { Pressable, ScrollView, View } from 'react-native';
@@ -29,6 +30,8 @@ import { openCheckinSheet } from '../../../features/attendance/checkin-sheet-sto
 import { dueLabel, formatBRL, longDayMonthPt } from '../../../features/billing/format';
 import { longDatePt, scheduleTimeRange } from '../../../features/enrollment/format';
 import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../features/enrollment/ui';
+import { UPCOMING_EVENTS_TITLE } from '../../../features/events/copy';
+import { EventCard } from '../../../features/events/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
 
 export default function AlunoInicioScreen() {
@@ -46,6 +49,7 @@ export default function AlunoInicioScreen() {
   const stats = home?.stats;
   const graduation = home?.graduation ?? null;
   const mensalidade = home?.mensalidade ?? null;
+  const upcomingEvents = home?.upcomingEvents ?? [];
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -261,6 +265,21 @@ export default function AlunoInicioScreen() {
                   </View>
                 </Card>
               </Pressable>
+            ) : null}
+
+            {upcomingEvents.length > 0 ? (
+              // EVT.10: the next 2 published events with own state (spec 008).
+              <View style={{ gap: theme.space['3'] }}>
+                <Text variant="subtitle">{UPCOMING_EVENTS_TITLE}</Text>
+                {upcomingEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    item={event}
+                    testID={`home-event-${event.id}`}
+                    onPress={() => router.push(`/evento/${event.id}`)}
+                  />
+                ))}
+              </View>
             ) : null}
 
             <Card>

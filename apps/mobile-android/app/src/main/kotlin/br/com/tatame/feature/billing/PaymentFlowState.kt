@@ -53,6 +53,8 @@ sealed interface PaymentSheet {
         val payment: Payment,
         val charge: Charge,
         val dependentName: String? = null, // responsável flow: sheet addressed to the child
+        /** Overrides the mensalidade subtitle — event charges read "Inscrição · <evento>" (spec 008). */
+        val subtitle: String? = null,
         val simulating: Boolean = false,
         @param:StringRes val errorRes: Int? = null,
     ) : PaymentSheet {

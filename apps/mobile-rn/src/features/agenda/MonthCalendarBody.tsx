@@ -3,11 +3,14 @@
  * header with the month title, the DS CalendarMonth grid + legend, and the
  * selected-day agenda list below — one composition, persona-parameterized
  * copy. Clients render the current month only: the prototype's chevron is
- * back navigation, month paging was never designed (spec 007).
+ * back navigation, month paging was never designed (spec 007). Events
+ * (EVT.10-11, spec 008): the month's published events expand into the pink
+ * eventDot marks and merge into the selected-day list as "Evento" entries
+ * (tappable on the aluno via `onPressEvent`).
  */
 
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
@@ -21,6 +24,9 @@ import {
   useTheme,
 } from '@tatame/design-system/native';
 import { QueryState } from '../enrollment/ui';
+import { eventDayMap } from '../events/format';
+import { EventPill } from '../events/ui';
+import type { CalendarEventItem } from '../events/types';
 import {
   dayAgendaItems,
   dayHeadingPt,
@@ -42,6 +48,8 @@ export interface MonthCalendarBodyProps {
   data: CalendarResponse | undefined;
   loading: boolean;
   error: boolean;
+  /** Aluno: tapping a day's Evento entry pushes the detail (spec 008). */
+  onPressEvent?: (event: CalendarEventItem) => void;
 }
 
 export function MonthCalendarBody({
@@ -52,6 +60,7 @@ export function MonthCalendarBody({
   data,
   loading,
   error,
+  onPressEvent,
 }: MonthCalendarBodyProps) {
   const theme = useTheme();
   const router = useRouter();
@@ -64,6 +73,15 @@ export function MonthCalendarBody({
 
   const buckets = data?.classesByWeekday;
   const items = buckets ? dayAgendaItems(buckets, weekdayOf(year, month, selectedDay)) : [];
+
+  // Month's published events → pink dots + selected-day Evento entries.
+  const monthKey = data?.month ?? `${year}-${`${month}`.padStart(2, '0')}`;
+  const eventsByDay = eventDayMap(data?.events ?? [], monthKey);
+  const dayEvents = eventsByDay[selectedDay] ?? [];
+  const marks = buckets ? expandMonthMarks(buckets, year, month) : {};
+  for (const day of Object.keys(eventsByDay)) {
+    marks[Number(day)] = { ...marks[Number(day)], eventDot: true };
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -85,7 +103,7 @@ export function MonthCalendarBody({
                     today={now.getDate()}
                     selectedDay={selectedDay}
                     onSelectDay={setSelectedDay}
-                    marks={expandMonthMarks(buckets, year, month)}
+                    marks={marks}
                     legend={{ classLabel: legendClassLabel, eventLabel: 'evento' }}
                   />
                 </Card>
@@ -94,7 +112,7 @@ export function MonthCalendarBody({
                   {dayHeadingPt(year, month, selectedDay)}
                 </Text>
 
-                {items.length === 0 ? (
+                {items.length === 0 && dayEvents.length === 0 ? (
                   <Text
                     variant="caption"
                     testID="free-day-copy"
@@ -139,6 +157,52 @@ export function MonthCalendarBody({
                     </Card>
                   ))
                 )}
+
+                {dayEvents.map((event) => {
+                  const row = (
+                    <Card
+                      key={event.id}
+                      padding={theme.space['4']}
+                      testID={`calendar-event-${event.id}`}
+                    >
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: theme.space['3'],
+                        }}
+                      >
+                        <View style={{ alignItems: 'center', minWidth: 44 }}>
+                          <Text variant="subtitle" weight="bold">
+                            {event.time ?? '—'}
+                          </Text>
+                        </View>
+                        <View style={{ flex: 1, gap: 2 }}>
+                          <Text variant="label" numberOfLines={1}>
+                            {event.name}
+                          </Text>
+                          {event.location ? (
+                            <Text variant="caption" numberOfLines={1}>
+                              {event.location}
+                            </Text>
+                          ) : null}
+                        </View>
+                        <EventPill />
+                      </View>
+                    </Card>
+                  );
+                  if (!onPressEvent) return row;
+                  return (
+                    <Pressable
+                      key={event.id}
+                      accessibilityRole="button"
+                      accessibilityLabel={event.name}
+                      onPress={() => onPressEvent(event)}
+                    >
+                      {row}
+                    </Pressable>
+                  );
+                })}
               </>
             ) : null}
           </QueryState>

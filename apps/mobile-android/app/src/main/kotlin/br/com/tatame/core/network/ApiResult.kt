@@ -85,6 +85,9 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     ApiErrorCodes.BILLING_MANDATE_ALREADY_ACTIVE -> ApiError.Billing.MandateAlreadyActive
     ApiErrorCodes.BILLING_REFUND_UNSETTLED -> ApiError.Billing.RefundUnsettled
     ApiErrorCodes.BILLING_SIMULATE_UNAVAILABLE -> ApiError.Billing.SimulateUnavailable
+    ApiErrorCodes.EVENT_PUBLISH_REQUIREMENTS -> ApiError.Events.PublishRequirements
+    ApiErrorCodes.EVENT_NOT_PUBLISHED -> ApiError.Events.NotPublished
+    ApiErrorCodes.EVENT_REGISTRATION_SETTLED -> ApiError.Events.RegistrationSettled
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden

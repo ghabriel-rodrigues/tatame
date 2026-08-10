@@ -6,7 +6,6 @@ package br.com.tatame.core.network.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
 
 /** `AgendaOccupancyDto` — `active` is the "N" of the "N de M vagas" chip. */
 @Serializable
@@ -36,13 +35,17 @@ data class AlunoAgendaClass(
     val checkedIn: Boolean,
 )
 
-/** `AlunoAgendaResponseDto` — `events` ships empty until the events phase (stable contract). */
+/**
+ * `AlunoAgendaResponseDto` — `events` is the current tenant-local month's
+ * published events with own state ("Eventos do mês", spec 008 fills the
+ * Phase-7 stable contract).
+ */
 @Serializable
 data class AlunoAgendaResponse(
     val weekday: Int, // 0 = Sunday … 6 = Saturday
     val isToday: Boolean,
     val classes: List<AlunoAgendaClass>, // sorted by start time
-    val events: List<JsonObject> = emptyList(),
+    val events: List<AlunoEventItem> = emptyList(),
 )
 
 /** `CalendarClassItemDto` */
@@ -85,11 +88,13 @@ data class CalendarBuckets(
 
 /**
  * `CalendarResponseDto` — the server returns the weekly plan, not per-date
- * dots; the client expands over the rendered month grid (spec 007).
+ * dots; the client expands over the rendered month grid (spec 007). `events`
+ * carries the requested month's published events as dated items — the pink
+ * dots + day Evento entries (spec 008 fills the stable contract).
  */
 @Serializable
 data class CalendarResponse(
     val month: String, // "2026-08", echoed (or current tenant-local) month
     val classesByWeekday: CalendarBuckets,
-    val events: List<JsonObject> = emptyList(),
+    val events: List<CalendarEventItem> = emptyList(),
 )

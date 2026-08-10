@@ -67,7 +67,7 @@ fun PixPaymentSheet(
         ) {
             SheetHeader(
                 title = stringResource(R.string.billing_pix_sheet_title),
-                subtitle = BillingFormat.sheetSubtitle(
+                subtitle = sheet.subtitle ?: BillingFormat.sheetSubtitle(
                     periodStart = sheet.charge.periodStart,
                     contextName = sheet.dependentName ?: contextName,
                 ),

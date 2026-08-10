@@ -65,6 +65,11 @@ object ApiErrorCodes {
     const val BILLING_MANDATE_ALREADY_ACTIVE = "billing.mandate_already_active"
     const val BILLING_REFUND_UNSETTLED = "billing.refund_unsettled"
     const val BILLING_SIMULATE_UNAVAILABLE = "billing.simulate_unavailable"
+
+    // Events slice (spec 008) additions.
+    const val EVENT_PUBLISH_REQUIREMENTS = "event.publish_requirements"
+    const val EVENT_NOT_PUBLISHED = "event.not_published"
+    const val EVENT_REGISTRATION_SETTLED = "event.registration_settled"
 }
 
 /**
@@ -169,6 +174,18 @@ sealed interface ApiError {
 
         /** `billing.simulate_unavailable` — reserved non-hidden gating (route is 404 by default). */
         data object SimulateUnavailable : Billing
+    }
+
+    /** Events-slice stable codes (spec 008) the event registration UX maps to PT-BR copy. */
+    sealed interface Events : ApiError {
+        /** `event.publish_requirements` — publish without date/local (admin web path). */
+        data object PublishRequirements : Events
+
+        /** `event.not_published` — registration/announce against a draft or canceled event. */
+        data object NotPublished : Events
+
+        /** `event.registration_settled` — self-cancel of a paid confirmed registration. */
+        data object RegistrationSettled : Events
     }
 
     /** 422 `validation.failed` with field-level errors. */

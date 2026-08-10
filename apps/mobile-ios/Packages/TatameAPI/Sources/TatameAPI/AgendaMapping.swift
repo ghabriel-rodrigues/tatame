@@ -41,9 +41,9 @@ extension AlunoAgenda {
             weekday: Int(dto.weekday),
             isToday: dto.isToday,
             classes: try dto.classes.map(AgendaClassItem.init(dto:)),
-            // Always empty in this phase — mapped, never dropped, so the
-            // events phase fills data, not plumbing (spec 007 story 33).
-            events: dto.events.map { _ in AgendaEvent() }
+            // Real "Eventos do mês" items with own state (spec 008 — the
+            // Phase-7 placeholder retires).
+            events: try dto.events.map(EventListItem.init(dto:))
         )
     }
 }
@@ -75,7 +75,8 @@ extension PersonaCalendar {
                 5: try buckets._5.map(CalendarClassItem.init(dto:)),
                 6: try buckets._6.map(CalendarClassItem.init(dto:)),
             ],
-            events: dto.events.map { _ in AgendaEvent() }
+            // Dated month events — the pink dots (spec 008).
+            events: try dto.events.map(EventListItem.init(dto:))
         )
     }
 }

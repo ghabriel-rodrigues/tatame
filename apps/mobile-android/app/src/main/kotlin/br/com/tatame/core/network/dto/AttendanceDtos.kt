@@ -84,7 +84,9 @@ data class AlunoTodayClass(
 /**
  * `AlunoHomeResponseDto` — `graduation` is the real derived card payload
  * (GRD.7); `mensalidade` is the real "mensalidade em aberto" alert (spec 006,
- * story 7) deep-linking into the Carteira, null = nothing open.
+ * story 7) deep-linking into the Carteira, null = nothing open;
+ * `upcomingEvents` is "Próximos eventos": the next 2 published events with
+ * own registration state (spec 008).
  */
 @Serializable
 data class AlunoHomeResponse(
@@ -93,6 +95,7 @@ data class AlunoHomeResponse(
     val stats: AlunoStats,
     val graduation: AlunoHomeGraduation? = null,
     val mensalidade: MensalidadeAlert? = null,
+    val upcomingEvents: List<AlunoEventItem> = emptyList(),
 )
 
 /** `LiveSessionDto` */
@@ -246,13 +249,19 @@ data class ProfessorTodayClass(
     val enrolledCount: Int,
 )
 
-/** `ProfessorDashboardResponseDto` */
+/**
+ * `ProfessorDashboardResponseDto` — `upcomingEventsCount` is the "eventos
+ * futuros" stat tile and `upcomingEvents` the read-only "Eventos futuros"
+ * dashboard list (spec 008 retires the Phase-4 placeholder).
+ */
 @Serializable
 data class ProfessorDashboardResponse(
     val alunosHoje: Int,
     val presencaMediaPct: Double,
     val nextClass: ProfessorNextClass? = null,
     val todayClasses: List<ProfessorTodayClass> = emptyList(),
+    val upcomingEventsCount: Int = 0,
+    val upcomingEvents: List<ProfessorUpcomingEvent> = emptyList(),
 )
 
 /** `ProfessorStudentDto` — the "Adicionar aluno" picker candidate; `belt` derived (GRD.6). */
