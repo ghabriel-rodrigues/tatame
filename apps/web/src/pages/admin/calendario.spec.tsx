@@ -1,11 +1,12 @@
 /**
- * AGD.4 — Calendário console page (admin-14, spec 007): month grid built
- * client-side from the echoed month (Sunday-first weeks), purple dots
- * expanded from the weekday recurrence buckets, "aulas recorrentes"/"evento"
- * legend, selected-day agenda sorted by time and the "Nada agendado neste
- * dia." empty state, plus the nav link. Real routes + real client against
- * MSW (web-07). Fixture month: Agosto 2026 — day 1 is a Saturday, Sundays
- * (2, 9, 16, 23, 30) are free.
+ * AGD.4 + EVT.9 — Calendário console page (admin-14, specs 007/008): month
+ * grid built client-side from the echoed month (Sunday-first weeks), purple
+ * dots expanded from the weekday recurrence buckets, pink dots + day Evento
+ * entries from the filled `events` contract (spec 008), "aulas
+ * recorrentes"/"evento" legend, selected-day agenda sorted by time and the
+ * "Nada agendado neste dia." empty state, plus the nav link. Real routes +
+ * real client against MSW (web-07). Fixture month: Agosto 2026 — day 1 is a
+ * Saturday, Sundays (2, 9, 16, 23, 30) are free.
  */
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -14,6 +15,7 @@ import {
   billingHandlers,
   makeAdminCalendar,
   makeCalendarClassItem,
+  makeCalendarEventItem,
   makeMeResponse,
   makeMembership,
 } from '@tatame/shared/testing';
@@ -59,7 +61,7 @@ describe('Calendário (AGD.4)', () => {
     for (const day of [2, 9, 16, 23, 30]) {
       expect(screen.queryByTestId(`dot-aula-${day}`)).not.toBeInTheDocument();
     }
-    // Events are empty in this phase — no pink dots anywhere.
+    // The default fixture ships no events — no pink dots without them.
     expect(screen.queryByTestId(/^dot-evento-/)).not.toBeInTheDocument();
   });
 
@@ -151,6 +153,110 @@ describe('Calendário (AGD.4)', () => {
     // 07:00 No-Gi sorts ahead of Kids and Avançada.
     const names = screen.getAllByText(/^(No-Gi|Kids|Avançada)$/).map(textOf);
     expect(names).toEqual(['No-Gi', 'Kids', 'Avançada']);
+  });
+
+  it('marks event dates with the pink dot from the filled events contract (EVT.9)', async () => {
+    server.use(
+      ...adminCalendarHandlers(
+        makeAdminCalendar({
+          events: [
+            makeCalendarEventItem({ name: 'Open mat de verão', date: '2026-08-15' }),
+            makeCalendarEventItem({
+              name: 'Exame de faixa',
+              date: '2026-08-22',
+              time: '09:00',
+              priceCents: 12_000,
+            }),
+          ],
+        }),
+      ),
+    );
+    const admin = makeMembership({ role: 'admin' });
+    renderRoute('/admin/calendario', {
+      session: makeMeResponse({ memberships: [admin] }),
+    });
+    await screen.findByRole('heading', { name: 'Agosto 2026' });
+
+    expect(screen.getByTestId('dot-evento-15')).toBeInTheDocument();
+    expect(screen.getByTestId('dot-evento-22')).toBeInTheDocument();
+    // Only the event dates carry the pink dot.
+    expect(screen.getAllByTestId(/^dot-evento-/)).toHaveLength(2);
+    // Event days keep their class dot too (both Saturdays have Open mat).
+    expect(screen.getByTestId('dot-aula-15')).toBeInTheDocument();
+  });
+
+  it('merges Evento entries into the selected-day agenda, sorted by time (EVT.9)', async () => {
+    server.use(
+      ...adminCalendarHandlers(
+        makeAdminCalendar({
+          events: [
+            makeCalendarEventItem({
+              name: 'Exame de faixa',
+              date: '2026-08-22',
+              time: '09:00',
+              location: 'Tatame principal',
+              priceCents: 12_000,
+            }),
+          ],
+        }),
+      ),
+    );
+    const admin = makeMembership({ role: 'admin' });
+    renderRoute('/admin/calendario', {
+      session: makeMeResponse({ memberships: [admin] }),
+    });
+    await screen.findByRole('heading', { name: 'Agosto 2026' });
+
+    // 2026-08-22 is a Saturday: Exame 09:00 (evento) before Open mat 10:00 (aula).
+    await user.click(screen.getByRole('button', { name: 'Dia 22' }));
+    expect(screen.getByText('sábado, 22 de agosto')).toBeInTheDocument();
+
+    expect(screen.getByText('Exame de faixa')).toBeInTheDocument();
+    expect(screen.getByText('09:00')).toBeInTheDocument();
+    expect(screen.getByText('Tatame principal · R$ 120')).toBeInTheDocument();
+    expect(screen.getByText('Evento')).toBeInTheDocument();
+    expect(screen.getByText('Open mat')).toBeInTheDocument();
+    expect(screen.getByText('Aula')).toBeInTheDocument();
+    // Sorted by time: the 09:00 event ahead of the 10:00 class.
+    const rows = screen.getAllByText(/^(Exame de faixa|Open mat)$/).map(textOf);
+    expect(rows).toEqual(['Exame de faixa', 'Open mat']);
+  });
+
+  it('renders free events with the Gratuito label and ignores out-of-month dates (EVT.9)', async () => {
+    server.use(
+      ...adminCalendarHandlers(
+        makeAdminCalendar({
+          events: [
+            makeCalendarEventItem({
+              name: 'Open mat de verão',
+              date: '2026-08-16',
+              time: '10:00',
+              location: 'Tatame principal',
+              priceCents: null,
+            }),
+            // September event — outside the echoed month, never a dot.
+            makeCalendarEventItem({ name: 'Festival Kids', date: '2026-09-13' }),
+          ],
+        }),
+      ),
+    );
+    const admin = makeMembership({ role: 'admin' });
+    renderRoute('/admin/calendario', {
+      session: makeMeResponse({ memberships: [admin] }),
+    });
+    await screen.findByRole('heading', { name: 'Agosto 2026' });
+
+    expect(screen.getByTestId('dot-evento-16')).toBeInTheDocument();
+    expect(screen.queryByTestId('dot-evento-13')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId(/^dot-evento-/)).toHaveLength(1);
+
+    // A free Sunday whose only entry is the event — Evento row, no empty state.
+    await user.click(screen.getByRole('button', { name: 'Dia 16' }));
+    expect(screen.getByText('domingo, 16 de agosto')).toBeInTheDocument();
+    expect(screen.getByText('Open mat de verão')).toBeInTheDocument();
+    expect(screen.getByText('Tatame principal · Gratuito')).toBeInTheDocument();
+    expect(screen.getByText('Evento')).toBeInTheDocument();
+    expect(screen.queryByText('Nada agendado neste dia.')).not.toBeInTheDocument();
   });
 
   it('exposes the Calendário nav link in the admin console shell', async () => {

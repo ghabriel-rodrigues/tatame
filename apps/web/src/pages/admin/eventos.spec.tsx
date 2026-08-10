@@ -34,7 +34,7 @@ describe('Eventos (EVT.9)', () => {
     expect(await screen.findByRole('heading', { name: 'Eventos' })).toBeInTheDocument();
 
     // Open mat de verão — gratuito, sáb 15/08 10:00, 32 confirmados.
-    expect(screen.getByText('Open mat de verão')).toBeInTheDocument();
+    expect(await screen.findByText('Open mat de verão')).toBeInTheDocument();
     expect(screen.getByText('Gratuito')).toBeInTheDocument();
     expect(screen.getByText('Sáb, 15 de agosto · 10:00')).toBeInTheDocument();
     expect(screen.getByText('32 confirmados · Prof. Rafael Nunes')).toBeInTheDocument();
