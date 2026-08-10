@@ -2,6 +2,7 @@ package br.com.tatame.feature.agenda
 
 import br.com.tatame.core.network.dto.CalendarBuckets
 import br.com.tatame.core.network.dto.CalendarClassItem
+import br.com.tatame.core.network.dto.CalendarEventItem
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.Locale
@@ -61,7 +62,20 @@ object CalendarGrid {
         return (1..month.lengthOfMonth()).map(month::atDay).filter { apiWeekday(it) in weekdays }
     }
 
-    /** Selected-day agenda: the weekday bucket sorted by start time (events land later). */
+    /** Selected-day agenda: the weekday bucket sorted by start time. */
     fun dayItems(buckets: CalendarBuckets, date: LocalDate): List<CalendarClassItem> =
         buckets[apiWeekday(date)].sortedBy { it.startTime }
+
+    // ---- events (EVT.12/13 — spec 008 fills the Phase-7 contract) --------
+
+    /** Whether a date carries the pink event dot: a dated event lands on it. */
+    fun hasEventDot(events: List<CalendarEventItem>, date: LocalDate): Boolean =
+        events.any { parseDate(it.date) == date }
+
+    /** Selected-day Evento entries, sorted by time (undated drafts never arrive). */
+    fun dayEvents(events: List<CalendarEventItem>, date: LocalDate): List<CalendarEventItem> =
+        events.filter { parseDate(it.date) == date }.sortedBy { it.time.orEmpty() }
+
+    private fun parseDate(raw: String?): LocalDate? =
+        raw?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 }

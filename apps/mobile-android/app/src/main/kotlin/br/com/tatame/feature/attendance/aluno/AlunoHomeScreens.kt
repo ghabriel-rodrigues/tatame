@@ -49,10 +49,15 @@ import br.com.tatame.core.network.dto.AlunoHomeGraduation
 import br.com.tatame.core.network.dto.AlunoHomeResponse
 import br.com.tatame.core.network.dto.AlunoTodayClass
 import br.com.tatame.core.network.dto.MensalidadeAlert
+import br.com.tatame.core.network.dto.AlunoEventItem
 import br.com.tatame.feature.billing.BillingFormat
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.EnrollmentNotice
 import br.com.tatame.feature.enrollment.ScheduleFormat
+import br.com.tatame.feature.events.EventFormat
+import br.com.tatame.feature.events.EventListCard
+import br.com.tatame.feature.events.EventStateChip
+import br.com.tatame.feature.events.aluno.EventDetailScreen
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.aluno.AlunoGraduacaoScreen
 import br.com.tatame.feature.graduation.toBeltDisplay
@@ -62,8 +67,10 @@ import org.koin.androidx.compose.koinViewModel
 /**
  * Aluno "Início" tab (ATT.19, aluno-03/04/05): hero card with the check-in
  * CTA (flips to "Presença registrada"), stat tiles (streak hidden when the
- * academy disabled gamification.streak), graduation lesson-count card, and
- * the 3-method check-in bottom sheet + success pop.
+ * academy disabled gamification.streak), graduation lesson-count card, the
+ * real "Próximos eventos" section (EVT.12 — next 2 published events with own
+ * state, tapping pushes the event detail), and the 3-method check-in bottom
+ * sheet + success pop.
  *
  * [openCheckinOnEnter] is the central-FAB entry (the Check-in tab of the
  * placeholder bar routes here with the sheet already open).
@@ -79,6 +86,7 @@ fun AlunoHomeTab(
 ) {
     val state by viewModel.uiState.collectAsState()
     var graduacaoOpen by rememberSaveable { mutableStateOf(false) }
+    var eventOpen by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(openCheckinOnEnter) {
         if (openCheckinOnEnter) viewModel.openCheckinSheet()
@@ -87,6 +95,20 @@ fun AlunoHomeTab(
     // GRD.19 — the home graduation card links to the Graduação screen.
     if (graduacaoOpen) {
         AlunoGraduacaoScreen(onBack = { graduacaoOpen = false }, modifier = modifier)
+        return
+    }
+
+    // EVT.12 — a "Próximos eventos" card pushes the event detail; the home
+    // refetches on return so the Confirmado chip reflects what happened there.
+    eventOpen?.let { eventId ->
+        EventDetailScreen(
+            eventId = eventId,
+            onBack = {
+                eventOpen = null
+                viewModel.refresh()
+            },
+            modifier = modifier,
+        )
         return
     }
 
@@ -111,6 +133,7 @@ fun AlunoHomeTab(
                 onOpenGraduacao = { graduacaoOpen = true },
                 onOpenCarteira = onOpenCarteira,
                 onOpenAgenda = onOpenAgenda,
+                onOpenEvent = { eventOpen = it },
             )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
@@ -163,6 +186,7 @@ private fun AlunoHomeContent(
     onOpenGraduacao: () -> Unit,
     onOpenCarteira: () -> Unit,
     onOpenAgenda: () -> Unit,
+    onOpenEvent: (String) -> Unit,
 ) {
     HeroCard(todayClass = home.todayClass, onCheckin = onCheckin, onOpenAgenda = onOpenAgenda)
     // Real "mensalidade em aberto" alert (spec 006, story 7) — deep-links
@@ -179,6 +203,41 @@ private fun AlunoHomeContent(
         totalLessons = home.stats.totalLessons,
         onOpen = onOpenGraduacao,
     )
+    // EVT.12 — "Próximos eventos": the next 2 published events with own
+    // state (spec 008); the section hides entirely when nothing is upcoming.
+    if (home.upcomingEvents.isNotEmpty()) {
+        Spacer(Modifier.height(LumiraTokens.Space.S5))
+        UpcomingEventsSection(events = home.upcomingEvents, onOpenEvent = onOpenEvent)
+    }
+}
+
+@Composable
+private fun UpcomingEventsSection(
+    events: List<AlunoEventItem>,
+    onOpenEvent: (String) -> Unit,
+) {
+    Text(
+        text = stringResource(R.string.home_events_title),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+    Spacer(Modifier.height(LumiraTokens.Space.S3))
+    Column(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S3)) {
+        events.forEach { event ->
+            EventListCard(
+                name = event.name,
+                date = event.date,
+                subtitle = EventFormat.timeLocationLine(event.time, event.location),
+                onClick = { onOpenEvent(event.id) },
+                trailing = {
+                    EventStateChip(
+                        priceCents = event.priceCents,
+                        registrationStatus = event.registration?.status,
+                    )
+                },
+            )
+        }
+    }
 }
 
 /** Home mensalidade alert fed by real charge data — never a placeholder. */

@@ -26,6 +26,7 @@ import br.com.tatame.feature.billing.responsavel.PagamentosTab
 import br.com.tatame.feature.enrollment.professor.TurmasTab
 import br.com.tatame.feature.enrollment.responsavel.DEPENDENTS_REGISTER_PERMISSION
 import br.com.tatame.feature.enrollment.responsavel.DependentsHomeTab
+import br.com.tatame.feature.events.responsavel.ResponsavelEventosTab
 import br.com.tatame.feature.graduation.aluno.AlunoPerfilTab
 import br.com.tatame.feature.graduation.professor.GRADUATION_UPDATE_PERMISSION
 import br.com.tatame.feature.graduation.professor.ProfessorPerfilTab
@@ -173,16 +174,21 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
 
         me.activeRole == Roles.GUARDIAN -> PersonaShellScreen(
             me = me,
+            // EVT.13 — the redundant "Dependentes" placeholder tab (the home
+            // already IS the dependents panel) gives way to the real Eventos
+            // tab, restoring the prototype's Início/Pagamentos/Eventos/Perfil
+            // bar (responsavel-06).
             tabLabels = listOf(
                 R.string.tab_home,
-                R.string.tab_dependents,
                 R.string.tab_payments,
+                R.string.tab_events,
                 R.string.tab_profile,
             ),
             onLogout = onLogout,
             // ENR.22/23 — home tab (index 0) is the dependents panel; the
             // Cadastrar aluno CTA is hidden when dependents.register is off.
-            // BIL.21 — Pagamentos (index 2) is the real per-dependent wallet.
+            // BIL.21 — Pagamentos (index 1) is the real per-dependent wallet.
+            // EVT.13 — Eventos (index 2) is the per-dependent confirmation tab.
             tabContent = mapOf(
                 0 to { _ ->
                     DependentsHomeTab(
@@ -191,8 +197,11 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                             me.permissions[DEPENDENTS_REGISTER_PERMISSION] ?: true,
                     )
                 },
-                2 to { _ ->
+                1 to { _ ->
                     PagamentosTab()
+                },
+                2 to { _ ->
+                    ResponsavelEventosTab()
                 },
             ),
         )

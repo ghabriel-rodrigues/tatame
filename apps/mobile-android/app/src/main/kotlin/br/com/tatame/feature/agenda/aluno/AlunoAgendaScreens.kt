@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import br.com.tatame.R
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.AlunoAgendaClass
+import br.com.tatame.core.network.dto.AlunoEventItem
 import br.com.tatame.feature.agenda.AgendaFormat
 import br.com.tatame.feature.agenda.AlunoCalendarScreen
 import br.com.tatame.feature.attendance.aluno.AlunoCheckinSheetHost
@@ -44,6 +45,10 @@ import br.com.tatame.feature.attendance.aluno.AlunoHomeViewModel
 import br.com.tatame.feature.enrollment.EnrollmentChip
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.ScheduleFormat
+import br.com.tatame.feature.events.EventFormat
+import br.com.tatame.feature.events.EventListCard
+import br.com.tatame.feature.events.EventStateChip
+import br.com.tatame.feature.events.aluno.EventDetailScreen
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
@@ -53,7 +58,9 @@ import org.koin.androidx.compose.koinViewModel
  * default), the selected day's enrolled-class cards with the check-in
  * affordance (`isToday && !checkedIn` → button opening the shared Phase-4
  * sheet; green check when registered), the "Sem aulas neste dia" empty state,
- * and the honestly-empty "Eventos do mês" section (events-phase debt).
+ * and the real "Eventos do mês" section (EVT.12 retires the Phase-7 debt):
+ * the current month's published events with own state, tapping pushes the
+ * event detail.
  */
 @Composable
 fun AlunoAgendaTab(
@@ -63,9 +70,29 @@ fun AlunoAgendaTab(
     checkinViewModel: AlunoHomeViewModel = koinViewModel(),
 ) {
     var calendarOpen by rememberSaveable { mutableStateOf(false) }
+    var eventOpen by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // EVT.12 — event detail pushed over the agenda (or over the month
+    // calendar whose day entries also open it); back returns to where the
+    // aluno was, refetching so chips/dots reflect the registration change.
+    eventOpen?.let { eventId ->
+        EventDetailScreen(
+            eventId = eventId,
+            onBack = {
+                eventOpen = null
+                viewModel.retry()
+            },
+            modifier = modifier,
+        )
+        return
+    }
 
     if (calendarOpen) {
-        AlunoCalendarScreen(onBack = { calendarOpen = false }, modifier = modifier)
+        AlunoCalendarScreen(
+            onBack = { calendarOpen = false },
+            onOpenEvent = { eventOpen = it },
+            modifier = modifier,
+        )
         return
     }
 
@@ -108,7 +135,10 @@ fun AlunoAgendaTab(
         }
 
         Spacer(Modifier.height(LumiraTokens.Space.S6))
-        EventsSection()
+        EventsSection(
+            events = (state.day as? AgendaDayState.Loaded)?.agenda?.events.orEmpty(),
+            onOpenEvent = { eventOpen = it },
+        )
         Spacer(Modifier.height(LumiraTokens.Space.S8))
     }
 
@@ -330,29 +360,48 @@ private fun EmptyDayCard() {
 }
 
 /**
- * "Eventos do mês" — the section exists with an honest empty state wired to
- * the API's always-empty `events` array; the events phase fills data, not UI
- * plumbing (recorded debt, spec 007).
+ * "Eventos do mês" (EVT.12, spec 008 — the Phase-7 empty state retires): the
+ * current tenant-local month's published events as date-square cards with the
+ * own-state/valor chip; empty months keep the honest empty card.
  */
 @Composable
-private fun EventsSection() {
+private fun EventsSection(events: List<AlunoEventItem>, onOpenEvent: (String) -> Unit) {
     Text(
         text = stringResource(R.string.agenda_events_title),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
     )
     Spacer(Modifier.height(LumiraTokens.Space.S3))
-    Surface(
-        shape = RoundedCornerShape(LumiraTokens.Radius.Md),
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(
-            text = stringResource(R.string.agenda_events_empty),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(vertical = LumiraTokens.Space.S5),
-        )
+    if (events.isEmpty()) {
+        Surface(
+            shape = RoundedCornerShape(LumiraTokens.Radius.Md),
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.agenda_events_empty),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(vertical = LumiraTokens.Space.S5),
+            )
+        }
+        return
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S3)) {
+        events.forEach { event ->
+            EventListCard(
+                name = event.name,
+                date = event.date,
+                subtitle = EventFormat.timeLocationLine(event.time, event.location),
+                onClick = { onOpenEvent(event.id) },
+                trailing = {
+                    EventStateChip(
+                        priceCents = event.priceCents,
+                        registrationStatus = event.registration?.status,
+                    )
+                },
+            )
+        }
     }
 }

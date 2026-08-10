@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import br.com.tatame.core.agenda.AgendaRepository
 import br.com.tatame.core.network.ApiResult
 import br.com.tatame.core.network.dto.CalendarBuckets
+import br.com.tatame.core.network.dto.CalendarEventItem
 import br.com.tatame.core.network.dto.CalendarResponse
 import java.time.LocalDate
 import java.time.YearMonth
@@ -19,7 +20,12 @@ import kotlinx.coroutines.launch
 sealed interface CalendarState {
     data object Loading : CalendarState
     data class Error(@param:StringRes val messageRes: Int) : CalendarState
-    data class Loaded(val month: YearMonth, val buckets: CalendarBuckets) : CalendarState
+    data class Loaded(
+        val month: YearMonth,
+        val buckets: CalendarBuckets,
+        /** The month's published events as dated items — pink dots (EVT.12/13). */
+        val events: List<CalendarEventItem> = emptyList(),
+    ) : CalendarState
 }
 
 data class CalendarUiState(
@@ -55,7 +61,11 @@ open class CalendarViewModel(
                         ?: YearMonth.from(_uiState.value.selectedDate)
                     _uiState.update {
                         it.copy(
-                            calendar = CalendarState.Loaded(month, result.value.classesByWeekday),
+                            calendar = CalendarState.Loaded(
+                                month = month,
+                                buckets = result.value.classesByWeekday,
+                                events = result.value.events,
+                            ),
                             // Keep today when it belongs to the served month;
                             // clamp to day 1 otherwise (tenant/device month skew).
                             selectedDate = if (YearMonth.from(it.selectedDate) == month) {

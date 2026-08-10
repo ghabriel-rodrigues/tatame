@@ -6,6 +6,7 @@ import br.com.tatame.core.network.ApiResult
 import br.com.tatame.testutil.FakeAgendaRepository
 import br.com.tatame.testutil.MainDispatcherRule
 import br.com.tatame.testutil.calendarBuckets
+import br.com.tatame.testutil.calendarEventItem
 import br.com.tatame.testutil.calendarItem
 import br.com.tatame.testutil.calendarResponse
 import java.time.LocalDate
@@ -84,6 +85,29 @@ class CalendarViewModelTest {
         advanceUntilIdle()
 
         assertEquals(LocalDate.of(2026, 9, 1), viewModel.uiState.value.selectedDate)
+    }
+
+    @Test
+    fun `month events flow into the loaded state — pink dots and day entries`() = runTest {
+        val viewModel = harness(
+            result = ApiResult.Success(
+                calendarResponse(
+                    month = "2026-08",
+                    buckets = buckets,
+                    events = listOf(calendarEventItem(id = "ev1", date = "2026-08-15")),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+
+        val loaded = viewModel.uiState.value.calendar as CalendarState.Loaded
+        assertEquals(1, loaded.events.size)
+        assertTrue(CalendarGrid.hasEventDot(loaded.events, LocalDate.of(2026, 8, 15)))
+        assertEquals(
+            listOf("ev1"),
+            CalendarGrid.dayEvents(loaded.events, LocalDate.of(2026, 8, 15)).map { it.id },
+        )
+        assertTrue(CalendarGrid.dayEvents(loaded.events, LocalDate.of(2026, 8, 16)).isEmpty())
     }
 
     // ---- day selection ---------------------------------------------------

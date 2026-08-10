@@ -5,6 +5,7 @@ import br.com.tatame.feature.attendance.di.attendanceFeatureModule
 import br.com.tatame.feature.auth.di.authFeatureModule
 import br.com.tatame.feature.billing.di.billingFeatureModule
 import br.com.tatame.feature.enrollment.di.enrollmentFeatureModule
+import br.com.tatame.feature.events.di.eventsFeatureModule
 import br.com.tatame.feature.graduation.di.graduationFeatureModule
 import org.koin.core.module.Module
 
@@ -25,6 +26,7 @@ val featureModules: List<Module> = listOf(
     graduationFeatureModule,
     billingFeatureModule,
     agendaFeatureModule,
+    eventsFeatureModule,
 )
 
 val appModules: List<Module> = coreModules + featureModules

@@ -200,10 +200,12 @@ fun alunoToday(
 fun alunoHome(
     todayClass: AlunoTodayClass? = alunoToday(),
     stats: AlunoStats = alunoStats(),
+    upcomingEvents: List<br.com.tatame.core.network.dto.AlunoEventItem> = emptyList(),
 ) = AlunoHomeResponse(
     student = AlunoStudentRef(id = "st1", fullName = "Lucas Almeida"),
     todayClass = todayClass,
     stats = stats,
+    upcomingEvents = upcomingEvents,
 )
 
 fun checkinResponse(

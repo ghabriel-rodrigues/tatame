@@ -1,6 +1,7 @@
 package br.com.tatame.feature.agenda
 
 import br.com.tatame.testutil.calendarBuckets
+import br.com.tatame.testutil.calendarEventItem
 import br.com.tatame.testutil.calendarItem
 import java.time.LocalDate
 import java.time.YearMonth
@@ -85,6 +86,42 @@ class CalendarGridTest {
     @Test
     fun `empty buckets produce no dots`() {
         assertTrue(CalendarGrid.classDotDates(calendarBuckets(), august).isEmpty())
+    }
+
+    // ---- event dots + day entries (EVT.12/13, spec 008) ------------------
+
+    @Test
+    fun `event dots land on the event date only`() {
+        val events = listOf(
+            calendarEventItem(id = "ev1", date = "2026-08-15"),
+            calendarEventItem(id = "ev2", date = "2026-08-22"),
+        )
+
+        assertTrue(CalendarGrid.hasEventDot(events, LocalDate.of(2026, 8, 15)))
+        assertTrue(CalendarGrid.hasEventDot(events, LocalDate.of(2026, 8, 22)))
+        assertFalse(CalendarGrid.hasEventDot(events, LocalDate.of(2026, 8, 16)))
+        assertFalse(CalendarGrid.hasEventDot(emptyList(), LocalDate.of(2026, 8, 15)))
+    }
+
+    @Test
+    fun `day events filter by date and sort by time`() {
+        val events = listOf(
+            calendarEventItem(id = "ev2", date = "2026-08-15", time = "14:00"),
+            calendarEventItem(id = "ev1", date = "2026-08-15", time = "10:00"),
+            calendarEventItem(id = "ev3", date = "2026-08-22", time = "09:00"),
+        )
+
+        val day = CalendarGrid.dayEvents(events, LocalDate.of(2026, 8, 15))
+
+        assertEquals(listOf("ev1", "ev2"), day.map { it.id })
+        assertTrue(CalendarGrid.dayEvents(events, LocalDate.of(2026, 8, 16)).isEmpty())
+    }
+
+    @Test
+    fun `undated or malformed event dates never dot the grid`() {
+        val events = listOf(calendarEventItem(id = "ev1", date = null))
+        assertFalse(CalendarGrid.hasEventDot(events, LocalDate.of(2026, 8, 15)))
+        assertTrue(CalendarGrid.dayEvents(events, LocalDate.of(2026, 8, 15)).isEmpty())
     }
 
     // ---- selected-day agenda ---------------------------------------------

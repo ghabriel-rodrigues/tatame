@@ -39,14 +39,19 @@ import br.com.tatame.core.network.dto.ProfessorDashboardResponse
 import br.com.tatame.core.network.dto.ProfessorTodayClass
 import br.com.tatame.feature.agenda.ProfessorCalendarScreen
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
+import br.com.tatame.feature.events.EventFormat
+import br.com.tatame.feature.events.EventListCard
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
 /**
  * Professor "Início" tab (ATT.20/21, professor-02): alunos hoje + presença
- * média tiles (eventos stays an explicit placeholder), next-class hero with
- * check-in count and "Iniciar chamada" opening the live sheet. The dashboard
- * refreshes when the chamada sheet closes so hero counts stay honest.
+ * média + eventos futuros tiles (EVT.13 retires the Phase-4 placeholder),
+ * next-class hero with check-in count and "Iniciar chamada" opening the live
+ * sheet, and the read-only "Eventos futuros" list (date square, name,
+ * "N confirmados · gratuito/R$ X" — no professor event route, spec 008).
+ * The dashboard refreshes when the chamada sheet closes so hero counts stay
+ * honest.
  */
 @Composable
 fun ProfessorHomeTab(
@@ -134,8 +139,8 @@ private fun DashboardContent(
     onStartChamada: (classId: String, className: String) -> Unit,
     onVerTurmas: () -> Unit,
 ) {
-    // Stat tiles (professor-02): alunos hoje + presença média are real;
-    // eventos futuros is the explicit placeholder owned by the events slice.
+    // Stat tiles (professor-02): all three are real now — eventos futuros
+    // carries the upcoming-events count (EVT.13, spec 008).
     Row(horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2)) {
         DashboardTile(
             value = "${dashboard.alunosHoje}",
@@ -148,9 +153,8 @@ private fun DashboardContent(
             modifier = Modifier.weight(1f),
         )
         DashboardTile(
-            value = "—",
+            value = "${dashboard.upcomingEventsCount}",
             label = stringResource(R.string.dashboard_stat_events_label),
-            caption = stringResource(R.string.dashboard_stat_events_placeholder),
             modifier = Modifier.weight(1f),
         )
     }
@@ -169,6 +173,29 @@ private fun DashboardContent(
         Column(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2)) {
             dashboard.todayClasses.forEach { turma ->
                 TodayClassRow(turma = turma, onStartChamada = onStartChamada)
+            }
+        }
+    }
+
+    // "Eventos futuros" — read-only program view (EVT.13, professor-02).
+    if (dashboard.upcomingEvents.isNotEmpty()) {
+        Spacer(Modifier.height(LumiraTokens.Space.S5))
+        Text(
+            text = stringResource(R.string.dashboard_events_list_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(LumiraTokens.Space.S3))
+        Column(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2)) {
+            dashboard.upcomingEvents.forEach { event ->
+                EventListCard(
+                    name = event.name,
+                    date = event.date,
+                    subtitle = EventFormat.confirmadosLine(
+                        confirmedCount = event.confirmedCount,
+                        priceCents = event.priceCents,
+                    ),
+                )
             }
         }
     }

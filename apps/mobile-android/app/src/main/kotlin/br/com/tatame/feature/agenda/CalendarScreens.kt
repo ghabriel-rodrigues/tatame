@@ -35,7 +35,9 @@ import br.com.tatame.R
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.CalendarBuckets
 import br.com.tatame.core.network.dto.CalendarClassItem
+import br.com.tatame.core.network.dto.CalendarEventItem
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
+import br.com.tatame.feature.events.EventFormat
 import com.tatame.designsystem.tokens.LumiraTokens
 import java.time.LocalDate
 import java.time.YearMonth
@@ -43,13 +45,16 @@ import org.koin.androidx.compose.koinViewModel
 
 /**
  * Aluno month calendar (AGD.8, aluno-08) — entered from the Agenda header's
- * "Mês" button, dismissed with the back chevron. Dots come from the enrolled
- * -class weekday buckets; legend reads "sua aula" / "evento".
+ * "Mês" button, dismissed with the back chevron. Purple dots come from the
+ * enrolled-class weekday buckets; pink dots from the month's published events
+ * (EVT.12 — the Phase-7 legend finally tells the truth). Tapping a day
+ * Evento entry pushes the event detail via [onOpenEvent].
  */
 @Composable
 fun AlunoCalendarScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenEvent: ((String) -> Unit)? = null,
     viewModel: AlunoCalendarViewModel = koinViewModel(),
 ) {
     CalendarScreen(
@@ -59,6 +64,7 @@ fun AlunoCalendarScreen(
         emptyDayRes = R.string.calendar_empty_day_aluno,
         showProfessor = true,
         onBack = onBack,
+        onOpenEvent = onOpenEvent,
         modifier = modifier,
     )
 }
@@ -66,7 +72,8 @@ fun AlunoCalendarScreen(
 /**
  * Professor month calendar (AGD.8, professor-04) — entered from the dashboard
  * header's calendar icon. Own classes only; legend reads "aula recorrente" /
- * "evento"; free days say "Dia livre — bom descanso.".
+ * "evento"; free days say "Dia livre — bom descanso.". Event dots and day
+ * entries are read-only here (no professor event route, spec 008).
  */
 @Composable
 fun ProfessorCalendarScreen(
@@ -81,6 +88,7 @@ fun ProfessorCalendarScreen(
         emptyDayRes = R.string.calendar_empty_day_professor,
         showProfessor = false,
         onBack = onBack,
+        onOpenEvent = null,
         modifier = modifier,
     )
 }
@@ -95,6 +103,7 @@ private fun CalendarScreen(
     @StringRes emptyDayRes: Int,
     showProfessor: Boolean,
     onBack: () -> Unit,
+    onOpenEvent: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -128,6 +137,7 @@ private fun CalendarScreen(
                 MonthCard(
                     month = calendar.month,
                     buckets = calendar.buckets,
+                    events = calendar.events,
                     selectedDate = state.selectedDate,
                     onSelect = viewModel::selectDay,
                     classLegendRes = classLegendRes,
@@ -141,8 +151,10 @@ private fun CalendarScreen(
                 Spacer(Modifier.height(LumiraTokens.Space.S3))
                 DayAgenda(
                     items = CalendarGrid.dayItems(calendar.buckets, state.selectedDate),
+                    events = CalendarGrid.dayEvents(calendar.events, state.selectedDate),
                     emptyDayRes = emptyDayRes,
                     showProfessor = showProfessor,
+                    onOpenEvent = onOpenEvent,
                 )
             }
         }
@@ -188,6 +200,7 @@ private fun CalendarHeader(title: String?, @StringRes subtitleRes: Int, onBack: 
 private fun MonthCard(
     month: YearMonth,
     buckets: CalendarBuckets,
+    events: List<CalendarEventItem>,
     selectedDate: LocalDate,
     onSelect: (LocalDate) -> Unit,
     @StringRes classLegendRes: Int,
@@ -222,6 +235,7 @@ private fun MonthCard(
                                 selected = date == selectedDate,
                                 isToday = date == today,
                                 hasDot = CalendarGrid.hasClassDot(buckets, date),
+                                hasEventDot = CalendarGrid.hasEventDot(events, date),
                                 onSelect = onSelect,
                                 modifier = Modifier.weight(1f),
                             )
@@ -239,7 +253,7 @@ private fun MonthCard(
                 horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S4),
             ) {
                 LegendEntry(color = LumiraTokens.Colors.Purple500, labelRes = classLegendRes)
-                // Pink dots stay legend-only until the events phase (spec 007).
+                // Pink event dots are real data now (EVT.12/13, spec 008).
                 LegendEntry(
                     color = LumiraTokens.Colors.Pink500,
                     labelRes = R.string.calendar_legend_event,
@@ -257,6 +271,7 @@ private fun DayCell(
     selected: Boolean,
     isToday: Boolean,
     hasDot: Boolean,
+    hasEventDot: Boolean,
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -281,18 +296,33 @@ private fun DayCell(
             },
         )
         Spacer(Modifier.height(2.dp))
-        Box(
-            modifier = Modifier
-                .size(4.dp)
-                .background(
-                    color = when {
-                        !hasDot -> Color.Transparent
-                        selected -> LumiraTokens.Colors.FgOnColor
-                        else -> LumiraTokens.Colors.Purple500
-                    },
-                    shape = PillShape,
-                ),
-        )
+        // Class dot (purple) + event dot (pink) side by side when both land.
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            if (hasDot) {
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .background(
+                            color = if (selected) {
+                                LumiraTokens.Colors.FgOnColor
+                            } else {
+                                LumiraTokens.Colors.Purple500
+                            },
+                            shape = PillShape,
+                        ),
+                )
+            }
+            if (hasEventDot) {
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .background(color = LumiraTokens.Colors.Pink500, shape = PillShape),
+                )
+            }
+            if (!hasDot && !hasEventDot) {
+                Box(modifier = Modifier.size(4.dp))
+            }
+        }
     }
 }
 
@@ -314,10 +344,12 @@ private fun LegendEntry(color: Color, @StringRes labelRes: Int) {
 @Composable
 private fun DayAgenda(
     items: List<CalendarClassItem>,
+    events: List<CalendarEventItem>,
     @StringRes emptyDayRes: Int,
     showProfessor: Boolean,
+    onOpenEvent: ((String) -> Unit)?,
 ) {
-    if (items.isEmpty()) {
+    if (items.isEmpty() && events.isEmpty()) {
         Text(
             text = stringResource(emptyDayRes),
             style = MaterialTheme.typography.bodySmall,
@@ -330,6 +362,69 @@ private fun DayAgenda(
     Column(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2)) {
         items.forEach { item ->
             DayAgendaRow(item = item, showProfessor = showProfessor)
+        }
+        // Evento entries merged after the classes (EVT.12/13, spec 008).
+        events.forEach { event ->
+            DayEventRow(event = event, onOpen = onOpenEvent)
+        }
+    }
+}
+
+/** Selected-day Evento entry — pink tag; tappable on the aluno calendar only. */
+@Composable
+private fun DayEventRow(event: CalendarEventItem, onOpen: ((String) -> Unit)?) {
+    Surface(
+        shape = RoundedCornerShape(LumiraTokens.Radius.Md),
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (onOpen != null) {
+                    Modifier.clickable { onOpen(event.id) }
+                } else {
+                    Modifier
+                },
+            ),
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = LumiraTokens.Space.S3,
+                vertical = LumiraTokens.Space.S2,
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = event.time ?: "—",
+                style = MaterialTheme.typography.bodyMedium,
+                color = LumiraTokens.Colors.Pink600,
+                modifier = Modifier.width(LumiraTokens.Space.S12),
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = event.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = listOfNotNull(
+                        event.location,
+                        EventFormat.valorChip(event.priceCents),
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .background(color = LumiraTokens.Colors.Pink100, shape = PillShape)
+                    .padding(horizontal = LumiraTokens.Space.S2, vertical = LumiraTokens.Space.S1),
+            ) {
+                Text(
+                    text = stringResource(R.string.calendar_tag_evento),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = LumiraTokens.Colors.Pink700,
+                )
+            }
         }
     }
 }

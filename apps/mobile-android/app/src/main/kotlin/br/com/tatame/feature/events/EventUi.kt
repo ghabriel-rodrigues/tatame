@@ -5,10 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import br.com.tatame.R
 import br.com.tatame.core.designsystem.theme.PillShape
+import br.com.tatame.core.network.dto.EventRegistrationStatuses
 import com.tatame.designsystem.tokens.LumiraTokens
 
 /**
@@ -58,25 +64,90 @@ internal fun EventValorChip(priceCents: Long?, modifier: Modifier = Modifier) {
     }
 }
 
-/** Trailing card chip: green "Confirmado" or the gray valor chip (aluno-03). */
+/**
+ * Trailing card chip — own state wins over the valor chip (aluno-03):
+ * green "Confirmado", amber "Pagamento pendente", or the gray valor chip.
+ */
 @Composable
-internal fun EventStateChip(priceCents: Long?, confirmed: Boolean, modifier: Modifier = Modifier) {
-    val container = if (confirmed) LumiraTokens.Colors.Success100 else LumiraTokens.Colors.Gray100
-    val content = if (confirmed) LumiraTokens.Colors.Success500 else LumiraTokens.Colors.Fg3
+internal fun EventStateChip(
+    priceCents: Long?,
+    registrationStatus: String?,
+    modifier: Modifier = Modifier,
+) {
+    val confirmed = registrationStatus == EventRegistrationStatuses.CONFIRMED
+    val pending = registrationStatus == EventRegistrationStatuses.PENDING_PAYMENT
+    val container = when {
+        confirmed -> LumiraTokens.Colors.Success100
+        pending -> LumiraTokens.Colors.Warning100
+        else -> LumiraTokens.Colors.Gray100
+    }
+    val content = when {
+        confirmed -> LumiraTokens.Colors.Success500
+        pending -> LumiraTokens.Colors.Warning500
+        else -> LumiraTokens.Colors.Fg3
+    }
     Box(
         modifier = modifier
             .background(color = container, shape = PillShape)
             .padding(horizontal = LumiraTokens.Space.S3, vertical = LumiraTokens.Space.S1),
     ) {
         Text(
-            text = if (confirmed) {
-                stringResource(R.string.event_chip_confirmado)
-            } else {
-                EventFormat.valorChip(priceCents)
+            text = when {
+                confirmed -> stringResource(R.string.event_chip_confirmado)
+                pending -> stringResource(R.string.event_chip_pending)
+                else -> EventFormat.valorChip(priceCents)
             },
             style = MaterialTheme.typography.labelSmall,
             color = content,
         )
+    }
+}
+
+/**
+ * Shared event list card (home "Próximos eventos" / agenda "Eventos do mês" /
+ * professor "Eventos futuros"): date square + name + time·local line, with a
+ * caller-chosen trailing slot (state chip for the aluno, nothing for the
+ * professor whose subtitle already carries "N confirmados · valor").
+ */
+@Composable
+internal fun EventListCard(
+    name: String,
+    date: String?,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    Surface(
+        shape = RoundedCornerShape(LumiraTokens.Radius.Lg),
+        color = MaterialTheme.colorScheme.surface,
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+    ) {
+        Row(
+            modifier = Modifier.padding(LumiraTokens.Space.S3),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            EventDateSquare(date = date)
+            Spacer(Modifier.width(LumiraTokens.Space.S3))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            trailing?.let {
+                Spacer(Modifier.width(LumiraTokens.Space.S2))
+                it()
+            }
+        }
     }
 }
 

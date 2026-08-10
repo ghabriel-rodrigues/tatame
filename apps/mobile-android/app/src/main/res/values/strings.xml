@@ -190,7 +190,6 @@
     <string name="dashboard_stat_students_today">alunos hoje</string>
     <string name="dashboard_stat_avg_presence">presença média</string>
     <string name="dashboard_stat_events_label">eventos futuros</string>
-    <string name="dashboard_stat_events_placeholder">Em breve</string>
     <string name="dashboard_hero_chip">Próxima aula · hoje %1$s</string>
     <string name="dashboard_hero_confirmed">%1$d confirmados</string>
     <string name="dashboard_hero_start_chamada">Iniciar chamada</string>
@@ -319,7 +318,6 @@
     <string name="agenda_empty_title">Sem aulas neste dia</string>
     <string name="agenda_empty_body">Bom descanso — o tatame espera você amanhã.</string>
     <string name="agenda_events_title">Eventos do mês</string>
-    <!-- Events content is a later phase; the section stays honestly empty. -->
     <string name="agenda_events_empty">Nenhum evento neste mês</string>
 
     <!-- Persona month calendars (AGD.8, aluno-08 / professor-04) -->
@@ -332,6 +330,28 @@
     <string name="calendar_empty_day_aluno">Dia livre — o tatame espera você no próximo treino.</string>
     <string name="calendar_empty_day_professor">Dia livre — bom descanso.</string>
     <string name="calendar_tag_aula">Aula</string>
+
+    <!-- Events (EVT.12/13, spec 008 — aluno-10 / responsavel-06 / professor-02) -->
+    <string name="tab_events">Eventos</string>
+    <string name="home_events_title">Próximos eventos</string>
+    <string name="event_chip_confirmado">Confirmado</string>
+    <string name="event_chip_pending">Pagamento pendente</string>
+    <string name="event_confirm_cta">Confirmar presença</string>
+    <string name="event_cancel_cta">Cancelar participação</string>
+    <string name="event_pay_cta">Pagar inscrição · %1$s</string>
+    <string name="event_confirmed_banner">Presença confirmada — até lá!</string>
+    <string name="event_pending_notice">Pagamento pendente</string>
+    <string name="event_responsible_line">Responsável: Prof. %1$s</string>
+    <string name="eventos_title">Eventos</string>
+    <string name="eventos_subtitle">Confirme a participação por dependente</string>
+    <string name="eventos_empty">Nenhum evento programado no momento.</string>
+    <string name="eventos_chip_cancel_hint">Toque e segure um dependente confirmado para cancelar a participação.</string>
+    <string name="dashboard_events_list_title">Eventos futuros</string>
+    <string name="calendar_tag_evento">Evento</string>
+
+    <!-- Events errors (stable codes → PT-BR copy) -->
+    <string name="error_event_not_published">Este evento não está mais disponível.</string>
+    <string name="error_event_registration_settled">Inscrição paga só pode ser cancelada pela academia.</string>
 
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>

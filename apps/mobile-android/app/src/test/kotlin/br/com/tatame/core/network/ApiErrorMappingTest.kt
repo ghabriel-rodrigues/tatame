@@ -110,6 +110,22 @@ class ApiErrorMappingTest {
     }
 
     @Test
+    fun `events codes map to the dedicated errors`() {
+        assertEquals(
+            ApiError.Events.PublishRequirements,
+            mapHttpError(422, """{"status":422,"code":"event.publish_requirements"}"""),
+        )
+        assertEquals(
+            ApiError.Events.NotPublished,
+            mapHttpError(409, """{"status":409,"code":"event.not_published"}"""),
+        )
+        assertEquals(
+            ApiError.Events.RegistrationSettled,
+            mapHttpError(409, """{"status":409,"code":"event.registration_settled"}"""),
+        )
+    }
+
+    @Test
     fun `enrollment codes never regress plain conflicts`() {
         assertEquals(
             ApiError.Conflict,

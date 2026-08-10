@@ -6,9 +6,11 @@ import br.com.tatame.core.network.ApiResult
 import br.com.tatame.core.network.dto.AgendaOccupancy
 import br.com.tatame.core.network.dto.AlunoAgendaClass
 import br.com.tatame.core.network.dto.AlunoAgendaResponse
+import br.com.tatame.core.network.dto.AlunoEventItem
 import br.com.tatame.core.network.dto.BeltRef
 import br.com.tatame.core.network.dto.CalendarBuckets
 import br.com.tatame.core.network.dto.CalendarClassItem
+import br.com.tatame.core.network.dto.CalendarEventItem
 import br.com.tatame.core.network.dto.CalendarResponse
 
 /** Configurable in-memory [AgendaRepository] for ViewModel tests (AGD.7/8). */
@@ -69,7 +71,8 @@ fun agendaResponse(
     weekday: Int = 1,
     isToday: Boolean = false,
     classes: List<AlunoAgendaClass> = listOf(agendaClass()),
-) = AlunoAgendaResponse(weekday = weekday, isToday = isToday, classes = classes)
+    events: List<AlunoEventItem> = emptyList(),
+) = AlunoAgendaResponse(weekday = weekday, isToday = isToday, classes = classes, events = events)
 
 fun calendarItem(
     classId: String = "c1",
@@ -102,4 +105,5 @@ fun calendarBuckets(vararg buckets: Pair<Int, List<CalendarClassItem>>): Calenda
 fun calendarResponse(
     month: String = "2026-08",
     buckets: CalendarBuckets = calendarBuckets(1 to listOf(calendarItem())),
-) = CalendarResponse(month = month, classesByWeekday = buckets)
+    events: List<CalendarEventItem> = emptyList(),
+) = CalendarResponse(month = month, classesByWeekday = buckets, events = events)
