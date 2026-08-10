@@ -3,11 +3,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { APP_CONFIG, type AppConfig } from '../../infra/config/app-config.js';
 import { DbModule } from '../../infra/db/db.module.js';
 import { NotificationsModule } from '../../infra/notifications/notifications.module.js';
+import { AdminAcademyController } from './controllers/admin-academy.controller.js';
 import { AdminPermissionsController } from './controllers/admin-permissions.controller.js';
 import { AuthController } from './controllers/auth.controller.js';
 import { InvitesController } from './controllers/invites.controller.js';
 import { PlatformImpersonationController } from './controllers/platform-impersonation.controller.js';
 import { PublicInvitesController } from './controllers/public-invites.controller.js';
+import { AcademySettingsService } from './services/academy-settings.service.js';
 import { AcademyStatusService } from './services/academy-status.service.js';
 import { AuditService } from './services/audit.service.js';
 import { AuthService } from './services/auth.service.js';
@@ -41,6 +43,7 @@ import { TotpService } from './services/totp.service.js';
     AuthController,
     PublicInvitesController,
     InvitesController,
+    AdminAcademyController,
     AdminPermissionsController,
     PlatformImpersonationController,
   ],
@@ -54,6 +57,7 @@ import { TotpService } from './services/totp.service.js';
     InviteService,
     TotpService,
     PermissionsService,
+    AcademySettingsService,
     AcademyStatusService,
     ImpersonationService,
     AuditService,

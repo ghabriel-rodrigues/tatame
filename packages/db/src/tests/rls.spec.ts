@@ -163,6 +163,42 @@ describe('row-level security', () => {
       );
     });
 
+    it('updates exactly its own academy row (spec 011 own-row update policy)', async () => {
+      // The admin settings PUT path: brand + toggle mutate through the app
+      // pool, scoped to the active tenant's own row.
+      const updated = await withTenant(app.db, tenantA, (tx) =>
+        tx
+          .update(academies)
+          .set({ brandDeep: '#14213D', brandVibrant: '#3A5FA8', brandAccent: '#E63946' })
+          .returning({ id: academies.id }),
+      );
+      expect(updated.map((r) => r.id)).toEqual([tenantA]);
+
+      // The other tenant's row is invisible to the update — zero rows touched.
+      const foreign = await withTenant(app.db, tenantA, (tx) =>
+        tx
+          .update(academies)
+          .set({ autoNotificationsEnabled: false })
+          .where(sql`${academies.id} = ${tenantB}::uuid`)
+          .returning({ id: academies.id }),
+      );
+      expect(foreign).toHaveLength(0);
+
+      // No context at all: fail closed.
+      const blind = await app.db
+        .update(academies)
+        .set({ autoNotificationsEnabled: false })
+        .returning({ id: academies.id });
+      expect(blind).toHaveLength(0);
+
+      // Leave the fixture clean for the rest of the suite.
+      await withTenant(app.db, tenantA, (tx) =>
+        tx
+          .update(academies)
+          .set({ brandDeep: null, brandVibrant: null, brandAccent: null }),
+      );
+    });
+
     it('exposes member names of the active tenant only (users membership-read policy)', async () => {
       const rows = await withTenant(app.db, tenantA, (tx) =>
         tx.select({ id: users.id }).from(users),

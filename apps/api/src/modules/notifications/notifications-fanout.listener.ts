@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { and, eq, inArray } from 'drizzle-orm';
 import {
+  academies,
   guardians,
   memberships,
   notifications,
@@ -89,6 +90,12 @@ export interface NotificationRow {
  *
  * The mute flag does NOT gate insertion — rows are always written; mute only
  * suppresses the unread count (the feed doubles as the receipt trail).
+ *
+ * The academy-level `auto_notifications_enabled` flag (spec 011, CFG.5 —
+ * closing the 010 deferral) IS a harder switch: checked once per event inside
+ * the tenant context, and when off the batch insert is skipped wholesale —
+ * zero rows. The asymmetry with the per-user mute is intentional: the user
+ * flag preserves personal history, the academy flag turns the feature off.
  */
 @Injectable()
 export class NotificationsFanoutListener {
@@ -517,9 +524,16 @@ export class NotificationsFanoutListener {
   /**
    * The one batch insert (kept as an instance seam so the e2e listener-
    * failure test can force a throw here and pin the isolation contract).
+   * Gated per event on the academy's `auto_notifications_enabled` flag
+   * (spec 011, CFG.5): off = no rows, uncached so the admin toggle applies
+   * to the very next event.
    */
   async write(tx: DbTransaction, tenantId: string, rows: NotificationRow[]): Promise<void> {
     if (rows.length === 0) return;
+    const [academy] = await tx
+      .select({ autoNotificationsEnabled: academies.autoNotificationsEnabled })
+      .from(academies);
+    if (!academy?.autoNotificationsEnabled) return;
     await tx.insert(notifications).values(rows.map((row) => ({ tenantId, ...row })));
   }
 

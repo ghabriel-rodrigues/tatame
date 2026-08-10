@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
+import { themeFromColumns, type BrandTheme } from '../lib/brand.js';
 import { AuthService, type AuthenticatedPayload, type RequestMeta } from './auth.service.js';
 import { PasswordService } from './password.service.js';
 import { TokenService } from './token.service.js';
@@ -21,7 +22,8 @@ export interface InviteLanding {
     name: string;
     slug: string;
     logoUrl: string | null;
-    theme: unknown;
+    /** Typed white-label brand from the academy columns (spec 011, CFG.3). */
+    theme: BrandTheme | null;
   };
 }
 
@@ -46,7 +48,9 @@ interface LandingRow {
   academy_name: string;
   academy_slug: string;
   academy_logo_url: string | null;
-  academy_theme: unknown;
+  academy_brand_deep: string | null;
+  academy_brand_vibrant: string | null;
+  academy_brand_accent: string | null;
   academy_status: string;
 }
 
@@ -147,7 +151,11 @@ export class InviteService {
         name: row.academy_name,
         slug: row.academy_slug,
         logoUrl: row.academy_logo_url,
-        theme: row.academy_theme,
+        theme: themeFromColumns(
+          row.academy_brand_deep,
+          row.academy_brand_vibrant,
+          row.academy_brand_accent,
+        ),
       },
     };
   }

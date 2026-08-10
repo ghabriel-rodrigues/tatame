@@ -54,7 +54,8 @@ const DELINQUENT_ACADEMY = {
   slug: 'charlie-fc',
   name: 'Charlie Fight Club',
   plan: 'Pro',
-  theme: { deep: '#2D1B00', vibrant: '#C0392B', accent: '#F1C40F' },
+  // No brand triplet: charlie exists for the delinquency fixtures only; the
+  // white-label demo academy is bravo (Oceano preset, spec 011 CFG.2).
 };
 
 /** Adult student carrying the open/paid mensalidade history, per academy. */
@@ -113,7 +114,6 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
         status: 'delinquent',
         contactEmail: `contato@${DELINQUENT_ACADEMY.slug}.tatame.dev`,
         city: 'Sao Paulo',
-        theme: DELINQUENT_ACADEMY.theme,
       })
       .onConflictDoUpdate({
         target: academies.slug,

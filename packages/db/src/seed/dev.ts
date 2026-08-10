@@ -52,7 +52,8 @@ interface DevAcademy {
   status: 'trial' | 'active';
   plan: string;
   subscriptionStatus: 'trialing' | 'active';
-  theme: Record<string, string>;
+  /** White-label brand triplet — NULL = default Tatame brand (spec 011). */
+  brand: { deep: string; vibrant: string; accent: string } | null;
 }
 
 const DEV_ACADEMIES: DevAcademy[] = [
@@ -62,7 +63,9 @@ const DEV_ACADEMIES: DevAcademy[] = [
     status: 'active',
     plan: 'Pro',
     subscriptionStatus: 'active',
-    theme: { deep: '#0B1F3A', vibrant: '#1E66F5', accent: '#F5A623' },
+    // Default brand on purpose (CFG.2): null is indistinguishable from the
+    // Tatame purple, and a future default-brand change must reach it.
+    brand: null,
   },
   {
     slug: 'bravo-bjj',
@@ -70,7 +73,10 @@ const DEV_ACADEMIES: DevAcademy[] = [
     status: 'trial',
     plan: 'Essencial',
     subscriptionStatus: 'trialing',
-    theme: { deep: '#1A1A2E', vibrant: '#E94560', accent: '#0F3460' },
+    // "Oceano" ready-made preset, verbatim from the design-system palette
+    // registry (packages/design-system/src/theme/presets.ts — CFG.2: the
+    // second fixture academy makes cross-tenant white-label demoable).
+    brand: { deep: '#14213D', vibrant: '#3A5FA8', accent: '#E63946' },
   },
 ];
 
@@ -274,11 +280,20 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
           status: a.status,
           contactEmail: `contato@${a.slug}.tatame.dev`,
           city: 'Sao Paulo',
-          theme: a.theme,
+          brandDeep: a.brand?.deep ?? null,
+          brandVibrant: a.brand?.vibrant ?? null,
+          brandAccent: a.brand?.accent ?? null,
         })
         .onConflictDoUpdate({
           target: academies.slug,
-          set: { name: a.name, status: a.status, theme: a.theme, updatedAt: new Date() },
+          set: {
+            name: a.name,
+            status: a.status,
+            brandDeep: a.brand?.deep ?? null,
+            brandVibrant: a.brand?.vibrant ?? null,
+            brandAccent: a.brand?.accent ?? null,
+            updatedAt: new Date(),
+          },
         })
         .returning({ id: academies.id });
       if (!academy) throw new Error(`Failed to upsert academy ${a.slug}`);

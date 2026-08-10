@@ -98,6 +98,22 @@ export class SwitchMembershipResponseDto {
   activeMembershipId!: string;
 }
 
+/**
+ * The typed white-label brand (spec 011, CFG.3 — the shipped cross-platform
+ * `BrandInput` contract). Always a complete triplet of uppercase `#RRGGBB`
+ * hexes; the field carrying it is nullable, the members never are.
+ */
+export class BrandThemeDto {
+  @ApiProperty({ example: '#14213D', pattern: '^#[0-9A-F]{6}$' })
+  deep!: string;
+
+  @ApiProperty({ example: '#3A5FA8', pattern: '^#[0-9A-F]{6}$' })
+  vibrant!: string;
+
+  @ApiProperty({ example: '#E63946', pattern: '^#[0-9A-F]{6}$' })
+  accent!: string;
+}
+
 export class MeUserDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -136,11 +152,10 @@ export class MeAcademyDto {
 
   @ApiProperty({
     nullable: true,
-    type: 'object',
-    additionalProperties: true,
-    description: 'White-label 3-color brand input (deep/vibrant/accent) when configured',
+    type: BrandThemeDto,
+    description: 'White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand',
   })
-  theme!: Record<string, unknown> | null;
+  theme!: BrandThemeDto | null;
 }
 
 export class MeImpersonationDto {
@@ -174,6 +189,31 @@ export class MeResponseDto {
   impersonation!: MeImpersonationDto;
 }
 
+/**
+ * The Configurações identidade payload (spec 011, CFG.4) — everything the
+ * admin can change on the academy record, plus the immutable slug for the
+ * monogram/context header. Brand null = default Tatame brand.
+ */
+export class AdminAcademyResponseDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+
+  @ApiProperty()
+  name!: string;
+
+  @ApiProperty({ description: 'Immutable — invite URLs depend on it' })
+  slug!: string;
+
+  @ApiProperty({ nullable: true, type: String, description: 'Always null in v1 (monogram logo)' })
+  logoUrl!: string | null;
+
+  @ApiProperty({ nullable: true, type: BrandThemeDto })
+  brand!: BrandThemeDto | null;
+
+  @ApiProperty()
+  autoNotificationsEnabled!: boolean;
+}
+
 export class ForgotPasswordResponseDto {
   @ApiProperty({ enum: [true] })
   accepted!: true;
@@ -191,11 +231,10 @@ export class InviteAcademyDto {
 
   @ApiProperty({
     nullable: true,
-    type: 'object',
-    additionalProperties: true,
-    description: 'White-label 3-color brand input (deep/vibrant/accent) when configured',
+    type: BrandThemeDto,
+    description: 'White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand',
   })
-  theme!: Record<string, unknown> | null;
+  theme!: BrandThemeDto | null;
 }
 
 export class InviteLandingResponseDto {
@@ -311,9 +350,28 @@ export class ResolvedPermissionDto {
   allowed!: boolean;
 }
 
+/**
+ * Active-member head counts for the admin-17 group headers ("N pessoas neste
+ * papel" — spec 011, CFG.6). Toggleable roles only; admins have no toggle
+ * group on that screen.
+ */
+export class RoleMemberCountsDto {
+  @ApiProperty()
+  professor!: number;
+
+  @ApiProperty()
+  student!: number;
+
+  @ApiProperty()
+  guardian!: number;
+}
+
 export class PermissionMatrixResponseDto {
   @ApiProperty({ type: [ResolvedPermissionDto] })
   permissions!: ResolvedPermissionDto[];
+
+  @ApiProperty({ type: RoleMemberCountsDto })
+  memberCounts!: RoleMemberCountsDto;
 }
 
 export class TotpSetupResponseDto {

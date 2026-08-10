@@ -259,13 +259,13 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 
 ### Phase 11 — White-label config ([spec 011](docs/specs/011-config.md))
 
-- [ ] CFG.1 DB: academies branding finalized — `theme` jsonb placeholder replaced by `brand_deep`/`brand_vibrant`/`brand_accent` (nullable, `#RRGGBB` CHECK, all-or-none) + `auto_notifications_enabled boolean NOT NULL DEFAULT true`; `logo_url` untouched (NULL in v1); no dark-theme column (decision recorded)
-- [ ] CFG.2 DB: dev seeds — second fixture academy saved on a non-default preset (Oceano) so cross-tenant white-label is demoable on first login
-- [ ] CFG.3 Backend: typed brand in payloads — `/auth/me` `academy.theme` and public invite landing `theme` served as `{deep,vibrant,accent}|null` from the new columns; OpenAPI + shared types regenerated
-- [ ] CFG.4 Backend: `GET/PUT /admin/academy` — name + brand triplet + autoNotificationsEnabled, hex/name validation with case normalization, `brand:null` clears, audited update, admin-only
-- [ ] CFG.5 Backend: notification fan-out gated on `auto_notifications_enabled` (closes the 010 deferral — no rows written when off; per-user mute semantics untouched)
-- [ ] CFG.6 Backend: `GET /admin/permissions` response extended with per-role active-member counts (admin-17 group headers)
-- [ ] CFG.7 Backend: e2e suite green — branding validation/audit/RBAC/cross-tenant, me + invite propagation, fan-out gate via a real emitting flow, permission counts
+- [x] CFG.1 DB: academies branding finalized — `theme` jsonb placeholder replaced by `brand_deep`/`brand_vibrant`/`brand_accent` (nullable, `#RRGGBB` CHECK, all-or-none) + `auto_notifications_enabled boolean NOT NULL DEFAULT true`; `logo_url` untouched (NULL in v1); no dark-theme column (decision recorded)
+- [x] CFG.2 DB: dev seeds — second fixture academy saved on a non-default preset (Oceano) so cross-tenant white-label is demoable on first login
+- [x] CFG.3 Backend: typed brand in payloads — `/auth/me` `academy.theme` and public invite landing `theme` served as `{deep,vibrant,accent}|null` from the new columns; OpenAPI + shared types regenerated
+- [x] CFG.4 Backend: `GET/PUT /admin/academy` — name + brand triplet + autoNotificationsEnabled, hex/name validation with case normalization, `brand:null` clears, audited update, admin-only
+- [x] CFG.5 Backend: notification fan-out gated on `auto_notifications_enabled` (closes the 010 deferral — no rows written when off; per-user mute semantics untouched)
+- [x] CFG.6 Backend: `GET /admin/permissions` response extended with per-role active-member counts (admin-17 group headers)
+- [x] CFG.7 Backend: e2e suite green — branding validation/audit/RBAC/cross-tenant, me + invite propagation, fan-out gate via a real emitting flow, permission counts
 - [ ] CFG.8 Web: session-driven branding — `derivePalette` + `applyBrand` + MUI theme rebuilt from the session academy brand on login/restore/context change; default brand for plataforma and logged-out; invite flow unchanged
 - [ ] CFG.9 Web: `/admin/configuracoes` hub per admin-15 — identidade card (monogram, name edit, 4 preset swatches with live preview, Salvar/Cancelar revert), toggles (Tema escuro, Notificações automáticas wired, geolocalização disabled stub), entry rows to Permissões/Integrações-stub/Planos/Regras de graduação
 - [ ] CFG.10 Web: console dark theme — `data-theme` flip + dark MUI theme from the config toggle, persisted in localStorage

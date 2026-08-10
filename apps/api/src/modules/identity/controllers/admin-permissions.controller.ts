@@ -28,10 +28,16 @@ export class AdminPermissionsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Resolved toggle matrix (defaults overlaid with rows)' })
+  @ApiOperation({
+    summary: 'Resolved toggle matrix (defaults overlaid with rows) + per-role member counts',
+  })
   @ApiOkResponse({ type: PermissionMatrixResponseDto })
   async list() {
-    return { permissions: await this.permissions.resolveAll(this.tenantId()) };
+    const tenantId = this.tenantId();
+    return {
+      permissions: await this.permissions.resolveAll(tenantId),
+      memberCounts: await this.permissions.memberCounts(tenantId),
+    };
   }
 
   @Put()
@@ -40,8 +46,10 @@ export class AdminPermissionsController {
   @ApiOkResponse({ type: PermissionMatrixResponseDto })
   async update(@Body() dto: UpdatePermissionsDto) {
     const ctx = requireAuthContext(this.cls);
+    const tenantId = this.tenantId();
     return {
-      permissions: await this.permissions.update(this.tenantId(), ctx.userId, dto.entries),
+      permissions: await this.permissions.update(tenantId, ctx.userId, dto.entries),
+      memberCounts: await this.permissions.memberCounts(tenantId),
     };
   }
 }

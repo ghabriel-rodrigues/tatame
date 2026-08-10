@@ -33,7 +33,10 @@ describe('invite flows (the only signup) + password reset', () => {
     expect(res.status).toBe(200);
     expect(res.body.kind).toBe('student');
     expect(res.body.academy.name).toBe('Alpha Jiu-Jitsu');
-    expect(res.body.academy.theme).toBeTruthy();
+    // Spec 011 (CFG.2 ripple): alpha is seeded on the default brand — theme
+    // is a typed triplet only once an admin saves one (admin-academy spec
+    // covers the branded landing).
+    expect(res.body.academy.theme).toBeNull();
   });
 
   it('landing fails honestly for unknown, expired and revoked tokens', async () => {

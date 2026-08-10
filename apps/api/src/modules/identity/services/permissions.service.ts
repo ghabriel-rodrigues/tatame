@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { rolePermissions, withTenant, type DbHandle } from '@tatame/db';
+import { and, count, eq, inArray } from 'drizzle-orm';
+import { memberships, rolePermissions, withTenant, type DbHandle } from '@tatame/db';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AcademyRole } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
@@ -68,6 +69,34 @@ export class PermissionsService {
       defaultAllowed: d.defaultAllowed,
       allowed: overrides.get(`${d.role}:${d.key}`) ?? d.defaultAllowed,
     }));
+  }
+
+  /**
+   * Active-member head count per toggleable role (spec 011, CFG.6 — the
+   * admin-17 "N pessoas neste papel" group headers). Membership rows are
+   * unique per (tenant, user, role), so the row count is the people count.
+   */
+  async memberCounts(
+    tenantId: string,
+  ): Promise<{ professor: number; student: number; guardian: number }> {
+    const rows = await withTenant(this.appDb.db, tenantId, (tx) =>
+      tx
+        .select({ role: memberships.role, total: count() })
+        .from(memberships)
+        .where(
+          and(
+            eq(memberships.status, 'active'),
+            inArray(memberships.role, ['professor', 'student', 'guardian']),
+          ),
+        )
+        .groupBy(memberships.role),
+    );
+    const byRole = new Map(rows.map((r) => [r.role, r.total]));
+    return {
+      professor: byRole.get('professor') ?? 0,
+      student: byRole.get('student') ?? 0,
+      guardian: byRole.get('guardian') ?? 0,
+    };
   }
 
   /** Resolved toggle map for one role — the `/auth/me` bootstrap shape. */

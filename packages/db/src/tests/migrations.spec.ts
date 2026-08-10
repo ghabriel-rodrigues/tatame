@@ -664,4 +664,124 @@ describe('migrations', () => {
       rmSync(partialDir, { recursive: true, force: true });
     }
   });
+
+  it('finalizes academy branding: typed hex columns with uppercase + all-or-none CHECKs, theme gone (CFG.1)', async () => {
+    // The jsonb placeholder is gone; the typed trio + the toggle exist.
+    const cols = await client.query(
+      `SELECT column_name, data_type, is_nullable, column_default
+       FROM information_schema.columns
+       WHERE table_name = 'academies'
+         AND column_name IN ('theme', 'brand_deep', 'brand_vibrant', 'brand_accent', 'auto_notifications_enabled')
+       ORDER BY column_name`,
+    );
+    const byName = Object.fromEntries(cols.rows.map((r) => [r.column_name, r]));
+    expect(byName['theme']).toBeUndefined();
+    for (const name of ['brand_deep', 'brand_vibrant', 'brand_accent']) {
+      expect(byName[name], name).toBeDefined();
+      expect(byName[name].is_nullable, name).toBe('YES');
+    }
+    expect(byName['auto_notifications_enabled'].is_nullable).toBe('NO');
+    expect(byName['auto_notifications_enabled'].column_default).toBe('true');
+
+    const insert = (deep: string | null, vibrant: string | null, accent: string | null) =>
+      client.query(
+        `INSERT INTO academies (id, name, slug, contact_email, brand_deep, brand_vibrant, brand_accent)
+         VALUES ($1, 'Brand CK', $2, 'ck@t.dev', $3, $4, $5)`,
+        [randomUUID(), `brand-ck-${randomUUID().slice(0, 8)}`, deep, vibrant, accent],
+      );
+
+    // Invalid hex shapes: shorthand, missing '#', lowercase (DB stores
+    // uppercase only — the API normalizes), garbage.
+    await expect(insert('#123', '#3A5FA8', '#E63946')).rejects.toThrow(/academies_brand_deep_hex_ck/);
+    await expect(insert('#14213D', '3A5FA8', '#E63946')).rejects.toThrow(
+      /academies_brand_vibrant_hex_ck/,
+    );
+    await expect(insert('#14213D', '#3A5FA8', '#e63946')).rejects.toThrow(
+      /academies_brand_accent_hex_ck/,
+    );
+    await expect(insert('#GGGGGG', '#3A5FA8', '#E63946')).rejects.toThrow(
+      /academies_brand_deep_hex_ck/,
+    );
+
+    // Partial triplet: all-or-none.
+    await expect(insert('#14213D', null, null)).rejects.toThrow(/academies_brand_all_or_none_ck/);
+    await expect(insert(null, '#3A5FA8', '#E63946')).rejects.toThrow(
+      /academies_brand_all_or_none_ck/,
+    );
+
+    // Full triplet and full NULL both pass; the toggle defaults on.
+    await expect(insert('#14213D', '#3A5FA8', '#E63946')).resolves.toBeDefined();
+    await expect(insert(null, null, null)).resolves.toBeDefined();
+    const defaulted = await client.query(
+      `SELECT auto_notifications_enabled FROM academies WHERE name = 'Brand CK' LIMIT 1`,
+    );
+    expect(defaulted.rows[0].auto_notifications_enabled).toBe(true);
+
+    // The public landing seam now serves the typed columns, not the jsonb.
+    const result = await client.query(
+      `SELECT pg_get_function_result('auth_invite_landing(text)'::regprocedure) AS out`,
+    );
+    expect(result.rows[0].out).toContain('academy_brand_deep');
+    expect(result.rows[0].out).not.toContain('academy_theme');
+  });
+
+  it('migrates the theme jsonb placeholder over Phase-10 data (valid triplets carried, noise dropped)', async () => {
+    // Rebuild pre-config state: a migrations folder truncated at 0024.
+    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
+    const phase10Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 24);
+    expect(phase10Entries).toHaveLength(25);
+    const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase10-'));
+    mkdirSync(join(partialDir, 'meta'));
+    writeFileSync(
+      join(partialDir, 'meta', '_journal.json'),
+      JSON.stringify({ ...journal, entries: phase10Entries }),
+    );
+    for (const entry of phase10Entries) {
+      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+    }
+
+    const dbName = `t_${randomUUID().replaceAll('-', '')}`;
+    const admin = new pg.Client({ connectionString: testAdminUrl() });
+    await admin.connect();
+    await admin.query(`CREATE DATABASE ${dbName}`);
+    const url = new URL(testAdminUrl());
+    url.pathname = `/${dbName}`;
+
+    const pool = new pg.Pool({ connectionString: url.toString(), max: 1 });
+    try {
+      // Phases 1–10 only, then live data: one academy with a complete valid
+      // (lowercase — the placeholder never validated case) triplet, one with
+      // placeholder noise, one with no theme at all.
+      await migrate(drizzle(pool), { migrationsFolder: partialDir });
+      await pool.query(
+        `INSERT INTO academies (id, name, slug, contact_email, theme) VALUES
+           ($1, 'Branded', 'phase10-branded', 'b@t.dev', '{"deep":"#14213d","vibrant":"#3a5fa8","accent":"#E63946"}'::jsonb),
+           ($2, 'Noise', 'phase10-noise', 'n@t.dev', '{"deep":"not-a-color","primary":"#123456"}'::jsonb),
+           ($3, 'Bare', 'phase10-bare', 'x@t.dev', NULL)`,
+        [randomUUID(), randomUUID(), randomUUID()],
+      );
+
+      // The config migrations (0025+) must apply on top of that state.
+      await migrate(drizzle(pool), { migrationsFolder });
+
+      const rows = await pool.query(
+        `SELECT slug, brand_deep, brand_vibrant, brand_accent FROM academies ORDER BY slug`,
+      );
+      expect(rows.rows).toEqual([
+        { slug: 'phase10-bare', brand_deep: null, brand_vibrant: null, brand_accent: null },
+        {
+          slug: 'phase10-branded',
+          brand_deep: '#14213D',
+          brand_vibrant: '#3A5FA8',
+          brand_accent: '#E63946',
+        },
+        { slug: 'phase10-noise', brand_deep: null, brand_vibrant: null, brand_accent: null },
+      ]);
+    } finally {
+      await pool.end();
+      await admin.query(`DROP DATABASE IF EXISTS ${dbName} WITH (FORCE)`);
+      await admin.end();
+      rmSync(partialDir, { recursive: true, force: true });
+    }
+  });
 });

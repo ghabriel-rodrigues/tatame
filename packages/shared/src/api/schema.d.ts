@@ -259,6 +259,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/academy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy identity settings: name, brand triplet, toggles */
+        get: operations["AdminAcademyController_get_v1"];
+        /**
+         * Update name + brand + auto-notifications (audited)
+         * @description Full document. Brand accepts any valid hex triplet (case-normalized to uppercase); `brand: null` clears back to the default Tatame brand. Audited as `academy.updated` with before/after of the changed fields.
+         */
+        put: operations["AdminAcademyController_update_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/permissions": {
         parameters: {
             query?: never;
@@ -266,7 +287,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Resolved toggle matrix (defaults overlaid with rows) */
+        /** Resolved toggle matrix (defaults overlaid with rows) + per-role member counts */
         get: operations["AdminPermissionsController_list_v1"];
         /** Upsert permission toggles (registry keys only) */
         put: operations["AdminPermissionsController_update_v1"];
@@ -2061,6 +2082,14 @@ export interface components {
             avatarUrl: string | null;
             locale: string;
         };
+        BrandThemeDto: {
+            /** @example #14213D */
+            deep: string;
+            /** @example #3A5FA8 */
+            vibrant: string;
+            /** @example #E63946 */
+            accent: string;
+        };
         MeAcademyDto: {
             /** Format: uuid */
             id: string;
@@ -2068,10 +2097,8 @@ export interface components {
             slug: string;
             status: string;
             logoUrl: string | null;
-            /** @description White-label 3-color brand input (deep/vibrant/accent) when configured */
-            theme: {
-                [key: string]: unknown;
-            } | null;
+            /** @description White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand */
+            theme: components["schemas"]["BrandThemeDto"] | null;
         };
         MeImpersonationDto: {
             isImpersonated: boolean;
@@ -2123,10 +2150,8 @@ export interface components {
             name: string;
             slug: string;
             logoUrl: string | null;
-            /** @description White-label 3-color brand input (deep/vibrant/accent) when configured */
-            theme: {
-                [key: string]: unknown;
-            } | null;
+            /** @description White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand */
+            theme: components["schemas"]["BrandThemeDto"] | null;
         };
         InviteLandingResponseDto: {
             /** @enum {string} */
@@ -2199,6 +2224,33 @@ export interface components {
             /** @enum {string} */
             role: "student" | "professor" | "admin" | "guardian";
         };
+        AdminAcademyResponseDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Immutable — invite URLs depend on it */
+            slug: string;
+            /** @description Always null in v1 (monogram logo) */
+            logoUrl: string | null;
+            brand: components["schemas"]["BrandThemeDto"] | null;
+            autoNotificationsEnabled: boolean;
+        };
+        BrandInputDto: {
+            /** @example #14213D */
+            deep: string;
+            /** @example #3A5FA8 */
+            vibrant: string;
+            /** @example #E63946 */
+            accent: string;
+        };
+        UpdateAcademyDto: {
+            /** @example Alpha Jiu-Jitsu */
+            name: string;
+            /** @description White-label triplet; null clears back to the default Tatame brand */
+            brand: components["schemas"]["BrandInputDto"] | null;
+            /** @description Gates the automatic notification fan-out tenant-wide */
+            autoNotificationsEnabled: boolean;
+        };
         ResolvedPermissionDto: {
             /** @enum {string} */
             role: "student" | "professor" | "admin" | "guardian";
@@ -2209,8 +2261,14 @@ export interface components {
             defaultAllowed: boolean;
             allowed: boolean;
         };
+        RoleMemberCountsDto: {
+            professor: number;
+            student: number;
+            guardian: number;
+        };
         PermissionMatrixResponseDto: {
             permissions: components["schemas"]["ResolvedPermissionDto"][];
+            memberCounts: components["schemas"]["RoleMemberCountsDto"];
         };
         PermissionEntryDto: {
             /** @enum {string} */
@@ -4486,6 +4544,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AttachInviteResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAcademyController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAcademyResponseDto"];
+                };
+            };
+        };
+    };
+    AdminAcademyController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAcademyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAcademyResponseDto"];
                 };
             };
         };

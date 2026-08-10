@@ -6,6 +6,7 @@ import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AuthContext } from '../../../common/auth-context.js';
 import type { AnyRoleName } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
+import { themeFromColumns, type BrandTheme } from '../lib/brand.js';
 import { MembershipService, type MembershipView } from './membership.service.js';
 import { PasswordService } from './password.service.js';
 import { PermissionsService } from './permissions.service.js';
@@ -263,9 +264,9 @@ export class AuthService {
       name: string;
       slug: string;
       status: string;
-      /** Branding placeholder — white-label theme lands with its own slice. */
       logoUrl: string | null;
-      theme: unknown;
+      /** Typed white-label brand from the three columns (spec 011, CFG.3). */
+      theme: BrandTheme | null;
     } | null = null;
     if (ctx.tenantId) {
       const academyRows = await withTenant(this.appDb.db, ctx.tenantId, (tx) =>
@@ -276,12 +277,24 @@ export class AuthService {
             slug: academies.slug,
             status: academies.status,
             logoUrl: academies.logoUrl,
-            theme: academies.theme,
+            brandDeep: academies.brandDeep,
+            brandVibrant: academies.brandVibrant,
+            brandAccent: academies.brandAccent,
           })
           .from(academies)
           .where(eq(academies.id, ctx.tenantId as string)),
       );
-      academy = academyRows[0] ?? null;
+      const row = academyRows[0];
+      academy = row
+        ? {
+            id: row.id,
+            name: row.name,
+            slug: row.slug,
+            status: row.status,
+            logoUrl: row.logoUrl,
+            theme: themeFromColumns(row.brandDeep, row.brandVibrant, row.brandAccent),
+          }
+        : null;
     }
 
     const permissions =

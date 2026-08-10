@@ -111,6 +111,34 @@ describe('seeds', () => {
     ]);
   });
 
+  it('brands only bravo (Oceano preset) — alpha and charlie stay on the default NULL triplet (CFG.2)', async () => {
+    const rows = await withPlatform(platform.db, (tx) =>
+      tx
+        .select({
+          slug: academies.slug,
+          deep: academies.brandDeep,
+          vibrant: academies.brandVibrant,
+          accent: academies.brandAccent,
+          autoNotifications: academies.autoNotificationsEnabled,
+        })
+        .from(academies)
+        .orderBy(asc(academies.slug)),
+    );
+    expect(rows).toEqual([
+      { slug: 'alpha-jj', deep: null, vibrant: null, accent: null, autoNotifications: true },
+      // The "Oceano" ready-made palette, verbatim from the design-system
+      // preset registry — cross-tenant white-label demoable on first login.
+      {
+        slug: 'bravo-bjj',
+        deep: '#14213D',
+        vibrant: '#3A5FA8',
+        accent: '#E63946',
+        autoNotifications: true,
+      },
+      { slug: 'charlie-fc', deep: null, vibrant: null, accent: null, autoNotifications: true },
+    ]);
+  });
+
   it('seeds users covering all six personas with memberships written under RLS', async () => {
     const [alpha] = await withPlatform(platform.db, (tx) =>
       tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, 'alpha-jj')),

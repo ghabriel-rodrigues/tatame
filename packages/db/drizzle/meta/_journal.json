@@ -176,6 +176,20 @@
       "when": 1786392082531,
       "tag": "0024_notifications_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1786404000578,
+      "tag": "0025_config_branding_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1786404030494,
+      "tag": "0026_config_hardening",
+      "breakpoints": true
     }
   ]
 }
