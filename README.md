@@ -257,4 +257,24 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] NOT.12 iOS: aluno notifications (NOT.8 scope)
 - [x] NOT.13 iOS: professor + responsável notifications (NOT.9 scope)
 
-_Next phases (white-label config, platform console, reports, release) get their specs as each phase ships._
+### Phase 11 — White-label config ([spec 011](docs/specs/011-config.md))
+
+- [ ] CFG.1 DB: academies branding finalized — `theme` jsonb placeholder replaced by `brand_deep`/`brand_vibrant`/`brand_accent` (nullable, `#RRGGBB` CHECK, all-or-none) + `auto_notifications_enabled boolean NOT NULL DEFAULT true`; `logo_url` untouched (NULL in v1); no dark-theme column (decision recorded)
+- [ ] CFG.2 DB: dev seeds — second fixture academy saved on a non-default preset (Oceano) so cross-tenant white-label is demoable on first login
+- [ ] CFG.3 Backend: typed brand in payloads — `/auth/me` `academy.theme` and public invite landing `theme` served as `{deep,vibrant,accent}|null` from the new columns; OpenAPI + shared types regenerated
+- [ ] CFG.4 Backend: `GET/PUT /admin/academy` — name + brand triplet + autoNotificationsEnabled, hex/name validation with case normalization, `brand:null` clears, audited update, admin-only
+- [ ] CFG.5 Backend: notification fan-out gated on `auto_notifications_enabled` (closes the 010 deferral — no rows written when off; per-user mute semantics untouched)
+- [ ] CFG.6 Backend: `GET /admin/permissions` response extended with per-role active-member counts (admin-17 group headers)
+- [ ] CFG.7 Backend: e2e suite green — branding validation/audit/RBAC/cross-tenant, me + invite propagation, fan-out gate via a real emitting flow, permission counts
+- [ ] CFG.8 Web: session-driven branding — `derivePalette` + `applyBrand` + MUI theme rebuilt from the session academy brand on login/restore/context change; default brand for plataforma and logged-out; invite flow unchanged
+- [ ] CFG.9 Web: `/admin/configuracoes` hub per admin-15 — identidade card (monogram, name edit, 4 preset swatches with live preview, Salvar/Cancelar revert), toggles (Tema escuro, Notificações automáticas wired, geolocalização disabled stub), entry rows to Permissões/Integrações-stub/Planos/Regras de graduação
+- [ ] CFG.10 Web: console dark theme — `data-theme` flip + dark MUI theme from the config toggle, persisted in localStorage
+- [ ] CFG.11 Web: `/admin/permissoes` per admin-17 — role groups with member-count chips, registry-driven toggle rows on the existing GET/PUT with optimistic save + rollback
+- [ ] CFG.12 RN: brand wiring — root ThemeProvider fed from the session academy brand with AsyncStorage last-brand cache (branded cold start, Tatame fallback); all three shells inherit
+- [ ] CFG.13 RN: aluno perfil Tema escuro switch real — persisted mode, full dark shell per aluno-21, status bar follows mode
+- [ ] CFG.14 Android: brand wiring — Compose color scheme built from the DerivePalette port on the session brand, DataStore last-brand cache
+- [ ] CFG.15 Android: aluno Tema escuro switch — explicit DataStore-persisted preference replaces the system-dark default (system follow = recorded debt)
+- [ ] CFG.16 iOS: brand wiring — TatameTheme environment constructed from the session brand with UserDefaults last-brand cache
+- [ ] CFG.17 iOS: aluno Tema escuro switch — persisted mode through the theme environment, full dark shell
+
+_Next phases (platform console, reports, release) get their specs as each phase ships._
