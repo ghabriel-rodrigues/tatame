@@ -29,6 +29,7 @@ import { canRegisterDependents } from '../../../features/enrollment/permissions'
 import { openRegisterDependentSheet } from '../../../features/enrollment/register-sheet-store';
 import type { DependentDetail } from '../../../features/enrollment/types';
 import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollment/ui';
+import { NotificationBell } from '../../../features/notifications/ui';
 import { useSession } from '../../../session/session-store';
 
 function DependentCard({ dependent }: { dependent: DependentDetail }) {
@@ -140,6 +141,8 @@ export default function ResponsavelInicioScreen() {
                 style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}
               >
                 <Chip label="Responsável" tone="brand" />
+                {/* NOT.9: bell with the pink unread dot, left of the avatar. */}
+                <NotificationBell size={34} />
                 <InitialsAvatar name={session.user.fullName} size={34} />
               </View>
             }

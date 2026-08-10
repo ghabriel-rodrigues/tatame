@@ -28,6 +28,7 @@ import { longDatePt } from '../../../features/enrollment/format';
 import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollment/ui';
 import { confirmadosLine, eventDateLine } from '../../../features/events/format';
 import { EventDateSquare } from '../../../features/events/ui';
+import { NotificationBell } from '../../../features/notifications/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
 
 export default function ProfessorInicioScreen() {
@@ -70,6 +71,8 @@ export default function ProfessorInicioScreen() {
                 >
                   <CalendarDays size={18} color={theme.color.fg['2']} />
                 </Pressable>
+                {/* NOT.9: bell with the pink unread dot, left of the avatar. */}
+                <NotificationBell />
                 <InitialsAvatar name={session.user.fullName} size={38} />
               </View>
             }

@@ -34,6 +34,7 @@ import { dueLabel, formatBRL, longDayMonthPt } from '../../../features/billing/f
 import { longDatePt, scheduleTimeRange } from '../../../features/enrollment/format';
 import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../features/enrollment/ui';
 import { UPCOMING_EVENTS_TITLE } from '../../../features/events/copy';
+import { NotificationBell } from '../../../features/notifications/ui';
 import { EventCard } from '../../../features/events/ui';
 import { STORE_ROW_TITLE } from '../../../features/store/copy';
 import { StoreStripCard } from '../../../features/store/ui';
@@ -64,7 +65,15 @@ export default function AlunoInicioScreen() {
           <ScreenHeader
             eyebrow={longDatePt()}
             title={`Olá, ${firstName}`}
-            trailing={<InitialsAvatar name={session.user.fullName} size={38} />}
+            trailing={
+              // NOT.8: bell with the pink unread dot, left of the avatar.
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}
+              >
+                <NotificationBell />
+                <InitialsAvatar name={session.user.fullName} size={38} />
+              </View>
+            }
           />
 
           {readOnly ? (

@@ -14,6 +14,7 @@ import { BeltChip, Card, ListRow, Text, useTheme } from '@tatame/design-system/n
 import { api } from '../../../api/query';
 import { ProfileScreen } from '../../../components/ProfileScreen';
 import { beltChipLabel } from '../../../features/graduation/format';
+import { NotificationsSettingsRow } from '../../../features/notifications/NotificationsSettingsRow';
 import { STORE_ROW_TITLE, STORE_SUBTITLE } from '../../../features/store/copy';
 
 export default function ProfessorPerfilScreen() {
@@ -43,6 +44,8 @@ export default function ProfessorPerfilScreen() {
           testID="perfil-loja-row"
         />
       </Card>
+      {/* NOT.9: the per-membership mute switch (spec 010 story 9). */}
+      <NotificationsSettingsRow />
       {profile ? (
         <Card testID="valid-graduations-card">
           <View style={{ gap: theme.space['3'] }}>

@@ -19,6 +19,7 @@ import {
 import { api } from '../../../api/query';
 import { ProfileScreen } from '../../../components/ProfileScreen';
 import { beltChipLabel } from '../../../features/graduation/format';
+import { NotificationsSettingsRow } from '../../../features/notifications/NotificationsSettingsRow';
 import { STORE_ROW_TITLE, STORE_SUBTITLE } from '../../../features/store/copy';
 
 export default function AlunoPerfilScreen() {
@@ -61,6 +62,8 @@ export default function AlunoPerfilScreen() {
           testID="perfil-loja-row"
         />
       </Card>
+      {/* NOT.8: the per-membership mute switch (spec 010 story 9). */}
+      <NotificationsSettingsRow />
     </ProfileScreen>
   );
 }

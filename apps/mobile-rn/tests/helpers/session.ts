@@ -102,9 +102,26 @@ export type FetchHandler = (
 ) => Response | Promise<Response> | null | undefined;
 
 /**
+ * NOT.8/9 baseline: the persona home headers (bell unread count) and perfis
+ * (settings switch) now always query the notifications endpoints. Tests not
+ * about notifications get quiet defaults — no dot, switch on — unless their
+ * handler answers first.
+ */
+function notificationDefaults(method: string, path: string): Response | null {
+  if (method === 'GET' && path === '/v1/notifications/unread-count') {
+    return json(200, { count: 0 });
+  }
+  if (method === 'GET' && path === '/v1/notifications/settings') {
+    return json(200, { enabled: true });
+  }
+  return null;
+}
+
+/**
  * Installs a global fetch mock understanding both call shapes the session
  * layer uses: `fetch(Request)` (shared client) and `fetch(url, init)`
- * (raw body refresh). Unmatched requests throw — tests declare every call.
+ * (raw body refresh). Unmatched requests throw — tests declare every call
+ * (the notifications baseline above being the one standing default).
  */
 export function installFetchMock(handler: FetchHandler): jest.Mock {
   const impl = jest.fn(async (input: Request | string, init?: RequestInit) => {
@@ -130,7 +147,9 @@ export function installFetchMock(handler: FetchHandler): jest.Mock {
     }
     const parsed = new URL(url, 'http://localhost:3000');
     const path = parsed.pathname;
-    const response = await handler({ method, path, search: parsed.search, body, authorization });
+    const response =
+      (await handler({ method, path, search: parsed.search, body, authorization })) ??
+      notificationDefaults(method, path);
     if (!response) throw new Error(`Unhandled request: ${method} ${path}`);
     return response;
   });
