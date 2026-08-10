@@ -220,7 +220,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] EVT.11 RN: responsável Eventos tab real per responsavel-06 (per-dependent chips with check, Pix per dependent) + professor dashboard eventos-futuros tile and list + professor calendar event dots
 - [x] EVT.12 Android: aluno events (same scope as EVT.10)
 - [x] EVT.13 Android: responsável + professor events (same scope as EVT.11)
-- [ ] EVT.14 iOS: aluno events (same scope as EVT.10)
-- [ ] EVT.15 iOS: responsável + professor events (same scope as EVT.11)
+- [x] EVT.14 iOS: aluno events (same scope as EVT.10)
+- [x] EVT.15 iOS: responsável + professor events (same scope as EVT.11)
 
 _Next phases (store, notifications, white-label config, platform console, reports, release) get their specs as each phase ships._

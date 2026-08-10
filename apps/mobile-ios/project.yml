@@ -43,6 +43,8 @@ targets:
         product: AttendanceFeature
       - package: Features
         product: AgendaFeature
+      - package: Features
+        product: EventsFeature
       - package: TatameAPI
         product: TatameAPI
       - package: TatameCore

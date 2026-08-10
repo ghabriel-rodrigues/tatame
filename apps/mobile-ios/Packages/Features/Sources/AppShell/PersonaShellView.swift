@@ -1,17 +1,19 @@
-// Persona shells (AUTH.26 scaffold + spec 003/004/006/007 tabs): aluno gets
-// the real Início (check-in + stat tiles, ATT.22), the Agenda tab (AGD.9 —
-// closing the recorded missing-tab debt; Início · Agenda · Carteira · Perfil
-// order per design) and the Carteira tab (BIL.22), professor the dashboard
-// Início (ATT.24, with the month-calendar header entry, AGD.10) and the
-// Turmas tab, responsável the dependents panel (ENR.24-26) and the
-// Pagamentos tab (BIL.24). The glass pill tab bar remains recorded parity
-// debt.
+// Persona shells (AUTH.26 scaffold + spec 003/004/006/007/008 tabs): aluno
+// gets the real Início (check-in + stat tiles, ATT.22; Próximos eventos →
+// event detail, EVT.14), the Agenda tab (AGD.9; Eventos do mês + calendar
+// events → detail, EVT.14) and the Carteira tab (BIL.22), professor the
+// dashboard Início (ATT.24, with the month-calendar header entry, AGD.10,
+// and the eventos-futuros tile/list, EVT.15) and the Turmas tab, responsável
+// the dependents panel (ENR.24-26), the Pagamentos tab (BIL.24) and the
+// Eventos tab (EVT.15 — the Phase-1 placeholder retires). The glass pill
+// tab bar remains recorded parity debt.
 
 import AgendaFeature
 import AttendanceFeature
 import BillingFeature
 import DesignSystem
 import EnrollmentFeature
+import EventsFeature
 import GraduationFeature
 import SwiftUI
 import TatameCore
@@ -45,6 +47,7 @@ struct PersonaShellView: View {
         case turmas
         case carteira
         case pagamentos
+        case eventos
         case perfil
     }
 
@@ -55,11 +58,17 @@ struct PersonaShellView: View {
     @State private var selection: Tab = .inicio
     @State private var showGraduation = false
     @State private var showProfessorCalendar = false
+    /// Event detail pushed from the home "Próximos eventos" cards (EVT.14).
+    @State private var homeEventTarget: EventDetailTarget?
+    /// Event detail pushed from the Agenda "Eventos do mês" cards and the
+    /// month calendar's Evento entries (EVT.14).
+    @State private var agendaEventTarget: EventDetailTarget?
     @Environment(SessionStore.self) private var session
     @Environment(\.enrollmentRepository) private var enrollmentRepository
     @Environment(\.attendanceRepository) private var attendanceRepository
     @Environment(\.billingRepository) private var billingRepository
     @Environment(\.agendaRepository) private var agendaRepository
+    @Environment(\.eventsRepository) private var eventsRepository
 
     var body: some View {
         TabView(selection: $selection) {
@@ -76,24 +85,35 @@ struct PersonaShellView: View {
                             onOpenCarteira: { selection = .carteira },
                             // Hero "Ver agenda" CTA switches to the Agenda
                             // tab (spec 007 — the recorded debt closes).
-                            onOpenAgenda: { selection = .agenda }
+                            onOpenAgenda: { selection = .agenda },
+                            // "Próximos eventos" card → event detail (EVT.14).
+                            onOpenEvent: { homeEventTarget = EventDetailTarget(id: $0.id) }
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showGraduation) {
                             AlunoGraduationView()
+                        }
+                        .navigationDestination(item: $homeEventTarget) { target in
+                            AlunoEventDetailView(eventId: target.id, repository: eventsRepository)
                         }
                     }
                 }
                 .tag(Tab.inicio)
                 featureTab(title: "Agenda", icon: "calendar") {
                     // Real Agenda tab (AGD.9); the "Mês" header button pushes
-                    // the month calendar inside this stack (AGD.10).
+                    // the month calendar inside this stack (AGD.10); Eventos
+                    // do mês cards and calendar Evento entries push the
+                    // event detail (EVT.14).
                     NavigationStack {
                         AlunoAgendaView(
                             repository: agendaRepository,
-                            academyName: context.activeMembership.academyName
+                            academyName: context.activeMembership.academyName,
+                            onOpenEvent: { agendaEventTarget = EventDetailTarget(id: $0.id) }
                         )
                         .navigationBarHiddenOnIOS()
+                        .navigationDestination(item: $agendaEventTarget) { target in
+                            AlunoEventDetailView(eventId: target.id, repository: eventsRepository)
+                        }
                     }
                 }
                 .tag(Tab.agenda)
@@ -143,6 +163,13 @@ struct PersonaShellView: View {
                     ResponsavelPagamentosView(repository: billingRepository)
                 }
                 .tag(Tab.pagamentos)
+                featureTab(title: "Eventos", icon: "calendar") {
+                    // Real Eventos tab (EVT.15 — the Phase-1 placeholder
+                    // retires): per-dependent confirmation chips per the
+                    // charter, Pix per dependent.
+                    ResponsavelEventosView(repository: eventsRepository)
+                }
+                .tag(Tab.eventos)
             }
             perfilTab
                 .tag(Tab.perfil)

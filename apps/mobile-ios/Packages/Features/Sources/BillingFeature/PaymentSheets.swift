@@ -10,23 +10,44 @@ import TatameCore
 
 // MARK: - Pix (aluno-13 / responsavel-05)
 
-struct PixSheet: View {
+public struct PixSheet: View {
     @State var model: PaymentFlowModel
     /// "Mensalidade de agosto · Horizonte BJJ" (aluno) / "… · Pedro
     /// Silveira" (responsável, story 18) context tail.
     let subtitleContext: String?
+    /// Full subtitle override — the events slice passes "Inscrição ·
+    /// <evento>" (guardian variant adds the child, spec 008 story 13).
+    let subtitleOverride: String?
+    /// Success pop title; defaults to the mensalidade copy.
+    let successTitle: String
+
     @Environment(\.dismiss) private var dismiss
 
     init(model: PaymentFlowModel, subtitleContext: String? = nil) {
         _model = State(initialValue: model)
         self.subtitleContext = subtitleContext
+        subtitleOverride = nil
+        successTitle = "Mensalidade paga"
     }
 
-    var body: some View {
+    /// The events entry point: the same sheet, simulate gating and success
+    /// pop, addressed "Inscrição · <evento>" (spec 008 stories 13-14).
+    public init(model: PaymentFlowModel, subtitle: String, successTitle: String) {
+        _model = State(initialValue: model)
+        subtitleContext = nil
+        subtitleOverride = subtitle
+        self.successTitle = successTitle
+    }
+
+    public var body: some View {
         SheetScaffold {
             switch model.phase {
             case .success(let payment, _):
-                PaymentSuccessView(payment: payment, mandateCreated: false) { dismiss() }
+                PaymentSuccessView(
+                    payment: payment,
+                    mandateCreated: false,
+                    title: successTitle
+                ) { dismiss() }
             default:
                 header
                 content
@@ -43,10 +64,12 @@ struct PixSheet: View {
             Text(subtitle)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
                 .foregroundStyle(LumiraTokens.Colors.fg3)
+                .accessibilityIdentifier("pix-sheet-subtitle")
         }
     }
 
     private var subtitle: String {
+        if let subtitleOverride { return subtitleOverride }
         let mensalidade = BillingFormatters.mensalidadeDePTBR(periodStart: model.charge.periodStart)
         guard let subtitleContext else { return mensalidade }
         return "\(mensalidade) · \(subtitleContext)"
@@ -350,18 +373,20 @@ struct PaymentFailure: View {
     }
 }
 
-/// Settled success pop (story 15): green check, "Mensalidade paga", the
-/// mandate line when the toggle created one, Fechar.
+/// Settled success pop (story 15): green check, "Mensalidade paga" (or the
+/// caller's title — "Inscrição paga" on event charges), the mandate line
+/// when the toggle created one, Fechar.
 struct PaymentSuccessView: View {
     let payment: Payment
     let mandateCreated: Bool
+    var title = "Mensalidade paga"
     let close: () -> Void
 
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s3) {
             BillingSuccessPop()
                 .padding(.top, LumiraTokens.Space.s8)
-            Text("Mensalidade paga")
+            Text(title)
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
                 .foregroundStyle(LumiraTokens.Colors.fg1)
                 .accessibilityIdentifier("payment-success")

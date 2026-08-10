@@ -13,6 +13,8 @@ struct LiveAttendanceRepositoryTests {
     private static let studentId = UUID(uuidString: "0198a7b0-0000-7000-8000-000000000013")!
     private static let attendanceId = UUID(uuidString: "0198a7b0-0000-7000-8000-000000000014")!
     private static let liveCodeId = UUID(uuidString: "0198a7b0-0000-7000-8000-000000000015")!
+    private static let eventId = UUID(uuidString: "0198a7b0-0000-7000-8000-000000000016")!
+    private static let registrationId = UUID(uuidString: "0198a7b0-0000-7000-8000-000000000017")!
 
     private func makeRepository(_ responses: [(HTTPResponse, Data?)]) -> (LiveAttendanceRepository, TransportMock) {
         let transport = TransportMock(responses: responses)
@@ -70,7 +72,15 @@ struct LiveAttendanceRepositoryTests {
          "todayClass": {"classId": "\(Self.classId.uuidString.lowercased())", "className": "Open mat",
                         "slot": {"weekday": 6, "startTime": "10:00", "durationMinutes": 120},
                         "checkedIn": false},
-         "stats": \(statsJSON)}
+         "stats": \(statsJSON),
+         "upcomingEvents": [
+            {"id": "\(Self.eventId.uuidString.lowercased())", "name": "Open mat de verão",
+             "bannerPreset": "event-purple-pink", "location": "Tatame principal",
+             "startsAt": "2026-08-15T13:00:00.000Z", "date": "2026-08-15", "time": "10:00",
+             "priceCents": null,
+             "registration": {"id": "\(Self.registrationId.uuidString.lowercased())",
+                              "status": "confirmed", "chargeId": null}}
+         ]}
         """
         let (repository, transport) = makeRepository([ok(json)])
 
@@ -85,6 +95,11 @@ struct LiveAttendanceRepositoryTests {
         #expect(home.stats.monthPresencePct == 86)
         #expect(home.stats.streak == 7)
         #expect(home.stats.totalLessons == 26)
+        // spec 008 — "Próximos eventos" with own registration state.
+        #expect(home.upcomingEvents.count == 1)
+        #expect(home.upcomingEvents[0].id == Self.eventId)
+        #expect(home.upcomingEvents[0].priceCents == nil)
+        #expect(home.upcomingEvents[0].isConfirmed)
     }
 
     @Test("alunoHome maps a day without class and the gamification-off streak")
@@ -93,7 +108,8 @@ struct LiveAttendanceRepositoryTests {
         {"student": {"id": "\(Self.studentId.uuidString.lowercased())", "fullName": "Lucas Almeida"},
          "todayClass": null,
          "stats": {"monthPresencePct": 50, "monthAttendedSessions": 1, "monthTotalSessions": 2,
-                   "streak": null, "totalLessons": 3}}
+                   "streak": null, "totalLessons": 3},
+         "upcomingEvents": []}
         """
         let (repository, _) = makeRepository([ok(json)])
 
@@ -101,6 +117,7 @@ struct LiveAttendanceRepositoryTests {
 
         #expect(home.todayClass == nil)
         #expect(home.stats.streak == nil)
+        #expect(home.upcomingEvents.isEmpty)
     }
 
     @Test("checkIn posts the method payload and maps the fresh stats")
@@ -376,11 +393,20 @@ struct LiveAttendanceRepositoryTests {
             {"classId": "\(Self.classId.uuidString.lowercased())", "className": "Open mat",
              "slot": {"weekday": 6, "startTime": "10:00", "durationMinutes": 120},
              "checkedInCount": 16, "enrolledCount": 34}
+         ],
+         "upcomingEventsCount": 2,
+         "upcomingEvents": [
+            {"id": "\(Self.eventId.uuidString.lowercased())", "name": "Festival Kids",
+             "bannerPreset": "event-purple-pink", "location": "Ginásio Municipal",
+             "startsAt": "2026-09-15T12:30:00.000Z", "date": "2026-09-15", "time": "09:30",
+             "priceCents": 6000, "confirmedCount": 12}
          ]}
         """
         let (repository, transport) = makeRepository([
             ok(json),
-            ok("{\"alunosHoje\": 0, \"presencaMediaPct\": 0, \"nextClass\": null, \"todayClasses\": []}"),
+            ok(
+                "{\"alunosHoje\": 0, \"presencaMediaPct\": 0, \"nextClass\": null, \"todayClasses\": [], \"upcomingEventsCount\": 0, \"upcomingEvents\": []}"
+            ),
         ])
 
         let dashboard = try await repository.dashboard()
@@ -391,9 +417,16 @@ struct LiveAttendanceRepositoryTests {
         #expect(dashboard.nextClass?.checkedInCount == 16)
         #expect(dashboard.todayClasses.count == 1)
         #expect(dashboard.todayClasses[0].enrolledCount == 34)
+        // spec 008 story 22 — the "eventos futuros" tile + list turn real.
+        #expect(dashboard.upcomingEventsCount == 2)
+        #expect(dashboard.upcomingEvents.count == 1)
+        #expect(dashboard.upcomingEvents[0].name == "Festival Kids")
+        #expect(dashboard.upcomingEvents[0].priceCents == 6000)
+        #expect(dashboard.upcomingEvents[0].confirmedCount == 12)
 
         let empty = try await repository.dashboard()
         #expect(empty.nextClass == nil)
+        #expect(empty.upcomingEvents.isEmpty)
     }
 
     @Test("students sends the not-enrolled filter and maps picker rows")

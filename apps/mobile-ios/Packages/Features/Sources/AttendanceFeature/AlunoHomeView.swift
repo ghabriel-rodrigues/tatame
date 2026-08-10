@@ -14,17 +14,20 @@ public struct AlunoHomeView: View {
     private let onOpenGraduation: (() -> Void)?
     private let onOpenCarteira: (() -> Void)?
     private let onOpenAgenda: (() -> Void)?
+    private let onOpenEvent: ((EventListItem) -> Void)?
 
     public init(
         repository: any AttendanceRepository,
         onOpenGraduation: (() -> Void)? = nil,
         onOpenCarteira: (() -> Void)? = nil,
-        onOpenAgenda: (() -> Void)? = nil
+        onOpenAgenda: (() -> Void)? = nil,
+        onOpenEvent: ((EventListItem) -> Void)? = nil
     ) {
         _model = State(initialValue: AlunoHomeModel(repository: repository))
         self.onOpenGraduation = onOpenGraduation
         self.onOpenCarteira = onOpenCarteira
         self.onOpenAgenda = onOpenAgenda
+        self.onOpenEvent = onOpenEvent
     }
 
     public var body: some View {
@@ -32,7 +35,8 @@ public struct AlunoHomeView: View {
             model: model,
             onOpenGraduation: onOpenGraduation,
             onOpenCarteira: onOpenCarteira,
-            onOpenAgenda: onOpenAgenda
+            onOpenAgenda: onOpenAgenda,
+            onOpenEvent: onOpenEvent
         )
     }
 }
@@ -42,6 +46,7 @@ struct AlunoHomeContent: View {
     var onOpenGraduation: (() -> Void)?
     var onOpenCarteira: (() -> Void)?
     var onOpenAgenda: (() -> Void)?
+    var onOpenEvent: ((EventListItem) -> Void)?
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
 
@@ -61,6 +66,7 @@ struct AlunoHomeContent: View {
                     heroCard(home)
                     statTiles(home)
                     graduationCard(home)
+                    upcomingEventsSection(home)
                     rankingPlaceholder
                     mensalidadeAlert(home)
                 }
@@ -331,6 +337,25 @@ struct AlunoHomeContent: View {
             .background(LumiraTokens.Colors.warning100)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .accessibilityIdentifier("mensalidade-alert")
+        }
+    }
+
+    // MARK: Próximos eventos (spec 008, EVT.14 — the next-2 window with
+    // date-square cards, valor chip or Confirmado state; hidden when empty)
+
+    @ViewBuilder
+    private func upcomingEventsSection(_ home: AlunoHome) -> some View {
+        if !home.upcomingEvents.isEmpty {
+            VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
+                Text("Próximos eventos")
+                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                ForEach(home.upcomingEvents) { item in
+                    EventRowCard(item: item, onTap: onOpenEvent.map { open in { open(item) } })
+                        .accessibilityIdentifier("home-event-\(item.id.uuidString.lowercased())")
+                }
+            }
+            .accessibilityIdentifier("proximos-eventos")
         }
     }
 

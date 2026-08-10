@@ -1,8 +1,8 @@
 // Professor dashboard (handoff professor-02): greeting header, live tiles
-// (alunos hoje, presença média — eventos futuros stays a placeholder), the
-// next-class hero with its check-in count and "Iniciar chamada", and the
-// explicit "Próximos da graduação" placeholder. PT-BR copy; Lumira tokens
-// only.
+// (alunos hoje, presença média, eventos futuros — real since spec 008), the
+// next-class hero with its check-in count and "Iniciar chamada", the
+// "Eventos futuros" read-only list (spec 008 story 22), and the explicit
+// "Próximos da graduação" placeholder. PT-BR copy; Lumira tokens only.
 
 import DesignSystem
 import SwiftUI
@@ -65,6 +65,7 @@ struct ProfessorDashboardContent: View {
                 case .loaded(let dashboard):
                     statTiles(dashboard)
                     heroCard(dashboard)
+                    upcomingEventsSection(dashboard)
                     graduationPlaceholder
                 }
             }
@@ -149,8 +150,27 @@ struct ProfessorDashboardContent: View {
                 value: AttendanceFormatters.percentLabel(dashboard.presencaMediaPct),
                 label: "presença média"
             )
-            // Events belong to the events slice — explicit placeholder.
-            AlunoStatTile(value: "—", label: "eventos futuros", footnote: "Em breve")
+            // Real since spec 008 (story 22).
+            AlunoStatTile(value: "\(dashboard.upcomingEventsCount)", label: "eventos futuros")
+        }
+    }
+
+    // MARK: Eventos futuros (spec 008 story 22 — read-only academy program:
+    // date square, name, "N confirmados · gratuito/R$ X"; hidden when empty)
+
+    @ViewBuilder
+    private func upcomingEventsSection(_ dashboard: ProfessorDashboard) -> some View {
+        if !dashboard.upcomingEvents.isEmpty {
+            VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
+                Text("Eventos futuros")
+                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                ForEach(dashboard.upcomingEvents) { event in
+                    EventRowCard(event: event)
+                        .accessibilityIdentifier("dashboard-event-\(event.id.uuidString.lowercased())")
+                }
+            }
+            .accessibilityIdentifier("eventos-futuros")
         }
     }
 

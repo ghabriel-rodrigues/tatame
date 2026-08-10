@@ -11,18 +11,25 @@ import TatameCore
 
 public struct MonthCalendarView: View {
     @State private var model: MonthCalendarModel
+    private let onOpenEvent: ((EventListItem) -> Void)?
 
-    public init(persona: CalendarPersona, repository: any AgendaRepository) {
+    public init(
+        persona: CalendarPersona,
+        repository: any AgendaRepository,
+        onOpenEvent: ((EventListItem) -> Void)? = nil
+    ) {
         _model = State(initialValue: MonthCalendarModel(persona: persona, repository: repository))
+        self.onOpenEvent = onOpenEvent
     }
 
     public var body: some View {
-        MonthCalendarContent(model: model)
+        MonthCalendarContent(model: model, onOpenEvent: onOpenEvent)
     }
 }
 
 struct MonthCalendarContent: View {
     @Bindable var model: MonthCalendarModel
+    var onOpenEvent: ((EventListItem) -> Void)?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -208,6 +215,11 @@ struct MonthCalendarContent: View {
                 ForEach(model.selectedDayItems) { item in
                     dayItemRow(item)
                 }
+                // Evento entries merge into the selected-day agenda
+                // (spec 008 story 16).
+                ForEach(model.selectedDayEvents) { event in
+                    dayEventRow(event)
+                }
             }
         }
         .padding(.top, LumiraTokens.Space.s2)
@@ -228,7 +240,6 @@ struct MonthCalendarContent: View {
                     .foregroundStyle(LumiraTokens.Colors.fg3)
             }
             Spacer()
-            // Aula/Evento tag (events join in their phase).
             Text("Aula")
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
                 .foregroundStyle(LumiraTokens.Colors.purple800)
@@ -245,6 +256,55 @@ struct MonthCalendarContent: View {
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
                 .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
         )
+    }
+
+    /// One Evento entry (spec 008 story 16): time, name, location line and
+    /// the pink Evento tag; aluno rows open the detail when wired.
+    private func dayEventRow(_ event: EventListItem) -> some View {
+        let row = HStack(spacing: LumiraTokens.Space.s3) {
+            Text(event.time ?? "—")
+                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                .foregroundStyle(LumiraTokens.Colors.inkPink)
+                .frame(width: 44)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(event.name)
+                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                Text(event.location ?? EventFormatters.valorChipPTBR(priceCents: event.priceCents))
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg3)
+            }
+            Spacer()
+            Text("Evento")
+                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .foregroundStyle(LumiraTokens.Colors.pink700)
+                .padding(.horizontal, LumiraTokens.Space.s2)
+                .padding(.vertical, LumiraTokens.Space.s1)
+                .background(LumiraTokens.Colors.pink100)
+                .clipShape(Capsule())
+        }
+        .padding(LumiraTokens.Space.s4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(LumiraTokens.Colors.bgSurface)
+        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+        )
+        .accessibilityIdentifier("calendar-event-\(event.id.uuidString.lowercased())")
+
+        return Group {
+            if let onOpenEvent {
+                Button {
+                    onOpenEvent(event)
+                } label: {
+                    row
+                }
+                .buttonStyle(.plain)
+            } else {
+                row
+            }
+        }
     }
 
     /// Aluno rows carry the professor; professor rows carry the occupancy

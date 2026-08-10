@@ -7,11 +7,13 @@ import PackageDescription
 // check-in + professor chamada, spec 004 ATT.22-24), GraduationFeature
 // (aluno Graduação + professor perfil do aluno/próprio, spec 005 GRD.21-23),
 // BillingFeature (aluno Carteira + payment sheets + responsável Pagamentos,
-// spec 006 BIL.22-24), and AppShell (root router + persona shells).
-// Dependency direction (enforced here): Features -> TatameAPI + TatameCore +
-// DesignSystem; EnrollmentFeature -> AttendanceFeature (turma detail opens
-// the chamada and the rewired Adicionar aluno picker) + GraduationFeature
-// (roster tap opens the perfil do aluno).
+// spec 006 BIL.22-24), EventsFeature (aluno event detail + responsável
+// Eventos tab, spec 008 EVT.14-15), and AppShell (root router + persona
+// shells). Dependency direction (enforced here): Features -> TatameAPI +
+// TatameCore + DesignSystem; EnrollmentFeature -> AttendanceFeature (turma
+// detail opens the chamada and the rewired Adicionar aluno picker) +
+// GraduationFeature (roster tap opens the perfil do aluno); EventsFeature ->
+// BillingFeature (paid inscriptions ride the existing Pix sheet + simulate).
 let package = Package(
     name: "Features",
     // macOS floor exists only so `swift test` runs SPM-level on the mac host.
@@ -22,6 +24,7 @@ let package = Package(
         .library(name: "AttendanceFeature", targets: ["AttendanceFeature"]),
         .library(name: "GraduationFeature", targets: ["GraduationFeature"]),
         .library(name: "BillingFeature", targets: ["BillingFeature"]),
+        .library(name: "EventsFeature", targets: ["EventsFeature"]),
         .library(name: "AgendaFeature", targets: ["AgendaFeature"]),
         .library(name: "AppShell", targets: ["AppShell"]),
     ],
@@ -70,6 +73,17 @@ let package = Package(
             ]
         ),
         .target(
+            // Events slice (spec 008, EVT.14-15): aluno event detail +
+            // responsável Eventos tab. Depends on BillingFeature so paid
+            // inscriptions reuse the existing Pix sheet + simulate rails.
+            name: "EventsFeature",
+            dependencies: [
+                "BillingFeature",
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
             // Agenda slice (spec 007, AGD.9-10): aluno Agenda tab + aluno/
             // professor month calendars. Depends on AttendanceFeature to
             // reopen the Phase-4 check-in sheet from agenda rows.
@@ -88,6 +102,7 @@ let package = Package(
                 "EnrollmentFeature",
                 "GraduationFeature",
                 "BillingFeature",
+                "EventsFeature",
                 "AgendaFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
@@ -101,6 +116,7 @@ let package = Package(
                 "EnrollmentFeature",
                 "GraduationFeature",
                 "BillingFeature",
+                "EventsFeature",
                 "AgendaFeature",
                 "AppShell",
                 .product(name: "TatameCore", package: "TatameCore"),

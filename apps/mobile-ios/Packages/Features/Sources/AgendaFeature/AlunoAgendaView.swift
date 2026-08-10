@@ -1,8 +1,9 @@
 // Aluno Agenda tab (handoff aluno-11, spec 007 AGD.9): header with the
 // academy name and the "Mês" button, seven day pills (today preselected),
 // the selected weekday's class cards with the check-in affordance, the
-// "Sem aulas neste dia" empty state, and the honestly-empty "Eventos do
-// mês" section. PT-BR copy; Lumira tokens only.
+// "Sem aulas neste dia" empty state, and the "Eventos do mês" section —
+// real month events since spec 008 (the Phase-7 empty state retires).
+// PT-BR copy; Lumira tokens only.
 
 import AttendanceFeature
 import DesignSystem
@@ -13,15 +14,26 @@ public struct AlunoAgendaView: View {
     @State private var model: AlunoAgendaModel
     private let repository: any AgendaRepository
     private let academyName: String?
+    private let onOpenEvent: ((EventListItem) -> Void)?
 
-    public init(repository: any AgendaRepository, academyName: String?) {
+    public init(
+        repository: any AgendaRepository,
+        academyName: String?,
+        onOpenEvent: ((EventListItem) -> Void)? = nil
+    ) {
         _model = State(initialValue: AlunoAgendaModel(repository: repository))
         self.repository = repository
         self.academyName = academyName
+        self.onOpenEvent = onOpenEvent
     }
 
     public var body: some View {
-        AlunoAgendaContent(model: model, repository: repository, academyName: academyName)
+        AlunoAgendaContent(
+            model: model,
+            repository: repository,
+            academyName: academyName,
+            onOpenEvent: onOpenEvent
+        )
     }
 }
 
@@ -29,6 +41,7 @@ struct AlunoAgendaContent: View {
     @Bindable var model: AlunoAgendaModel
     let repository: any AgendaRepository
     let academyName: String?
+    var onOpenEvent: ((EventListItem) -> Void)?
 
     @State private var showMonthCalendar = false
     @Environment(\.attendanceRepository) private var attendanceRepository
@@ -54,7 +67,7 @@ struct AlunoAgendaContent: View {
                             classCard(item, agenda: agenda)
                         }
                     }
-                    eventosSection
+                    eventosSection(agenda.events)
                 }
             }
             .padding(.horizontal, LumiraTokens.Space.s6)
@@ -83,7 +96,7 @@ struct AlunoAgendaContent: View {
             }
         }
         .navigationDestination(isPresented: $showMonthCalendar) {
-            MonthCalendarView(persona: .aluno, repository: repository)
+            MonthCalendarView(persona: .aluno, repository: repository, onOpenEvent: onOpenEvent)
         }
     }
 
@@ -252,27 +265,33 @@ struct AlunoAgendaContent: View {
         .accessibilityIdentifier("agenda-empty-day")
     }
 
-    // MARK: Eventos do mês (story 12 — honest empty state, explicit debt)
+    // MARK: Eventos do mês (spec 008, story 10 — the Phase-7 empty state
+    // retires; the empty copy stays for genuinely event-less months)
 
-    private var eventosSection: some View {
+    private func eventosSection(_ events: [EventListItem]) -> some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Eventos do mês")
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
                 .foregroundStyle(LumiraTokens.Colors.fg1)
-            // Wired to the API's always-empty events array — fills itself
-            // when the events phase lands; never fake cards.
-            Text("Nenhum evento neste mês")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, LumiraTokens.Space.s5)
-                .background(LumiraTokens.Colors.bgSurface)
-                .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
-                )
-                .accessibilityIdentifier("eventos-empty")
+            if events.isEmpty {
+                Text("Nenhum evento neste mês")
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, LumiraTokens.Space.s5)
+                    .background(LumiraTokens.Colors.bgSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
+                            .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    )
+                    .accessibilityIdentifier("eventos-empty")
+            } else {
+                ForEach(events) { item in
+                    EventRowCard(item: item, onTap: onOpenEvent.map { open in { open(item) } })
+                        .accessibilityIdentifier("agenda-event-\(item.id.uuidString.lowercased())")
+                }
+            }
         }
         .padding(.top, LumiraTokens.Space.s4)
     }

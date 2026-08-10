@@ -206,10 +206,11 @@ struct AlunoAgendaModelTests {
 struct MonthCalendarModelTests {
     private func loadedModel(
         persona: CalendarPersona,
-        buckets: [Int: [CalendarClassItem]]
+        buckets: [Int: [CalendarClassItem]],
+        events: [EventListItem] = []
     ) async -> (MonthCalendarModel, FakeAgendaRepository) {
         let repository = FakeAgendaRepository()
-        let calendar = PersonaCalendar(month: "2026-08", classesByWeekday: buckets, events: [])
+        let calendar = PersonaCalendar(month: "2026-08", classesByWeekday: buckets, events: events)
         repository.alunoCalendarResult = .success(calendar)
         repository.professorCalendarResult = .success(calendar)
         let model = MonthCalendarModel(persona: persona, repository: repository, grid: august2026)
@@ -247,8 +248,39 @@ struct MonthCalendarModelTests {
         #expect(model.hasClassDot(day: 31))
         #expect(!model.hasClassDot(day: 2))
         #expect(!model.hasClassDot(day: 4))
-        // No events in v1 — never a pink dot.
+        // No events on this calendar — no pink dots.
         #expect(!model.hasEventDot(day: 1))
+    }
+
+    @Test("event dots and day Evento entries turn real (spec 008 story 16)")
+    func eventDotsAndEntries() async {
+        let event = EventListItem(
+            id: UUID(),
+            name: "Open mat de verão",
+            bannerPreset: "event-purple-pink",
+            location: "Tatame principal",
+            date: "2026-08-15",
+            time: "10:00",
+            priceCents: nil
+        )
+        let (model, _) = await loadedModel(
+            persona: .aluno,
+            buckets: [1: [calendarItem("19:00")]],
+            events: [event]
+        )
+
+        #expect(model.hasEventDot(day: 15))
+        #expect(!model.hasEventDot(day: 14))
+
+        // Aug 15 2026 is a Saturday — no Monday class bucket, but the day
+        // is not empty: the Evento entry fills it.
+        model.selectedDay = 15
+        #expect(model.selectedDayEvents.map(\.name) == ["Open mat de verão"])
+        #expect(!model.showsEmptyDay)
+
+        // The professor calendar renders the same academy-wide events.
+        let (professor, _) = await loadedModel(persona: .professor, buckets: [:], events: [event])
+        #expect(professor.hasEventDot(day: 15))
     }
 
     @Test("selecting a day shows its weekday agenda sorted by time")

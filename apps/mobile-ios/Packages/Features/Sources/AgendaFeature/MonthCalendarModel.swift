@@ -67,10 +67,10 @@ public final class MonthCalendarModel {
         calendar?.weekdaysWithClasses.contains(grid.weekday(of: day)) ?? false
     }
 
-    /// Pink dot iff an event falls on the date — always false in v1 (the
-    /// events arrays are contractually empty this phase).
-    public func hasEventDot(day _: Int) -> Bool {
-        false
+    /// Pink dot iff an event falls on the date (spec 008 — the Phase-7
+    /// legend finally tells the truth).
+    public func hasEventDot(day: Int) -> Bool {
+        calendar?.eventDays.contains(day) ?? false
     }
 
     // MARK: Selected day
@@ -80,15 +80,22 @@ public final class MonthCalendarModel {
         grid.dayHeadingPTBR(selectedDay)
     }
 
-    /// The selected day's agenda: its weekday bucket sorted by time (events
-    /// would merge in — none in v1).
+    /// The selected day's agenda: its weekday bucket sorted by time; Evento
+    /// entries merge in separately via `selectedDayEvents` (spec 008).
     public var selectedDayItems: [CalendarClassItem] {
         calendar?.dayAgenda(weekday: grid.weekday(of: selectedDay)) ?? []
     }
 
-    /// Free-day empty state with the persona's designed copy (stories 18/23).
+    /// The selected day's Evento entries (spec 008 story 16 — dated items,
+    /// sorted by time).
+    public var selectedDayEvents: [EventListItem] {
+        calendar?.events(onDay: selectedDay) ?? []
+    }
+
+    /// Free-day empty state with the persona's designed copy (stories 18/23);
+    /// a day with only an event is not empty (spec 008).
     public var showsEmptyDay: Bool {
-        if case .loaded = phase { return selectedDayItems.isEmpty }
+        if case .loaded = phase { return selectedDayItems.isEmpty && selectedDayEvents.isEmpty }
         return false
     }
 }
