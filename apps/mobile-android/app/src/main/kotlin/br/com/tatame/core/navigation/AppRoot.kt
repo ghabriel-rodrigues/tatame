@@ -31,6 +31,7 @@ import br.com.tatame.feature.graduation.aluno.AlunoPerfilTab
 import br.com.tatame.feature.graduation.professor.GRADUATION_UPDATE_PERMISSION
 import br.com.tatame.feature.graduation.professor.ProfessorPerfilTab
 import br.com.tatame.feature.shell.PersonaShellScreen
+import br.com.tatame.feature.shell.ResponsavelPerfilTab
 import br.com.tatame.feature.shell.SuspendedAcademyScreen
 import br.com.tatame.feature.shell.WebOnlyRoleScreen
 import br.com.tatame.feature.splash.SplashScreen
@@ -155,6 +156,9 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                     ProfessorHomeTab(
                         firstName = me.user.fullName.substringBefore(' '),
                         onVerTurmas = { selectTab(1) },
+                        // NOT.11 — `store`-routed rows open the storefront,
+                        // whose header wants the academy name.
+                        academyName = me.academy?.name,
                     )
                 },
                 1 to { _ ->
@@ -191,12 +195,17 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             // Cadastrar aluno CTA is hidden when dependents.register is off.
             // BIL.21 — Pagamentos (index 1) is the real per-dependent wallet.
             // EVT.13 — Eventos (index 2) is the per-dependent confirmation tab.
+            // NOT.11 — home carries the bell; guardian notification routes
+            // land on the persona tabs (wallet → Pagamentos, event → Eventos);
+            // Perfil (index 3) hosts the Notificações mute switch.
             tabContent = mapOf(
-                0 to { _ ->
+                0 to { selectTab ->
                     DependentsHomeTab(
                         guardianFirstName = me.user.fullName.substringBefore(' '),
                         canRegisterDependents =
                             me.permissions[DEPENDENTS_REGISTER_PERMISSION] ?: true,
+                        onOpenPagamentos = { selectTab(1) },
+                        onOpenEventos = { selectTab(2) },
                     )
                 },
                 1 to { _ ->
@@ -204,6 +213,13 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
                 },
                 2 to { _ ->
                     ResponsavelEventosTab()
+                },
+                3 to { _ ->
+                    ResponsavelPerfilTab(
+                        fullName = me.user.fullName,
+                        academyName = me.academy?.name,
+                        onLogout = onLogout,
+                    )
                 },
             ),
         )

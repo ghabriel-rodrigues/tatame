@@ -41,6 +41,13 @@ import br.com.tatame.feature.agenda.ProfessorCalendarScreen
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.events.EventFormat
 import br.com.tatame.feature.events.EventListCard
+import br.com.tatame.feature.notifications.NotificationDestination
+import br.com.tatame.feature.notifications.NotificationsBellBubble
+import br.com.tatame.feature.notifications.NotificationsBellViewModel
+import br.com.tatame.feature.notifications.NotificationsPersona
+import br.com.tatame.feature.notifications.NotificationsScreen
+import br.com.tatame.feature.store.pedidos.MeusPedidosScreen
+import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
@@ -58,11 +65,55 @@ fun ProfessorHomeTab(
     firstName: String,
     onVerTurmas: () -> Unit,
     modifier: Modifier = Modifier,
+    academyName: String? = null,
     viewModel: ProfessorDashboardViewModel = koinViewModel(),
+    bellViewModel: NotificationsBellViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val unreadCount by bellViewModel.unreadCount.collectAsState()
     var chamadaFor by remember { mutableStateOf<Pair<String, String>?>(null) } // classId to name
     var calendarOpen by rememberSaveable { mutableStateOf(false) }
+    var notificacoesOpen by rememberSaveable { mutableStateOf(false) }
+    var pedidosOpen by rememberSaveable { mutableStateOf(false) }
+    var storeOpen by rememberSaveable { mutableStateOf(false) }
+
+    // NOT.11 — the header bell pushes the shared Notificações screen; the
+    // professor map only navigates the storefront hints (no wallet/event/
+    // graduation surface in this shell — spec 006/008), the rest are inert.
+    if (notificacoesOpen) {
+        NotificationsScreen(
+            persona = NotificationsPersona.PROFESSOR,
+            onBack = {
+                notificacoesOpen = false
+                bellViewModel.refresh()
+            },
+            onNavigate = { destination ->
+                notificacoesOpen = false
+                bellViewModel.refresh()
+                when (destination) {
+                    is NotificationDestination.MeusPedidos -> pedidosOpen = true
+                    is NotificationDestination.Loja -> storeOpen = true
+                    else -> Unit // never emitted by the PROFESSOR route map
+                }
+            },
+            modifier = modifier,
+        )
+        return
+    }
+
+    if (pedidosOpen) {
+        MeusPedidosScreen(onBack = { pedidosOpen = false }, modifier = modifier)
+        return
+    }
+
+    if (storeOpen) {
+        StoreFlowScreen(
+            academyName = academyName,
+            onBack = { storeOpen = false },
+            modifier = modifier,
+        )
+        return
+    }
 
     // AGD.8 — the header calendar icon pushes the professor month view.
     if (calendarOpen) {
@@ -72,12 +123,20 @@ fun ProfessorHomeTab(
 
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(LumiraTokens.Space.S6))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2),
+        ) {
             Text(
                 text = stringResource(R.string.dashboard_greeting, firstName),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
+            )
+            // NOT.11 — the professor header bell with the pink unread dot.
+            NotificationsBellBubble(
+                unreadCount = unreadCount,
+                onClick = { notificacoesOpen = true },
             )
             CalendarBubble(onClick = { calendarOpen = true })
         }

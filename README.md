@@ -252,8 +252,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] NOT.7 Web: admin ConsoleShell bell + unread dot + notifications panel (cards, read-all on open); no bell on plataforma surface (platform notifications recorded debt)
 - [ ] NOT.8 RN: aluno — home header bell with dot, Notificações screen per aluno-20 (chips, relative timestamps, pagination, read-all on open, route taps), perfil Notificações switch wired to settings
 - [ ] NOT.9 RN: professor + responsável — same bell/screen/switch scope per shell (responsavel-09; guardian routes map to Pagamentos/dependents)
-- [ ] NOT.10 Android: aluno notifications (NOT.8 scope)
-- [ ] NOT.11 Android: professor + responsável notifications (NOT.9 scope)
+- [x] NOT.10 Android: aluno notifications (NOT.8 scope)
+- [x] NOT.11 Android: professor + responsável notifications (NOT.9 scope)
 - [ ] NOT.12 iOS: aluno notifications (NOT.8 scope)
 - [ ] NOT.13 iOS: professor + responsável notifications (NOT.9 scope)
 

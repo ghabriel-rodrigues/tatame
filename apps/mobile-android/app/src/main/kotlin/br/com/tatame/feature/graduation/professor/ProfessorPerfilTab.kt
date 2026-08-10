@@ -41,6 +41,7 @@ import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
 import br.com.tatame.feature.graduation.toGraduationMessageRes
+import br.com.tatame.feature.notifications.NotificationsPerfilRow
 import br.com.tatame.feature.store.StorePerfilRow
 import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
@@ -161,6 +162,11 @@ fun ProfessorPerfilTab(
         // "Novo" pill per professor-13; spec 009 story 17).
         Spacer(Modifier.height(LumiraTokens.Space.S4))
         StorePerfilRow(onOpen = { lojaOpen = true })
+
+        // NOT.11 — the "Notificações" switch wired to the per-membership
+        // mute (spec 010 story 9: badge dies, history stays).
+        Spacer(Modifier.height(LumiraTokens.Space.S3))
+        NotificationsPerfilRow()
 
         Spacer(Modifier.height(LumiraTokens.Space.S8))
         OutlinedButton(

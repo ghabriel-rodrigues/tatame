@@ -29,6 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -48,6 +51,11 @@ import br.com.tatame.feature.enrollment.EnrollmentChip
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.enrollment.EnrollmentNotice
 import br.com.tatame.feature.enrollment.ScheduleFormat
+import br.com.tatame.feature.notifications.NotificationDestination
+import br.com.tatame.feature.notifications.NotificationsBellBubble
+import br.com.tatame.feature.notifications.NotificationsBellViewModel
+import br.com.tatame.feature.notifications.NotificationsPersona
+import br.com.tatame.feature.notifications.NotificationsScreen
 import com.tatame.designsystem.tokens.LumiraTokens
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -67,15 +75,49 @@ fun DependentsHomeTab(
     guardianFirstName: String,
     canRegisterDependents: Boolean,
     modifier: Modifier = Modifier,
+    onOpenPagamentos: () -> Unit = {},
+    onOpenEventos: () -> Unit = {},
     viewModel: DependentsViewModel = koinViewModel { parametersOf(canRegisterDependents) },
+    bellViewModel: NotificationsBellViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val unreadCount by bellViewModel.unreadCount.collectAsState()
+    var notificacoesOpen by rememberSaveable { mutableStateOf(false) }
+
+    // NOT.11 — the responsável header bell pushes the shared Notificações
+    // screen (responsavel-09); opening fires read-all, so the bell refetches
+    // its count on the way back. Guardian routes land on the persona's tabs:
+    // wallet → Pagamentos, event → Eventos, graduation → the dependents panel
+    // (this very home, so closing the screen IS the navigation).
+    if (notificacoesOpen) {
+        NotificationsScreen(
+            persona = NotificationsPersona.RESPONSAVEL,
+            onBack = {
+                notificacoesOpen = false
+                bellViewModel.refresh()
+            },
+            onNavigate = { destination ->
+                notificacoesOpen = false
+                bellViewModel.refresh()
+                when (destination) {
+                    is NotificationDestination.Pagamentos -> onOpenPagamentos()
+                    is NotificationDestination.Eventos -> onOpenEventos()
+                    is NotificationDestination.Dependentes -> Unit // already home
+                    else -> Unit // never emitted by the RESPONSAVEL route map
+                }
+            },
+            modifier = modifier,
+        )
+        return
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val detail = state.detail) {
             is DependentDetailState.Hidden -> DependentsPanel(
                 state = state,
                 guardianFirstName = guardianFirstName,
+                unreadCount = unreadCount,
+                onOpenNotificacoes = { notificacoesOpen = true },
                 onRetry = viewModel::refresh,
                 onOpen = viewModel::openDependent,
                 onRegister = viewModel::openRegisterSheet,
@@ -112,6 +154,8 @@ fun DependentsHomeTab(
 private fun DependentsPanel(
     state: DependentsUiState,
     guardianFirstName: String,
+    unreadCount: Int,
+    onOpenNotificacoes: () -> Unit,
     onRetry: () -> Unit,
     onOpen: (String) -> Unit,
     onRegister: () -> Unit,
@@ -125,12 +169,20 @@ private fun DependentsPanel(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(LumiraTokens.Space.S1))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S2),
+        ) {
             Text(
                 text = stringResource(R.string.shell_greeting, guardianFirstName),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f),
+            )
+            // NOT.11 — the responsável header bell with the pink unread dot.
+            NotificationsBellBubble(
+                unreadCount = unreadCount,
+                onClick = onOpenNotificacoes,
             )
             EnrollmentChip(
                 text = stringResource(R.string.dependents_role_chip),

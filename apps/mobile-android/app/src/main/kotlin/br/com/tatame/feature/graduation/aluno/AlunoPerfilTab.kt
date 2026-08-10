@@ -27,6 +27,7 @@ import br.com.tatame.feature.enrollment.AvatarBubble
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
+import br.com.tatame.feature.notifications.NotificationsPerfilRow
 import br.com.tatame.feature.store.StorePerfilRow
 import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
@@ -105,6 +106,11 @@ fun AlunoPerfilTab(
         // placement per the prototypes; spec 009 story 16).
         Spacer(Modifier.height(LumiraTokens.Space.S6))
         StorePerfilRow(onOpen = { lojaOpen = true }, showNovoPill = true)
+
+        // NOT.10 — the "Notificações" switch wired to the per-membership
+        // mute (spec 010 story 9: badge dies, history stays).
+        Spacer(Modifier.height(LumiraTokens.Space.S3))
+        NotificationsPerfilRow()
 
         Spacer(Modifier.weight(1f))
         OutlinedButton(

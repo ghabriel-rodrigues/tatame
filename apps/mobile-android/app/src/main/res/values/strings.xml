@@ -383,6 +383,12 @@
     <string name="error_store_product_not_purchasable">Este produto não está mais disponível na loja.</string>
     <string name="error_store_order_not_cancelable">Pedido pago só pode ser cancelado pela academia.</string>
 
+    <!-- Notifications (NOT.10/11, spec 010 — aluno-20 / responsavel-09) -->
+    <string name="notifications_title">Notificações</string>
+    <string name="notifications_empty">Nenhuma notificação por aqui ainda.</string>
+    <string name="notifications_perfil_row_title">Notificações</string>
+    <string name="notifications_perfil_row_subtitle">Silencie os alertas sem apagar o histórico</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>

@@ -11,6 +11,7 @@ import br.com.tatame.core.network.BillingApi
 import br.com.tatame.core.network.EnrollmentApi
 import br.com.tatame.core.network.EventsApi
 import br.com.tatame.core.network.GraduationApi
+import br.com.tatame.core.network.NotificationsApi
 import br.com.tatame.core.network.ProblemJson
 import br.com.tatame.core.network.RefreshAuthenticator
 import br.com.tatame.core.network.SessionTokenProvider
@@ -93,6 +94,9 @@ val networkModule = module {
     }
     single<StoreApi> {
         buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(StoreApi::class.java)
+    }
+    single<NotificationsApi> {
+        buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(NotificationsApi::class.java)
     }
 }
 

@@ -63,7 +63,13 @@ import br.com.tatame.feature.events.aluno.EventDetailScreen
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.aluno.AlunoGraduacaoScreen
 import br.com.tatame.feature.graduation.toBeltDisplay
+import br.com.tatame.feature.notifications.NotificationDestination
+import br.com.tatame.feature.notifications.NotificationsBellBubble
+import br.com.tatame.feature.notifications.NotificationsBellViewModel
+import br.com.tatame.feature.notifications.NotificationsPersona
+import br.com.tatame.feature.notifications.NotificationsScreen
 import br.com.tatame.feature.store.MonogramTile
+import br.com.tatame.feature.store.pedidos.MeusPedidosScreen
 import br.com.tatame.feature.store.StoreFormat
 import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
@@ -89,15 +95,52 @@ fun AlunoHomeTab(
     onOpenCarteira: () -> Unit = {},
     onOpenAgenda: () -> Unit = {},
     viewModel: AlunoHomeViewModel = koinViewModel(),
+    bellViewModel: NotificationsBellViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val unreadCount by bellViewModel.unreadCount.collectAsState()
     var graduacaoOpen by rememberSaveable { mutableStateOf(false) }
     var eventOpen by rememberSaveable { mutableStateOf<String?>(null) }
     var storeOpen by rememberSaveable { mutableStateOf(false) }
     var storeProductOpen by rememberSaveable { mutableStateOf<String?>(null) }
+    var notificacoesOpen by rememberSaveable { mutableStateOf(false) }
+    var pedidosOpen by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(openCheckinOnEnter) {
         if (openCheckinOnEnter) viewModel.openCheckinSheet()
+    }
+
+    // NOT.10 — the header bell pushes the Notificações screen (aluno-20);
+    // opening fires read-all, so the bell refetches its count on the way back.
+    // Route-hinted rows land on the aluno surfaces per the semantic map.
+    if (notificacoesOpen) {
+        NotificationsScreen(
+            persona = NotificationsPersona.ALUNO,
+            onBack = {
+                notificacoesOpen = false
+                bellViewModel.refresh()
+            },
+            onNavigate = { destination ->
+                notificacoesOpen = false
+                bellViewModel.refresh()
+                when (destination) {
+                    is NotificationDestination.Carteira -> onOpenCarteira()
+                    is NotificationDestination.EventDetail -> eventOpen = destination.eventId
+                    is NotificationDestination.Graduacao -> graduacaoOpen = true
+                    is NotificationDestination.MeusPedidos -> pedidosOpen = true
+                    is NotificationDestination.Loja -> storeOpen = true
+                    else -> Unit // guardian-only destinations never map for ALUNO
+                }
+            },
+            modifier = modifier,
+        )
+        return
+    }
+
+    // NOT.10 — an `orders`-routed notification lands on Meus pedidos.
+    if (pedidosOpen) {
+        MeusPedidosScreen(onBack = { pedidosOpen = false }, modifier = modifier)
+        return
     }
 
     // GRD.19 — the home graduation card links to the Graduação screen.
@@ -141,11 +184,19 @@ fun AlunoHomeTab(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()),
     ) {
         Spacer(Modifier.height(LumiraTokens.Space.S6))
-        Text(
-            text = stringResource(R.string.aluno_home_greeting, firstName),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.aluno_home_greeting, firstName),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+            )
+            // NOT.10 — the aluno-03 header bell with the pink unread dot.
+            NotificationsBellBubble(
+                unreadCount = unreadCount,
+                onClick = { notificacoesOpen = true },
+            )
+        }
         Spacer(Modifier.height(LumiraTokens.Space.S4))
 
         when (val home = state.home) {

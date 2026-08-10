@@ -36,6 +36,7 @@ class KoinModulesTest {
             br.com.tatame.core.network.AgendaApi::class,
             br.com.tatame.core.network.EventsApi::class,
             br.com.tatame.core.network.StoreApi::class,
+            br.com.tatame.core.network.NotificationsApi::class,
             br.com.tatame.core.enrollment.EnrollmentRepository::class,
             br.com.tatame.core.attendance.AttendanceRepository::class,
             br.com.tatame.core.graduation.GraduationRepository::class,
