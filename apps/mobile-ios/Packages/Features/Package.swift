@@ -27,6 +27,7 @@ let package = Package(
         .library(name: "EventsFeature", targets: ["EventsFeature"]),
         .library(name: "AgendaFeature", targets: ["AgendaFeature"]),
         .library(name: "StoreFeature", targets: ["StoreFeature"]),
+        .library(name: "NotificationsFeature", targets: ["NotificationsFeature"]),
         .library(name: "AppShell", targets: ["AppShell"]),
     ],
     dependencies: [
@@ -44,8 +45,21 @@ let package = Package(
             ]
         ),
         .target(
+            // Notifications slice (spec 010, NOT.12-13): the one bell +
+            // Notificações screen + perfil switch shared by the three
+            // shells; persona route mapping is injected by each shell.
+            name: "NotificationsFeature",
+            dependencies: [
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
             name: "AttendanceFeature",
             dependencies: [
+                // The home-header bell (spec 010) renders inside the aluno
+                // Início and professor dashboard headers.
+                "NotificationsFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -62,6 +76,9 @@ let package = Package(
             dependencies: [
                 "AttendanceFeature",
                 "GraduationFeature",
+                // The responsável home header bell + internally pushed
+                // Notificações screen (spec 010, NOT.13).
+                "NotificationsFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -118,6 +135,7 @@ let package = Package(
                 "EventsFeature",
                 "AgendaFeature",
                 "StoreFeature",
+                "NotificationsFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -133,6 +151,7 @@ let package = Package(
                 "EventsFeature",
                 "AgendaFeature",
                 "StoreFeature",
+                "NotificationsFeature",
                 "AppShell",
                 .product(name: "TatameCore", package: "TatameCore"),
             ]

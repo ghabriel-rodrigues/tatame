@@ -5,6 +5,7 @@
 // "Próximos da graduação" placeholder. PT-BR copy; Lumira tokens only.
 
 import DesignSystem
+import NotificationsFeature
 import SwiftUI
 import TatameCore
 
@@ -14,19 +15,25 @@ public struct ProfessorDashboardView: View {
     private let professorUserId: UUID
     private let onVerTurmas: () -> Void
     private let onOpenCalendar: (() -> Void)?
+    private let hasUnreadNotifications: Bool
+    private let onOpenNotifications: (() -> Void)?
 
     public init(
         repository: any AttendanceRepository,
         professorName: String,
         professorUserId: UUID,
         onVerTurmas: @escaping () -> Void = {},
-        onOpenCalendar: (() -> Void)? = nil
+        onOpenCalendar: (() -> Void)? = nil,
+        hasUnreadNotifications: Bool = false,
+        onOpenNotifications: (() -> Void)? = nil
     ) {
         _model = State(initialValue: ProfessorDashboardModel(repository: repository))
         self.professorName = professorName
         self.professorUserId = professorUserId
         self.onVerTurmas = onVerTurmas
         self.onOpenCalendar = onOpenCalendar
+        self.hasUnreadNotifications = hasUnreadNotifications
+        self.onOpenNotifications = onOpenNotifications
     }
 
     public var body: some View {
@@ -35,7 +42,9 @@ public struct ProfessorDashboardView: View {
             professorName: professorName,
             professorUserId: professorUserId,
             onVerTurmas: onVerTurmas,
-            onOpenCalendar: onOpenCalendar
+            onOpenCalendar: onOpenCalendar,
+            hasUnreadNotifications: hasUnreadNotifications,
+            onOpenNotifications: onOpenNotifications
         )
     }
 }
@@ -46,6 +55,8 @@ struct ProfessorDashboardContent: View {
     let professorUserId: UUID
     let onVerTurmas: () -> Void
     var onOpenCalendar: (() -> Void)?
+    var hasUnreadNotifications = false
+    var onOpenNotifications: (() -> Void)?
 
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
@@ -105,6 +116,14 @@ struct ProfessorDashboardContent: View {
             }
             Spacer()
             HStack(spacing: LumiraTokens.Space.s3) {
+                // Home-header bell + unread dot (spec 010, story 13 — the
+                // professor persona is not a dead end).
+                if let onOpenNotifications {
+                    NotificationsBellButton(
+                        hasUnread: hasUnreadNotifications,
+                        action: onOpenNotifications
+                    )
+                }
                 // Month calendar entry (spec 007 story 20, handoff
                 // professor-02 header icon).
                 if let onOpenCalendar {

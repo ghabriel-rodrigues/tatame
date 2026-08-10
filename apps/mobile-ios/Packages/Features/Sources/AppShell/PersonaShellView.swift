@@ -15,6 +15,7 @@ import DesignSystem
 import EnrollmentFeature
 import EventsFeature
 import GraduationFeature
+import NotificationsFeature
 import StoreFeature
 import SwiftUI
 import TatameCore
@@ -71,7 +72,18 @@ struct PersonaShellView: View {
     /// Vitrine pushed from the perfil "Loja da academia" row (STO.14 —
     /// aluno and professor share the entry state; one perfil tab each).
     @State private var perfilStoreOpen = false
+    /// Notificações screen pushed from the home-header bell (spec 010,
+    /// NOT.12-13 — aluno and professor stacks live here; the responsável
+    /// pushes inside its own stack).
+    @State private var homeNotificationsOpen = false
+    /// Meus pedidos pushed from a tapped `orders` notification row
+    /// (spec 010 route map — aluno and professor storefront surface).
+    @State private var homeOrdersOpen = false
+    /// Home-header unread badge (spec 010, stories 1, 8) — created lazily
+    /// once the environment repository is reachable, refetched on focus.
+    @State private var notificationsBadge: NotificationsBadgeModel?
     @Environment(SessionStore.self) private var session
+    @Environment(\.notificationsRepository) private var notificationsRepository
     @Environment(\.enrollmentRepository) private var enrollmentRepository
     @Environment(\.attendanceRepository) private var attendanceRepository
     @Environment(\.billingRepository) private var billingRepository
@@ -101,11 +113,28 @@ struct PersonaShellView: View {
                             // "Ver tudo" opens the vitrine, cards push the
                             // product detail.
                             onOpenStore: { homeStoreOpen = true },
-                            onOpenStoreProduct: { homeStoreProductTarget = StoreProductTarget(id: $0.id) }
+                            onOpenStoreProduct: { homeStoreProductTarget = StoreProductTarget(id: $0.id) },
+                            // Home-header bell + Notificações screen
+                            // (spec 010, NOT.12 — aluno-20).
+                            hasUnreadNotifications: notificationsBadge?.hasUnread ?? false,
+                            onOpenNotifications: { homeNotificationsOpen = true }
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showGraduation) {
                             AlunoGraduationView()
+                        }
+                        .navigationDestination(isPresented: $homeNotificationsOpen) {
+                            NotificationsView(
+                                persona: .aluno,
+                                repository: notificationsRepository,
+                                onBadgeCleared: { notificationsBadge?.clear() },
+                                onNavigate: handleAlunoNotificationDestination
+                            )
+                            .navigationBarBackButtonHidden()
+                            .navigationBarHiddenOnIOS()
+                        }
+                        .navigationDestination(isPresented: $homeOrdersOpen) {
+                            StoreOrdersView(repository: storeRepository)
                         }
                         .navigationDestination(item: $homeEventTarget) { target in
                             AlunoEventDetailView(eventId: target.id, repository: eventsRepository)
@@ -157,11 +186,34 @@ struct PersonaShellView: View {
                             professorName: context.user.fullName,
                             professorUserId: context.user.id,
                             onVerTurmas: { selection = .turmas },
-                            onOpenCalendar: { showProfessorCalendar = true }
+                            onOpenCalendar: { showProfessorCalendar = true },
+                            // Home-header bell + Notificações screen
+                            // (spec 010, NOT.13 — story 13).
+                            hasUnreadNotifications: notificationsBadge?.hasUnread ?? false,
+                            onOpenNotifications: { homeNotificationsOpen = true }
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showProfessorCalendar) {
                             MonthCalendarView(persona: .professor, repository: agendaRepository)
+                        }
+                        .navigationDestination(isPresented: $homeNotificationsOpen) {
+                            NotificationsView(
+                                persona: .professor,
+                                repository: notificationsRepository,
+                                onBadgeCleared: { notificationsBadge?.clear() },
+                                onNavigate: handleProfessorNotificationDestination
+                            )
+                            .navigationBarBackButtonHidden()
+                            .navigationBarHiddenOnIOS()
+                        }
+                        .navigationDestination(isPresented: $homeOrdersOpen) {
+                            StoreOrdersView(repository: storeRepository)
+                        }
+                        .navigationDestination(isPresented: $homeStoreOpen) {
+                            StoreVitrineView(
+                                academyName: context.activeMembership.academyName,
+                                repository: storeRepository
+                            )
                         }
                     }
                 }
@@ -178,7 +230,13 @@ struct PersonaShellView: View {
                     ResponsavelHomeView(
                         repository: enrollmentRepository,
                         session: session,
-                        context: context
+                        context: context,
+                        // Bell + internally pushed Notificações screen
+                        // (spec 010, NOT.13 — responsavel-09); guardian
+                        // routes land on tabs, mapped here.
+                        hasUnreadNotifications: notificationsBadge?.hasUnread ?? false,
+                        onNotificationsBadgeCleared: { notificationsBadge?.clear() },
+                        onNotificationDestination: handleResponsavelNotificationDestination
                     )
                 }
                 .tag(Tab.inicio)
@@ -198,6 +256,74 @@ struct PersonaShellView: View {
                 .tag(Tab.perfil)
         }
         .tint(LumiraTokens.Colors.inkPurple)
+        .task {
+            if notificationsBadge == nil {
+                notificationsBadge = NotificationsBadgeModel(repository: notificationsRepository)
+            }
+            await notificationsBadge?.refresh()
+        }
+        .onChange(of: selection) { _, newValue in
+            // Home focus refetch (spec 010 — the dot always means
+            // something new; muted memberships get 0 from the server).
+            if newValue == .inicio {
+                Task { await notificationsBadge?.refresh() }
+            }
+        }
+        .onChange(of: homeNotificationsOpen) { wasOpen, isOpen in
+            if wasOpen, !isOpen {
+                Task { await notificationsBadge?.refresh() }
+            }
+        }
+    }
+
+    /// Semantic-route landings for the aluno shell (spec 010 route map):
+    /// tabs switch (popping the feed first), pushes stack on the Início
+    /// navigation the feed already lives in.
+    private func handleAlunoNotificationDestination(_ destination: NotificationDestination) {
+        switch destination {
+        case .carteiraTab:
+            homeNotificationsOpen = false
+            selection = .carteira
+        case .eventDetail(let id):
+            homeEventTarget = EventDetailTarget(id: id)
+        case .graduation:
+            showGraduation = true
+        case .myOrders:
+            homeOrdersOpen = true
+        case .storeVitrine:
+            homeStoreOpen = true
+        case .pagamentosTab, .eventosTab, .alunosTab:
+            break // Guardian-only landings never reach the aluno plan.
+        }
+    }
+
+    /// Professor landings: only the storefront surface navigates (the
+    /// route plan already keeps wallet/graduation/event rows inert).
+    private func handleProfessorNotificationDestination(_ destination: NotificationDestination) {
+        switch destination {
+        case .myOrders:
+            homeOrdersOpen = true
+        case .storeVitrine:
+            homeStoreOpen = true
+        case .carteiraTab, .pagamentosTab, .eventosTab, .alunosTab, .eventDetail, .graduation:
+            break
+        }
+    }
+
+    /// Guardian landings are tab switches (spec 010: wallet → Pagamentos,
+    /// event → Eventos, graduation → the dependents panel); the feed pops
+    /// itself before this fires.
+    private func handleResponsavelNotificationDestination(_ destination: NotificationDestination) {
+        switch destination {
+        case .pagamentosTab:
+            selection = .pagamentos
+        case .eventosTab:
+            selection = .eventos
+        case .alunosTab:
+            selection = .inicio
+        case .carteiraTab, .eventDetail, .graduation, .myOrders, .storeVitrine:
+            break
+        }
     }
 
     /// Perfil tab: aluno gets the belt-chip header (spec 005 story 7) and
@@ -223,7 +349,10 @@ struct PersonaShellView: View {
             }
         case .responsavel:
             shellTab(title: "Perfil", icon: "person.crop.circle") {
-                EmptyView()
+                // The perfil "Notificações" switch (spec 010, story 9 —
+                // responsavel-07 row); mute kills the badge, the screen
+                // stays reachable.
+                NotificationsSettingsRow()
             }
         }
     }
@@ -245,6 +374,9 @@ struct PersonaShellView: View {
                         StoreEntryRow(showsNovoPill: showsNovoPill) {
                             perfilStoreOpen = true
                         }
+                        // The perfil "Notificações" switch (spec 010,
+                        // story 9): mute silences the badge only.
+                        NotificationsSettingsRow()
                         SessionContextCard(context: context, shellTitle: persona.titlePTBR)
                         LogoutButton()
                     }

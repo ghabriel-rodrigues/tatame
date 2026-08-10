@@ -6,6 +6,7 @@
 // tokens only.
 
 import DesignSystem
+import NotificationsFeature
 import SwiftUI
 import TatameCore
 
@@ -17,6 +18,8 @@ public struct AlunoHomeView: View {
     private let onOpenEvent: ((EventListItem) -> Void)?
     private let onOpenStore: (() -> Void)?
     private let onOpenStoreProduct: ((StoreProductCard) -> Void)?
+    private let hasUnreadNotifications: Bool
+    private let onOpenNotifications: (() -> Void)?
 
     public init(
         repository: any AttendanceRepository,
@@ -25,7 +28,9 @@ public struct AlunoHomeView: View {
         onOpenAgenda: (() -> Void)? = nil,
         onOpenEvent: ((EventListItem) -> Void)? = nil,
         onOpenStore: (() -> Void)? = nil,
-        onOpenStoreProduct: ((StoreProductCard) -> Void)? = nil
+        onOpenStoreProduct: ((StoreProductCard) -> Void)? = nil,
+        hasUnreadNotifications: Bool = false,
+        onOpenNotifications: (() -> Void)? = nil
     ) {
         _model = State(initialValue: AlunoHomeModel(repository: repository))
         self.onOpenGraduation = onOpenGraduation
@@ -34,6 +39,8 @@ public struct AlunoHomeView: View {
         self.onOpenEvent = onOpenEvent
         self.onOpenStore = onOpenStore
         self.onOpenStoreProduct = onOpenStoreProduct
+        self.hasUnreadNotifications = hasUnreadNotifications
+        self.onOpenNotifications = onOpenNotifications
     }
 
     public var body: some View {
@@ -44,7 +51,9 @@ public struct AlunoHomeView: View {
             onOpenAgenda: onOpenAgenda,
             onOpenEvent: onOpenEvent,
             onOpenStore: onOpenStore,
-            onOpenStoreProduct: onOpenStoreProduct
+            onOpenStoreProduct: onOpenStoreProduct,
+            hasUnreadNotifications: hasUnreadNotifications,
+            onOpenNotifications: onOpenNotifications
         )
     }
 }
@@ -57,6 +66,8 @@ struct AlunoHomeContent: View {
     var onOpenEvent: ((EventListItem) -> Void)?
     var onOpenStore: (() -> Void)?
     var onOpenStoreProduct: ((StoreProductCard) -> Void)?
+    var hasUnreadNotifications = false
+    var onOpenNotifications: (() -> Void)?
     @Environment(\.tatameTheme) private var theme
     @Environment(\.attendanceRepository) private var repository
 
@@ -132,7 +143,16 @@ struct AlunoHomeContent: View {
                     .foregroundStyle(LumiraTokens.Colors.fg1)
             }
             Spacer()
-            AttendanceAvatar(initials: NameInitials.from(home.studentName))
+            HStack(spacing: LumiraTokens.Space.s3) {
+                // Home-header bell + unread dot (spec 010, stories 1, 8).
+                if let onOpenNotifications {
+                    NotificationsBellButton(
+                        hasUnread: hasUnreadNotifications,
+                        action: onOpenNotifications
+                    )
+                }
+                AttendanceAvatar(initials: NameInitials.from(home.studentName))
+            }
         }
         .padding(.top, LumiraTokens.Space.s6)
     }

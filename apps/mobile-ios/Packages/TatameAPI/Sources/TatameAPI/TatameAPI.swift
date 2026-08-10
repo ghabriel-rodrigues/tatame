@@ -30,6 +30,9 @@ public struct AuthStack: Sendable {
     /// Store slice repository (spec 009) — same authenticated client;
     /// storefront shared by aluno and professor.
     public let storeRepository: any StoreRepository
+    /// Notifications slice repository (spec 010) — same authenticated
+    /// client; persona-neutral feed/badge/settings routes.
+    public let notificationsRepository: any NotificationsRepository
 }
 
 public enum TatameClientFactory {
@@ -80,7 +83,8 @@ public enum TatameClientFactory {
             billingRepository: LiveBillingRepository(client: client),
             agendaRepository: LiveAgendaRepository(client: client),
             eventsRepository: LiveEventsRepository(client: client),
-            storeRepository: LiveStoreRepository(client: client)
+            storeRepository: LiveStoreRepository(client: client),
+            notificationsRepository: LiveNotificationsRepository(client: client)
         )
     }
 }

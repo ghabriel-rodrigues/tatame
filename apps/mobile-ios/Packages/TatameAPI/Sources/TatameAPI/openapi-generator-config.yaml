@@ -10,7 +10,9 @@ generate:
 # the enrollment slice (spec 003, ENR.24-26); aluno with the attendance
 # slice (spec 004, ATT.22-24); billing (shared simulate/receipt routes) with
 # the billing slice (spec 006, BIL.22-24); store (shared aluno+professor
-# storefront routes) with the store slice (spec 009, STO.14-15).
+# storefront routes) with the store slice (spec 009, STO.14-15);
+# notifications (persona-neutral feed/badge/settings routes) with the
+# notifications slice (spec 010, NOT.12-13).
 filter:
   tags:
     - auth
@@ -20,3 +22,4 @@ filter:
     - aluno
     - billing
     - store
+    - notifications

@@ -254,7 +254,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] NOT.9 RN: professor + responsável — same bell/screen/switch scope per shell (responsavel-09; guardian routes map to Pagamentos/dependents)
 - [x] NOT.10 Android: aluno notifications (NOT.8 scope)
 - [x] NOT.11 Android: professor + responsável notifications (NOT.9 scope)
-- [ ] NOT.12 iOS: aluno notifications (NOT.8 scope)
-- [ ] NOT.13 iOS: professor + responsável notifications (NOT.9 scope)
+- [x] NOT.12 iOS: aluno notifications (NOT.8 scope)
+- [x] NOT.13 iOS: professor + responsável notifications (NOT.9 scope)
 
 _Next phases (white-label config, platform console, reports, release) get their specs as each phase ships._

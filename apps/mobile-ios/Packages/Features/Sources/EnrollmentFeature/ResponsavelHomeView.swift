@@ -5,6 +5,7 @@
 // areas of the handoff belong to their own slices.
 
 import DesignSystem
+import NotificationsFeature
 import SwiftUI
 import TatameCore
 
@@ -13,18 +14,37 @@ public struct ResponsavelHomeView: View {
     private let repository: any EnrollmentRepository
     private let session: SessionStore
     private let context: SessionContext
+    private let hasUnreadNotifications: Bool
+    private let onNotificationsBadgeCleared: (@MainActor () -> Void)?
+    private let onNotificationDestination: ((NotificationDestination) -> Void)?
 
-    public init(repository: any EnrollmentRepository, session: SessionStore, context: SessionContext) {
+    public init(
+        repository: any EnrollmentRepository,
+        session: SessionStore,
+        context: SessionContext,
+        hasUnreadNotifications: Bool = false,
+        onNotificationsBadgeCleared: (@MainActor () -> Void)? = nil,
+        onNotificationDestination: ((NotificationDestination) -> Void)? = nil
+    ) {
         self.repository = repository
         self.session = session
         self.context = context
+        self.hasUnreadNotifications = hasUnreadNotifications
+        self.onNotificationsBadgeCleared = onNotificationsBadgeCleared
+        self.onNotificationDestination = onNotificationDestination
     }
 
     public var body: some View {
         NavigationStack {
             Group {
                 if let model {
-                    ResponsavelHomeContent(model: model, context: context)
+                    ResponsavelHomeContent(
+                        model: model,
+                        context: context,
+                        hasUnreadNotifications: hasUnreadNotifications,
+                        onNotificationsBadgeCleared: onNotificationsBadgeCleared,
+                        onNotificationDestination: onNotificationDestination
+                    )
                 } else {
                     LumiraTokens.Colors.bgApp
                 }
@@ -43,7 +63,15 @@ public struct ResponsavelHomeView: View {
 struct ResponsavelHomeContent: View {
     @Bindable var model: ResponsavelHomeModel
     let context: SessionContext
+    var hasUnreadNotifications = false
+    var onNotificationsBadgeCleared: (@MainActor () -> Void)?
+    var onNotificationDestination: ((NotificationDestination) -> Void)?
+
+    /// The Notificações screen pushes inside this tab's own stack (spec
+    /// 010, NOT.13 — responsavel-09).
+    @State private var showNotifications = false
     @Environment(\.enrollmentRepository) private var repository
+    @Environment(\.notificationsRepository) private var notificationsRepository
 
     var body: some View {
         ScrollView {
@@ -86,6 +114,21 @@ struct ResponsavelHomeContent: View {
         .navigationDestination(for: UUID.self) { dependentId in
             DependentDetailView(dependentId: dependentId)
         }
+        .navigationDestination(isPresented: $showNotifications) {
+            // Guardian feed (spec 010, NOT.13 — responsavel-09): tab
+            // destinations pop first so the switch lands cleanly.
+            NotificationsView(
+                persona: .responsavel,
+                repository: notificationsRepository,
+                onBadgeCleared: onNotificationsBadgeCleared,
+                onNavigate: { destination in
+                    showNotifications = false
+                    onNotificationDestination?(destination)
+                }
+            )
+            .navigationBarBackButtonHidden()
+            .hideNavigationBarOnIOS()
+        }
         .sheet(isPresented: $model.showRegisterSheet) {
             RegisterDependentSheet(repository: repository) {
                 Task { await model.dependentRegistered() }
@@ -95,13 +138,21 @@ struct ResponsavelHomeContent: View {
     }
 
     private var greeting: some View {
-        VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
-            Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "pt_BR"))))
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
-            Text("Olá,\n\(firstName)")
-                .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
+                Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "pt_BR"))))
+                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                Text("Olá,\n\(firstName)")
+                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .foregroundStyle(LumiraTokens.Colors.fg1)
+            }
+            Spacer()
+            // Home-header bell + unread dot (spec 010, story 10 —
+            // responsavel-09 opens from here).
+            NotificationsBellButton(hasUnread: hasUnreadNotifications) {
+                showNotifications = true
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, LumiraTokens.Space.s6)
