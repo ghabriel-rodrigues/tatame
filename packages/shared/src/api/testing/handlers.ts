@@ -20,6 +20,16 @@ import {
   type AdminEvent,
   type AdminEventRegistrationsResponse,
 } from './events-fixtures.js';
+import {
+  makeAdminStoreOrderBoard,
+  makeAdminStoreProductList,
+  makeStoreCategoryList,
+  makeStoreOverview,
+  type AdminStoreOrderFixture,
+  type AdminStoreProductFixture,
+  type StoreCategoryFixture,
+  type StoreOverview,
+} from './store-fixtures.js';
 import type {
   AcademyPlan,
   AdminBillingOverview,
@@ -237,6 +247,40 @@ export function adminEventsHandlers(options: AdminEventsHandlerOptions = {}) {
     http.get('/v1/admin/professors', ({ response }) =>
       response(200).json({ professors }),
     ),
+  ];
+}
+
+export interface AdminStoreHandlerOptions {
+  /** Loja tiles payload (admin-03 default when omitted). */
+  overview?: StoreOverview;
+  /** "Categorias da loja" chips (admin-03 default when omitted). */
+  categories?: StoreCategoryFixture[];
+  /** Produto rows (admin-03 default when omitted). */
+  products?: AdminStoreProductFixture[];
+  /** Pedidos board — pending never belongs here (admin-04 default). */
+  orders?: AdminStoreOrderFixture[];
+}
+
+/**
+ * Happy-path GET handlers for the admin Loja console (STO.8-9, spec 009):
+ * overview tiles, category chips, product rows and the pedidos board.
+ * Mutations stay per-test via `server.use(...)`.
+ */
+export function adminStoreHandlers(options: AdminStoreHandlerOptions = {}) {
+  const overview = options.overview ?? makeStoreOverview();
+  const categories = options.categories ?? makeStoreCategoryList();
+  const products = options.products ?? makeAdminStoreProductList();
+  const orders = options.orders ?? makeAdminStoreOrderBoard();
+
+  return [
+    http.get('/v1/admin/store/overview', ({ response }) => response(200).json(overview)),
+    http.get('/v1/admin/store/categories', ({ response }) =>
+      response(200).json({ categories }),
+    ),
+    http.get('/v1/admin/store/products', ({ response }) =>
+      response(200).json({ products }),
+    ),
+    http.get('/v1/admin/store/orders', ({ response }) => response(200).json({ orders })),
   ];
 }
 

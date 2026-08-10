@@ -82,6 +82,19 @@ export type RepasseTotals = ApiSchemas['RepasseTotalsDto'];
 export type RepasseRow = ApiSchemas['RepasseRowDto'];
 export type RepassesResponse = ApiSchemas['RepassesResponseDto'];
 
+// Store admin web surface (STO.8-9).
+export type StoreOverviewResponse = ApiSchemas['StoreOverviewResponseDto'];
+export type LowStockProduct = ApiSchemas['LowStockProductDto'];
+export type StoreCategory = ApiSchemas['StoreCategoryDto'];
+export type StoreCategoriesResponse = ApiSchemas['StoreCategoriesResponseDto'];
+export type AdminStoreProduct = ApiSchemas['AdminProductDto'];
+export type AdminStoreProductsResponse = ApiSchemas['AdminProductsResponseDto'];
+export type StoreOrderItem = ApiSchemas['OrderItemDto'];
+export type StoreOrderBuyer = ApiSchemas['OrderBuyerDto'];
+export type AdminStoreOrder = ApiSchemas['AdminOrderDto'];
+export type AdminStoreOrdersResponse = ApiSchemas['AdminOrdersResponseDto'];
+export type StoreOrderStatus = AdminStoreOrder['status'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

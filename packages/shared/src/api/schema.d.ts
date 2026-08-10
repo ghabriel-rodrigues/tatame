@@ -652,7 +652,7 @@ export interface paths {
         };
         /**
          * Início: today-class hero, presença %, streak, graduation card, próximos eventos
-         * @description Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7). `upcomingEvents` is the "Próximos eventos" section: the next 2 published events with the caller's own registration state (spec 008 — additive).
+         * @description Streak is null when the academy disabled the gamification.streak toggle. The graduation card carries the derived belt and the progress against the academy rule (GRD.7). `upcomingEvents` is the "Próximos eventos" section: the next 2 published events with the caller's own registration state (spec 008 — additive). `storeStrip` is the "Loja da academia" strip: the first 3 active store products + "Ver tudo" (spec 009 — additive).
          */
         get: operations["AlunoAttendanceController_home_v1"];
         put?: never;
@@ -1205,7 +1205,7 @@ export interface paths {
         put?: never;
         /**
          * Simular pagamento — settles a pending attempt instantly
-         * @description Exists ONLY when the simulated provider is configured (404 otherwise — a driver affordance, never a production backdoor). Synthesizes `payment.succeeded` through the exact normalized-event handler the Stripe webhook will use.
+         * @description Exists ONLY when the simulated provider is configured (404 otherwise — a driver affordance, never a production backdoor). Synthesizes `payment.succeeded` through the exact normalized-event handler the Stripe webhook will use. The professor role is admitted for store purchases only (spec 009) — authorization stays ownership of the underlying charge, and a professor owns nothing but their own order charges.
          */
         post: operations["BillingSharedController_simulate_v1"];
         delete?: never;
@@ -1363,6 +1363,251 @@ export interface paths {
         get: operations["PlatformRepassesController_list_v1"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/store/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Loja tiles: vendas do mês, pedidos no mês, estoque baixo
+         * @description All derived on read in the tenant timezone. Vendas is a standalone store aggregate — the billing Visão financeira keeps its all-payments derivation untouched (nothing double-counted, each screen owns its number).
+         */
+        get: operations["AdminStoreController_overview_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/store/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** "Categorias da loja" — one chip per category with its count */
+        get: operations["AdminStoreController_listCategories_v1"];
+        put?: never;
+        /** "+ Nova categoria" (name unique per academy — 409 on duplicate) */
+        post: operations["AdminStoreController_createCategory_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/store/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete a category — only while no product references it
+         * @description Referenced (archived products included) → 409 `category.in_use`.
+         */
+        delete: operations["AdminStoreController_deleteCategory_v1"];
+        options?: never;
+        head?: never;
+        /** Rename a category (audited) */
+        patch: operations["AdminStoreController_renameCategory_v1"];
+        trace?: never;
+    };
+    "/v1/admin/store/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Produto rows per admin-03: tile, price, "N em estoque · N vendidos"
+         * @description Vendidos is derived from real paid+ orders — truth, not a counter (story 8).
+         */
+        get: operations["AdminStoreController_listProducts_v1"];
+        put?: never;
+        /**
+         * "Novo produto" per admin-06
+         * @description Monogram derives from the name and the gradient preset cycles the design-system catalog when omitted. No image upload in v1 (recorded debt) — the galeria renders monogram-tile variants derived client-side.
+         */
+        post: operations["AdminStoreController_createProduct_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/store/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * "Remover da loja" — archives, never hard-deletes (story 6)
+         * @description Order history referencing the product stays intact; the vitrine stops showing it.
+         */
+        delete: operations["AdminStoreController_archiveProduct_v1"];
+        options?: never;
+        head?: never;
+        /** "Editar produto" (archived products are frozen — 409) */
+        patch: operations["AdminStoreController_updateProduct_v1"];
+        trace?: never;
+    };
+    "/v1/admin/store/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pedidos board per admin-04 — pending excluded, newest first
+         * @description Only sales that actually happened reach the board (story 13).
+         */
+        get: operations["AdminStoreController_board_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/store/orders/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Status sheet per admin-05: paid → ready → delivered; canceled refunds
+         * @description No skips, no backward moves, delivered is terminal (409 `store.order_invalid_transition` otherwise). Cancelado runs the audited full Pix refund; the order flip + stock restore ride the resulting `payment.refunded` event ("Estorno do Pix em até 1 dia útil"). `paid` is never set by hand — payment truth comes only from the handler.
+         */
+        post: operations["AdminStoreController_transition_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vitrine: active products + the category chip carousel data
+         * @description "Buscar por nome ou tag" via ?search= (name AND tags), one chip via ?categoryId=. Archived products exist only in order history — never here (story 31).
+         */
+        get: operations["StorefrontController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Product detail: gallery derivation inputs, size pills, stock, price
+         * @description The 3 "fotos" are deterministic monogram-tile variants derived client-side from `gradientPreset` + `monogram` (no image upload in v1 — recorded debt).
+         */
+        get: operations["StorefrontController_detail_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Meus pedidos — own orders with status chips and the retirada note */
+        get: operations["StorefrontController_myOrders_v1"];
+        put?: never;
+        /**
+         * "Comprar com Pix · R$ X" — pending order + order-origin charge
+         * @description Validates active product, size ∈ sizes (required iff the product has sizes) and quantity ≤ stock (no reservation — stock moves only at paid). Assigns the per-tenant #NNNN, snapshots the unit price, and returns the chargeId for the existing Pix sheet.
+         */
+        post: operations["StorefrontController_createOrder_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancel an own order still awaiting payment (voids its open charge)
+         * @description Pending only — a paid order is undone exclusively by the admin refund path (409 `store.order_not_cancelable`).
+         */
+        delete: operations["StorefrontController_cancelOrder_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/charges/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pix payment on an own order charge — persona-neutral wallet twin
+         * @description Ownership is the order's buyer (student or professor alike). Returns the render-ready Pix payload; settlement flows only through "Simular pagamento" (or the future webhook) via the normalized provider-event handler. @BypassReadOnly: paying an existing charge always works, even for delinquent academies.
+         */
+        post: operations["StorefrontController_pay_v1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2401,6 +2646,27 @@ export interface components {
             priceCents?: number | null;
             registration?: components["schemas"]["EventRegistrationStateDto"] | null;
         };
+        ProductCardDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Kimono Oficial */
+            name: string;
+            /** @description Integer cents */
+            priceCents: number;
+            /**
+             * @description 1–3 letters on the gradient tile
+             * @example GI
+             */
+            monogram: string;
+            /**
+             * @description Design-system gradient slug
+             * @example store-blue-purple
+             */
+            gradientPreset: string;
+            /** Format: uuid */
+            categoryId?: string | null;
+            categoryName?: string | null;
+        };
         AlunoHomeResponseDto: {
             student: components["schemas"]["AlunoStudentRefDto"];
             todayClass?: components["schemas"]["AlunoTodayClassDto"] | null;
@@ -2411,6 +2677,8 @@ export interface components {
             mensalidade?: components["schemas"]["MensalidadeAlertDto"] | null;
             /** @description "Próximos eventos": the next 2 published events with own registration state (spec 008) */
             upcomingEvents: components["schemas"]["AlunoEventItemDto"][];
+            /** @description "Loja da academia" strip: the first 3 active store products + "Ver tudo" (spec 009 — additive) */
+            storeStrip: components["schemas"]["ProductCardDto"][];
         };
         LiveSessionDto: {
             /** Format: uuid */
@@ -2891,8 +3159,11 @@ export interface components {
         ChargeWithPaymentsDto: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            studentId: string;
+            /**
+             * Format: uuid
+             * @description Null only on order-origin charges of a professor buyer (spec 009)
+             */
+            studentId?: string | null;
             /** Format: uuid */
             guardianId?: string | null;
             /** @enum {string} */
@@ -2965,8 +3236,11 @@ export interface components {
         ChargeDto: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            studentId: string;
+            /**
+             * Format: uuid
+             * @description Null only on order-origin charges of a professor buyer (spec 009)
+             */
+            studentId?: string | null;
             /** Format: uuid */
             guardianId?: string | null;
             /** @enum {string} */
@@ -3032,7 +3306,8 @@ export interface components {
         ReceiptResponseDto: {
             payment: components["schemas"]["PaymentDto"];
             charge: components["schemas"]["ChargeDto"];
-            studentName: string;
+            /** @description Null on order-origin receipts of a professor buyer (no student row) */
+            studentName?: string | null;
             planName?: string | null;
             academyName?: string | null;
         };
@@ -3151,6 +3426,285 @@ export interface components {
         RepassesResponseDto: {
             totals: components["schemas"]["RepasseTotalsDto"];
             repasses: components["schemas"]["RepasseRowDto"][];
+        };
+        LowStockProductDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @example PB */
+            monogram: string;
+            /** @example store-teal-green */
+            gradientPreset: string;
+            /** @description May be negative — the recorded oversell surfaced here */
+            stockQty: number;
+            lowStockThreshold: number;
+        };
+        LowStockDto: {
+            count: number;
+            products: components["schemas"]["LowStockProductDto"][];
+        };
+        StoreOverviewResponseDto: {
+            /**
+             * @description Tenant-local month
+             * @example 2026-08
+             */
+            month: string;
+            /** @description "R$ N vendas no mês" — settled order payments by paid_at */
+            vendasMesCents: number;
+            /** @description "N pedidos no mês" — orders that reached paid in the month */
+            pedidosMesCount: number;
+            lowStock: components["schemas"]["LowStockDto"];
+        };
+        StoreCategoryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Kimonos */
+            name: string;
+            /** @description The chip count, derived on read */
+            productCount: number;
+        };
+        StoreCategoriesResponseDto: {
+            categories: components["schemas"]["StoreCategoryDto"][];
+        };
+        CreateCategoryDto: {
+            /**
+             * @description "+ Nova categoria" — unique per academy
+             * @example Kimonos
+             */
+            name: string;
+        };
+        RenameCategoryDto: {
+            /**
+             * @description "+ Nova categoria" — unique per academy
+             * @example Kimonos
+             */
+            name: string;
+        };
+        AdminProductDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Kimono Oficial */
+            name: string;
+            /** @description Integer cents */
+            priceCents: number;
+            /**
+             * @description 1–3 letters on the gradient tile
+             * @example GI
+             */
+            monogram: string;
+            /**
+             * @description Design-system gradient slug
+             * @example store-blue-purple
+             */
+            gradientPreset: string;
+            /** Format: uuid */
+            categoryId?: string | null;
+            categoryName?: string | null;
+            description?: string | null;
+            /** @description Rendered as #chips */
+            tags: string[];
+            /** @description Size pills; empty = no sizes */
+            sizes: string[];
+            /** @description Caps the quantity stepper; may go negative (recorded oversell) */
+            stockQty: number;
+            lowStockThreshold: number;
+            /** @enum {string} */
+            status: "active" | "archived";
+            /** @description Derived: active AND stock_qty <= low_stock_threshold */
+            lowStock: boolean;
+            /** @description "N vendidos" — Σ quantities across paid/ready/delivered orders */
+            soldCount: number;
+        };
+        AdminProductsResponseDto: {
+            products: components["schemas"]["AdminProductDto"][];
+        };
+        CreateProductDto: {
+            /** @example Kimono Oficial */
+            name: string;
+            description?: string | null;
+            /** @description Integer cents — a product always costs something */
+            priceCents: number;
+            /** @default 0 */
+            stockQty?: number;
+            /**
+             * @description Per-product "estoque baixo" cut-off (story 7)
+             * @default 5
+             */
+            lowStockThreshold?: number;
+            /** Format: uuid */
+            categoryId?: string | null;
+            /** @description Rendered as #chips, searched by the vitrine */
+            tags?: string[];
+            /** @description Size pills; empty = product has no sizes */
+            sizes?: string[];
+            /**
+             * @description 1–3 letters; derived from the name when omitted
+             * @example GI
+             */
+            monogram?: string;
+            /**
+             * @description Design-system gradient catalog slug; cycles the catalog when omitted
+             * @example store-blue-purple
+             */
+            gradientPreset?: string;
+        };
+        UpdateProductDto: {
+            name?: string;
+            description?: string | null;
+            priceCents?: number;
+            stockQty?: number;
+            lowStockThreshold?: number;
+            /** Format: uuid */
+            categoryId?: string | null;
+            tags?: string[];
+            sizes?: string[];
+            /** @example GI */
+            monogram?: string;
+            /** @example store-teal-green */
+            gradientPreset?: string;
+        };
+        OrderItemDto: {
+            /** Format: uuid */
+            productId: string;
+            /** @example Kimono Oficial */
+            productName: string;
+            /** @example GI */
+            monogram: string;
+            /** @example store-blue-purple */
+            gradientPreset: string;
+            /** @description Null for sizeless products */
+            size?: string | null;
+            quantity: number;
+            /** @description Price snapshot at purchase — never the live price */
+            unitPriceCents: number;
+        };
+        OrderBuyerDto: {
+            /** Format: uuid */
+            userId: string;
+            /** @example Ana Aluna */
+            fullName: string;
+        };
+        AdminOrderDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Per-tenant sequential, rendered #2431
+             * @example 2431
+             */
+            number: number;
+            /** @enum {string} */
+            status: "pending" | "paid" | "ready" | "delivered" | "canceled";
+            /** @description unit_price × quantity from the snapshot */
+            totalCents: number;
+            /** @example Retirada na recepção */
+            pickupNote: string;
+            /** Format: date-time */
+            createdAt: string;
+            item?: components["schemas"]["OrderItemDto"] | null;
+            /**
+             * Format: uuid
+             * @description Open order charge to pay (pending only) — drives the Pix sheet
+             */
+            chargeId?: string | null;
+            /** @description Student or professor buyer */
+            buyer: components["schemas"]["OrderBuyerDto"];
+        };
+        AdminOrdersResponseDto: {
+            /** @description The pedidos board — pending excluded, newest first */
+            orders: components["schemas"]["AdminOrderDto"][];
+        };
+        OrderStatusTransitionDto: {
+            /**
+             * @description ready = Em andamento (from paid), delivered = Entregue (from ready, terminal), canceled = Cancelado (from paid/ready — runs the audited Pix refund). `paid` is never set by hand: payment truth comes only from the provider-event handler.
+             * @enum {string}
+             */
+            status: "ready" | "delivered" | "canceled";
+        };
+        VitrineCategoryDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        VitrineResponseDto: {
+            /** @description Active products only */
+            products: components["schemas"]["ProductCardDto"][];
+            /** @description The "Tudo + chips" carousel data */
+            categories: components["schemas"]["VitrineCategoryDto"][];
+        };
+        ProductDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Kimono Oficial */
+            name: string;
+            /** @description Integer cents */
+            priceCents: number;
+            /**
+             * @description 1–3 letters on the gradient tile
+             * @example GI
+             */
+            monogram: string;
+            /**
+             * @description Design-system gradient slug
+             * @example store-blue-purple
+             */
+            gradientPreset: string;
+            /** Format: uuid */
+            categoryId?: string | null;
+            categoryName?: string | null;
+            description?: string | null;
+            /** @description Rendered as #chips */
+            tags: string[];
+            /** @description Size pills; empty = no sizes */
+            sizes: string[];
+            /** @description Caps the quantity stepper; may go negative (recorded oversell) */
+            stockQty: number;
+        };
+        CreateOrderDto: {
+            /** Format: uuid */
+            productId: string;
+            /** @description Required iff the product defines sizes; must be one of its pills */
+            size?: string | null;
+            /** @description Capped by available stock at creation */
+            quantity: number;
+        };
+        OrderDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Per-tenant sequential, rendered #2431
+             * @example 2431
+             */
+            number: number;
+            /** @enum {string} */
+            status: "pending" | "paid" | "ready" | "delivered" | "canceled";
+            /** @description unit_price × quantity from the snapshot */
+            totalCents: number;
+            /** @example Retirada na recepção */
+            pickupNote: string;
+            /** Format: date-time */
+            createdAt: string;
+            item?: components["schemas"]["OrderItemDto"] | null;
+            /**
+             * Format: uuid
+             * @description Open order charge to pay (pending only) — drives the Pix sheet
+             */
+            chargeId?: string | null;
+        };
+        CreateOrderResponseDto: {
+            order: components["schemas"]["OrderDto"];
+            /**
+             * Format: uuid
+             * @description The order-origin charge: pay it via POST /store/charges/{id}/payments (Pix) and the existing simulate button — addressed "Pedido #NNNN · <produto>"
+             */
+            chargeId: string;
+        };
+        OrdersResponseDto: {
+            /** @description Meus pedidos — own orders, newest first */
+            orders: components["schemas"]["OrderDto"][];
+        };
+        CreateOrderChargePaymentDto: {
+            /** @enum {string} */
+            method: "pix";
         };
         AgendaOccupancyDto: {
             /** @description Active enrollments — the "N" of the "N de M" chip */
@@ -5293,6 +5847,372 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RepassesResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_overview_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreOverviewResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_listCategories_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreCategoriesResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_createCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreCategoryDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_deleteCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AdminStoreController_renameCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreCategoryDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_listProducts_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductsResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_createProduct_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProductDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_archiveProduct_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_updateProduct_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProductDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_board_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrdersResponseDto"];
+                };
+            };
+        };
+    };
+    AdminStoreController_transition_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderStatusTransitionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderDto"];
+                };
+            };
+        };
+    };
+    StorefrontController_list_v1: {
+        parameters: {
+            query?: {
+                search?: string;
+                categoryId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VitrineResponseDto"];
+                };
+            };
+        };
+    };
+    StorefrontController_detail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDetailDto"];
+                };
+            };
+        };
+    };
+    StorefrontController_myOrders_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdersResponseDto"];
+                };
+            };
+        };
+    };
+    StorefrontController_createOrder_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateOrderResponseDto"];
+                };
+            };
+        };
+    };
+    StorefrontController_cancelOrder_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    StorefrontController_pay_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateOrderChargePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentCreatedResponseDto"];
                 };
             };
         };

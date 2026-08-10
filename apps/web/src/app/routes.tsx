@@ -13,6 +13,7 @@ import { CadastrosPage } from '../pages/admin/CadastrosPage';
 import { CalendarioPage } from '../pages/admin/CalendarioPage';
 import { EventosPage } from '../pages/admin/EventosPage';
 import { GraduationRulesPage } from '../pages/admin/GraduationRulesPage';
+import { LojaPage } from '../pages/admin/LojaPage';
 import { PlansPage } from '../pages/admin/PlansPage';
 import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
 import { VisaoFinanceiraPage } from '../pages/admin/VisaoFinanceiraPage';
@@ -39,6 +40,8 @@ export const appRoutes: RouteObject[] = [
           // EVT.9: the admin events console (admin-13, spec 008).
           { path: 'eventos', element: <EventosPage /> },
           { path: 'graduacao', element: <GraduationRulesPage /> },
+          // STO.8-9: the admin Loja console (admin-03/04/05/06, spec 009).
+          { path: 'loja', element: <LojaPage /> },
           { path: 'planos', element: <PlansPage /> },
           { path: 'turmas/:id', element: <TurmaDetailPage /> },
           { path: '*', element: <UnderConstruction surfaceLabel="Painel da academia" /> },
