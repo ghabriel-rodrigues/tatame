@@ -73,7 +73,7 @@ struct AlunoAgendaContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .refreshable { await model.load() }
         .sheet(
@@ -107,11 +107,11 @@ struct AlunoAgendaContent: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Agenda")
                     .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 if let academyName {
                     Text("Horários da \(academyName)")
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                        .foregroundStyle(ThemedColors.fg3)
                 }
             }
             Spacer()
@@ -124,12 +124,12 @@ struct AlunoAgendaContent: View {
                     Text("Mês")
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
                 }
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
                 .padding(.horizontal, LumiraTokens.Space.s4)
                 .frame(height: 38)
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(Capsule())
-                .overlay(Capsule().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                .overlay(Capsule().strokeBorder(ThemedColors.border1, lineWidth: 1))
             }
             .accessibilityIdentifier("agenda-mes-button")
         }
@@ -148,14 +148,14 @@ struct AlunoAgendaContent: View {
                     } label: {
                         Text(WeekdayLabels.short(weekday))
                             .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                            .foregroundStyle(selected ? LumiraTokens.Colors.fgOnColor : LumiraTokens.Colors.fg2)
+                            .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg2)
                             .frame(width: 44, height: 40)
-                            .background(selected ? LumiraTokens.Colors.purple700 : LumiraTokens.Colors.bgSurface)
+                            .background(selected ? ThemedColors.purple700 : ThemedColors.bgSurface)
                             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
                                     .strokeBorder(
-                                        selected ? Color.clear : LumiraTokens.Colors.border1,
+                                        selected ? Color.clear : ThemedColors.border1,
                                         lineWidth: 1
                                     )
                             )
@@ -173,24 +173,24 @@ struct AlunoAgendaContent: View {
             VStack(spacing: 2) {
                 Text(item.startTime)
                     .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                 Text(item.endTime)
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
             .frame(width: 54)
 
             Rectangle()
-                .fill(LumiraTokens.Colors.border1)
+                .fill(ThemedColors.border1)
                 .frame(width: 1)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.className)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Text(item.professorName)
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                 HStack(spacing: LumiraTokens.Space.s2) {
                     chip(item.levelChipLabelPTBR, brand: true)
                     chip(item.occupancy.labelPTBR, brand: false)
@@ -205,40 +205,40 @@ struct AlunoAgendaContent: View {
                 } label: {
                     Text("Check-in")
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                        .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s3)
                         .frame(height: 36)
-                        .background(LumiraTokens.Colors.purple700)
+                        .background(ThemedColors.purple700)
                         .clipShape(Capsule())
                 }
                 .accessibilityIdentifier("agenda-checkin-\(item.classId.uuidString.lowercased())")
             } else if item.checkedIn {
                 Image(systemName: "checkmark")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold))
-                    .foregroundStyle(LumiraTokens.Colors.success500)
+                    .foregroundStyle(ThemedColors.success500)
                     .frame(width: 32, height: 32)
-                    .background(LumiraTokens.Colors.success100)
+                    .background(ThemedColors.success100)
                     .clipShape(Circle())
                     .accessibilityIdentifier("agenda-checked-in-\(item.classId.uuidString.lowercased())")
             }
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
     private func chip(_ text: String, brand: Bool) -> some View {
         Text(text)
             .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-            .foregroundStyle(brand ? LumiraTokens.Colors.purple800 : LumiraTokens.Colors.fg3)
+            .foregroundStyle(brand ? ThemedColors.purple800 : ThemedColors.fg3)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
-            .background(brand ? LumiraTokens.Colors.purple100 : LumiraTokens.Colors.bgSunken)
+            .background(brand ? ThemedColors.purple100 : ThemedColors.bgSunken)
             .clipShape(Capsule())
     }
 
@@ -248,16 +248,16 @@ struct AlunoAgendaContent: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Image(systemName: "clock")
                 .font(.system(size: LumiraTokens.FontSize.textLg))
-                .foregroundStyle(LumiraTokens.Colors.purple400)
+                .foregroundStyle(ThemedColors.purple400)
                 .frame(width: 56, height: 56)
-                .background(LumiraTokens.Colors.purple50)
+                .background(ThemedColors.purple50)
                 .clipShape(Circle())
             Text("Sem aulas neste dia")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
             Text("Bom descanso — o tatame espera você amanhã.")
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -272,18 +272,18 @@ struct AlunoAgendaContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Eventos do mês")
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             if events.isEmpty {
                 Text("Nenhum evento neste mês")
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, LumiraTokens.Space.s5)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                            .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                            .strokeBorder(ThemedColors.border1, lineWidth: 1)
                     )
                     .accessibilityIdentifier("eventos-empty")
             } else {
@@ -300,7 +300,7 @@ struct AlunoAgendaContent: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             ForEach(0..<2, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 96)
             }
         }

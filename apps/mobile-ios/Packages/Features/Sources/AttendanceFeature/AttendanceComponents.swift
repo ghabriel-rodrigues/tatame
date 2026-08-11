@@ -13,9 +13,9 @@ struct AttendanceAvatar: View {
     var body: some View {
         Text(initials)
             .font(.system(size: size * 0.33, weight: .bold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+            .foregroundStyle(ThemedColors.inkPurple)
             .frame(width: size, height: size)
-            .background(LumiraTokens.Colors.purple100)
+            .background(ThemedColors.purple100)
             .clipShape(Circle())
     }
 }
@@ -43,17 +43,17 @@ struct AttendanceChip: View {
 
     private var foreground: Color {
         switch style {
-        case .brand: LumiraTokens.Colors.inkPurple
-        case .neutral: LumiraTokens.Colors.fg3
-        case .success: LumiraTokens.Colors.success500
+        case .brand: ThemedColors.inkPurple
+        case .neutral: ThemedColors.fg3
+        case .success: ThemedColors.success500
         }
     }
 
     private var background: Color {
         switch style {
-        case .brand: LumiraTokens.Colors.purple100
-        case .neutral: LumiraTokens.Colors.bgSunken
-        case .success: LumiraTokens.Colors.success100
+        case .brand: ThemedColors.purple100
+        case .neutral: ThemedColors.bgSunken
+        case .success: ThemedColors.success100
         }
     }
 }
@@ -67,14 +67,14 @@ struct AttendanceErrorBanner: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
     }
 }
@@ -87,10 +87,10 @@ struct AttendanceActionErrorBanner: View {
     var body: some View {
         Text(message)
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.danger500)
+            .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
-            .background(LumiraTokens.Colors.danger100)
+            .background(ThemedColors.danger100)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
             .accessibilityIdentifier(identifier)
     }
@@ -106,13 +106,13 @@ struct CodeDigitBoxes: View {
             ForEach(0..<4, id: \.self) { index in
                 Text(digit(at: index))
                     .font(.system(size: boxSize * 0.46, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .frame(width: boxSize, height: boxSize * 1.15)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous)
-                            .strokeBorder(LumiraTokens.Colors.border2, lineWidth: 1)
+                            .strokeBorder(ThemedColors.border2, lineWidth: 1)
                     )
             }
         }

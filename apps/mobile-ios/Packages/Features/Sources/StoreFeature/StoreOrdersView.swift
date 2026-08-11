@@ -65,7 +65,7 @@ struct StoreOrdersContent: View {
             .padding(.top, LumiraTokens.Space.s4)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .refreshable { await model.load() }
         .storeNavigationBarHiddenOnIOS()
@@ -82,16 +82,16 @@ struct StoreOrdersContent: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg2)
+                    .foregroundStyle(ThemedColors.fg2)
                     .frame(width: 34, height: 34)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                    .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
             }
             .accessibilityIdentifier("orders-back-button")
             Text("Meus pedidos")
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Spacer()
         }
     }
@@ -103,7 +103,7 @@ struct StoreOrdersContent: View {
             HStack(spacing: LumiraTokens.Space.s2) {
                 Text(StoreFormatters.orderTitlePTBR(order: order))
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .lineLimit(1)
                 Spacer(minLength: LumiraTokens.Space.s2)
                 StoreStatusChip(status: order.status)
@@ -122,11 +122,11 @@ struct StoreOrdersContent: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(StoreFormatters.orderItemLinePTBR(order: order))
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg2)
+                        .foregroundStyle(ThemedColors.fg2)
                         .lineLimit(1)
                     Text(StoreFormatters.orderDateLinePTBR(createdAt: order.createdAt))
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
             }
@@ -135,10 +135,10 @@ struct StoreOrdersContent: View {
                 HStack(spacing: LumiraTokens.Space.s1) {
                     Image(systemName: "mappin.and.ellipse")
                         .font(.system(size: LumiraTokens.FontSize.text2xs))
-                        .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                        .foregroundStyle(ThemedColors.inkPurple)
                     Text(order.pickupNote)
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                        .foregroundStyle(ThemedColors.fg3)
                 }
                 .accessibilityIdentifier("order-pickup-note")
             }
@@ -149,10 +149,10 @@ struct StoreOrdersContent: View {
                 } label: {
                     Text("Pagar")
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                        .foregroundStyle(ThemedColors.fgOnColor)
                         .frame(maxWidth: .infinity)
                         .frame(height: 38)
-                        .background(LumiraTokens.Colors.purple700)
+                        .background(ThemedColors.purple700)
                         .clipShape(Capsule())
                 }
                 .accessibilityIdentifier("order-pagar-button")
@@ -163,7 +163,7 @@ struct StoreOrdersContent: View {
                 } label: {
                     Text("Cancelar pedido")
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.danger500)
+                        .foregroundStyle(ThemedColors.danger500)
                         .frame(maxWidth: .infinity)
                         .frame(height: 34)
                 }
@@ -173,11 +173,11 @@ struct StoreOrdersContent: View {
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .accessibilityIdentifier("order-\(order.id.uuidString.lowercased())")
     }
@@ -206,7 +206,7 @@ struct StoreOrdersContent: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 96)
             }
         }

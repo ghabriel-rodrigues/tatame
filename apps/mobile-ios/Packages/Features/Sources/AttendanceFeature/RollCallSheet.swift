@@ -57,7 +57,7 @@ struct RollCallContent: View {
 
             saveButton
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
     }
 
@@ -65,11 +65,11 @@ struct RollCallContent: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Chamada · \(model.session?.className ?? "")")
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             if case .loaded = model.phase {
                 Text(model.headerCountPTBR)
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                     .accessibilityIdentifier("roll-call-count")
             }
         }
@@ -97,10 +97,10 @@ struct RollCallContent: View {
         } label: {
             Text("Salvar chamada")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
-                .background(LumiraTokens.Colors.inkPurple)
+                .background(ThemedColors.inkPurple)
                 .clipShape(Capsule())
         }
         .padding(.horizontal, LumiraTokens.Space.s6)
@@ -121,7 +121,7 @@ struct RollCallRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.fullName)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 // Derived belt (spec 005 — the Phase-4 chip deferral).
                 if let belt = row.belt {
                     BeltBar(
@@ -141,15 +141,15 @@ struct RollCallRowView: View {
             Button(action: onToggle) {
                 ZStack {
                     Circle()
-                        .fill(row.present ? LumiraTokens.Colors.success500 : LumiraTokens.Colors.bgSunken)
+                        .fill(row.present ? ThemedColors.success500 : ThemedColors.bgSunken)
                         .frame(width: 28, height: 28)
                     if row.present {
                         Image(systemName: "checkmark")
                             .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold))
-                            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                            .foregroundStyle(ThemedColors.fgOnColor)
                     } else {
                         Circle()
-                            .strokeBorder(LumiraTokens.Colors.border2, lineWidth: 1)
+                            .strokeBorder(ThemedColors.border2, lineWidth: 1)
                             .frame(width: 28, height: 28)
                     }
                 }
@@ -160,11 +160,11 @@ struct RollCallRowView: View {
         }
         .padding(.horizontal, LumiraTokens.Space.s4)
         .padding(.vertical, LumiraTokens.Space.s3)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 }

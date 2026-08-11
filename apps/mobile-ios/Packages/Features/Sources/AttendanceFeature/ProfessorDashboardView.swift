@@ -83,7 +83,7 @@ struct ProfessorDashboardContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .refreshable { await model.load() }
         .sheet(
@@ -109,10 +109,10 @@ struct ProfessorDashboardContent: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(AttendanceFormatters.headerDatePTBR())
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                 Text("\(AttendanceFormatters.greetingPTBR(hour: Calendar.current.component(.hour, from: Date()))),\n\(AttendanceFormatters.firstName(professorName))")
                     .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
             }
             Spacer()
             HStack(spacing: LumiraTokens.Space.s3) {
@@ -130,11 +130,11 @@ struct ProfessorDashboardContent: View {
                     Button(action: onOpenCalendar) {
                         Image(systemName: "calendar")
                             .font(.system(size: LumiraTokens.FontSize.textMd))
-                            .foregroundStyle(LumiraTokens.Colors.fg2)
+                            .foregroundStyle(ThemedColors.fg2)
                             .frame(width: 42, height: 42)
-                            .background(LumiraTokens.Colors.bgSurface)
+                            .background(ThemedColors.bgSurface)
                             .clipShape(Circle())
-                            .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                            .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
                     }
                     .accessibilityIdentifier("professor-calendar-button")
                 }
@@ -149,12 +149,12 @@ struct ProfessorDashboardContent: View {
             HStack(spacing: LumiraTokens.Space.s3) {
                 ForEach(0..<3, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .fill(LumiraTokens.Colors.bgSunken)
+                        .fill(ThemedColors.bgSunken)
                         .frame(height: 76)
                 }
             }
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .fill(LumiraTokens.Colors.bgSunken)
+                .fill(ThemedColors.bgSunken)
                 .frame(height: 140)
         }
         .redacted(reason: .placeholder)
@@ -183,7 +183,7 @@ struct ProfessorDashboardContent: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Eventos futuros")
                     .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 ForEach(dashboard.upcomingEvents) { event in
                     EventRowCard(event: event)
                         .accessibilityIdentifier("dashboard-event-\(event.id.uuidString.lowercased())")
@@ -204,18 +204,18 @@ struct ProfessorDashboardContent: View {
                     Text("Próxima aula · \(nextClass.slot.nextSlotLabelPTBR)")
                 }
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
-                .background(LumiraTokens.Colors.white.opacity(0.18))
+                .background(ThemedColors.white.opacity(0.18))
                 .clipShape(Capsule())
 
                 Text(nextClass.className)
                     .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                 Text("\(nextClass.checkedInCount) confirmados")
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.75))
+                    .foregroundStyle(ThemedColors.fgOnColor.opacity(0.75))
                     .accessibilityIdentifier("hero-checked-in-count")
 
                 HStack(spacing: LumiraTokens.Space.s3) {
@@ -224,26 +224,26 @@ struct ProfessorDashboardContent: View {
                     } label: {
                         Text("Iniciar chamada")
                             .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                            .foregroundStyle(ThemedColors.inkPurple)
                             .padding(.horizontal, LumiraTokens.Space.s4)
                             .frame(height: 38)
-                            .background(LumiraTokens.Colors.white)
+                            .background(ThemedColors.white)
                             .clipShape(Capsule())
                     }
                     .accessibilityIdentifier("iniciar-chamada-button")
 
                     Button("Ver turmas", action: onVerTurmas)
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                        .foregroundStyle(ThemedColors.fgOnColor)
                 }
                 .padding(.top, LumiraTokens.Space.s2)
             } else {
                 Text("Sem aulas hoje")
                     .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                 Button("Ver turmas", action: onVerTurmas)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -251,8 +251,8 @@ struct ProfessorDashboardContent: View {
         .background(
             LinearGradient(
                 colors: [
-                    theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
-                    theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
+                    theme.color("purple-700") ?? ThemedColors.purple700,
+                    theme.color("purple-500") ?? ThemedColors.purple500,
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -266,23 +266,23 @@ struct ProfessorDashboardContent: View {
             HStack {
                 Text("Próximos da graduação")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Text("Fase 5")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
             Text("A fila de graduação chega com as regras de graduação.")
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .opacity(0.7)
     }

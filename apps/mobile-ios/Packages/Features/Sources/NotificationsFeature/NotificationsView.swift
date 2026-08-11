@@ -63,7 +63,7 @@ struct NotificationsContent: View {
             .padding(.top, LumiraTokens.Space.s4)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.open() }
         .refreshable { await model.refresh() }
     }
@@ -75,16 +75,16 @@ struct NotificationsContent: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg2)
+                    .foregroundStyle(ThemedColors.fg2)
                     .frame(width: 34, height: 34)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                    .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
             }
             .accessibilityIdentifier("notifications-back-button")
             Text(NotificationsMessages.title)
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Spacer()
         }
     }
@@ -126,7 +126,7 @@ struct NotificationsContent: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 72)
             }
         }
@@ -137,13 +137,13 @@ struct NotificationsContent: View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Image(systemName: "bell.slash")
                 .font(.system(size: LumiraTokens.FontSize.textXl))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             Text(NotificationsMessages.empty)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
             Text(NotificationsMessages.emptyCaption)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -154,19 +154,19 @@ struct NotificationsContent: View {
     private func errorBanner(_ message: String) -> some View {
         HStack(spacing: LumiraTokens.Space.s3) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(LumiraTokens.Colors.warning500)
+                .foregroundStyle(ThemedColors.warning500)
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
             Spacer()
             Button("Tentar de novo") {
                 Task { await model.open() }
             }
             .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+            .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.warning100)
+        .background(ThemedColors.warning100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .accessibilityIdentifier("notifications-error")
     }

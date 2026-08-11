@@ -43,7 +43,7 @@ public struct AlunoProfileHeader: View {
             GraduationAvatar(initials: GraduationInitials.from(fullName), size: 64)
             Text(fullName)
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             if let belt = model?.belt {
                 BeltChip(belt: belt, style: .prominent)
                     .accessibilityIdentifier("aluno-belt-chip")

@@ -56,7 +56,7 @@ struct AlunoEventDetailContent: View {
                         if let description = detail.description {
                             Text(description)
                                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                                .foregroundStyle(LumiraTokens.Colors.fg3)
+                                .foregroundStyle(ThemedColors.fg3)
                                 .accessibilityIdentifier("event-description")
                         }
                         if let error = model.actionError {
@@ -71,7 +71,7 @@ struct AlunoEventDetailContent: View {
             }
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .refreshable { await model.load() }
         .eventsNavigationBarHiddenOnIOS()
@@ -90,9 +90,9 @@ struct AlunoEventDetailContent: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                     .frame(width: 38, height: 38)
-                    .background(LumiraTokens.Colors.white.opacity(0.18))
+                    .background(ThemedColors.white.opacity(0.18))
                     .clipShape(Circle())
             }
             .accessibilityIdentifier("event-back-button")
@@ -102,17 +102,17 @@ struct AlunoEventDetailContent: View {
             if let detail = model.detail {
                 Text(EventFormatters.valorChipPTBR(priceCents: detail.priceCents))
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)
-                    .background(LumiraTokens.Colors.white)
+                    .background(ThemedColors.white)
                     .clipShape(Capsule())
                     .accessibilityIdentifier("event-banner-chip")
             }
             if let name {
                 Text(name)
                     .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                     .accessibilityIdentifier("event-banner-name")
             }
         }
@@ -156,11 +156,11 @@ struct AlunoEventDetailContent: View {
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
@@ -168,11 +168,11 @@ struct AlunoEventDetailContent: View {
         HStack(spacing: LumiraTokens.Space.s2) {
             Image(systemName: icon)
                 .font(.system(size: LumiraTokens.FontSize.textXs))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
                 .frame(width: 18)
             Text(text)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
         }
         .accessibilityIdentifier(identifier)
     }
@@ -210,7 +210,7 @@ struct AlunoEventDetailContent: View {
             } label: {
                 Text("Cancelar participação")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.danger500)
+                    .foregroundStyle(ThemedColors.danger500)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
             }
@@ -225,10 +225,10 @@ struct AlunoEventDetailContent: View {
             Text(EventsMessages.confirmed)
         }
         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-        .foregroundStyle(LumiraTokens.Colors.success500)
+        .foregroundStyle(ThemedColors.success500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.success100)
+        .background(ThemedColors.success100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .accessibilityIdentifier("event-confirmed-banner")
     }
@@ -239,10 +239,10 @@ struct AlunoEventDetailContent: View {
             Text(EventsMessages.pendingPayment)
         }
         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-        .foregroundStyle(LumiraTokens.Colors.warning500)
+        .foregroundStyle(ThemedColors.warning500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s3)
-        .background(LumiraTokens.Colors.warning100)
+        .background(ThemedColors.warning100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .accessibilityIdentifier("event-pending-banner")
     }
@@ -255,10 +255,10 @@ struct AlunoEventDetailContent: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
-                .background(LumiraTokens.Colors.purple700)
+                .background(ThemedColors.purple700)
                 .clipShape(Capsule())
                 .opacity(model.working ? 0.6 : 1)
         }
@@ -300,17 +300,17 @@ struct AlunoEventDetailContent: View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let retry {
                 Button("Tentar novamente", action: retry)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .padding(.horizontal, retry == nil ? 0 : LumiraTokens.Space.s6)
         .accessibilityIdentifier("event-error-banner")
@@ -319,10 +319,10 @@ struct AlunoEventDetailContent: View {
     private var loadingState: some View {
         VStack(spacing: LumiraTokens.Space.s4) {
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .fill(LumiraTokens.Colors.bgSunken)
+                .fill(ThemedColors.bgSunken)
                 .frame(height: 180)
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .fill(LumiraTokens.Colors.bgSunken)
+                .fill(ThemedColors.bgSunken)
                 .frame(height: 110)
                 .padding(.horizontal, LumiraTokens.Space.s6)
         }

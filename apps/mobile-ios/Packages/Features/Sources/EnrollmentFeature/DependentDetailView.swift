@@ -59,7 +59,7 @@ public struct DependentDetailView: View {
             if let model {
                 DependentDetailContent(model: model)
             } else {
-                LumiraTokens.Colors.bgApp
+                ThemedColors.bgApp
             }
         }
         .task {
@@ -96,7 +96,7 @@ struct DependentDetailContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .navigationTitle(navigationTitle)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -114,11 +114,11 @@ struct DependentDetailContent: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(dependent.fullName)
                     .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 if let ageLabel = BirthDates.ageLabelPTBR(fromISO: dependent.birthDate) {
                     Text(ageLabel)
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 // Derived belt chip (spec 005, story 34).
                 if let belt = dependent.belt {
@@ -137,15 +137,15 @@ struct DependentDetailContent: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Turma")
                     .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
 
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
                     Text(enrolledClass.name)
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     Text(enrolledClass.schedules.scheduleLinePTBR)
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                     if let nextSlot = enrolledClass.nextSlot {
                         HStack(spacing: LumiraTokens.Space.s2) {
                             Image(systemName: "calendar")
@@ -153,26 +153,26 @@ struct DependentDetailContent: View {
                             Text("Próxima aula: \(nextSlot.nextSlotLabelPTBR)")
                                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
                         }
-                        .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                        .foregroundStyle(ThemedColors.inkPurple)
                         .padding(.top, LumiraTokens.Space.s1)
                     }
                 }
                 .padding(LumiraTokens.Space.s4)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                        .strokeBorder(ThemedColors.border1, lineWidth: 1)
                 )
             }
         } else {
             Text("Ainda sem turma — a matrícula acontece quando houver vaga.")
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(LumiraTokens.Space.s4)
-                .background(LumiraTokens.Colors.bgSunken)
+                .background(ThemedColors.bgSunken)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         }
     }

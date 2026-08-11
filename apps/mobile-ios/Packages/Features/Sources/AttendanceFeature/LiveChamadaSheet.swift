@@ -56,7 +56,7 @@ struct LiveChamadaContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.start() }
         .onDisappear { model.stop() }
     }
@@ -67,14 +67,14 @@ struct LiveChamadaContent: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("\(closed ? "Chamada encerrada" : "Chamada aberta") · \(code.session.className)")
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(
                 closed
                     ? "O código e o QR foram invalidados."
                     : "Os alunos podem entrar com o código ou lendo o QR."
             )
             .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg4)
+            .foregroundStyle(ThemedColors.fg4)
         }
         .padding(.top, LumiraTokens.Space.s6)
     }
@@ -94,17 +94,17 @@ struct LiveChamadaContent: View {
                         : "Expira em \(AttendanceFormatters.countdown(until: code.expiresAt, from: context.date)) · sem presenças duplicadas"
                 )
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(expired ? LumiraTokens.Colors.danger500 : LumiraTokens.Colors.fg4)
+                .foregroundStyle(expired ? ThemedColors.danger500 : ThemedColors.fg4)
             }
 
             QRCodeView(content: code.qrToken)
                 .frame(width: 148, height: 148)
                 .padding(LumiraTokens.Space.s3)
-                .background(LumiraTokens.Colors.white)
+                .background(ThemedColors.white)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                        .strokeBorder(ThemedColors.border1, lineWidth: 1)
                 )
         }
         .frame(maxWidth: .infinity)
@@ -116,17 +116,17 @@ struct LiveChamadaContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             HStack(spacing: LumiraTokens.Space.s2) {
                 Circle()
-                    .fill(LumiraTokens.Colors.success500)
+                    .fill(ThemedColors.success500)
                     .frame(width: 8, height: 8)
                 Text(AttendanceFormatters.liveCounterLabelPTBR(model.presentCount))
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.success500)
+                    .foregroundStyle(ThemedColors.success500)
                     .accessibilityIdentifier("live-counter")
                 Spacer()
                 if model.connection == .polling {
                     Text("atualizando a cada 5 s")
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                         .accessibilityIdentifier("polling-indicator")
                 }
             }
@@ -138,7 +138,7 @@ struct LiveChamadaContent: View {
                             AttendanceAvatar(initials: NameInitials.from(attendee.studentName), size: 30)
                             Text(attendee.studentName)
                                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                                .foregroundStyle(LumiraTokens.Colors.fg1)
+                                .foregroundStyle(ThemedColors.fg1)
                             Spacer()
                             if let marker = attendee.method.markerLabelPTBR {
                                 AttendanceChip(text: marker, style: .neutral)
@@ -147,15 +147,15 @@ struct LiveChamadaContent: View {
                         .padding(.horizontal, LumiraTokens.Space.s4)
                         .padding(.vertical, LumiraTokens.Space.s2)
                         if index < model.attendees.count - 1 {
-                            Divider().overlay(LumiraTokens.Colors.border1)
+                            Divider().overlay(ThemedColors.border1)
                         }
                     }
                 }
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                        .strokeBorder(ThemedColors.border1, lineWidth: 1)
                 )
             }
         }
@@ -169,10 +169,10 @@ struct LiveChamadaContent: View {
         } label: {
             Text("Encerrar chamada")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
-                .background(LumiraTokens.Colors.inkPurple)
+                .background(ThemedColors.inkPurple)
                 .clipShape(Capsule())
         }
         .accessibilityIdentifier("encerrar-chamada")
@@ -185,10 +185,10 @@ struct LiveChamadaContent: View {
             } label: {
                 Text("Reabrir chamada")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .background(LumiraTokens.Colors.purple100)
+                    .background(ThemedColors.purple100)
                     .clipShape(Capsule())
             }
             .accessibilityIdentifier("reabrir-chamada")
@@ -197,7 +197,7 @@ struct LiveChamadaContent: View {
             } label: {
                 Text("Fechar")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
             }
@@ -208,18 +208,18 @@ struct LiveChamadaContent: View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Image(systemName: "checkmark.seal")
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
-                .foregroundStyle(LumiraTokens.Colors.success500)
+                .foregroundStyle(ThemedColors.success500)
             Text(AttendanceFormatters.liveCounterLabelPTBR(model.presentCount))
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, LumiraTokens.Space.s8)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 }

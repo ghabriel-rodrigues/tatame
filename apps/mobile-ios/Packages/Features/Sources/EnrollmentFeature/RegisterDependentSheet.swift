@@ -23,10 +23,10 @@ struct RegisterDependentSheet: View {
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                     Text("Cadastrar aluno")
                         .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     Text("O cadastro nasce vinculado a você e à academia.")
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 .padding(.top, LumiraTokens.Space.s6)
 
@@ -48,10 +48,10 @@ struct RegisterDependentSheet: View {
                 if case .failed(let message) = model.phase {
                     Text(message)
                         .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.danger500)
+                        .foregroundStyle(ThemedColors.danger500)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(LumiraTokens.Space.s3)
-                        .background(LumiraTokens.Colors.danger100)
+                        .background(ThemedColors.danger100)
                         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                         .accessibilityIdentifier("register-dependent-error")
                 }
@@ -59,10 +59,10 @@ struct RegisterDependentSheet: View {
                 if case .registered(let message) = model.phase {
                     Text(message)
                         .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.success500)
+                        .foregroundStyle(ThemedColors.success500)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(LumiraTokens.Space.s3)
-                        .background(LumiraTokens.Colors.success100)
+                        .background(ThemedColors.success100)
                         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                         .accessibilityIdentifier("register-dependent-success")
                 }
@@ -73,7 +73,7 @@ struct RegisterDependentSheet: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
     }
 
     // MARK: Suggestion chip (fetched only after a valid birth date)
@@ -107,13 +107,13 @@ struct RegisterDependentSheet: View {
                                     design: .rounded
                                 ))
                         }
-                        .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                        .foregroundStyle(ThemedColors.inkPurple)
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
-                        .background(model.suggestionAccepted ? LumiraTokens.Colors.purple100 : .clear)
+                        .background(model.suggestionAccepted ? ThemedColors.purple100 : .clear)
                         .clipShape(Capsule())
                         .overlay(
-                            Capsule().strokeBorder(LumiraTokens.Colors.inkPurple, lineWidth: 1)
+                            Capsule().strokeBorder(ThemedColors.inkPurple, lineWidth: 1)
                         )
                     }
                     .accessibilityIdentifier("suggestion-chip")
@@ -121,7 +121,7 @@ struct RegisterDependentSheet: View {
             } else {
                 Text("Nenhuma turma com vaga para essa idade — o cadastro segue sem matrícula.")
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
             }
         }
     }
@@ -129,7 +129,7 @@ struct RegisterDependentSheet: View {
     private var suggestionLabel: some View {
         Text("Turma sugerida pela idade")
             .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg3)
+            .foregroundStyle(ThemedColors.fg3)
     }
 
     // MARK: Submit
@@ -148,20 +148,20 @@ struct RegisterDependentSheet: View {
             Group {
                 if model.phase == .submitting {
                     ProgressView()
-                        .tint(LumiraTokens.Colors.fgOnColor)
+                        .tint(ThemedColors.fgOnColor)
                 } else {
                     Text("Cadastrar")
                         .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
                 }
             }
-            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+            .foregroundStyle(ThemedColors.fgOnColor)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
             .background(
                 LinearGradient(
                     colors: [
-                        theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
-                        theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
+                        theme.color("purple-700") ?? ThemedColors.purple700,
+                        theme.color("purple-500") ?? ThemedColors.purple500,
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -179,14 +179,14 @@ private struct SheetFieldStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg1)
+            .foregroundStyle(ThemedColors.fg1)
             .padding(.horizontal, LumiraTokens.Space.s4)
             .frame(height: 48)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
     }
 }

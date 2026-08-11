@@ -72,10 +72,10 @@ public struct PixSheet: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Pagar com Pix")
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(subtitle)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .accessibilityIdentifier("pix-sheet-subtitle")
         }
     }
@@ -100,16 +100,16 @@ public struct PixSheet: View {
                     PixQRView(payload: qrPayload)
                         .frame(width: 124, height: 124)
                         .padding(LumiraTokens.Space.s3)
-                        .background(LumiraTokens.Colors.white)
+                        .background(ThemedColors.white)
                         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 }
                 Text(BillingFormatters.amountBRL(payment.amountCents))
                     .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 if let confirmation = model.copyConfirmation {
                     Text(confirmation)
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.success500)
+                        .foregroundStyle(ThemedColors.success500)
                         .accessibilityIdentifier("pix-copy-confirmation")
                 }
                 BillingSecondaryButton(
@@ -160,12 +160,12 @@ struct BoletoSheet: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Boleto bancário")
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(
                 "\(BillingFormatters.mensalidadeDePTBR(periodStart: model.charge.periodStart)) · vence em \(BillingFormatters.shortDatePTBR(fromISO: model.charge.dueDate)) · \(BillingFormatters.amountBRL(model.charge.amountCents))"
             )
             .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg3)
+            .foregroundStyle(ThemedColors.fg3)
         }
     }
 
@@ -184,20 +184,20 @@ struct BoletoSheet: View {
                     if let linha = payment.providerData?.linhaDigitavel {
                         Text(linha)
                             .font(.system(size: LumiraTokens.FontSize.text2xs, design: .monospaced))
-                            .foregroundStyle(LumiraTokens.Colors.gray950)
+                            .foregroundStyle(ThemedColors.gray950)
                             .multilineTextAlignment(.center)
                             .accessibilityIdentifier("boleto-linha-digitavel")
                     }
                 }
                 .padding(LumiraTokens.Space.s4)
                 .frame(maxWidth: .infinity)
-                .background(LumiraTokens.Colors.white)
+                .background(ThemedColors.white)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
 
                 if let confirmation = model.copyConfirmation {
                     Text(confirmation)
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.success500)
+                        .foregroundStyle(ThemedColors.success500)
                         .accessibilityIdentifier("boleto-copy-confirmation")
                 }
                 BillingSecondaryButton(
@@ -214,7 +214,7 @@ struct BoletoSheet: View {
                 }
                 Text("Boletos compensam em até 2 dias úteis.")
                     .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
             }
@@ -257,12 +257,12 @@ struct CartaoSheet: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Pagar com cartão")
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(
                 "\(BillingFormatters.mensalidadeDePTBR(periodStart: model.charge.periodStart)) · \(BillingFormatters.amountBRL(model.charge.amountCents))"
             )
             .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg3)
+            .foregroundStyle(ThemedColors.fg3)
         }
     }
 
@@ -280,20 +280,20 @@ struct CartaoSheet: View {
             HStack(spacing: LumiraTokens.Space.s3) {
                 Text("Usar este cartão na recorrência mensal")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg2)
+                    .foregroundStyle(ThemedColors.fg2)
                 Spacer()
                 Toggle("", isOn: $model.recurrenceToggle)
                     .labelsHidden()
-                    .tint(LumiraTokens.Colors.purple500)
+                    .tint(ThemedColors.purple500)
                     .accessibilityIdentifier("card-recurrence-toggle")
             }
             .padding(.horizontal, LumiraTokens.Space.s4)
             .padding(.vertical, LumiraTokens.Space.s3)
-            .background(LumiraTokens.Colors.purple50)
+            .background(ThemedColors.purple50)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.purple200, lineWidth: 1)
+                    .strokeBorder(ThemedColors.purple200, lineWidth: 1)
             )
 
             BillingPrimaryButton(
@@ -316,18 +316,18 @@ struct CartaoSheet: View {
     ) -> some View {
         TextField(placeholder, text: text)
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg1)
+            .foregroundStyle(ThemedColors.fg1)
             .textFieldStyle(.plain)
             #if os(iOS)
             .keyboardType(numeric ? .numberPad : .default)
             #endif
             .padding(.horizontal, LumiraTokens.Space.s4)
             .frame(height: 46)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
             .accessibilityIdentifier(identifier)
     }
@@ -342,7 +342,7 @@ struct SheetScaffold<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
             Capsule()
-                .fill(LumiraTokens.Colors.gray300)
+                .fill(ThemedColors.gray300)
                 .frame(width: 40, height: 4)
                 .frame(maxWidth: .infinity)
                 .padding(.top, LumiraTokens.Space.s3)
@@ -351,7 +351,7 @@ struct SheetScaffold<Content: View>: View {
         }
         .padding(.horizontal, LumiraTokens.Space.s6)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
     }
 }
 
@@ -362,7 +362,7 @@ struct PaymentProgress: View {
             ProgressView()
             Text("Processando…")
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, LumiraTokens.Space.s10)
@@ -379,7 +379,7 @@ struct PaymentFailure: View {
             BillingActionErrorBanner(message: message, identifier: "payment-error")
             Button("Tentar novamente", action: retry)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(.top, LumiraTokens.Space.s4)
     }
@@ -401,33 +401,33 @@ struct PaymentSuccessView: View {
                 .padding(.top, LumiraTokens.Space.s8)
             Text(title)
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("payment-success")
             Text(successLine)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .multilineTextAlignment(.center)
             if let caption {
                 Text(caption)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .multilineTextAlignment(.center)
                     .accessibilityIdentifier("payment-success-caption")
             }
             if mandateCreated {
                 Text("Recorrência ativada no cartão — as próximas mensalidades são pagas automaticamente.")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .multilineTextAlignment(.center)
                     .accessibilityIdentifier("payment-mandate-created")
             }
             Button(action: close) {
                 Text("Fechar")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .background(LumiraTokens.Colors.purple700)
+                    .background(ThemedColors.purple700)
                     .clipShape(Capsule())
             }
             .padding(.top, LumiraTokens.Space.s4)

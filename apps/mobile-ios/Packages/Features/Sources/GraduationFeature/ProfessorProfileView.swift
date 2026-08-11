@@ -62,7 +62,7 @@ public struct ProfessorProfileView: View {
             if let model {
                 ProfessorProfileContent(model: model, fullName: fullName, academyName: academyName)
             } else {
-                LumiraTokens.Colors.bgApp
+                ThemedColors.bgApp
             }
         }
         .task {
@@ -86,7 +86,7 @@ struct ProfessorProfileContent: View {
             switch model.phase {
             case .idle, .loading:
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 120)
                     .redacted(reason: .placeholder)
             case .failed(let message):
@@ -106,10 +106,10 @@ struct ProfessorProfileContent: View {
             GraduationAvatar(initials: GraduationInitials.from(fullName), size: 64)
             Text(fullName)
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(subtitle)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             if let belt = model.profile?.belt {
                 BeltChip(belt: belt, style: .prominent)
                     .accessibilityIdentifier("professor-belt-chip")
@@ -132,23 +132,23 @@ struct ProfessorProfileContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Graduações válidas")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(
                 "Definição conjunta com o admin, para todo o ambiente do treino. "
                     + "Faixas infantis são opcionais — toque para ativar ou desativar fica com o admin."
             )
             .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg4)
+            .foregroundStyle(ThemedColors.fg4)
 
             FlowChips(ladder: ladder)
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .accessibilityIdentifier("graduacoes-validas-card")
     }

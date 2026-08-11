@@ -41,6 +41,22 @@ public enum AcademyStatus: String, Sendable {
     case suspended
 }
 
+/// The academy's white-label 3-color brand from `/auth/me` `academy.theme`
+/// (spec 011, CFG.3/16). Nil on the session context = academy never
+/// configured branding = default Tatame brand (story 25). Hex strings are
+/// `#RRGGBB` uppercase, server-normalized.
+public struct AcademyBrand: Sendable, Equatable, Hashable {
+    public let deep: String
+    public let vibrant: String
+    public let accent: String
+
+    public init(deep: String, vibrant: String, accent: String) {
+        self.deep = deep
+        self.vibrant = vibrant
+        self.accent = accent
+    }
+}
+
 /// One membership row from the login/me payloads.
 public struct Membership: Sendable, Equatable, Identifiable {
     public let id: UUID
@@ -140,17 +156,24 @@ public struct SessionContext: Sendable, Equatable {
     /// login (the login payload carries none) until the next `/auth/me`
     /// hydration — absent keys resolve to their server-side default.
     public let permissions: [String: Bool]
+    /// White-label brand of the active academy (spec 011, CFG.16). Nil right
+    /// after a fresh login (the login payload carries no academy) and for
+    /// unbranded academies / platform contexts — nil renders the default
+    /// Tatame brand; the `/auth/me` hydration fills it in.
+    public let academyBrand: AcademyBrand?
 
     public init(
         user: UserSummary,
         memberships: [Membership],
         activeMembership: Membership,
-        permissions: [String: Bool] = [:]
+        permissions: [String: Bool] = [:],
+        academyBrand: AcademyBrand? = nil
     ) {
         self.user = user
         self.memberships = memberships
         self.activeMembership = activeMembership
         self.permissions = permissions
+        self.academyBrand = academyBrand
     }
 
     /// Builds the context from a login session and the chosen membership id.

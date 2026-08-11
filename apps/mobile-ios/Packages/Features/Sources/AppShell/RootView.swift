@@ -10,6 +10,10 @@ import TatameCore
 public struct RootView: View {
     @Environment(SessionStore.self) private var session
     @State private var splashFinished = false
+    /// Session brand + persisted dark-mode preference → `\.tatameTheme`
+    /// (spec 011, CFG.16-17). Cache-hydrated at init so the cold start
+    /// paints branded before the silent restore lands.
+    @State private var appTheme = AppThemeModel()
 
     public init() {}
 
@@ -17,7 +21,7 @@ public struct RootView: View {
         ZStack {
             switch session.state {
             case .unknown:
-                LumiraTokens.Colors.bgApp.ignoresSafeArea()
+                ThemedColors.bgApp.ignoresSafeArea()
             case .signedOut(let message):
                 LoginView(session: session, notice: message)
             case .signedIn(let context):
@@ -32,9 +36,28 @@ public struct RootView: View {
             }
         }
         .animation(.easeOut(duration: LumiraTokens.Motion.durSlow), value: splashFinished)
+        .environment(appTheme)
+        .environment(\.tatameTheme, appTheme.theme)
+        // Explicit two-state (ticket 06): the persisted mode always wins —
+        // never the system scheme (follow = recorded debt).
+        .preferredColorScheme(appTheme.isDark ? .dark : .light)
+        .onChange(of: session.state, initial: true) { oldState, newState in
+            appTheme.apply(sessionState: newState)
+            hydrateContextIfNeeded(from: oldState, to: newState)
+        }
         .task {
             await session.bootstrap()
         }
+    }
+
+    /// Fresh-login contexts carry no academy payload (the login response has
+    /// no `academy` and an empty permissions map) — one `/auth/me` round trip
+    /// hydrates brand + permissions (CFG.16 "updates on login/switch").
+    /// Restore/session-refresh paths already come from `/auth/me`.
+    private func hydrateContextIfNeeded(from oldState: SessionState, to newState: SessionState) {
+        guard case .signedIn(let context) = newState, context.permissions.isEmpty else { return }
+        if case .signedIn = oldState { return }
+        Task { await session.refreshPermissions() }
     }
 
     @ViewBuilder

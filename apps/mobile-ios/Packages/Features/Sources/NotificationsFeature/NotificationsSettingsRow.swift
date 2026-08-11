@@ -40,35 +40,35 @@ struct NotificationsSettingsRowContent: View {
             HStack(spacing: LumiraTokens.Space.s3) {
                 ZStack {
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous)
-                        .fill(LumiraTokens.Colors.purple50)
+                        .fill(ThemedColors.purple50)
                         .frame(width: 38, height: 38)
                     Image(systemName: "bell")
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                        .foregroundStyle(LumiraTokens.Colors.purple600)
+                        .foregroundStyle(ThemedColors.purple600)
                 }
                 Text(NotificationsMessages.settingsRow)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Toggle("", isOn: toggleBinding)
                     .labelsHidden()
-                    .tint(LumiraTokens.Colors.inkPurple)
+                    .tint(ThemedColors.inkPurple)
                     .disabled(model?.enabled == nil || model?.saving == true)
                     .accessibilityIdentifier("notifications-settings-toggle")
             }
             if let error = model?.errorMessage {
                 Text(error)
                     .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.danger500)
+                    .foregroundStyle(ThemedColors.danger500)
             }
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .accessibilityIdentifier("notifications-settings-row")
     }

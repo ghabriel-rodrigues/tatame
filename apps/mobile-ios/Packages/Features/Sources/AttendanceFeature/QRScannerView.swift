@@ -91,15 +91,15 @@ struct QRScannerPanel: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Image(systemName: "camera.on.rectangle")
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             Text("Câmera indisponível neste aparelho.\nUse a aba Código para digitar os 4 dígitos.")
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, LumiraTokens.Space.s10)
-        .background(LumiraTokens.Colors.bgSunken)
+        .background(ThemedColors.bgSunken)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .accessibilityIdentifier("qr-scanner-unavailable")
     }

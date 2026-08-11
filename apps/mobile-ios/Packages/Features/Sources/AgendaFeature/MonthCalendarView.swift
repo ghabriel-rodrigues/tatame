@@ -52,7 +52,7 @@ struct MonthCalendarContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .agendaNavigationBarHiddenOnIOS()
     }
@@ -66,20 +66,20 @@ struct MonthCalendarContent: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg2)
+                    .foregroundStyle(ThemedColors.fg2)
                     .frame(width: 38, height: 38)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                    .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
             }
             .accessibilityIdentifier("calendar-back-button")
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.grid.titlePTBR)
                     .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Text(model.persona.subtitlePTBR)
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
             }
             Spacer()
         }
@@ -95,11 +95,11 @@ struct MonthCalendarContent: View {
             legend
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
@@ -112,7 +112,7 @@ struct MonthCalendarContent: View {
             ForEach(Array(MonthGrid.weekdayLettersPTBR.enumerated()), id: \.offset) { _, letter in
                 Text(letter)
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
         }
     }
@@ -138,16 +138,16 @@ struct MonthCalendarContent: View {
             VStack(spacing: 2) {
                 Text("\(day)")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(selected ? LumiraTokens.Colors.fgOnColor : LumiraTokens.Colors.fg1)
+                    .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg1)
                 HStack(spacing: 2) {
                     if model.hasClassDot(day: day) {
                         Circle()
-                            .fill(selected ? LumiraTokens.Colors.fgOnColor : LumiraTokens.Colors.purple500)
+                            .fill(selected ? ThemedColors.fgOnColor : ThemedColors.purple500)
                             .frame(width: 4, height: 4)
                     }
                     if model.hasEventDot(day: day) {
                         Circle()
-                            .fill(LumiraTokens.Colors.pink500)
+                            .fill(ThemedColors.pink500)
                             .frame(width: 4, height: 4)
                     }
                 }
@@ -163,8 +163,8 @@ struct MonthCalendarContent: View {
     }
 
     private func cellBackground(selected: Bool, isToday: Bool) -> Color {
-        if selected { return LumiraTokens.Colors.purple700 }
-        if isToday { return LumiraTokens.Colors.purple100 }
+        if selected { return ThemedColors.purple700 }
+        if isToday { return ThemedColors.purple100 }
         return Color.clear
     }
 
@@ -172,14 +172,14 @@ struct MonthCalendarContent: View {
 
     private var legend: some View {
         HStack(spacing: LumiraTokens.Space.s4) {
-            legendEntry(color: LumiraTokens.Colors.purple500, label: model.persona.classLegendPTBR)
-            legendEntry(color: LumiraTokens.Colors.pink500, label: "evento")
+            legendEntry(color: ThemedColors.purple500, label: model.persona.classLegendPTBR)
+            legendEntry(color: ThemedColors.pink500, label: "evento")
             Spacer()
         }
         .padding(.top, LumiraTokens.Space.s2)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(LumiraTokens.Colors.border1)
+                .fill(ThemedColors.border1)
                 .frame(height: 1)
         }
     }
@@ -191,7 +191,7 @@ struct MonthCalendarContent: View {
                 .frame(width: 5, height: 5)
             Text(label)
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
         }
     }
 
@@ -201,13 +201,13 @@ struct MonthCalendarContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text(model.selectedDayHeadingPTBR)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("calendar-day-heading")
 
             if model.showsEmptyDay {
                 Text(model.persona.emptyDayPTBR)
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, LumiraTokens.Space.s6)
                     .accessibilityIdentifier("calendar-empty-day")
@@ -229,32 +229,32 @@ struct MonthCalendarContent: View {
         HStack(spacing: LumiraTokens.Space.s3) {
             Text(item.startTime)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
                 .frame(width: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.className)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Text(subtitle(for: item))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
             }
             Spacer()
             Text("Aula")
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.purple800)
+                .foregroundStyle(ThemedColors.purple800)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
-                .background(LumiraTokens.Colors.purple100)
+                .background(ThemedColors.purple100)
                 .clipShape(Capsule())
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
@@ -264,32 +264,32 @@ struct MonthCalendarContent: View {
         let row = HStack(spacing: LumiraTokens.Space.s3) {
             Text(event.time ?? "—")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPink)
+                .foregroundStyle(ThemedColors.inkPink)
                 .frame(width: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.name)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Text(event.location ?? EventFormatters.valorChipPTBR(priceCents: event.priceCents))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
             }
             Spacer()
             Text("Evento")
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.pink700)
+                .foregroundStyle(ThemedColors.pink700)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
-                .background(LumiraTokens.Colors.pink100)
+                .background(ThemedColors.pink100)
                 .clipShape(Capsule())
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .accessibilityIdentifier("calendar-event-\(event.id.uuidString.lowercased())")
 
@@ -318,7 +318,7 @@ struct MonthCalendarContent: View {
 
     private var loadingState: some View {
         RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-            .fill(LumiraTokens.Colors.bgSunken)
+            .fill(ThemedColors.bgSunken)
             .frame(height: 340)
             .redacted(reason: .placeholder)
     }

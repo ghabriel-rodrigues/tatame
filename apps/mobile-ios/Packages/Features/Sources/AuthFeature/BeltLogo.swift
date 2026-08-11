@@ -6,7 +6,7 @@ import SwiftUI
 
 /// The stylized belt glyph: a rounded bar plus rank stripes.
 struct BeltGlyph: View {
-    var color: Color = LumiraTokens.Colors.white
+    var color: Color = ThemedColors.white
 
     var body: some View {
         HStack(spacing: 2.5) {
@@ -54,9 +54,9 @@ struct BrandBadge: View {
     private var fillStyle: Color {
         switch style {
         case .glass:
-            LumiraTokens.Colors.white.opacity(0.16)
+            ThemedColors.white.opacity(0.16)
         case .solid:
-            theme.color("purple-700") ?? LumiraTokens.Colors.purple700
+            theme.color("purple-700") ?? ThemedColors.purple700
         }
     }
 }

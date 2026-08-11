@@ -46,7 +46,7 @@ public struct ResponsavelHomeView: View {
                         onNotificationDestination: onNotificationDestination
                     )
                 } else {
-                    LumiraTokens.Colors.bgApp
+                    ThemedColors.bgApp
                 }
             }
             .task {
@@ -89,7 +89,7 @@ struct ResponsavelHomeContent: View {
                     if dependents.isEmpty {
                         Text("Nenhum aluno vinculado a você ainda.")
                             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.fg3)
+                            .foregroundStyle(ThemedColors.fg3)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, LumiraTokens.Space.s8)
                     } else {
@@ -108,7 +108,7 @@ struct ResponsavelHomeContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .hideNavigationBarOnIOS()
         .refreshable { await model.load() }
         .navigationDestination(for: UUID.self) { dependentId in
@@ -142,10 +142,10 @@ struct ResponsavelHomeContent: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                 Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "pt_BR"))))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                 Text("Olá,\n\(firstName)")
                     .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
             }
             Spacer()
             // Home-header bell + unread dot (spec 010, story 10 —
@@ -166,7 +166,7 @@ struct ResponsavelHomeContent: View {
         VStack(spacing: LumiraTokens.Space.s4) {
             ForEach(0..<2, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 120)
             }
         }
@@ -185,13 +185,13 @@ struct ResponsavelHomeContent: View {
                 Text("Cadastrar aluno")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
             }
-            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+            .foregroundStyle(ThemedColors.inkPurple)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .background(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
                     .strokeBorder(
-                        LumiraTokens.Colors.inkPurple,
+                        ThemedColors.inkPurple,
                         style: StrokeStyle(lineWidth: 1, dash: [5, 4])
                     )
             )
@@ -212,15 +212,15 @@ struct DependentCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(dependent.fullName)
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     Text(subtitle)
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
 
             // Drawn belt with degrees (spec 005, story 34).
@@ -235,7 +235,7 @@ struct DependentCard: View {
                     )
                     Text(GraduationFormatters.chipLabelPTBR(belt: belt))
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
             }
 
@@ -256,22 +256,22 @@ struct DependentCard: View {
                     Text("Mensalidade em aberto · \(BillingFormatters.alertLinePTBR(alert: alert))")
                         .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
                 }
-                .foregroundStyle(LumiraTokens.Colors.warning500)
+                .foregroundStyle(ThemedColors.warning500)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, LumiraTokens.Space.s3)
                 .padding(.vertical, LumiraTokens.Space.s2)
-                .background(LumiraTokens.Colors.warning100)
+                .background(ThemedColors.warning100)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                 .accessibilityIdentifier("dependent-mensalidade-alert")
             }
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 

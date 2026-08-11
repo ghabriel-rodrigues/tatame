@@ -72,7 +72,7 @@ struct StoreVitrineContent: View {
             .padding(.top, LumiraTokens.Space.s4)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         // Debounced server-side search: each keystroke restarts the task;
         // the initial appearance (id fires once) is the first load.
         .task(id: model.searchText) {
@@ -102,22 +102,22 @@ struct StoreVitrineContent: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg2)
+                    .foregroundStyle(ThemedColors.fg2)
                     .frame(width: 34, height: 34)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(Circle())
-                    .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                    .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
             }
             .accessibilityIdentifier("store-back-button")
             VStack(alignment: .leading, spacing: 2) {
                 Text(academyName.map { "Loja \($0)" } ?? "Loja da academia")
                     .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .lineLimit(1)
                     .accessibilityIdentifier("store-title")
                 Text("Produtos oficiais · retirada na recepção")
                     .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                     .lineLimit(1)
             }
             Spacer()
@@ -128,9 +128,9 @@ struct StoreVitrineContent: View {
             } label: {
                 Image(systemName: "list.bullet.rectangle")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .frame(width: 34, height: 34)
-                    .background(LumiraTokens.Colors.purple50)
+                    .background(ThemedColors.purple50)
                     .clipShape(Circle())
             }
             .accessibilityIdentifier("meus-pedidos-entry")
@@ -143,21 +143,21 @@ struct StoreVitrineContent: View {
         HStack(spacing: LumiraTokens.Space.s2) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: LumiraTokens.FontSize.textXs))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             TextField("Buscar por nome ou tag (ex: kimono, treino)", text: $model.searchText)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("vitrine-search")
         }
         .padding(.horizontal, LumiraTokens.Space.s4)
         .frame(height: 44)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
@@ -206,14 +206,14 @@ struct StoreVitrineContent: View {
             HStack(spacing: LumiraTokens.Space.s3) {
                 ForEach(0..<2, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .fill(LumiraTokens.Colors.bgSunken)
+                        .fill(ThemedColors.bgSunken)
                         .frame(height: 160)
                 }
             }
             HStack(spacing: LumiraTokens.Space.s3) {
                 ForEach(0..<2, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .fill(LumiraTokens.Colors.bgSunken)
+                        .fill(ThemedColors.bgSunken)
                         .frame(height: 160)
                 }
             }

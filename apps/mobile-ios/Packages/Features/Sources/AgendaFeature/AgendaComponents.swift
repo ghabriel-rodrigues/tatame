@@ -13,14 +13,14 @@ struct AgendaErrorBanner: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
     }
 }

@@ -35,29 +35,29 @@ struct StoreGridCard: View {
                     .frame(maxWidth: .infinity)
                 Text(product.name)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .firstTextBaseline) {
                     Text(BillingFormatters.amountBRL(product.priceCents))
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                        .foregroundStyle(ThemedColors.inkPurple)
                     Spacer(minLength: LumiraTokens.Space.s1)
                     if let categoryName = product.categoryName {
                         Text(categoryName)
                             .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.fg4)
+                            .foregroundStyle(ThemedColors.fg4)
                             .lineLimit(1)
                     }
                 }
             }
             .padding(LumiraTokens.Space.s3)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -77,14 +77,14 @@ struct StoreCategoryChip: View {
         Button(action: onTap) {
             Text(label)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(selected ? LumiraTokens.Colors.fgOnColor : LumiraTokens.Colors.fg2)
+                .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg2)
                 .padding(.horizontal, LumiraTokens.Space.s3)
                 .frame(height: 32)
-                .background(selected ? LumiraTokens.Colors.purple700 : LumiraTokens.Colors.bgSurface)
+                .background(selected ? ThemedColors.purple700 : ThemedColors.bgSurface)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule().strokeBorder(
-                        selected ? Color.clear : LumiraTokens.Colors.border1,
+                        selected ? Color.clear : ThemedColors.border1,
                         lineWidth: 1
                     )
                 )
@@ -113,21 +113,21 @@ struct StoreStatusChip: View {
 
     private var foreground: Color {
         switch status.chipTone {
-        case .warning: LumiraTokens.Colors.warning500
-        case .success: LumiraTokens.Colors.success500
-        case .brand: LumiraTokens.Colors.inkPurple
-        case .neutral: LumiraTokens.Colors.fg3
-        case .danger: LumiraTokens.Colors.danger500
+        case .warning: ThemedColors.warning500
+        case .success: ThemedColors.success500
+        case .brand: ThemedColors.inkPurple
+        case .neutral: ThemedColors.fg3
+        case .danger: ThemedColors.danger500
         }
     }
 
     private var background: Color {
         switch status.chipTone {
-        case .warning: LumiraTokens.Colors.warning100
-        case .success: LumiraTokens.Colors.success100
-        case .brand: LumiraTokens.Colors.purple50
-        case .neutral: LumiraTokens.Colors.bgSunken
-        case .danger: LumiraTokens.Colors.danger100
+        case .warning: ThemedColors.warning100
+        case .success: ThemedColors.success100
+        case .brand: ThemedColors.purple50
+        case .neutral: ThemedColors.bgSunken
+        case .danger: ThemedColors.danger100
         }
     }
 }
@@ -146,7 +146,7 @@ struct StoreQtyStepper: View {
             stepButton("minus", enabled: canDecrement, identifier: "qty-decrement", action: onDecrement)
             Text("\(quantity)")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
                 .frame(minWidth: 20)
                 .accessibilityIdentifier("qty-value")
             stepButton("plus", enabled: canIncrement, identifier: "qty-increment", action: onIncrement)
@@ -162,11 +162,11 @@ struct StoreQtyStepper: View {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold))
-                .foregroundStyle(enabled ? LumiraTokens.Colors.inkPurple : LumiraTokens.Colors.fg4)
+                .foregroundStyle(enabled ? ThemedColors.inkPurple : ThemedColors.fg4)
                 .frame(width: 30, height: 30)
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(Circle())
-                .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
@@ -193,40 +193,40 @@ public struct StoreEntryRow: View {
             HStack(spacing: LumiraTokens.Space.s3) {
                 Image(systemName: "bag")
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .frame(width: 36, height: 36)
-                    .background(LumiraTokens.Colors.purple50)
+                    .background(ThemedColors.purple50)
                     .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Loja da academia")
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     Text("Produtos oficiais · retirada na recepção")
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
                 if showsNovoPill {
                     Text("Novo")
                         .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                        .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s2)
                         .padding(.vertical, LumiraTokens.Space.s1)
-                        .background(LumiraTokens.Colors.brandAccent)
+                        .background(ThemedColors.brandAccent)
                         .clipShape(Capsule())
                         .accessibilityIdentifier("loja-novo-pill")
                 }
                 Image(systemName: "chevron.right")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
             .padding(LumiraTokens.Space.s4)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -245,17 +245,17 @@ struct StoreErrorBanner: View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let retry {
                 Button("Tentar novamente", action: retry)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .accessibilityIdentifier(identifier)
     }
@@ -271,18 +271,18 @@ struct StoreEmptyCard: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
             Text(title)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(caption)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .accessibilityIdentifier(identifier)
     }

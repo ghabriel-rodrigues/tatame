@@ -26,19 +26,19 @@ public struct EventValorChip: View {
                 Text("Confirmado")
             }
             .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.success500)
+            .foregroundStyle(ThemedColors.success500)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
-            .background(LumiraTokens.Colors.success100)
+            .background(ThemedColors.success100)
             .clipShape(Capsule())
             .accessibilityIdentifier("event-confirmado-chip")
         } else {
             Text(EventFormatters.valorChipPTBR(priceCents: priceCents))
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPink)
+                .foregroundStyle(ThemedColors.inkPink)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
-                .background(LumiraTokens.Colors.pink100)
+                .background(ThemedColors.pink100)
                 .clipShape(Capsule())
                 .accessibilityIdentifier("event-valor-chip")
         }
@@ -58,18 +58,18 @@ public struct EventDaySquare: View {
             if let square = EventFormatters.daySquare(date: date) {
                 Text(square.day)
                     .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                 Text(square.month)
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             } else {
                 Image(systemName: "calendar")
                     .font(.system(size: LumiraTokens.FontSize.textSm))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
             }
         }
         .frame(width: 48, height: 48)
-        .background(LumiraTokens.Colors.purple50)
+        .background(ThemedColors.purple50)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
     }
 }
@@ -116,11 +116,11 @@ public struct EventRowCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .lineLimit(1)
                 Text(line)
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -128,11 +128,11 @@ public struct EventRowCard: View {
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 }

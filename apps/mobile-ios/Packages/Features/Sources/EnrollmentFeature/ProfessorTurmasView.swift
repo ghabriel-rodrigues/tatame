@@ -44,7 +44,7 @@ public struct ProfessorTurmasView: View {
                 .padding(.horizontal, LumiraTokens.Space.s6)
                 .padding(.bottom, LumiraTokens.Space.s6)
             }
-            .background(LumiraTokens.Colors.bgApp)
+            .background(ThemedColors.bgApp)
             .navigationDestination(for: UUID.self) { classId in
                 TurmaDetailView(classId: classId)
             }
@@ -58,11 +58,11 @@ public struct ProfessorTurmasView: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
             Text("Minhas turmas")
                 .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             if let academyName {
                 Text(academyName)
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -73,7 +73,7 @@ public struct ProfessorTurmasView: View {
         VStack(spacing: LumiraTokens.Space.s4) {
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 96)
             }
         }
@@ -83,7 +83,7 @@ public struct ProfessorTurmasView: View {
     private var emptyState: some View {
         Text("Você ainda não tem turmas atribuídas.")
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg3)
+            .foregroundStyle(ThemedColors.fg3)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, LumiraTokens.Space.s12)
     }
@@ -99,15 +99,15 @@ struct TurmaCard: View {
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                     Text(summary.name)
                         .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     Text(summary.schedules.scheduleLinePTBR)
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
 
             HStack(spacing: LumiraTokens.Space.s2) {
@@ -125,11 +125,11 @@ struct TurmaCard: View {
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 }
@@ -159,17 +159,17 @@ struct EnrollmentChip: View {
 
     private var foreground: Color {
         switch style {
-        case .brand: LumiraTokens.Colors.inkPurple
-        case .neutral: LumiraTokens.Colors.fg3
-        case .danger: LumiraTokens.Colors.danger500
+        case .brand: ThemedColors.inkPurple
+        case .neutral: ThemedColors.fg3
+        case .danger: ThemedColors.danger500
         }
     }
 
     private var background: Color {
         switch style {
-        case .brand: LumiraTokens.Colors.purple100
-        case .neutral: LumiraTokens.Colors.bgSunken
-        case .danger: LumiraTokens.Colors.danger100
+        case .brand: ThemedColors.purple100
+        case .neutral: ThemedColors.bgSunken
+        case .danger: ThemedColors.danger100
         }
     }
 }
@@ -182,9 +182,9 @@ struct OccupancyBar: View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                 Capsule()
-                    .fill(LumiraTokens.Colors.brand2)
+                    .fill(ThemedColors.brand2)
                     .frame(width: max(0, proxy.size.width * fraction))
             }
         }
@@ -214,14 +214,14 @@ struct EnrollmentErrorBanner: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
     }
 }

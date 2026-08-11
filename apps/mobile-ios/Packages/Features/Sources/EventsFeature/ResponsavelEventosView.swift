@@ -61,7 +61,7 @@ struct ResponsavelEventosContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .refreshable { await model.load() }
         .sheet(item: $model.pixTarget) { target in
@@ -76,10 +76,10 @@ struct ResponsavelEventosContent: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Eventos")
                 .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text("Confirme a participação por dependente")
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
         }
         .padding(.top, LumiraTokens.Space.s6)
     }
@@ -94,15 +94,15 @@ struct ResponsavelEventosContent: View {
                     Spacer()
                     Text(EventFormatters.valorChipPTBR(priceCents: event.priceCents))
                         .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                        .foregroundStyle(ThemedColors.inkPurple)
                         .padding(.horizontal, LumiraTokens.Space.s2)
                         .padding(.vertical, LumiraTokens.Space.s1)
-                        .background(LumiraTokens.Colors.white)
+                        .background(ThemedColors.white)
                         .clipShape(Capsule())
                 }
                 Text(event.name)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
             }
             .padding(LumiraTokens.Space.s4)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -118,7 +118,7 @@ struct ResponsavelEventosContent: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text(dateLine(event))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("guardian-event-line")
 
                 HStack(spacing: LumiraTokens.Space.s2) {
@@ -129,11 +129,11 @@ struct ResponsavelEventosContent: View {
             }
             .padding(LumiraTokens.Space.s4)
         }
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .accessibilityIdentifier("guardian-event-\(event.id.uuidString.lowercased())")
     }
@@ -170,7 +170,7 @@ struct ResponsavelEventosContent: View {
             .clipShape(Capsule())
             .overlay(
                 Capsule().strokeBorder(
-                    dependent.isConfirmed ? Color.clear : LumiraTokens.Colors.border2,
+                    dependent.isConfirmed ? Color.clear : ThemedColors.border2,
                     lineWidth: 1
                 )
             )
@@ -193,15 +193,15 @@ struct ResponsavelEventosContent: View {
     }
 
     private func chipForeground(_ dependent: GuardianEventDependent) -> Color {
-        if dependent.isConfirmed { return LumiraTokens.Colors.success500 }
-        if dependent.isPendingPayment { return LumiraTokens.Colors.warning500 }
-        return LumiraTokens.Colors.fg2
+        if dependent.isConfirmed { return ThemedColors.success500 }
+        if dependent.isPendingPayment { return ThemedColors.warning500 }
+        return ThemedColors.fg2
     }
 
     private func chipBackground(_ dependent: GuardianEventDependent) -> Color {
-        if dependent.isConfirmed { return LumiraTokens.Colors.success100 }
-        if dependent.isPendingPayment { return LumiraTokens.Colors.warning100 }
-        return LumiraTokens.Colors.bgSurface
+        if dependent.isConfirmed { return ThemedColors.success100 }
+        if dependent.isPendingPayment { return ThemedColors.warning100 }
+        return ThemedColors.bgSurface
     }
 
     private func firstName(_ fullName: String) -> String {
@@ -239,13 +239,13 @@ struct ResponsavelEventosContent: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Image(systemName: "calendar")
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
-                .foregroundStyle(LumiraTokens.Colors.purple400)
+                .foregroundStyle(ThemedColors.purple400)
             Text("Nenhum evento por aqui")
                 .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
             Text("Quando a academia publicar um evento, ele aparece aqui para você confirmar seus dependentes.")
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -257,17 +257,17 @@ struct ResponsavelEventosContent: View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let retry {
                 Button("Tentar novamente", action: retry)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .accessibilityIdentifier("eventos-error-banner")
     }
@@ -276,7 +276,7 @@ struct ResponsavelEventosContent: View {
         VStack(spacing: LumiraTokens.Space.s4) {
             ForEach(0..<2, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 150)
             }
         }

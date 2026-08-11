@@ -28,10 +28,10 @@ public struct LoginView: View {
 
                 Text("Bem-vindo de volta")
                     .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Text("Entre para acompanhar seus treinos.")
                     .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .padding(.top, LumiraTokens.Space.s1)
                     .padding(.bottom, LumiraTokens.Space.s6)
 
@@ -67,13 +67,13 @@ public struct LoginView: View {
                         showForgotPasswordStub = true
                     }
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                    .foregroundStyle(ThemedColors.inkPurple)
 
                     Spacer()
 
                     Text("Criar conta")
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                        .foregroundStyle(ThemedColors.fg3)
                 }
                 .padding(.top, LumiraTokens.Space.s4)
 
@@ -101,7 +101,7 @@ public struct LoginView: View {
 
     private var loginBackground: some View {
         LinearGradient(
-            colors: [LumiraTokens.Colors.brandTint, LumiraTokens.Colors.bgApp],
+            colors: [ThemedColors.brandTint, ThemedColors.bgApp],
             startPoint: .top,
             endPoint: .center
         )
@@ -115,20 +115,20 @@ public struct LoginView: View {
             Group {
                 if model.phase == .submitting {
                     ProgressView()
-                        .tint(LumiraTokens.Colors.fgOnColor)
+                        .tint(ThemedColors.fgOnColor)
                 } else {
                     Text("Entrar")
                         .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
                 }
             }
-            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+            .foregroundStyle(ThemedColors.fgOnColor)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
             .background(
                 LinearGradient(
                     colors: [
-                        theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
-                        theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
+                        theme.color("purple-700") ?? ThemedColors.purple700,
+                        theme.color("purple-500") ?? ThemedColors.purple500,
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -136,7 +136,7 @@ public struct LoginView: View {
             )
             .clipShape(Capsule())
             .shadow(
-                color: (theme.color("purple-500") ?? LumiraTokens.Colors.purple500).opacity(0.35),
+                color: (theme.color("purple-500") ?? ThemedColors.purple500).opacity(0.35),
                 radius: 12,
                 y: 6
             )
@@ -147,10 +147,10 @@ public struct LoginView: View {
     private func errorBanner(_ message: String) -> some View {
         Text(message)
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.danger500)
+            .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
-            .background(LumiraTokens.Colors.danger100)
+            .background(ThemedColors.danger100)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
             .accessibilityIdentifier("login-error")
     }
@@ -158,10 +158,10 @@ public struct LoginView: View {
     private func noticeBanner(_ message: String) -> some View {
         Text(message)
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+            .foregroundStyle(ThemedColors.inkPurple)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
-            .background(LumiraTokens.Colors.brandTint)
+            .background(ThemedColors.brandTint)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
     }
 
@@ -169,15 +169,15 @@ public struct LoginView: View {
         HStack(alignment: .top, spacing: LumiraTokens.Space.s3) {
             Image(systemName: "qrcode")
                 .font(.system(size: LumiraTokens.FontSize.textMd))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
             Text(inviteNoticeText)
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.brandTint)
+        .background(ThemedColors.brandTint)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
     }
 
@@ -185,7 +185,7 @@ public struct LoginView: View {
         var prefix = AttributedString("Novo na academia? Peça ao seu professor o ")
         var link = AttributedString("link de convite")
         link.font = .system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded)
-        link.foregroundColor = LumiraTokens.Colors.inkPurple
+        link.foregroundColor = ThemedColors.inkPurple
         let suffix = AttributedString(" — seu cadastro já entra vinculado à turma certa.")
         prefix.append(link)
         prefix.append(suffix)
@@ -212,14 +212,14 @@ private struct LoginFieldStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg1)
+            .foregroundStyle(ThemedColors.fg1)
             .padding(.horizontal, LumiraTokens.Space.s4)
             .frame(height: 48)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
     }
 }

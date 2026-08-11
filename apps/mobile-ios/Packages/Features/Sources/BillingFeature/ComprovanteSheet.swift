@@ -51,7 +51,7 @@ struct ComprovanteSheet: View {
         SheetScaffold {
             Text("Comprovante")
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
 
             switch model.phase {
             case .idle, .loading:
@@ -69,19 +69,19 @@ struct ComprovanteSheet: View {
         VStack(spacing: LumiraTokens.Space.s4) {
             ZStack {
                 Circle()
-                    .fill(LumiraTokens.Colors.success100)
+                    .fill(ThemedColors.success100)
                     .frame(width: 48, height: 48)
                 Image(systemName: "checkmark")
                     .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold))
-                    .foregroundStyle(LumiraTokens.Colors.success500)
+                    .foregroundStyle(ThemedColors.success500)
             }
             Text(BillingFormatters.amountBRL(receipt.payment.amountCents))
                 .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("receipt-amount")
             Text(BillingFormatters.mensalidadeTitlePTBR(periodStart: receipt.charge.periodStart))
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
 
             VStack(spacing: LumiraTokens.Space.s2) {
                 // Nil on professor order-charge receipts (spec 009 — no
@@ -106,11 +106,11 @@ struct ComprovanteSheet: View {
         }
         .frame(maxWidth: .infinity)
         .padding(LumiraTokens.Space.s5)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
         .padding(.top, LumiraTokens.Space.s2)
     }
@@ -119,11 +119,11 @@ struct ComprovanteSheet: View {
         HStack {
             Text(label)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             Spacer()
             Text(value)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
         }
     }
 }

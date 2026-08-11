@@ -18,10 +18,10 @@ struct ChargeStatusChip: View {
     var body: some View {
         Text(open ? "Em aberto" : "Paga")
             .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-            .foregroundStyle(open ? LumiraTokens.Colors.warning500 : LumiraTokens.Colors.success500)
+            .foregroundStyle(open ? ThemedColors.warning500 : ThemedColors.success500)
             .padding(.horizontal, LumiraTokens.Space.s3)
             .padding(.vertical, LumiraTokens.Space.s1)
-            .background(open ? LumiraTokens.Colors.warning100 : LumiraTokens.Colors.success100)
+            .background(open ? ThemedColors.warning100 : ThemedColors.success100)
             .clipShape(Capsule())
             .accessibilityIdentifier(open ? "charge-chip-aberto" : "charge-chip-paga")
     }
@@ -40,10 +40,10 @@ struct BillingPrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
-                .background(LumiraTokens.Colors.purple700.opacity(enabled ? 1 : 0.4))
+                .background(ThemedColors.purple700.opacity(enabled ? 1 : 0.4))
                 .clipShape(Capsule())
         }
         .disabled(!enabled)
@@ -68,11 +68,11 @@ struct BillingSecondaryButton: View {
                 Text(title)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
             }
-            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+            .foregroundStyle(ThemedColors.inkPurple)
             .frame(maxWidth: .infinity)
             .frame(height: 44)
             .overlay(
-                Capsule().strokeBorder(LumiraTokens.Colors.purple200, lineWidth: 1.5)
+                Capsule().strokeBorder(ThemedColors.purple200, lineWidth: 1.5)
             )
             .contentShape(Capsule())
         }
@@ -100,7 +100,7 @@ struct PixQRView: View {
                 Image(systemName: "qrcode")
                     .resizable()
                     .scaledToFit()
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
         }
         .accessibilityLabel("QR Code Pix")
@@ -136,7 +136,7 @@ struct BoletoBarcodeView: View {
                 if (Int(seed) + index).isMultiple(of: 2) {
                     context.fill(
                         Path(CGRect(x: x, y: 0, width: width, height: size.height)),
-                        with: .color(LumiraTokens.Colors.gray950)
+                        with: .color(ThemedColors.gray950)
                     )
                 }
                 x += width + 1
@@ -157,11 +157,11 @@ struct BillingSuccessPop: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(LumiraTokens.Colors.success500)
+                .fill(ThemedColors.success500)
                 .frame(width: 64, height: 64)
             Image(systemName: "checkmark")
                 .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
         }
         .scaleEffect(appeared ? 1 : 0.4)
         .opacity(appeared ? 1 : 0)
@@ -192,14 +192,14 @@ struct BillingErrorBanner: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
     }
 }
@@ -212,10 +212,10 @@ struct BillingActionErrorBanner: View {
     var body: some View {
         Text(message)
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.danger500)
+            .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
-            .background(LumiraTokens.Colors.danger100)
+            .background(ThemedColors.danger100)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
             .accessibilityIdentifier(identifier)
     }
@@ -237,24 +237,24 @@ struct HistoryRow: View {
             HStack(spacing: LumiraTokens.Space.s3) {
                 ZStack {
                     Circle()
-                        .fill(LumiraTokens.Colors.success100)
+                        .fill(ThemedColors.success100)
                         .frame(width: 34, height: 34)
                     Image(systemName: "checkmark")
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold))
-                        .foregroundStyle(LumiraTokens.Colors.success500)
+                        .foregroundStyle(ThemedColors.success500)
                 }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     Text(subtitle)
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                        .foregroundStyle(ThemedColors.fg3)
                 }
                 Spacer()
                 Text(amount)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg2)
+                    .foregroundStyle(ThemedColors.fg2)
             }
             .padding(.horizontal, LumiraTokens.Space.s4)
             .padding(.vertical, LumiraTokens.Space.s3)

@@ -477,6 +477,69 @@
         ]
       }
     },
+    "/v1/admin/academy": {
+      "get": {
+        "operationId": "AdminAcademyController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAcademyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Academy identity settings: name, brand triplet, toggles",
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "description": "Full document. Brand accepts any valid hex triplet (case-normalized to uppercase); `brand: null` clears back to the default Tatame brand. Audited as `academy.updated` with before/after of the changed fields.",
+        "operationId": "AdminAcademyController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAcademyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAcademyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update name + brand + auto-notifications (audited)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/permissions": {
       "get": {
         "operationId": "AdminPermissionsController_list_v1",
@@ -498,7 +561,7 @@
             "bearer": []
           }
         ],
-        "summary": "Resolved toggle matrix (defaults overlaid with rows)",
+        "summary": "Resolved toggle matrix (defaults overlaid with rows) + per-role member counts",
         "tags": [
           "admin"
         ]
@@ -4824,6 +4887,31 @@
           "locale"
         ]
       },
+      "BrandThemeDto": {
+        "type": "object",
+        "properties": {
+          "deep": {
+            "type": "string",
+            "example": "#14213D",
+            "pattern": "^#[0-9A-F]{6}$"
+          },
+          "vibrant": {
+            "type": "string",
+            "example": "#3A5FA8",
+            "pattern": "^#[0-9A-F]{6}$"
+          },
+          "accent": {
+            "type": "string",
+            "example": "#E63946",
+            "pattern": "^#[0-9A-F]{6}$"
+          }
+        },
+        "required": [
+          "deep",
+          "vibrant",
+          "accent"
+        ]
+      },
       "MeAcademyDto": {
         "type": "object",
         "properties": {
@@ -4845,10 +4933,14 @@
             "nullable": true
           },
           "theme": {
-            "type": "object",
             "nullable": true,
-            "additionalProperties": true,
-            "description": "White-label 3-color brand input (deep/vibrant/accent) when configured"
+            "description": "White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BrandThemeDto"
+              }
+            ]
           }
         },
         "required": [
@@ -5034,10 +5126,14 @@
             "nullable": true
           },
           "theme": {
-            "type": "object",
             "nullable": true,
-            "additionalProperties": true,
-            "description": "White-label 3-color brand input (deep/vibrant/accent) when configured"
+            "description": "White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BrandThemeDto"
+              }
+            ]
           }
         },
         "required": [
@@ -5256,6 +5352,102 @@
           "role"
         ]
       },
+      "AdminAcademyResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Immutable — invite URLs depend on it"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Always null in v1 (monogram logo)"
+          },
+          "brand": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BrandThemeDto"
+              }
+            ]
+          },
+          "autoNotificationsEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "logoUrl",
+          "brand",
+          "autoNotificationsEnabled"
+        ]
+      },
+      "BrandInputDto": {
+        "type": "object",
+        "properties": {
+          "deep": {
+            "type": "string",
+            "example": "#14213D",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "vibrant": {
+            "type": "string",
+            "example": "#3A5FA8",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "accent": {
+            "type": "string",
+            "example": "#E63946",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        },
+        "required": [
+          "deep",
+          "vibrant",
+          "accent"
+        ]
+      },
+      "UpdateAcademyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Alpha Jiu-Jitsu"
+          },
+          "brand": {
+            "nullable": true,
+            "description": "White-label triplet; null clears back to the default Tatame brand",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BrandInputDto"
+              }
+            ]
+          },
+          "autoNotificationsEnabled": {
+            "type": "boolean",
+            "description": "Gates the automatic notification fan-out tenant-wide"
+          }
+        },
+        "required": [
+          "name",
+          "brand",
+          "autoNotificationsEnabled"
+        ]
+      },
       "ResolvedPermissionDto": {
         "type": "object",
         "properties": {
@@ -5291,6 +5483,25 @@
           "allowed"
         ]
       },
+      "RoleMemberCountsDto": {
+        "type": "object",
+        "properties": {
+          "professor": {
+            "type": "number"
+          },
+          "student": {
+            "type": "number"
+          },
+          "guardian": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "professor",
+          "student",
+          "guardian"
+        ]
+      },
       "PermissionMatrixResponseDto": {
         "type": "object",
         "properties": {
@@ -5299,10 +5510,14 @@
             "items": {
               "$ref": "#/components/schemas/ResolvedPermissionDto"
             }
+          },
+          "memberCounts": {
+            "$ref": "#/components/schemas/RoleMemberCountsDto"
           }
         },
         "required": [
-          "permissions"
+          "permissions",
+          "memberCounts"
         ]
       },
       "PermissionEntryDto": {

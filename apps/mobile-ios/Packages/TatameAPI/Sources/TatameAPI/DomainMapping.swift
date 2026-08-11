@@ -95,7 +95,15 @@ extension SessionContext {
             user: user,
             memberships: memberships,
             activeMembership: active,
-            permissions: dto.permissions.additionalProperties
+            permissions: dto.permissions.additionalProperties,
+            academyBrand: dto.academy?.value1.theme.map { AcademyBrand(dto: $0.value1) }
         )
+    }
+}
+
+extension AcademyBrand {
+    /// Typed `academy.theme` triplet (spec 011, CFG.3 — `BrandThemeDto`).
+    init(dto: Components.Schemas.BrandThemeDto) {
+        self.init(deep: dto.deep, vibrant: dto.vibrant, accent: dto.accent)
     }
 }

@@ -23,17 +23,17 @@ public struct NotificationsBellButton: View {
         Button(action: action) {
             Image(systemName: "bell")
                 .font(.system(size: LumiraTokens.FontSize.textMd))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
                 .frame(width: 42, height: 42)
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(Circle())
-                .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
                 .overlay(alignment: .topTrailing) {
                     if hasUnread {
                         Circle()
-                            .fill(LumiraTokens.Colors.pink500)
+                            .fill(ThemedColors.pink500)
                             .frame(width: 9, height: 9)
-                            .overlay(Circle().strokeBorder(LumiraTokens.Colors.bgApp, lineWidth: 1.5))
+                            .overlay(Circle().strokeBorder(ThemedColors.bgApp, lineWidth: 1.5))
                             .offset(x: -3, y: 3)
                             .accessibilityIdentifier("notifications-unread-dot")
                     }
@@ -74,27 +74,27 @@ struct NotificationRowCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                         .multilineTextAlignment(.leading)
                     if let body = item.body {
                         Text(body)
                             .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.fg3)
+                            .foregroundStyle(ThemedColors.fg3)
                             .multilineTextAlignment(.leading)
                     }
                 }
                 Spacer(minLength: LumiraTokens.Space.s2)
                 Text(NotificationsFormatters.relativeTimestampPTBR(item.createdAt, now: now))
                     .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
             .padding(LumiraTokens.Space.s4)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -106,19 +106,19 @@ struct NotificationRowCard: View {
     private var chipView: some View {
         ZStack {
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous)
-                .fill(LumiraTokens.Colors.purple50)
+                .fill(ThemedColors.purple50)
                 .frame(width: 38, height: 38)
             if let chip = item.chip {
                 Text(chip)
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.purple600)
+                    .foregroundStyle(ThemedColors.purple600)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                     .padding(.horizontal, 2)
             } else {
                 Image(systemName: item.category.systemImage)
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold))
-                    .foregroundStyle(LumiraTokens.Colors.purple600)
+                    .foregroundStyle(ThemedColors.purple600)
             }
         }
     }

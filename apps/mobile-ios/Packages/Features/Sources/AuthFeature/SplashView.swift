@@ -21,10 +21,10 @@ public struct SplashView: View {
             // tenant theme is known (handoff aluno-01 deep→vibrant purple).
             LinearGradient(
                 colors: [
-                    LumiraTokens.Colors.purple950,
-                    LumiraTokens.Colors.purple800,
-                    LumiraTokens.Colors.purple600,
-                    LumiraTokens.Colors.purple500,
+                    ThemedColors.purple950,
+                    ThemedColors.purple800,
+                    ThemedColors.purple600,
+                    ThemedColors.purple500,
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -36,10 +36,10 @@ public struct SplashView: View {
                     .padding(.bottom, LumiraTokens.Space.s2)
                 Text("Tatame")
                     .font(.system(size: LumiraTokens.FontSize.textXl, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                 Text("Gestão para escolas de Jiu-Jitsu")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .medium, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.72))
+                    .foregroundStyle(ThemedColors.fgOnColor.opacity(0.72))
             }
             .offset(y: -LumiraTokens.Space.s6)
         }

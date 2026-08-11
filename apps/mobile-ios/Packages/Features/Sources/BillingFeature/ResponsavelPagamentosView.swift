@@ -48,7 +48,7 @@ struct ResponsavelPagamentosContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .task { await model.load() }
         .refreshable { await model.load() }
         .sheet(item: $model.activeSheet) { sheet in
@@ -63,10 +63,10 @@ struct ResponsavelPagamentosContent: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Pagamentos")
                 .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text("Mensalidades dos seus dependentes")
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
         }
         .padding(.top, LumiraTokens.Space.s6)
     }
@@ -75,7 +75,7 @@ struct ResponsavelPagamentosContent: View {
         VStack(spacing: LumiraTokens.Space.s4) {
             ForEach(0..<2, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 140)
             }
         }
@@ -86,13 +86,13 @@ struct ResponsavelPagamentosContent: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Image(systemName: "creditcard")
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
-                .foregroundStyle(LumiraTokens.Colors.purple400)
+                .foregroundStyle(ThemedColors.purple400)
             Text("Nenhuma mensalidade por aqui")
                 .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
             Text("Quando a academia atribuir um plano aos seus dependentes, as mensalidades aparecem aqui.")
                 .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -112,7 +112,7 @@ struct ResponsavelPagamentosContent: View {
                         periodStart: charge.periodStart
                     ))
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("dependent-charge-title")
                     Spacer()
                     ChargeStatusChip(open: charge.isOpen)
@@ -120,14 +120,14 @@ struct ResponsavelPagamentosContent: View {
 
                 Text(BillingFormatters.amountBRL(charge.amountCents))
                     .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .padding(.top, LumiraTokens.Space.s2)
 
                 if charge.isOpen {
                     // "Vence em 10 de agosto · plano Kids mensal" (story 17).
                     Text(BillingFormatters.dependentDueLinePTBR(dueDate: charge.dueDate, plan: dependent.plan))
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                        .foregroundStyle(ThemedColors.fg3)
                         .accessibilityIdentifier("dependent-due-line")
 
                     BillingPrimaryButton(title: "Pagar com Pix", identifier: "dependent-pagar-pix") {
@@ -141,7 +141,7 @@ struct ResponsavelPagamentosContent: View {
                         recurrenceActive: dependent.recurrenceActive
                     ))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("dependent-paid-line")
 
                     BillingSecondaryButton(title: "Ver comprovante", identifier: "dependent-ver-comprovante") {
@@ -152,11 +152,11 @@ struct ResponsavelPagamentosContent: View {
             }
             .padding(LumiraTokens.Space.s4)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
             .accessibilityIdentifier("dependent-charge-card")
         }
@@ -170,7 +170,7 @@ struct ResponsavelPagamentosContent: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Histórico")
                     .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                     .padding(.top, LumiraTokens.Space.s2)
 
                 VStack(spacing: 0) {
@@ -184,15 +184,15 @@ struct ResponsavelPagamentosContent: View {
                             }
                         )
                         if index < history.count - 1 {
-                            Divider().overlay(LumiraTokens.Colors.gray100)
+                            Divider().overlay(ThemedColors.gray100)
                         }
                     }
                 }
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                        .strokeBorder(ThemedColors.border1, lineWidth: 1)
                 )
             }
             .accessibilityIdentifier("pagamentos-historico")

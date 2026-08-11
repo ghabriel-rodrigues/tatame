@@ -14,14 +14,14 @@ struct GraduationErrorBanner: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.danger100)
+        .background(ThemedColors.danger100)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
     }
 }
@@ -34,10 +34,10 @@ struct GraduationActionErrorBanner: View {
     var body: some View {
         Text(message)
             .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.danger500)
+            .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
-            .background(LumiraTokens.Colors.danger100)
+            .background(ThemedColors.danger100)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
             .accessibilityIdentifier(identifier)
     }
@@ -51,11 +51,11 @@ struct GraduationAvatar: View {
     var body: some View {
         Text(initials)
             .font(.system(size: size * 0.33, weight: .bold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+            .foregroundStyle(ThemedColors.fgOnColor)
             .frame(width: size, height: size)
             .background(
                 LinearGradient(
-                    colors: [LumiraTokens.Colors.purple500, LumiraTokens.Colors.brandAccent],
+                    colors: [ThemedColors.purple500, ThemedColors.brandAccent],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -84,9 +84,9 @@ struct GraduationProgressBar: View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(onColor ? LumiraTokens.Colors.white.opacity(0.24) : LumiraTokens.Colors.bgSunken)
+                    .fill(onColor ? ThemedColors.white.opacity(0.24) : ThemedColors.bgSunken)
                 Capsule()
-                    .fill(onColor ? LumiraTokens.Colors.white : LumiraTokens.Colors.brandAccent)
+                    .fill(onColor ? ThemedColors.white : ThemedColors.brandAccent)
                     .frame(width: max(0, proxy.size.width * fraction))
             }
         }

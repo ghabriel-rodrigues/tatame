@@ -255,7 +255,7 @@ struct PersonaShellView: View {
             perfilTab
                 .tag(Tab.perfil)
         }
-        .tint(LumiraTokens.Colors.inkPurple)
+        .tint(ThemedColors.inkPurple)
         .task {
             if notificationsBadge == nil {
                 notificationsBadge = NotificationsBadgeModel(repository: notificationsRepository)
@@ -337,7 +337,10 @@ struct PersonaShellView: View {
     private var perfilTab: some View {
         switch persona {
         case .aluno:
-            perfilTabWithStore(showsNovoPill: true) {
+            // Aluno additionally gets the functional "Tema escuro" switch
+            // (spec 011, CFG.17); professor/responsável toggles stay design
+            // backlog per the handoff.
+            perfilTabWithStore(showsNovoPill: true, showsThemeSwitch: true) {
                 AlunoProfileHeader(fullName: context.user.fullName)
             }
         case .professor:
@@ -361,6 +364,7 @@ struct PersonaShellView: View {
     /// so the "Loja da academia" row pushes the shared vitrine (STO.14).
     private func perfilTabWithStore(
         showsNovoPill: Bool,
+        showsThemeSwitch: Bool = false,
         @ViewBuilder header: () -> some View
     ) -> some View {
         NavigationStack {
@@ -377,6 +381,11 @@ struct PersonaShellView: View {
                         // The perfil "Notificações" switch (spec 010,
                         // story 9): mute silences the badge only.
                         NotificationsSettingsRow()
+                        // "Tema escuro" (spec 011, CFG.17 — aluno-19 row
+                        // order: below Notificações).
+                        if showsThemeSwitch {
+                            ThemeSettingsRow()
+                        }
                         SessionContextCard(context: context, shellTitle: persona.titlePTBR)
                         LogoutButton()
                     }
@@ -384,7 +393,7 @@ struct PersonaShellView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .background(LumiraTokens.Colors.bgApp)
+            .background(ThemedColors.bgApp)
             .navigationBarHiddenOnIOS()
             .navigationDestination(isPresented: $perfilStoreOpen) {
                 StoreVitrineView(
@@ -410,7 +419,7 @@ struct PersonaShellView: View {
             }
             content()
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .tabItem {
             Label(title, systemImage: icon)
         }
@@ -435,7 +444,7 @@ struct PersonaShellView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .tabItem {
             Label(title, systemImage: icon)
         }
@@ -464,11 +473,11 @@ struct ReadOnlyBanner: View {
             Text("Pagamento da academia pendente — modo somente leitura.")
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
         }
-        .foregroundStyle(LumiraTokens.Colors.warning500)
+        .foregroundStyle(ThemedColors.warning500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, LumiraTokens.Space.s4)
         .padding(.vertical, LumiraTokens.Space.s2)
-        .background(LumiraTokens.Colors.warning100)
+        .background(ThemedColors.warning100)
         .accessibilityIdentifier("read-only-banner")
     }
 }
@@ -482,7 +491,7 @@ struct SessionContextCard: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
             Text(shellTitle)
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             row(label: "Nome", value: context.user.fullName)
             row(label: "Email", value: context.user.email)
             row(label: "Perfil", value: context.activeMembership.role.displayNamePTBR)
@@ -492,11 +501,11 @@ struct SessionContextCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s4)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
@@ -504,10 +513,10 @@ struct SessionContextCard: View {
         HStack(spacing: LumiraTokens.Space.s2) {
             Text(label)
                 .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             Text(value)
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg2)
+                .foregroundStyle(ThemedColors.fg2)
         }
     }
 }
@@ -522,10 +531,10 @@ struct LogoutButton: View {
         } label: {
             Text("Sair")
                 .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.danger500)
+                .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
-                .background(LumiraTokens.Colors.danger100)
+                .background(ThemedColors.danger100)
                 .clipShape(Capsule())
         }
         .accessibilityIdentifier("logout-button")

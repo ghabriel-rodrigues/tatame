@@ -34,7 +34,7 @@ public struct StudentProfileView: View {
             if let model {
                 StudentProfileContent(model: model)
             } else {
-                LumiraTokens.Colors.bgApp
+                ThemedColors.bgApp
             }
         }
         .task {
@@ -88,7 +88,7 @@ struct StudentProfileContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .navigationTitle("Perfil do aluno")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -130,19 +130,19 @@ struct StudentProfileContent: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(profile.student.fullName)
                     .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Text(GraduationFormatters.chipLabelPTBR(belt: profile.belt))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
             Spacer()
             if profile.student.badge == .pendente {
                 Text("Pendente")
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg3)
+                    .foregroundStyle(ThemedColors.fg3)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)
-                    .background(LumiraTokens.Colors.bgSunken)
+                    .background(ThemedColors.bgSunken)
                     .clipShape(Capsule())
             }
         }
@@ -163,11 +163,11 @@ struct StudentProfileContent: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(GraduationFormatters.chipLabelPTBR(belt: profile.belt))
                     .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg1)
+                    .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Text(GraduationFormatters.progressCaptionPTBR(profile.progress))
                     .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                     .accessibilityIdentifier("student-progress-caption")
             }
             GraduationProgressBar(fraction: profile.progress.fraction)
@@ -179,10 +179,10 @@ struct StudentProfileContent: View {
                     } label: {
                         Text("Adicionar grau")
                             .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                            .foregroundStyle(ThemedColors.fgOnColor)
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
-                            .background(LumiraTokens.Colors.inkPurple)
+                            .background(ThemedColors.inkPurple)
                             .clipShape(Capsule())
                     }
                     .disabled(!model.canAddDegree || model.awarding)
@@ -194,12 +194,12 @@ struct StudentProfileContent: View {
                     } label: {
                         Text("Promover faixa")
                             .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.inkPurple)
+                            .foregroundStyle(ThemedColors.inkPurple)
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
-                            .background(LumiraTokens.Colors.bgSurface)
+                            .background(ThemedColors.bgSurface)
                             .overlay(
-                                Capsule().strokeBorder(LumiraTokens.Colors.border2, lineWidth: 1)
+                                Capsule().strokeBorder(ThemedColors.border2, lineWidth: 1)
                             )
                             .clipShape(Capsule())
                     }
@@ -212,11 +212,11 @@ struct StudentProfileContent: View {
         }
         .padding(LumiraTokens.Space.s4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 
@@ -236,25 +236,25 @@ struct StudentProfileContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Observações")
                 .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
                 .padding(.top, LumiraTokens.Space.s2)
 
             ForEach(profile.notes) { note in
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                     Text(note.body)
                         .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg2)
+                        .foregroundStyle(ThemedColors.fg2)
                     Text(GraduationFormatters.noteMetaPTBR(note))
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 .padding(LumiraTokens.Space.s4)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(LumiraTokens.Colors.bgSurface)
+                .background(ThemedColors.bgSurface)
                 .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                        .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                        .strokeBorder(ThemedColors.border1, lineWidth: 1)
                 )
             }
 
@@ -263,11 +263,11 @@ struct StudentProfileContent: View {
                     .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
                     .padding(.horizontal, LumiraTokens.Space.s3)
                     .padding(.vertical, LumiraTokens.Space.s2)
-                    .background(LumiraTokens.Colors.bgSurface)
+                    .background(ThemedColors.bgSurface)
                     .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous)
-                            .strokeBorder(LumiraTokens.Colors.border2, lineWidth: 1)
+                            .strokeBorder(ThemedColors.border2, lineWidth: 1)
                     )
                     .accessibilityIdentifier("nova-observacao-field")
                 Button {
@@ -275,10 +275,10 @@ struct StudentProfileContent: View {
                 } label: {
                     Text("Salvar")
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                        .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s4)
                         .frame(height: 38)
-                        .background(LumiraTokens.Colors.inkPurple)
+                        .background(ThemedColors.inkPurple)
                         .clipShape(Capsule())
                 }
                 .disabled(!model.canSaveNote)
@@ -299,23 +299,23 @@ struct ProfileStatTile: View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg1)
+                .foregroundStyle(ThemedColors.fg1)
             Text(label)
                 .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg4)
+                .foregroundStyle(ThemedColors.fg4)
             if let footnote {
                 Text(footnote)
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, LumiraTokens.Space.s3)
-        .background(LumiraTokens.Colors.bgSurface)
+        .background(ThemedColors.bgSurface)
         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                .strokeBorder(ThemedColors.border1, lineWidth: 1)
         )
     }
 }

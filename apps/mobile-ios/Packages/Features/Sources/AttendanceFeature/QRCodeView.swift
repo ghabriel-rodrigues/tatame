@@ -22,7 +22,7 @@ struct QRCodeView: View {
                 Image(systemName: "qrcode")
                     .resizable()
                     .scaledToFit()
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
             }
         }
         .accessibilityLabel("QR Code de check-in")

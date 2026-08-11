@@ -19,7 +19,7 @@ public struct AlunoGraduationView: View {
             if let model {
                 AlunoGraduationContent(model: model)
             } else {
-                LumiraTokens.Colors.bgApp
+                ThemedColors.bgApp
             }
         }
         .task {
@@ -55,7 +55,7 @@ struct AlunoGraduationContent: View {
             .padding(.horizontal, LumiraTokens.Space.s6)
             .padding(.bottom, LumiraTokens.Space.s6)
         }
-        .background(LumiraTokens.Colors.bgApp)
+        .background(ThemedColors.bgApp)
         .navigationTitle("Graduação")
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
@@ -66,11 +66,11 @@ struct AlunoGraduationContent: View {
     private var loadingState: some View {
         VStack(spacing: LumiraTokens.Space.s4) {
             RoundedRectangle(cornerRadius: LumiraTokens.Radius.lg, style: .continuous)
-                .fill(LumiraTokens.Colors.bgSunken)
+                .fill(ThemedColors.bgSunken)
                 .frame(height: 132)
             ForEach(0..<3, id: \.self) { _ in
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .fill(LumiraTokens.Colors.bgSunken)
+                    .fill(ThemedColors.bgSunken)
                     .frame(height: 72)
             }
         }
@@ -85,10 +85,10 @@ struct AlunoGraduationContent: View {
             Text("FAIXA ATUAL")
                 .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
                 .tracking(LumiraTokens.FontSize.text2xs * LumiraTokens.Tracking.caps)
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.7))
+                .foregroundStyle(ThemedColors.fgOnColor.opacity(0.7))
             Text(GraduationFormatters.heroTitlePTBR(belt: graduation.belt))
                 .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                .foregroundStyle(ThemedColors.fgOnColor)
                 .accessibilityIdentifier("graduation-hero-title")
 
             BeltBar(
@@ -102,11 +102,11 @@ struct AlunoGraduationContent: View {
             HStack {
                 Text(graduation.progress.label)
                     .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor.opacity(0.7))
+                    .foregroundStyle(ThemedColors.fgOnColor.opacity(0.7))
                 Spacer()
                 Text(GraduationFormatters.progressLinePTBR(graduation.progress))
                     .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fgOnColor)
+                    .foregroundStyle(ThemedColors.fgOnColor)
                     .accessibilityIdentifier("graduation-progress-line")
             }
             .padding(.top, LumiraTokens.Space.s1)
@@ -117,8 +117,8 @@ struct AlunoGraduationContent: View {
         .background(
             LinearGradient(
                 colors: [
-                    theme.color("purple-700") ?? LumiraTokens.Colors.purple700,
-                    theme.color("purple-500") ?? LumiraTokens.Colors.purple500,
+                    theme.color("purple-700") ?? ThemedColors.purple700,
+                    theme.color("purple-500") ?? ThemedColors.purple500,
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -134,13 +134,13 @@ struct AlunoGraduationContent: View {
     private func timelineSection(_ timeline: [GraduationEntry]) -> some View {
         Text("Histórico de evolução")
             .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
-            .foregroundStyle(LumiraTokens.Colors.fg1)
+            .foregroundStyle(ThemedColors.fg1)
             .padding(.top, LumiraTokens.Space.s2)
 
         if timeline.isEmpty {
             Text("Sua jornada começa aqui — as graduações aparecem neste histórico.")
                 .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
-                .foregroundStyle(LumiraTokens.Colors.fg3)
+                .foregroundStyle(ThemedColors.fg3)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, LumiraTokens.Space.s8)
         } else {
@@ -162,45 +162,45 @@ struct TimelineEntryRow: View {
             Circle()
                 .fill(dotColor)
                 .frame(width: 10, height: 10)
-                .overlay(Circle().strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1))
+                .overlay(Circle().strokeBorder(ThemedColors.border1, lineWidth: 1))
                 .padding(.top, LumiraTokens.Space.s4)
 
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(GraduationFormatters.timelineTitlePTBR(entry: entry))
                         .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg1)
+                        .foregroundStyle(ThemedColors.fg1)
                     if entry.reversed {
                         Text("Revogada")
                             .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                            .foregroundStyle(LumiraTokens.Colors.danger500)
+                            .foregroundStyle(ThemedColors.danger500)
                             .padding(.horizontal, LumiraTokens.Space.s2)
                             .padding(.vertical, 2)
-                            .background(LumiraTokens.Colors.danger100)
+                            .background(ThemedColors.danger100)
                             .clipShape(Capsule())
                     }
                     Spacer()
                     Text(GraduationFormatters.monthYearPTBR(entry.awardedAt))
                         .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.fg4)
+                        .foregroundStyle(ThemedColors.fg4)
                 }
                 Text(GraduationFormatters.professorLinePTBR(entry.awardedBy))
                     .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(LumiraTokens.Colors.fg4)
+                    .foregroundStyle(ThemedColors.fg4)
                 if let notes = entry.notes, !notes.isEmpty {
                     Text("“\(notes)”")
                         .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded).italic())
-                        .foregroundStyle(LumiraTokens.Colors.fg3)
+                        .foregroundStyle(ThemedColors.fg3)
                 }
                 if entry.certificateAvailable {
                     // Render-only placeholder — generation is a later slice.
                     Text("Ver certificado")
                         .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(LumiraTokens.Colors.inkPurple.opacity(0.5))
+                        .foregroundStyle(ThemedColors.inkPurple.opacity(0.5))
                         .padding(.horizontal, LumiraTokens.Space.s3)
                         .padding(.vertical, LumiraTokens.Space.s1)
                         .overlay(
-                            Capsule().strokeBorder(LumiraTokens.Colors.inkPurple.opacity(0.35), lineWidth: 1)
+                            Capsule().strokeBorder(ThemedColors.inkPurple.opacity(0.35), lineWidth: 1)
                         )
                         .padding(.top, LumiraTokens.Space.s1)
                         .accessibilityIdentifier("ver-certificado-placeholder")
@@ -208,11 +208,11 @@ struct TimelineEntryRow: View {
             }
             .padding(LumiraTokens.Space.s4)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(LumiraTokens.Colors.bgSurface)
+            .background(ThemedColors.bgSurface)
             .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                    .strokeBorder(LumiraTokens.Colors.border1, lineWidth: 1)
+                    .strokeBorder(ThemedColors.border1, lineWidth: 1)
             )
             .opacity(entry.reversed ? 0.55 : 1)
         }
@@ -220,7 +220,7 @@ struct TimelineEntryRow: View {
 
     private var dotColor: Color {
         entry.reversed || entry.kind == .revocation
-            ? LumiraTokens.Colors.gray300
+            ? ThemedColors.gray300
             : BeltBarSpec.fill(colorSlug: entry.belt.colorSlug)
     }
 }
