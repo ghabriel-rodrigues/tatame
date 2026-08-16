@@ -296,4 +296,25 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] PLT.13 Web: `/plataforma/planos` per plataforma-05 with derived "Mais assinado" and "Tudo do X" chips + novo/editar sheet per plataforma-06/07
 - [x] PLT.14 Web: `/plataforma/conta` per plataforma-12 + `/plataforma/equipe` per plataforma-10 (owner-only Convidar, role explainer) + `/plataforma/integracoes` per plataforma-11 (disabled switches)
 
-_Next phases (reports, release) get their specs as each phase ships._
+### Phase 13 — Reports + polish ([spec 013](docs/specs/013-reports.md))
+
+- [ ] REP.1 DB: `users` profile columns — `gender`, `cpf`, `rg`, `address_line`, `address_city`, `address_state`, `address_zip`, `emergency_contact_name`, `emergency_contact_phone`, all nullable with format CHECKs (CPF 11 digits, CEP 8 digits, UF 2 letters, gender set); no new tables, no CPF uniqueness (decisions recorded)
+- [ ] REP.2 DB: dev seeds — fixture aluno with a full profile (CPF/RG set → locked state demoable) + attendance/event/graduation/order spread so all five reports and both ranking segments are non-empty with a distinct top 3
+- [ ] REP.3 Backend: `reports` module — five report read models (`financeiro`, `frequencia`, `inadimplencia`, `graduacoes`, `loja`) as `GET /admin/reports/:report` JSON with month/semester windows in the tenant timezone, financeiro running the charge-materialization pass, honest denominators, reversed-award and canceled-order exclusions; admin-only
+- [ ] REP.4 Backend: `GET /admin/reports/:report/csv` — streamed CSV from the same read models, UTF-8 BOM + semicolon + pt-BR money, Content-Disposition `<slug>-<YYYY-MM>.csv`
+- [ ] REP.5 Backend: `GET /rankings?by=lessons|events` — academy-wide active students, month (lessons) / semester (events) windows, count-desc + name-asc ties, top 10 + `me` position for out-of-list students (null for professors); student + professor roles; visible regardless of the streak toggle (decision recorded)
+- [ ] REP.6 Backend: `GET/PUT /aluno/profile` — profile read with `cpfLocked`/`rgLocked` and read-only email/birthDate (student row as birth-date authority), PUT with per-field validation, CPF checksum + digit normalization, CPF/RG write-once 422, name sync onto the linked student row in-transaction
+- [ ] REP.7 Backend: graduation timeline `certificateAvailable` real — true exactly on belt-promotion entries, false on degree/initial entries; no new endpoint (certificate renders client-side from timeline + session)
+- [ ] REP.8 Backend: e2e suite green — report math + windowing + CSV shape, rankings math (ties, você, exclusions), profile lock/validation/sync, certificate flag, full RBAC matrix + read-only semantics + CI route assertions
+- [ ] REP.9 Web: `/admin/relatorios` per admin-18 — Relatórios header entry on the Visão financeira, month picker, five rows with exact subtitles, CSV as authenticated blob download, PDF as print-friendly view in a new tab (real PDF lib recorded debt)
+- [ ] REP.10 RN: aluno Dados pessoais per aluno-18 — sections, locked CPF/RG boxes, read-only email/birthDate, Cidade / UF + CEP row, Trocar foto placeholder, Salvar round trip
+- [ ] REP.11 RN: rankings — aluno home "Ranking do mês" card with live position + full screen per aluno-06/07, professor dashboard real "Ranking de presença" section + full screen per professor-05/06 (segments, bars, você highlight, selos footnote)
+- [ ] REP.12 RN: certificado — belt-promotion "Ver certificado" unlocked, branded certificate view (BeltBar, name, belt, date, professor line), OS share/print action
+- [ ] REP.13 Android: aluno Dados pessoais (REP.10 scope)
+- [ ] REP.14 Android: rankings — aluno + professor (REP.11 scope)
+- [ ] REP.15 Android: certificado (REP.12 scope)
+- [ ] REP.16 iOS: aluno Dados pessoais (REP.10 scope)
+- [ ] REP.17 iOS: rankings — aluno + professor (REP.11 scope)
+- [ ] REP.18 iOS: certificado (REP.12 scope)
+
+_Next phase (release) gets its spec when Phase 13 ships._
