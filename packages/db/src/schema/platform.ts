@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   char,
   boolean,
+  check,
   integer,
   jsonb,
   pgPolicy,
@@ -43,6 +44,27 @@ export const platformUsers = pgTable('platform_users', {
   ...timestamps,
 }).enableRLS();
 
+/**
+ * Catalog feature slugs (spec 012, PLT.1). Stable identifiers; the PT-BR
+ * labels the plan cards render live in the API's feature registry, the same
+ * split the permission registry uses. The database CHECK below is the
+ * boundary that keeps an unknown slug out of the catalog.
+ */
+export const PLATFORM_PLAN_FEATURE_SLUGS = [
+  'attendance',
+  'graduations',
+  'pix_payments',
+  'store',
+  'events',
+  'full_finance',
+  'white_label',
+  'multi_unit',
+  'advanced_reports',
+  'api',
+] as const;
+
+export type PlatformPlanFeatureSlug = (typeof PLATFORM_PLAN_FEATURE_SLUGS)[number];
+
 /** Platform -> academy plan catalog (Essencial / Pro / Black). Public prices. */
 export const platformPlans = pgTable(
   'platform_plans',
@@ -53,8 +75,13 @@ export const platformPlans = pgTable(
     currency: char('currency', { length: 3 }).notNull().default('BRL'),
     /** NULL = unlimited students. */
     studentLimit: integer('student_limit'),
-    /** Feature toggle chips shown on the plan card. */
-    features: jsonb('features'),
+    /**
+     * Feature chips shown on the plan card, as registry slugs (spec 012 —
+     * replaces the `{invites,store,whiteLabel}` jsonb blob no client read).
+     * "Mais assinado" and the "Tudo do X" inheritance chip are derived at
+     * read time, never stored.
+     */
+    features: text('features').array().notNull().default(sql`'{}'::text[]`),
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
     /**
@@ -66,6 +93,18 @@ export const platformPlans = pgTable(
     ...timestamps,
   },
   () => [
+    // sql.raw, not a parameterized fragment: drizzle-kit renders bind
+    // parameters as `$1…$n` into both the migration and the snapshot, which
+    // is not valid DDL. The slugs are compile-time literals, so inlining is
+    // safe here.
+    check(
+      'platform_plans_features_slug_ck',
+      sql.raw(
+        `"platform_plans"."features" <@ ARRAY[${PLATFORM_PLAN_FEATURE_SLUGS.map(
+          (slug) => `'${slug}'`,
+        ).join(', ')}]::text[]`,
+      ),
+    ),
     pgPolicy('platform_plans_public_select', {
       for: 'select',
       to: appRole,

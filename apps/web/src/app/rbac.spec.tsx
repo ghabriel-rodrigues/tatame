@@ -9,6 +9,7 @@ import {
   makeMeResponse,
   makeMembership,
   makePlatformMembership,
+  platformConsoleHandlers,
   repassesHandlers,
 } from '@tatame/shared/testing';
 import { renderRoute } from '../test/render-route';
@@ -93,15 +94,15 @@ describe('route guards — /plataforma', () => {
     expect(router.state.location.search).toBe(`?next=${encodeURIComponent('/plataforma')}`);
   });
 
-  it('renders the platform console with Faturamento e repasses (BIL.15)', async () => {
-    server.use(...repassesHandlers());
+  it('renders the platform console with the Visão geral home (PLT.10)', async () => {
+    server.use(...platformConsoleHandlers());
     const platform = makePlatformMembership();
     renderRoute('/plataforma', {
       session: makeMeResponse({ memberships: [platform], academy: null }),
     });
     expect(await screen.findByText('Console da plataforma')).toBeInTheDocument();
     expect(
-      await screen.findByRole('heading', { name: 'Faturamento e repasses' }),
+      await screen.findByRole('heading', { name: 'Visão geral' }),
     ).toBeInTheDocument();
   });
 

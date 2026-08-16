@@ -15,3 +15,7 @@ export {
   seedNotificationFixtures,
   type SeedNotificationHandles,
 } from './notifications.js';
+export {
+  seedPlatformConsoleFixtures,
+  type SeedPlatformConsoleHandles,
+} from './platform.js';

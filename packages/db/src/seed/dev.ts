@@ -143,6 +143,21 @@ const DEV_USERS: DevUser[] = [
     memberships: [],
     platformRole: 'support',
   },
+  // PLT.2: the plataforma-10 team shape — one owner, two support, one
+  // finance. Finance is the role that separates money from access (it reads
+  // repasses and the overview, and is refused impersonation).
+  {
+    email: 'suporte2@tatame.dev',
+    fullName: 'Sofia Suporte',
+    memberships: [],
+    platformRole: 'support',
+  },
+  {
+    email: 'financeiro@tatame.dev',
+    fullName: 'Fernanda Financeiro',
+    memberships: [],
+    platformRole: 'finance',
+  },
 ];
 
 /** Turma fixtures per academy (ENR.5). Weekday: 0 = Sunday … 6 = Saturday. */

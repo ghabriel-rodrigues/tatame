@@ -298,12 +298,25 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
   it('a missed materialized session breaks the streak; attending it extends; revoke recomputes', async () => {
     // Materialize YESTERDAY for Live SSE with no attendance — streak must
     // stop at the sessions attended today (the honest denominator rule).
+    //
+    // The streak walks sessions of ALL of Ana's enrolled classes ordered by
+    // (session_date DESC, starts_at DESC NULLS LAST), so the break must be
+    // the FIRST of yesterday's occurrences: the dev seed materializes one
+    // attended session per weekday slot, and on most weekdays one of those
+    // lands on yesterday. Stamping this one at the end of yesterday sorts it
+    // ahead of them, which is what makes the assertion below independent of
+    // which weekday the suite runs on.
     const yesterday = spDate(new Date(Date.now() - 86_400_000));
     let yesterdaySessionId = '';
     await withTenant(t.appDb.db, alphaId, async (tx) => {
       const [session] = await tx
         .insert(classSessions)
-        .values({ tenantId: alphaId, classId: liveClassId, sessionDate: yesterday })
+        .values({
+          tenantId: alphaId,
+          classId: liveClassId,
+          sessionDate: yesterday,
+          startsAt: new Date(`${yesterday}T23:59:00-03:00`),
+        })
         .returning({ id: classSessions.id });
       yesterdaySessionId = session!.id;
     });

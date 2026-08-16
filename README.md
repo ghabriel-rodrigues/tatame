@@ -277,4 +277,23 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] CFG.16 iOS: brand wiring — TatameTheme environment constructed from the session brand with UserDefaults last-brand cache
 - [x] CFG.17 iOS: aluno Tema escuro switch — persisted mode through the theme environment, full dark shell
 
-_Next phases (platform console, reports, release) get their specs as each phase ships._
+### Phase 12 — Platform console ([spec 012](docs/specs/012-platform-console.md))
+
+> Plataforma is a web-console persona (routing decision: web serves Admin + Plataforma + Convite + login), so this phase has no mobile leg.
+
+- [x] PLT.1 DB: `platform_plans.features` migrated from the `{invites,store,whiteLabel}` jsonb blob to a `text[]` of registry slugs with a CHECK against the registry; seeded catalog rewritten onto the slugs that reproduce plataforma-05; no highlight/inheritance columns (derivation decision recorded)
+- [x] PLT.2 DB: dev seeds — five fixture academies spanning active/trial-ending/delinquent/suspended with mixed-age subscriptions (6-month chart has slope, attention list is non-empty) + the four plataforma-10 platform team members with logins
+- [x] PLT.3 Backend: `platform` module + `GET /platform/overview` — MRR with month-over-month delta, academias/alunos/inadimplência tiles, 6-month series from subscription lifetimes, "precisam de atenção" rows with PT-BR reasons; owner/finance only
+- [x] PLT.4 Backend: `GET /platform/academies` + `GET /platform/academies/:id` — list with city/students/plan/status, detail with stats, subscription and pending-change state; all three platform roles
+- [x] PLT.5 Backend: `POST /platform/academies` — academy + trialing subscription + find-or-create admin membership in one transaction, slug uniqueness, set-password email through the notification port outside the transaction, audited; owner only
+- [x] PLT.6 Backend: `PUT /platform/academies/:id/plan` (next-cycle only, `null` clears) + `POST .../suspend` + `POST .../reactivate` with status-cache invalidation and audit rows; owner only
+- [x] PLT.7 Backend: plan catalog — feature registry endpoint output, `GET/POST/PUT /platform/plans` with name/price/limit/feature validation and 409 on name collision, derived "mais assinado" and feature-inheritance in the read model; writes owner-only
+- [x] PLT.8 Backend: `GET /platform/team` + `POST /platform/team` (owner-only invite reusing the set-password email, 409 on an existing platform member) + `GET /platform/integrations` read-only stub
+- [x] PLT.9 Backend: e2e suite green — overview math, registration end-to-end + existing-email attach, plan change scoped to pending, suspend blocks access without cache wait, catalog validation, team invite, full RBAC matrix + CI route assertions
+- [x] PLT.10 Web: plataforma nav in `ConsoleShell` (Visão/Academias/Planos/Conta, role-aware index redirect) + `/plataforma` Visão geral per plataforma-02 — MRR hero with delta, three tiles, 6-month chart, "Precisam de atenção" list
+- [x] PLT.11 Web: `/plataforma/academias` per plataforma-03 + "Registrar academia" sheet per plataforma-08 with the done panel
+- [x] PLT.12 Web: `/plataforma/academias/:id` per plataforma-04 — stats, plan picker with next-cycle caption and pending-change banner, Entrar como admin (role-gated), Suspender/Reativar
+- [x] PLT.13 Web: `/plataforma/planos` per plataforma-05 with derived "Mais assinado" and "Tudo do X" chips + novo/editar sheet per plataforma-06/07
+- [x] PLT.14 Web: `/plataforma/conta` per plataforma-12 + `/plataforma/equipe` per plataforma-10 (owner-only Convidar, role explainer) + `/plataforma/integracoes` per plataforma-11 (disabled switches)
+
+_Next phases (reports, release) get their specs as each phase ships._

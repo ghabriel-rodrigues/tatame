@@ -1887,6 +1887,194 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/platform/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visão geral: MRR + delta, academias/alunos/inadimplência, 6-month series, atenção
+         * @description Pure read model. The series is reconstructed from subscription lifetimes against current plan prices — see spec 012 for the recorded limitation. Support is denied: the screen is revenue, and support lands on Academias instead.
+         */
+        get: operations["PlatformConsoleController_overview_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/academies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academies with city, student count, plan and status */
+        get: operations["PlatformConsoleController_listAcademies_v1"];
+        put?: never;
+        /**
+         * Register an academy on Trial and invite its admin by email
+         * @description Academy + trialing subscription + admin membership in one transaction; the set-password email goes out after it commits, so a mail failure never rolls back a created customer.
+         */
+        post: operations["PlatformConsoleController_registerAcademy_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/academies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Academy detail: stats, subscription and pending plan change */
+        get: operations["PlatformConsoleController_academyDetail_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/academies/{id}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Schedule the academy plan change for the next cycle
+         * @description Writes `pending_platform_plan_id` only — the current plan and price are never touched (charter: a plan change applies at the next billing cycle). `null` clears a scheduled change, and picking the plan the academy is already on does the same.
+         */
+        put: operations["PlatformConsoleController_schedulePlanChange_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/academies/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Suspend the academy — blocks access immediately (audited) */
+        post: operations["PlatformConsoleController_suspend_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/academies/{id}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reactivate the academy — restores the status its subscription justifies */
+        post: operations["PlatformConsoleController_reactivate_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plan catalog with derived "mais assinado" + feature inheritance, and the registry */
+        get: operations["PlatformConsoleController_planCatalog_v1"];
+        put?: never;
+        /** Create a plan — available for new academy subscriptions immediately */
+        post: operations["PlatformConsoleController_createPlan_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit a plan (name, price, limit, features)
+         * @description Current subscribers keep their price until the next cycle.
+         */
+        put: operations["PlatformConsoleController_updatePlan_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Platform team roster with roles */
+        get: operations["PlatformConsoleController_listTeam_v1"];
+        put?: never;
+        /** Invite a team member — same set-password email as academy admins */
+        post: operations["PlatformConsoleController_inviteTeamMember_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/platform/integrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Payment rails (read-only stub)
+         * @description plataforma-11 as the handoff describes it — "(stubs)". The rails reflect the configured payment provider and carry `configurable: false`, so the switches render disabled instead of pretending to pause anything.
+         */
+        get: operations["PlatformConsoleController_integrations_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/notifications": {
         parameters: {
             query?: never;
@@ -4156,6 +4344,197 @@ export interface components {
             revocationId: string;
             /** @description Restored current belt after the reversal */
             belt: components["schemas"]["BeltViewDto"];
+        };
+        MrrPointDto: {
+            /**
+             * @description YYYY-MM
+             * @example 2026-08
+             */
+            month: string;
+            /** @example 1924000 */
+            cents: number;
+        };
+        AttentionRowDto: {
+            /** Format: uuid */
+            academyId: string;
+            academyName: string;
+            /** @enum {string} */
+            kind: "trial_ending" | "subscription_overdue";
+            /** @example Trial termina em 9 dias */
+            reason: string;
+        };
+        PlatformOverviewResponseDto: {
+            /** @description Live subscription revenue this month, in cents */
+            mrrCents: number;
+            /** @description Whole percent vs. last month */
+            mrrDeltaPct: number | null;
+            academyCount: number;
+            studentCount: number;
+            /** @description Delinquent share of non-suspended academies, one decimal */
+            delinquencyPct: number;
+            series: components["schemas"]["MrrPointDto"][];
+            attention: components["schemas"]["AttentionRowDto"][];
+        };
+        PlatformAcademyRowDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            city: string | null;
+            /** @enum {string} */
+            status: "trial" | "active" | "delinquent" | "suspended";
+            studentCount: number;
+            planName: string | null;
+            planPriceCents: number | null;
+            subscriptionStatus: string | null;
+        };
+        PlatformAcademyListResponseDto: {
+            academies: components["schemas"]["PlatformAcademyRowDto"][];
+            total: number;
+        };
+        RegisterAcademyDto: {
+            /** @example Horizonte BJJ */
+            name: string;
+            /** @example São Paulo / SP */
+            city: string | null;
+            /** @example admin@horizontebjj.com.br */
+            adminEmail: string;
+            /** @description Admin display name; falls back to the academy name */
+            adminFullName?: string | null;
+            /** Format: uuid */
+            platformPlanId: string;
+        };
+        PendingPlanDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            priceCents: number;
+        };
+        PlatformAcademyDetailDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            city: string | null;
+            /** @enum {string} */
+            status: "trial" | "active" | "delinquent" | "suspended";
+            studentCount: number;
+            planName: string | null;
+            planPriceCents: number | null;
+            subscriptionStatus: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            professorCount: number;
+            contactEmail: string;
+            pendingPlan: components["schemas"]["PendingPlanDto"] | null;
+            /** Format: date-time */
+            currentPeriodEnd: string | null;
+        };
+        RegisterAcademyResponseDto: {
+            academy: components["schemas"]["PlatformAcademyDetailDto"];
+            /** Format: uuid */
+            adminUserId: string;
+            adminUserCreated: boolean;
+            passwordEmailSent: boolean;
+        };
+        SchedulePlanChangeDto: {
+            /** Format: uuid */
+            platformPlanId: string | null;
+        };
+        PlanFeatureDto: {
+            /** @example store */
+            slug: string;
+            /** @example Loja da academia */
+            label: string;
+        };
+        PlatformPlanRowDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            priceCents: number;
+            /** @description null = unlimited */
+            studentLimit: number | null;
+            /** @description Inherited chips excluded when inheritsFrom is set */
+            features: components["schemas"]["PlanFeatureDto"][];
+            academyCount: number;
+            /** @description Derived from live subscriptions, never stored */
+            isMostSubscribed: boolean;
+            /** @description Drives the "Tudo do X" chip */
+            inheritsFrom: string | null;
+            isActive: boolean;
+            sortOrder: number;
+        };
+        PlatformPlanCatalogResponseDto: {
+            plans: components["schemas"]["PlatformPlanRowDto"][];
+            /** @description The plataforma-06 toggle rows */
+            featureRegistry: components["schemas"]["PlanFeatureDto"][];
+        };
+        PlatformPlanWriteDto: {
+            /** @example Pro */
+            name: string;
+            /**
+             * @description Monthly price in cents
+             * @example 19900
+             */
+            priceCents: number;
+            /** @description null = unlimited students */
+            studentLimit: number | null;
+            /**
+             * @description Feature registry slugs; unknown slugs are rejected
+             * @example [
+             *       "attendance",
+             *       "graduations"
+             *     ]
+             */
+            features: string[];
+        };
+        PlatformTeamMemberDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            fullName: string;
+            email: string;
+            /** @enum {string} */
+            role: "owner" | "support" | "finance";
+            status: string;
+        };
+        PlatformTeamResponseDto: {
+            members: components["schemas"]["PlatformTeamMemberDto"][];
+        };
+        InviteTeamMemberDto: {
+            /** @example Paula Andrade */
+            fullName: string;
+            /** @example paula@tatame.app */
+            email: string;
+            /**
+             * @example support
+             * @enum {string}
+             */
+            role: "owner" | "support" | "finance";
+        };
+        InviteTeamMemberResponseDto: {
+            member: components["schemas"]["PlatformTeamMemberDto"];
+            userCreated: boolean;
+            passwordEmailSent: boolean;
+        };
+        PlatformIntegrationDto: {
+            /** @example pix */
+            key: string;
+            /** @example PIX */
+            initials: string;
+            /** @example Pix · PSP TatamePay */
+            name: string;
+            /** @example Liquidação instantânea · taxa 0,9% */
+            detail: string;
+            enabled: boolean;
+            /** @description v1 is read-only — the switch renders disabled */
+            configurable: boolean;
+        };
+        PlatformIntegrationsResponseDto: {
+            /** @enum {string} */
+            provider: "simulated" | "stripe";
+            integrations: components["schemas"]["PlatformIntegrationDto"][];
         };
         NotificationDto: {
             /** Format: uuid */
@@ -6840,6 +7219,283 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentNoteResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_overview_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformOverviewResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_listAcademies_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAcademyListResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_registerAcademy_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterAcademyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterAcademyResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_academyDetail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAcademyDetailDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_schedulePlanChange_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SchedulePlanChangeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAcademyDetailDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_suspend_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAcademyDetailDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_reactivate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformAcademyDetailDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_planCatalog_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformPlanCatalogResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_createPlan_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPlanWriteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformPlanRowDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_updatePlan_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPlanWriteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformPlanRowDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_listTeam_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformTeamResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_inviteTeamMember_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteTeamMemberDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteTeamMemberResponseDto"];
+                };
+            };
+        };
+    };
+    PlatformConsoleController_integrations_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformIntegrationsResponseDto"];
                 };
             };
         };

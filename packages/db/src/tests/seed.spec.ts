@@ -45,6 +45,7 @@ import {
   seedDevFixtures,
   seedEventFixtures,
   seedNotificationFixtures,
+  seedPlatformConsoleFixtures,
   seedPlatformPlans,
   seedStoreFixtures,
 } from '../seed/index.js';
@@ -66,6 +67,7 @@ describe('seeds', () => {
     await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
     await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
     await seedNotificationFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedPlatformConsoleFixtures({ platformDb: platform.db });
   });
 
   afterAll(async () => {
@@ -88,6 +90,58 @@ describe('seeds', () => {
     expect(publicPlans).toHaveLength(3);
   });
 
+  it('seeds plan features as registry slugs, each tier a superset of the one below (PLT.1)', async () => {
+    const plans = await withPlatform(platform.db, (tx) =>
+      tx
+        .select({ name: platformPlans.name, features: platformPlans.features })
+        .from(platformPlans)
+        .orderBy(asc(platformPlans.sortOrder)),
+    );
+    expect(plans.map((p) => p.name)).toEqual(['Essencial', 'Pro', 'Black']);
+    expect(plans[0]!.features).toEqual(['attendance', 'graduations', 'pix_payments']);
+    // Containment is what makes the plataforma-05 "Tudo do X" chip derivable.
+    for (let i = 1; i < plans.length; i += 1) {
+      const lower = new Set(plans[i - 1]!.features);
+      expect(plans[i]!.features).toEqual(expect.arrayContaining([...lower]));
+      expect(plans[i]!.features.length).toBeGreaterThan(lower.size);
+    }
+  });
+
+  it('rejects a feature slug outside the registry at the database boundary (PLT.1)', async () => {
+    // Drizzle wraps the driver error, so the constraint name rides on the
+    // cause rather than the thrown message.
+    const failure = await withPlatform(platform.db, (tx) =>
+      tx
+        .update(platformPlans)
+        .set({ features: ['attendance', 'teleportation'] })
+        .where(eq(platformPlans.name, 'Essencial')),
+    ).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(failure).not.toBeNull();
+    expect(String((failure as { cause?: unknown }).cause)).toMatch(
+      /platform_plans_features_slug_ck/,
+    );
+  });
+
+  it('seeds the plataforma-10 team: one owner, two support, one finance (PLT.2)', async () => {
+    const rows = await withPlatform(platform.db, (tx) =>
+      tx
+        .select({ email: users.email, role: platformUsers.role })
+        .from(platformUsers)
+        .innerJoin(users, eq(users.id, platformUsers.userId))
+        .orderBy(asc(users.email)),
+    );
+    expect(rows).toEqual([
+      { email: 'financeiro@tatame.dev', role: 'finance' },
+      { email: 'owner@tatame.dev', role: 'owner' },
+      // Byte order: '2' (0x32) sorts before '@' (0x40).
+      { email: 'suporte2@tatame.dev', role: 'support' },
+      { email: 'suporte@tatame.dev', role: 'support' },
+    ]);
+  });
+
   it('seeds the fixture academies with subscriptions, incl. the delinquent repasse fixture', async () => {
     const rows = await withPlatform(platform.db, (tx) =>
       tx
@@ -108,6 +162,9 @@ describe('seeds', () => {
       // BIL.5: academy-level delinquency comes only from its SaaS
       // subscription — repasses render this one Retido.
       { slug: 'charlie-fc', status: 'delinquent', subStatus: 'past_due', plan: 'Pro' },
+      // PLT.2: the suspended fixture — access blocked, billing stopped, so
+      // the platform console can show every academy status on first login.
+      { slug: 'delta-team', status: 'suspended', subStatus: 'canceled', plan: 'Essencial' },
     ]);
   });
 
@@ -136,6 +193,7 @@ describe('seeds', () => {
         autoNotifications: true,
       },
       { slug: 'charlie-fc', deep: null, vibrant: null, accent: null, autoNotifications: true },
+      { slug: 'delta-team', deep: null, vibrant: null, accent: null, autoNotifications: true },
     ]);
   });
 
@@ -954,6 +1012,7 @@ describe('seeds', () => {
     await seedEventFixtures({ appDb: app.db, platformDb: platform.db });
     await seedStoreFixtures({ appDb: app.db, platformDb: platform.db });
     await seedNotificationFixtures({ appDb: app.db, platformDb: platform.db });
+    await seedPlatformConsoleFixtures({ platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);
   });

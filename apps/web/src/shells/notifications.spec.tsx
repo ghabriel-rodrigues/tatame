@@ -17,7 +17,7 @@ import {
   makeNotificationFeed,
   makePlatformMembership,
   notificationsHandlers,
-  repassesHandlers,
+  platformConsoleHandlers,
 } from '@tatame/shared/testing';
 import { renderRoute } from '../test/render-route';
 import { server } from '../test/setup';
@@ -64,13 +64,13 @@ describe('NOT.7 — console bell + unread dot', () => {
   });
 
   it('renders no bell on the plataforma surface (platform notifications are debt)', async () => {
-    server.use(...repassesHandlers());
+    server.use(...platformConsoleHandlers());
     renderRoute('/plataforma', {
       session: makeMeResponse({ memberships: [makePlatformMembership()], academy: null }),
     });
 
     expect(
-      await screen.findByRole('heading', { name: 'Faturamento e repasses' }),
+      await screen.findByRole('heading', { name: 'Visão geral' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Notificações' })).not.toBeInTheDocument();
   });

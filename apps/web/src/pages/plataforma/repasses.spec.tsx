@@ -1,5 +1,6 @@
 /**
- * BIL.15 — Faturamento e repasses (plataforma-09) as the /plataforma index:
+ * BIL.15 — Faturamento e repasses (plataforma-09), reachable from the Conta
+ * hub since PLT.14 (the /plataforma index is now the Visão geral):
  * SaaS totals tiles, the per-academy repasse list with Repassado /
  * Em trânsito / Retido status chips — the delinquent academy always Retido
  * ("assinatura vencida") — and the platform-RBAC denial copy. Real routes +
@@ -20,7 +21,7 @@ import { formatBRLWhole } from '../billing-format';
 
 function renderRepasses() {
   const platform = makePlatformMembership();
-  return renderRoute('/plataforma', {
+  return renderRoute('/plataforma/repasses', {
     session: makeMeResponse({ memberships: [platform], academy: null }),
   });
 }

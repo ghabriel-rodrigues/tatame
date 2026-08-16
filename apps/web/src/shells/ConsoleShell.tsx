@@ -186,38 +186,53 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
           />
         </Stack>
       </Box>
-      {surface === '/admin' ? (
-        <Box
-          component="nav"
-          aria-label="Seções do painel"
-          sx={{
-            display: 'flex',
-            gap: '18px',
-            padding: '10px 20px',
-            background: 'var(--bg-surface)',
-            borderBottom: '1px solid var(--border-1)',
-            '& a': {
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'var(--fg-3)',
-              textDecoration: 'none',
-            },
-            '& a.active': { color: 'var(--brand-1)' },
-          }}
-        >
-          <NavLink to="/admin" end>
-            Início
-          </NavLink>
-          <NavLink to="/admin/cadastros">Cadastros</NavLink>
-          <NavLink to="/admin/calendario">Calendário</NavLink>
-          <NavLink to="/admin/eventos">Eventos</NavLink>
-          <NavLink to="/admin/graduacao">Graduação</NavLink>
-          <NavLink to="/admin/loja">Loja</NavLink>
-          <NavLink to="/admin/planos">Planos</NavLink>
-          {/* CFG.9: the Config entry per the admin prototype's nav. */}
-          <NavLink to="/admin/configuracoes">Configurações</NavLink>
-        </Box>
-      ) : null}
+      <Box
+        component="nav"
+        aria-label="Seções do painel"
+        sx={{
+          display: 'flex',
+          gap: '18px',
+          padding: '10px 20px',
+          background: 'var(--bg-surface)',
+          borderBottom: '1px solid var(--border-1)',
+          '& a': {
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--fg-3)',
+            textDecoration: 'none',
+          },
+          '& a.active': { color: 'var(--brand-1)' },
+        }}
+      >
+        {surface === '/admin' ? (
+          <>
+            <NavLink to="/admin" end>
+              Início
+            </NavLink>
+            <NavLink to="/admin/cadastros">Cadastros</NavLink>
+            <NavLink to="/admin/calendario">Calendário</NavLink>
+            <NavLink to="/admin/eventos">Eventos</NavLink>
+            <NavLink to="/admin/graduacao">Graduação</NavLink>
+            <NavLink to="/admin/loja">Loja</NavLink>
+            <NavLink to="/admin/planos">Planos</NavLink>
+            {/* CFG.9: the Config entry per the admin prototype's nav. */}
+            <NavLink to="/admin/configuracoes">Configurações</NavLink>
+          </>
+        ) : (
+          <>
+            {/* PLT.10: the plataforma tab bar. Visão is owner/finance —
+                support would only get the API's 403, so it is not offered. */}
+            {session.activeRole === 'support' ? null : (
+              <NavLink to="/plataforma" end>
+                Visão
+              </NavLink>
+            )}
+            <NavLink to="/plataforma/academias">Academias</NavLink>
+            <NavLink to="/plataforma/planos">Planos</NavLink>
+            <NavLink to="/plataforma/conta">Conta</NavLink>
+          </>
+        )}
+      </Box>
       <Box component="main" sx={{ padding: '24px 20px', maxWidth: 1080, margin: '0 auto' }}>
         <Outlet />
       </Box>

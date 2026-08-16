@@ -20,6 +20,7 @@ import { EventsModule } from '../modules/events/events.module.js';
 import { GraduationModule } from '../modules/graduation/graduation.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
 import { NotificationsFeedModule } from '../modules/notifications/notifications.module.js';
+import { PlatformModule } from '../modules/platform/platform.module.js';
 import { StoreModule } from '../modules/store/store.module.js';
 
 function flattenValidationErrors(
@@ -60,6 +61,9 @@ function flattenValidationErrors(
     BillingModule,
     EventsModule,
     StoreModule,
+    // Plataforma console (spec 012): cross-tenant read models + the SaaS
+    // owner's writes. Imports identity for the audit/status/reset seams.
+    PlatformModule,
     // Listener-only fan-out + the persona-neutral feed API (spec 010, be-01):
     // wired last, imported by nobody — the bus is its only coupling.
     NotificationsFeedModule,

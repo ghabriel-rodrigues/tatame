@@ -19,6 +19,11 @@ import { PermissoesPage } from '../pages/admin/PermissoesPage';
 import { PlansPage } from '../pages/admin/PlansPage';
 import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
 import { VisaoFinanceiraPage } from '../pages/admin/VisaoFinanceiraPage';
+import { AcademiaDetailPage } from '../pages/plataforma/AcademiaDetailPage';
+import { AcademiasPage } from '../pages/plataforma/AcademiasPage';
+import { ContaPage, EquipePage, IntegracoesPage } from '../pages/plataforma/ContaPage';
+import { PlanosPage } from '../pages/plataforma/PlanosPage';
+import { PlataformaHome } from '../pages/plataforma/PlataformaHome';
 import { RepassesPage } from '../pages/plataforma/RepassesPage';
 
 export const appRoutes: RouteObject[] = [
@@ -62,9 +67,18 @@ export const appRoutes: RouteObject[] = [
       {
         element: <ConsoleShell surface="/plataforma" />,
         children: [
-          // BIL.15: the platform console's first real screen (plataforma-09).
-          { index: true, element: <RepassesPage /> },
-          { path: '*', element: <UnderConstruction surfaceLabel="Visão geral" /> },
+          // PLT.10: Visão geral for owner/finance; support lands on Academias
+          // (the API refuses it the overview, so a 403 is not a home).
+          { index: true, element: <PlataformaHome /> },
+          { path: 'academias', element: <AcademiasPage /> },
+          { path: 'academias/:id', element: <AcademiaDetailPage /> },
+          { path: 'planos', element: <PlanosPage /> },
+          { path: 'conta', element: <ContaPage /> },
+          { path: 'equipe', element: <EquipePage /> },
+          { path: 'integracoes', element: <IntegracoesPage /> },
+          // BIL.15: shipped with the billing phase, now reachable from Conta.
+          { path: 'repasses', element: <RepassesPage /> },
+          { path: '*', element: <UnderConstruction surfaceLabel="Console da plataforma" /> },
         ],
       },
     ],

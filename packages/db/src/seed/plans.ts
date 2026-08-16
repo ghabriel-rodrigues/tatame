@@ -7,6 +7,11 @@ import { platformPlans } from '../schema/index.js';
  * idempotent upsert keyed on the unique plan name. `feeBps` is the platform
  * take on academy revenue in basis points (spec 006) — dev pricing so the
  * repasse read model (gross × fee_bps → net) computes real numbers.
+ *
+ * `features` are registry slugs (spec 012, PLT.1); each tier is a superset of
+ * the one below it, which is what makes the plataforma-05 cards render their
+ * "Tudo do Essencial" / "Tudo do Pro" chips by derivation instead of a
+ * stored inheritance pointer.
  */
 export const PLATFORM_PLAN_CATALOG = [
   {
@@ -14,7 +19,7 @@ export const PLATFORM_PLAN_CATALOG = [
     priceCents: 9_900,
     currency: 'BRL',
     studentLimit: 80,
-    features: { invites: true, store: false, whiteLabel: false },
+    features: ['attendance', 'graduations', 'pix_payments'],
     sortOrder: 1,
     feeBps: 500,
   },
@@ -23,7 +28,15 @@ export const PLATFORM_PLAN_CATALOG = [
     priceCents: 19_900,
     currency: 'BRL',
     studentLimit: 250,
-    features: { invites: true, store: true, whiteLabel: false },
+    features: [
+      'attendance',
+      'graduations',
+      'pix_payments',
+      'store',
+      'events',
+      'full_finance',
+      'white_label',
+    ],
     sortOrder: 2,
     feeBps: 400,
   },
@@ -32,7 +45,18 @@ export const PLATFORM_PLAN_CATALOG = [
     priceCents: 34_900,
     currency: 'BRL',
     studentLimit: null,
-    features: { invites: true, store: true, whiteLabel: true },
+    features: [
+      'attendance',
+      'graduations',
+      'pix_payments',
+      'store',
+      'events',
+      'full_finance',
+      'white_label',
+      'multi_unit',
+      'advanced_reports',
+      'api',
+    ],
     sortOrder: 3,
     feeBps: 250,
   },
@@ -49,7 +73,7 @@ export async function seedPlatformPlans(platformDb: Database): Promise<void> {
           priceCents: plan.priceCents,
           currency: plan.currency,
           studentLimit: plan.studentLimit,
-          features: plan.features,
+          features: [...plan.features],
           sortOrder: plan.sortOrder,
           isActive: true,
           feeBps: plan.feeBps,
@@ -59,7 +83,7 @@ export async function seedPlatformPlans(platformDb: Database): Promise<void> {
           set: {
             priceCents: plan.priceCents,
             studentLimit: plan.studentLimit,
-            features: plan.features,
+            features: [...plan.features],
             sortOrder: plan.sortOrder,
             isActive: true,
             feeBps: plan.feeBps,

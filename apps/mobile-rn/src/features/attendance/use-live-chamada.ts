@@ -37,13 +37,16 @@ const INITIAL: LiveChamadaState = {
 
 /** Streams the live code's roll call; `null` id keeps the machine idle. */
 export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
-  const [state, setState] = useState<LiveChamadaState>(INITIAL);
+  // The state carries the id it belongs to, so going idle (or switching
+  // codes) reads as INITIAL by derivation instead of a synchronous reset
+  // write inside the effect.
+  const [owned, setOwned] = useState<{ id: string | null; state: LiveChamadaState }>({
+    id: null,
+    state: INITIAL,
+  });
 
   useEffect(() => {
-    if (!liveCodeId) {
-      setState(INITIAL);
-      return;
-    }
+    if (!liveCodeId) return;
     let disposed = false;
     let connection: LiveStreamConnection | null = null;
     let pollTimer: ReturnType<typeof setInterval> | null = null;
@@ -51,7 +54,11 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
     let opened = false;
 
     const setSafe = (updater: (prev: LiveChamadaState) => LiveChamadaState) => {
-      if (!disposed) setState(updater);
+      if (disposed) return;
+      setOwned((prev) => ({
+        id: liveCodeId,
+        state: updater(prev.id === liveCodeId ? prev.state : INITIAL),
+      }));
     };
 
     const fetchSnapshot = async (): Promise<void> => {
@@ -180,5 +187,5 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
     };
   }, [liveCodeId]);
 
-  return state;
+  return owned.id === liveCodeId && liveCodeId ? owned.state : INITIAL;
 }

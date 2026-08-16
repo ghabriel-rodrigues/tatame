@@ -22,6 +22,7 @@ import {
   seedDevFixtures,
   seedEventFixtures,
   seedNotificationFixtures,
+  seedPlatformConsoleFixtures,
   seedPlatformPlans,
   seedStoreFixtures,
   testAdminUrl,
@@ -81,6 +82,10 @@ export async function createTestApp(overrides?: {
   // Notification fixtures (spec 010, NOT.2): mixed read/unread rows across
   // all five categories so the feed/badge surfaces are demoable.
   await seedNotificationFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+  // Platform console fixtures (spec 012, PLT.2): the suspended academy, the
+  // trial ending inside the attention window, and backdated subscriptions so
+  // the overview's 6-month series has real history.
+  await seedPlatformConsoleFixtures({ platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;
   process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';

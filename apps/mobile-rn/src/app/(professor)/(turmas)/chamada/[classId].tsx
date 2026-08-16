@@ -76,11 +76,9 @@ export default function LiveChamadaScreen() {
   const openMutation = api.useMutation('post', '/v1/professor/classes/{id}/live-codes');
   const closeMutation = api.useMutation('post', '/v1/professor/live-codes/{id}/close');
 
-  const openChamada = () => {
-    if (!classId) return;
-    setError(null);
+  const requestCode = (id: string) => {
     openMutation.mutate(
-      { params: { path: { id: classId } } },
+      { params: { path: { id } } },
       {
         onSuccess: (response) => {
           setLiveCode(response);
@@ -91,8 +89,20 @@ export default function LiveChamadaScreen() {
     );
   };
 
-  // Open on mount (idempotent server-side: reuses the active code).
-  useEffect(openChamada, [classId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const openChamada = () => {
+    if (!classId) return;
+    setError(null);
+    requestCode(classId);
+  };
+
+  // Open on mount (idempotent server-side: reuses the active code). The
+  // effect body stays free of synchronous state writes — `error` is already
+  // null on mount, so only the request itself belongs here.
+  useEffect(() => {
+    if (!classId) return;
+    requestCode(classId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classId]);
 
   // 1 s countdown tick while a code is active.
   useEffect(() => {

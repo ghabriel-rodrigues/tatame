@@ -113,6 +113,26 @@ export type PermissionMatrixResponse = ApiSchemas['PermissionMatrixResponseDto']
 export type PermissionEntry = ApiSchemas['PermissionEntryDto'];
 export type UpdatePermissionsRequest = ApiSchemas['UpdatePermissionsDto'];
 
+// Plataforma console (PLT.10-14 web surface, spec 012).
+export type PlatformOverviewResponse = ApiSchemas['PlatformOverviewResponseDto'];
+export type MrrPoint = ApiSchemas['MrrPointDto'];
+export type AttentionRow = ApiSchemas['AttentionRowDto'];
+export type PlatformAcademyRow = ApiSchemas['PlatformAcademyRowDto'];
+export type PlatformAcademyStatus = PlatformAcademyRow['status'];
+export type PlatformAcademyListResponse = ApiSchemas['PlatformAcademyListResponseDto'];
+export type PlatformAcademyDetail = ApiSchemas['PlatformAcademyDetailDto'];
+export type RegisterAcademyRequest = ApiSchemas['RegisterAcademyDto'];
+export type RegisterAcademyResponse = ApiSchemas['RegisterAcademyResponseDto'];
+export type PlanFeature = ApiSchemas['PlanFeatureDto'];
+export type PlatformPlanRow = ApiSchemas['PlatformPlanRowDto'];
+export type PlatformPlanCatalogResponse = ApiSchemas['PlatformPlanCatalogResponseDto'];
+export type PlatformPlanWriteRequest = ApiSchemas['PlatformPlanWriteDto'];
+export type PlatformTeamMember = ApiSchemas['PlatformTeamMemberDto'];
+export type PlatformTeamResponse = ApiSchemas['PlatformTeamResponseDto'];
+export type InviteTeamMemberRequest = ApiSchemas['InviteTeamMemberDto'];
+export type PlatformIntegration = ApiSchemas['PlatformIntegrationDto'];
+export type PlatformIntegrationsResponse = ApiSchemas['PlatformIntegrationsResponseDto'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

@@ -1,11 +1,10 @@
 import 'reflect-metadata';
 import { ModulesContainer } from '@nestjs/core';
 import { BYPASS_READ_ONLY_KEY, ROLES_KEY } from '@org/api';
-import { charges, credentials, payments, platformUsers, users, withPlatform } from '@tatame/db';
-import { hashDevPassword } from '@tatame/db/testing';
+import { charges, payments, withPlatform } from '@tatame/db';
 import { and, eq, sql as dsql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { bearer, createTestApp, DEV_PASSWORD, type TestApp } from './support/test-app.js';
+import { bearer, createTestApp, type TestApp } from './support/test-app.js';
 
 /**
  * BIL.11/BIL.12 — plataforma repasses read model (gross − fee_bps = net,
@@ -18,20 +17,8 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
 
   beforeAll(async () => {
     t = await createTestApp();
-    // The dev seeds ship no finance persona — create one for the RBAC matrix.
-    const secretHash = await hashDevPassword(DEV_PASSWORD);
-    await withPlatform(t.platformDb.db, async (tx) => {
-      const [user] = await tx
-        .insert(users)
-        .values({ email: 'financeiro@tatame.dev', fullName: 'Fernanda Financeiro' })
-        .returning({ id: users.id });
-      await tx.insert(credentials).values({
-        userId: user!.id,
-        provider: 'password',
-        secretHash,
-      });
-      await tx.insert(platformUsers).values({ userId: user!.id, role: 'finance' });
-    });
+    // The finance persona used by the RBAC matrix below is a seeded fixture
+    // since PLT.2 (the plataforma-10 team) — this suite no longer mints one.
   });
 
   afterAll(async () => {

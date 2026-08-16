@@ -10,6 +10,7 @@ export {
   seedDevFixtures,
   seedEventFixtures,
   seedNotificationFixtures,
+  seedPlatformConsoleFixtures,
   seedPlatformPlans,
   seedStoreFixtures,
   PLATFORM_PLAN_CATALOG,
@@ -17,5 +18,6 @@ export {
   type SeedDevHandles,
   type SeedEventHandles,
   type SeedNotificationHandles,
+  type SeedPlatformConsoleHandles,
   type SeedStoreHandles,
 } from '../seed/index.js';

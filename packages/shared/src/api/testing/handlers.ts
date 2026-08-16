@@ -35,9 +35,23 @@ import {
   type NotificationFixture,
 } from './notifications-fixtures.js';
 import { makeAdminAcademy, makePermissionMatrix } from './config-fixtures.js';
+import {
+  makePlatformAcademyDetail,
+  makePlatformAcademyList,
+  makePlatformIntegrations,
+  makePlatformOverview,
+  makePlatformPlanCatalog,
+  makePlatformTeam,
+} from './platform-fixtures.js';
 import type {
   AcademyPlan,
   AdminAcademyResponse,
+  PlatformAcademyDetail,
+  PlatformAcademyListResponse,
+  PlatformIntegrationsResponse,
+  PlatformOverviewResponse,
+  PlatformPlanCatalogResponse,
+  PlatformTeamResponse,
   AdminBillingOverview,
   GraduationEntry,
   GraduationRuleRow,
@@ -211,6 +225,51 @@ export function billingHandlers(options: BillingHandlerOptions = {}) {
  * Happy-path handler for the platform repasse read model (BIL.15) —
  * plataforma-09-faithful default with the Retido delinquent-academy row.
  */
+export interface PlatformConsoleHandlerOptions {
+  overview?: PlatformOverviewResponse;
+  academies?: PlatformAcademyListResponse;
+  /** Detail payload per academy id; the shared default when omitted. */
+  detail?: Record<string, PlatformAcademyDetail>;
+  plans?: PlatformPlanCatalogResponse;
+  team?: PlatformTeamResponse;
+  integrations?: PlatformIntegrationsResponse;
+}
+
+/**
+ * Happy-path GET handlers for the plataforma console (PLT.10-14, spec 012).
+ * Mutations stay per-test via `server.use(...)`.
+ */
+export function platformConsoleHandlers(options: PlatformConsoleHandlerOptions = {}) {
+  const academies = options.academies ?? makePlatformAcademyList();
+  const detail = options.detail;
+  return [
+    http.get('/v1/platform/overview', ({ response }) =>
+      response(200).json(options.overview ?? makePlatformOverview()),
+    ),
+    http.get('/v1/platform/academies', ({ response }) => response(200).json(academies)),
+    http.get('/v1/platform/academies/{id}', ({ response, params }) => {
+      const id = String(params.id);
+      const found =
+        detail?.[id] ??
+        (() => {
+          const row = academies.academies.find((candidate) => candidate.id === id);
+          return row ? makePlatformAcademyDetail(row) : undefined;
+        })();
+      if (!found) {
+        return response.untyped(problemResponse(404, 'resource.not_found'));
+      }
+      return response(200).json(found);
+    }),
+    http.get('/v1/platform/plans', ({ response }) =>
+      response(200).json(options.plans ?? makePlatformPlanCatalog()),
+    ),
+    http.get('/v1/platform/team', ({ response }) => response(200).json(options.team ?? makePlatformTeam())),
+    http.get('/v1/platform/integrations', ({ response }) =>
+      response(200).json(options.integrations ?? makePlatformIntegrations()),
+    ),
+  ];
+}
+
 export function repassesHandlers(data?: RepassesResponse) {
   const body = data ?? makeRepasses();
   return [

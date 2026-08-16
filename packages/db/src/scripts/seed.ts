@@ -11,6 +11,7 @@ import {
   seedDevFixtures,
   seedEventFixtures,
   seedNotificationFixtures,
+  seedPlatformConsoleFixtures,
   seedPlatformPlans,
   seedStoreFixtures,
 } from '../seed/index.js';
@@ -39,6 +40,8 @@ try {
   console.log('Store fixtures seeded.');
   await seedNotificationFixtures({ appDb: app.db, platformDb: platform.db });
   console.log('Notification fixtures seeded.');
+  await seedPlatformConsoleFixtures({ platformDb: platform.db });
+  console.log('Platform console fixtures seeded.');
 } catch (error) {
   console.error(error);
   process.exitCode = 1;
