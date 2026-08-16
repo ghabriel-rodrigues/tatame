@@ -17,6 +17,8 @@ import { GraduationRulesPage } from '../pages/admin/GraduationRulesPage';
 import { LojaPage } from '../pages/admin/LojaPage';
 import { PermissoesPage } from '../pages/admin/PermissoesPage';
 import { PlansPage } from '../pages/admin/PlansPage';
+import { RelatoriosPage } from '../pages/admin/RelatoriosPage';
+import { ReportPrintPage } from '../pages/admin/ReportPrintPage';
 import { TurmaDetailPage } from '../pages/admin/TurmaDetailPage';
 import { VisaoFinanceiraPage } from '../pages/admin/VisaoFinanceiraPage';
 import { AcademiaDetailPage } from '../pages/plataforma/AcademiaDetailPage';
@@ -36,6 +38,9 @@ export const appRoutes: RouteObject[] = [
     path: '/admin',
     element: <RequireSurface surface="admin" />,
     children: [
+      // REP.9: the print-friendly report view the PDF button opens in a new
+      // tab — under the admin guard but outside the shell (paper, no chrome).
+      { path: 'relatorios/:report/imprimir', element: <ReportPrintPage /> },
       {
         element: <ConsoleShell surface="/admin" />,
         children: [
@@ -54,6 +59,9 @@ export const appRoutes: RouteObject[] = [
           // CFG.11: per-role permission toggles (admin-17, spec 011).
           { path: 'permissoes', element: <PermissoesPage /> },
           { path: 'planos', element: <PlansPage /> },
+          // REP.9: the five admin-18 report rows (spec 013), reached from
+          // the Relatórios header entry on the Visão financeira.
+          { path: 'relatorios', element: <RelatoriosPage /> },
           { path: 'turmas/:id', element: <TurmaDetailPage /> },
           { path: '*', element: <UnderConstruction surfaceLabel="Painel da academia" /> },
         ],

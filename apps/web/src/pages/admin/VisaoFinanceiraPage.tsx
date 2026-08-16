@@ -10,7 +10,15 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Card, Chip, ListRow, MiniBarChart, ScreenHeader } from '@tatame/design-system';
+import { useNavigate } from 'react-router';
+import {
+  Card,
+  Chip,
+  ListRow,
+  MiniBarChart,
+  ScreenHeader,
+  TatameButton,
+} from '@tatame/design-system';
 import type { DelinquentStudent, UpcomingGroup } from '@tatame/shared';
 import { $api } from '../../api/api';
 import { InitialsAvatar } from './common';
@@ -124,6 +132,7 @@ function InadimplenteRow({ entry }: { entry: DelinquentStudent }) {
 }
 
 export function VisaoFinanceiraPage() {
+  const navigate = useNavigate();
   const overview = $api.useQuery('get', '/v1/admin/billing/overview');
   const data = overview.data;
 
@@ -133,6 +142,15 @@ export function VisaoFinanceiraPage() {
         <ScreenHeader
           title="Visão financeira"
           subtitle="Receita, previsão e inadimplência da academia."
+          trailing={
+            // REP.9: the admin prototype's header action into admin-18.
+            <TatameButton
+              variant="secondary"
+              size="sm"
+              label="Relatórios"
+              onPress={() => navigate('/admin/relatorios')}
+            />
+          }
         />
 
         {overview.isLoading ? (

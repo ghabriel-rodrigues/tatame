@@ -133,6 +133,30 @@ export type InviteTeamMemberRequest = ApiSchemas['InviteTeamMemberDto'];
 export type PlatformIntegration = ApiSchemas['PlatformIntegrationDto'];
 export type PlatformIntegrationsResponse = ApiSchemas['PlatformIntegrationsResponseDto'];
 
+// Admin reports web surface (REP.9, spec 013).
+export type ReportWindow = ApiSchemas['ReportWindowDto'];
+export type FinanceiroSummary = ApiSchemas['FinanceiroSummaryDto'];
+export type FinanceiroReportRow = ApiSchemas['FinanceiroRowDto'];
+export type FinanceiroReport = ApiSchemas['FinanceiroReportDto'];
+export type FrequenciaStudentRow = ApiSchemas['FrequenciaStudentDto'];
+export type FrequenciaClass = ApiSchemas['FrequenciaClassDto'];
+export type FrequenciaReport = ApiSchemas['FrequenciaReportDto'];
+export type InadimplenciaTotals = ApiSchemas['InadimplenciaTotalsDto'];
+export type InadimplenciaReportRow = ApiSchemas['InadimplenciaRowDto'];
+export type InadimplenciaReport = ApiSchemas['InadimplenciaReportDto'];
+export type GraduacoesReportRow = ApiSchemas['GraduacoesRowDto'];
+export type GraduacoesReport = ApiSchemas['GraduacoesReportDto'];
+export type LojaTotals = ApiSchemas['LojaTotalsDto'];
+export type LojaReportRow = ApiSchemas['LojaRowDto'];
+export type LojaReport = ApiSchemas['LojaReportDto'];
+export type AdminReport =
+  | FinanceiroReport
+  | FrequenciaReport
+  | InadimplenciaReport
+  | GraduacoesReport
+  | LojaReport;
+export type AdminReportSlug = AdminReport['report'];
+
 export type AnyRoleName = MembershipView['role'];
 export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
 export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;

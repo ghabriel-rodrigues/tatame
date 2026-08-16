@@ -35,6 +35,7 @@ import {
   type NotificationFixture,
 } from './notifications-fixtures.js';
 import { makeAdminAcademy, makePermissionMatrix } from './config-fixtures.js';
+import { makeAdminReport, makeReportCsvBody } from './reports-fixtures.js';
 import {
   makePlatformAcademyDetail,
   makePlatformAcademyList,
@@ -45,6 +46,8 @@ import {
 } from './platform-fixtures.js';
 import type {
   AcademyPlan,
+  AdminReport,
+  AdminReportSlug,
   AdminAcademyResponse,
   PlatformAcademyDetail,
   PlatformAcademyListResponse,
@@ -436,6 +439,42 @@ export function graduationHandlers(options: GraduationHandlerOptions = {}) {
     http.get('/v1/admin/students/{id}/graduations', ({ params, response }) =>
       response(200).json({ graduations: histories[params.id] ?? [] }),
     ),
+  ];
+}
+
+export interface AdminReportsHandlerOptions {
+  /** JSON payload per slug (spec-013-faithful defaults when omitted). */
+  reports?: Partial<Record<AdminReportSlug, AdminReport>>;
+  /** CSV body per slug (BOM + semicolon default when omitted). */
+  csv?: Partial<Record<AdminReportSlug, string>>;
+}
+
+/**
+ * Happy-path handlers for the admin reports surface (REP.9, spec 013): the
+ * JSON read model echoing the requested month, and the CSV download with the
+ * contract's Content-Disposition filename (`<slug>-<YYYY-MM>.csv`). Negative
+ * paths stay per-test via `server.use(...)`.
+ */
+export function adminReportsHandlers(options: AdminReportsHandlerOptions = {}) {
+  return [
+    http.get('/v1/admin/reports/{report}', ({ params, request, response }) => {
+      const month = new URL(request.url).searchParams.get('month') ?? undefined;
+      const body = options.reports?.[params.report] ?? makeAdminReport(params.report, month);
+      return response(200).json(body);
+    }),
+    http.get('/v1/admin/reports/{report}/csv', ({ params, request, response }) => {
+      const month = new URL(request.url).searchParams.get('month') ?? '2026-07';
+      const body = options.csv?.[params.report] ?? makeReportCsvBody(params.report);
+      return response.untyped(
+        new HttpResponse(body, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${params.report}-${month}.csv"`,
+          },
+        }),
+      );
+    }),
   ];
 }
 
