@@ -1,0 +1,49 @@
+# Visual Pass 014 — Device Visual Pass (RLS.10 / RLS.11)
+
+Date: 2026-08-16
+Stack: docker-compose Postgres (seeded) + `nx serve api` (port 3000) + `nx serve web` (port 4200); iOS Simulator (iPhone 17, iOS 26.4); Android emulator — see Blocked.
+Scope per spec 014 A.7: core auth + home/dashboard + check-in flows per persona plus Convite — deliberately not all 79 screens.
+Reference: `/Users/gupy/Desktop/design_handoff_jiujitsu_app/screenshots/`.
+
+Triage: **P0** = wrong token/color/typeface, broken layout, missing element the handoff shows, unusable flow. **P1** = spacing/radius/nuance drift, filed for ongoing QA.
+
+## Findings — Web (desktop viewport 1280px)
+
+| Screen | Reference | Verdict | Note |
+| --- | --- | --- | --- |
+| Console login (admin) | admin-01-login | OK | Structure, Quicksand, purple tokens, gradient CTA, "Esqueci minha senha" all match. Unified console title ("Entrar no Tatame") instead of per-persona title — accepted design decision for the combined console login. Web adds field labels above inputs (enhancement). |
+| Admin — Visão financeira | admin-02-visao-financeiro | P1 | Gradient revenue card, receita mensal bars (light bars + solid current month), vencimentos/inadimplentes lists all match tokens. Handoff mobile also shows a "Loja da academia" summary card and two stat tiles (aulas no mês / presença) not present on the web desktop layout — desktop adaptation, filed as P1 polish. |
+| Admin — Cadastros (Alunos tab) | admin-07-cadastros-alunos | OK | Tabs, search, avatar-initial rows, belt subtitle, Ativo/Pendente pills, footer count, FAB — all match. |
+| Admin — Configurações (identidade) | admin-15-config-identidade | OK | Identidade visual card, Logo chip, 4 palette swatches (Lumira/Oceano/Mata/Ouro) with selected outline, toggles, Permissões/Integrações (Pix ativo)/Planos/Regras rows. Live palette preview verified: selecting "Oceano" re-derives avatar + CTA to navy immediately; Cancelar reverts. |
+| Admin — Relatórios | admin-18-relatorios | OK | 5 report rows with CSV pill + solid PDF button, back chevron, subtitle. Web adds a month selector (enhancement). |
+| Plataforma — Visão geral (MRR) | plataforma-02-visao-mrr | OK | MRR gradient card + delta pill, 3 stat tiles (inadimplência in red), MRR 6-month bars, "Precisam de atenção" with Trial/Inadimplente pills. Owner login did not hit a TOTP challenge (seed owner has TOTP unenrolled). |
+| Plataforma — Academias | plataforma-03-academias | P1 | List structure, status pills (Ativa/Trial/Inadimplente/Suspensa), "Registrar academia" CTA match. Handoff shows colorful per-academy gradient avatars; web renders neutral lavender initials — P1 nuance. |
+| Convite — invalid token | (no direct ref; convite-01-landing for language) | OK | Proper error state: logo, "Convite indisponível", guidance copy, "Ir para o login" action, card layout in design language. |
+
+## Findings — iOS Simulator (iPhone 17, iOS 26.4)
+
+Build: `xcodegen generate` + `xcodebuild -skipPackagePluginValidation -skipMacroValidation build CODE_SIGNING_ALLOWED=NO` → BUILD SUCCEEDED; installed and launched via `simctl` (bundle `app.tatame.ios`, API at `http://localhost:3000`).
+
+| Screen | Reference | Verdict | Note |
+| --- | --- | --- | --- |
+| Launch screen (static) | aluno-01-splash | P1 | Static `UILaunchScreen: {}` renders a plain white flash before SwiftUI mounts. The branded splash (`AuthFeature/SplashView`) exists and renders during session restore, so the handoff splash IS implemented — but a cold launch with no stored session flashes white then lands on login. Suggested polish: launch-screen background color asset (deep token) via `UIColorName`. |
+| Aluno — login | aluno-02-login | OK | Near-exact match: logo tile, "Bem-vindo de volta" + subtitle in Quicksand, Email/Senha fields (radius/spacing match), gradient Entrar with glow, "Esqueci minha senha" / "Criar conta" row, lilac convite info card with QR glyph and bold "link de convite". |
+| Aluno — home, check-in sheet; Professor — dashboard, chamada ao vivo | aluno-03/04/05, professor-02/03 | BLOCKED | Interactive walk requires input injection; every available path failed (see Blocked). Screens not reachable without typing credentials. |
+
+## Environment notes
+
+- Web pass run at 1280px; handoff screenshots are mobile-frame prototypes, so comparison is structural (tokens, hierarchy, components), not pixel-geometric.
+- Seed data differs from prototype fixture data everywhere (names, values); ignored by design.
+- API serves under `/v1` (no `/api` prefix); web dev proxy handles it.
+
+## Blocked
+
+- **iOS interactive walk (input injection)**: the app builds, installs, launches and renders the login screen correctly, but no path exists in this environment to type/tap inside the simulator: the Claude iOS Simulator integration refuses to attach claiming `xcode-select` points away from Xcode (it does not — `/usr/bin/xcode-select -p` → `/Applications/Xcode.app/Contents/Developer`; the check appears stale and its suggested fix needs sudo), `simctl` has no tap/keyboard commands, AppleScript/System Events lacks accessibility permission, `cliclick`/`idb` are not installed, there is no `security` binary inside the simulator runtime to pre-seed the Keychain refresh token, and the project has no UI-test target (adding one to the committed `project.yml` for QA purposes is out of scope). Post-login flows (aluno home/check-in, professor dashboard/chamada) remain outstanding for a session with simulator input.
+- **Android emulator**: `~/Library/Android/sdk` contains only `build-tools/`, `platform-tools/`, `platforms/` — no `cmdline-tools` (no `sdkmanager`/`avdmanager`), no `emulator/`, no system images, no AVDs. Bootstrapping requires multi-GB downloads (cmdline-tools zip + emulator + android-36 system image) well past the session budget. Recorded as blocked; Android leg of RLS.10 outstanding.
+- **RN (Expo) app**: not covered in this session; outstanding for ongoing QA.
+- **Check-in end-to-end (aluno vs professor live code)**: aluno/professor surfaces are mobile-only (web console serves admin/plataforma/convite exclusively — `apps/web/src/app/routes.tsx`), so with both mobile interactive legs blocked, the check-in flow could not be exercised on any surface this session.
+- **Disk pressure**: host disk was at 98% (363 MiB free) — first `simctl install` failed with "No space left on device"; freed ~1.2 GiB by deleting this session's own build intermediates. Device work needs headroom.
+
+## RLS.11 — P0 fixes
+
+No P0 mismatches found on the surfaces that could be exercised (web console complete; iOS login/splash). All filed findings are P1 polish items, which remain filed per spec 014 A.7. RLS.11 has no pending fix work from this pass; the blocked surfaces above must be walked before RLS.10 can be considered fully closed.
