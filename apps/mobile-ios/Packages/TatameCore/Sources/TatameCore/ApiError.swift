@@ -51,6 +51,8 @@ public enum ApiErrorCode {
     public static let storeInsufficientStock = "store.insufficient_stock"
     public static let storeOrderNotCancelable = "store.order_not_cancelable"
     public static let storeOrderInvalidTransition = "store.order_invalid_transition"
+    public static let profileFieldLocked = "profile.field_locked"
+    public static let profileFieldReadOnly = "profile.field_read_only"
     public static let validationFailed = "validation.failed"
     public static let notFound = "resource.not_found"
     public static let conflict = "resource.conflict"

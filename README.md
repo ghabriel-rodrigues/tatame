@@ -313,8 +313,8 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] REP.13 Android: aluno Dados pessoais (REP.10 scope)
 - [x] REP.14 Android: rankings — aluno + professor (REP.11 scope)
 - [x] REP.15 Android: certificado (REP.12 scope)
-- [ ] REP.16 iOS: aluno Dados pessoais (REP.10 scope)
-- [ ] REP.17 iOS: rankings — aluno + professor (REP.11 scope)
-- [ ] REP.18 iOS: certificado (REP.12 scope)
+- [x] REP.16 iOS: aluno Dados pessoais (REP.10 scope)
+- [x] REP.17 iOS: rankings — aluno + professor (REP.11 scope)
+- [x] REP.18 iOS: certificado (REP.12 scope)
 
 _Next phase (release) gets its spec when Phase 13 ships._

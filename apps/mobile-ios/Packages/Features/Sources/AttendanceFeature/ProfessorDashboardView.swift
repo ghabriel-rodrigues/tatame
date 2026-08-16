@@ -1,11 +1,14 @@
 // Professor dashboard (handoff professor-02): greeting header, live tiles
 // (alunos hoje, presença média, eventos futuros — real since spec 008), the
 // next-class hero with its check-in count and "Iniciar chamada", the
-// "Eventos futuros" read-only list (spec 008 story 22), and the explicit
-// "Próximos da graduação" placeholder. PT-BR copy; Lumira tokens only.
+// "Eventos futuros" read-only list (spec 008 story 22), the real "Ranking
+// de presença" section (spec 013, REP.17 — the Phase-4 placeholder pays
+// out), and the explicit "Próximos da graduação" placeholder. PT-BR copy;
+// Lumira tokens only.
 
 import DesignSystem
 import NotificationsFeature
+import RankingsFeature
 import SwiftUI
 import TatameCore
 
@@ -15,6 +18,7 @@ public struct ProfessorDashboardView: View {
     private let professorUserId: UUID
     private let onVerTurmas: () -> Void
     private let onOpenCalendar: (() -> Void)?
+    private let onOpenRanking: (() -> Void)?
     private let hasUnreadNotifications: Bool
     private let onOpenNotifications: (() -> Void)?
 
@@ -24,6 +28,7 @@ public struct ProfessorDashboardView: View {
         professorUserId: UUID,
         onVerTurmas: @escaping () -> Void = {},
         onOpenCalendar: (() -> Void)? = nil,
+        onOpenRanking: (() -> Void)? = nil,
         hasUnreadNotifications: Bool = false,
         onOpenNotifications: (() -> Void)? = nil
     ) {
@@ -32,6 +37,7 @@ public struct ProfessorDashboardView: View {
         self.professorUserId = professorUserId
         self.onVerTurmas = onVerTurmas
         self.onOpenCalendar = onOpenCalendar
+        self.onOpenRanking = onOpenRanking
         self.hasUnreadNotifications = hasUnreadNotifications
         self.onOpenNotifications = onOpenNotifications
     }
@@ -43,6 +49,7 @@ public struct ProfessorDashboardView: View {
             professorUserId: professorUserId,
             onVerTurmas: onVerTurmas,
             onOpenCalendar: onOpenCalendar,
+            onOpenRanking: onOpenRanking,
             hasUnreadNotifications: hasUnreadNotifications,
             onOpenNotifications: onOpenNotifications
         )
@@ -55,6 +62,7 @@ struct ProfessorDashboardContent: View {
     let professorUserId: UUID
     let onVerTurmas: () -> Void
     var onOpenCalendar: (() -> Void)?
+    var onOpenRanking: (() -> Void)?
     var hasUnreadNotifications = false
     var onOpenNotifications: (() -> Void)?
 
@@ -77,6 +85,11 @@ struct ProfessorDashboardContent: View {
                     statTiles(dashboard)
                     heroCard(dashboard)
                     upcomingEventsSection(dashboard)
+                    // Real "Ranking de presença" (spec 013, REP.17): the
+                    // month's top 3 + "Ver todos" → professor-05/06 screen.
+                    ProfessorRankingSection {
+                        onOpenRanking?()
+                    }
                     graduationPlaceholder
                 }
             }

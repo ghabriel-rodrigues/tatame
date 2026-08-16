@@ -332,6 +332,70 @@
         ]
       }
     },
+    "/v1/aluno/profile": {
+      "get": {
+        "description": "Email and birth date are read-only (birth date served from the linked student row — the age-rule authority). cpfLocked/rgLocked drive the aluno-18 dashed lock boxes.",
+        "operationId": "AlunoProfileController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dados pessoais: identificação (CPF/RG lock state), contato, endereço, emergência",
+        "tags": [
+          "aluno"
+        ]
+      },
+      "put": {
+        "description": "CPF is normalized to digits and checksum-validated; CPF/RG are write-once (422 profile.field_locked on any change after set). Email/birthDate in the payload are a 422 profile.field_read_only. Name edits sync onto the linked student row in-transaction.",
+        "operationId": "AlunoProfileController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlunoProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Salvar dados pessoais (partial update, per-field validation)",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
     "/v1/public/invites/{token}": {
       "get": {
         "operationId": "PublicInvitesController_landing_v1",
@@ -3859,7 +3923,7 @@
     },
     "/v1/aluno/graduation": {
       "get": {
-        "description": "Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only \"Ver certificado\" placeholder flag.",
+        "description": "Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; non-reversed belt entries carry certificateAvailable: true (spec 013) — the certificate renders client-side.",
         "operationId": "AlunoGraduationController_graduation_v1",
         "parameters": [],
         "responses": {
@@ -4346,6 +4410,622 @@
         ]
       }
     },
+    "/v1/admin/reports/{report}": {
+      "get": {
+        "description": "Slugs: financeiro, frequencia, inadimplencia, graduacoes, loja. `financeiro`, `frequencia` and `loja` take month=YYYY-MM (default: current month); `graduacoes` reports the semester containing it; `inadimplencia` is an as-of-now snapshot. financeiro runs the idempotent charge-materialization pass first.",
+        "operationId": "AdminReportsController_report_v1",
+        "parameters": [
+          {
+            "name": "report",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "financeiro",
+                "frequencia",
+                "inadimplencia",
+                "graduacoes",
+                "loja"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FinanceiroReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FrequenciaReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InadimplenciaReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GraduacoesReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LojaReportDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "One of the five admin reports as JSON (month/semester windows, tenant timezone)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/reports/{report}/csv": {
+      "get": {
+        "description": "UTF-8 with BOM, semicolon delimiter, decimal-comma money, ISO dates — opens correctly in pt-BR Excel by double-click. Content-Disposition filename `<slug>-<YYYY-MM>.csv`.",
+        "operationId": "AdminReportsController_reportCsv_v1",
+        "parameters": [
+          {
+            "name": "report",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "financeiro",
+                "frequencia",
+                "inadimplencia",
+                "graduacoes",
+                "loja"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file attachment",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The same report as a streamed CSV download",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/rankings": {
+      "get": {
+        "description": "Active students only, count-desc then name-asc (deterministic ties), top 10 plus the requesting student's own position (`me` — always null for professors). Windows are tenant-timezone calendar month / calendar half.",
+        "operationId": "RankingsController_ranking_v1",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08"
+            }
+          },
+          {
+            "name": "by",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "lessons",
+                "events"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Academy-wide ranking: Por aulas (month) / Por eventos (semester)",
+        "tags": [
+          "rankings"
+        ]
+      }
+    },
+    "/v1/platform/overview": {
+      "get": {
+        "description": "Pure read model. The series is reconstructed from subscription lifetimes against current plan prices — see spec 012 for the recorded limitation. Support is denied: the screen is revenue, and support lands on Academias instead.",
+        "operationId": "PlatformConsoleController_overview_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformOverviewResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Visão geral: MRR + delta, academias/alunos/inadimplência, 6-month series, atenção",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/academies": {
+      "get": {
+        "operationId": "PlatformConsoleController_listAcademies_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAcademyListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Academies with city, student count, plan and status",
+        "tags": [
+          "platform"
+        ]
+      },
+      "post": {
+        "description": "Academy + trialing subscription + admin membership in one transaction; the set-password email goes out after it commits, so a mail failure never rolls back a created customer.",
+        "operationId": "PlatformConsoleController_registerAcademy_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterAcademyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterAcademyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register an academy on Trial and invite its admin by email",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/academies/{id}": {
+      "get": {
+        "operationId": "PlatformConsoleController_academyDetail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAcademyDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Academy detail: stats, subscription and pending plan change",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/academies/{id}/plan": {
+      "put": {
+        "description": "Writes `pending_platform_plan_id` only — the current plan and price are never touched (charter: a plan change applies at the next billing cycle). `null` clears a scheduled change, and picking the plan the academy is already on does the same.",
+        "operationId": "PlatformConsoleController_schedulePlanChange_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchedulePlanChangeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAcademyDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Schedule the academy plan change for the next cycle",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/academies/{id}/suspend": {
+      "post": {
+        "operationId": "PlatformConsoleController_suspend_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAcademyDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suspend the academy — blocks access immediately (audited)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/academies/{id}/reactivate": {
+      "post": {
+        "operationId": "PlatformConsoleController_reactivate_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformAcademyDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reactivate the academy — restores the status its subscription justifies",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/plans": {
+      "get": {
+        "operationId": "PlatformConsoleController_planCatalog_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformPlanCatalogResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Plan catalog with derived \"mais assinado\" + feature inheritance, and the registry",
+        "tags": [
+          "platform"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformConsoleController_createPlan_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformPlanWriteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformPlanRowDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a plan — available for new academy subscriptions immediately",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/plans/{id}": {
+      "put": {
+        "description": "Current subscribers keep their price until the next cycle.",
+        "operationId": "PlatformConsoleController_updatePlan_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformPlanWriteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformPlanRowDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit a plan (name, price, limit, features)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/team": {
+      "get": {
+        "operationId": "PlatformConsoleController_listTeam_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformTeamResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Platform team roster with roles",
+        "tags": [
+          "platform"
+        ]
+      },
+      "post": {
+        "operationId": "PlatformConsoleController_inviteTeamMember_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteTeamMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteTeamMemberResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invite a team member — same set-password email as academy admins",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
+    "/v1/platform/integrations": {
+      "get": {
+        "description": "plataforma-11 as the handoff describes it — \"(stubs)\". The rails reflect the configured payment provider and carry `configurable: false`, so the switches render disabled instead of pretending to pause anything.",
+        "operationId": "PlatformConsoleController_integrations_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformIntegrationsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Payment rails (read-only stub)",
+        "tags": [
+          "platform"
+        ]
+      }
+    },
     "/v1/notifications": {
       "get": {
         "description": "Cursor-paged (~30). Rows are render-ready PT-BR (title/body/chip composed at insert time); `route` is a semantic hint mapped to each shell's navigation client-side.",
@@ -4584,6 +5264,10 @@
     },
     {
       "name": "notifications",
+      "description": ""
+    },
+    {
+      "name": "rankings",
       "description": ""
     },
     {
@@ -5111,6 +5795,170 @@
         "required": [
           "recoveryCodes"
         ]
+      },
+      "AlunoProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "description": "Read-only (login identity)"
+          },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "example": "2000-03-15",
+            "description": "Read-only — served from the linked student row (the age-rule authority)"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "female",
+              "male",
+              "other",
+              "unspecified"
+            ],
+            "nullable": true
+          },
+          "cpf": {
+            "type": "string",
+            "nullable": true,
+            "description": "11 normalized digits — clients render the mask"
+          },
+          "cpfLocked": {
+            "type": "boolean",
+            "description": "True once set — the aluno-18 dashed lock state"
+          },
+          "rg": {
+            "type": "string",
+            "nullable": true
+          },
+          "rgLocked": {
+            "type": "boolean",
+            "description": "True once set — the aluno-18 dashed lock state"
+          },
+          "addressLine": {
+            "type": "string",
+            "nullable": true
+          },
+          "addressCity": {
+            "type": "string",
+            "nullable": true
+          },
+          "addressState": {
+            "type": "string",
+            "nullable": true,
+            "description": "UF, 2 uppercase letters"
+          },
+          "addressZip": {
+            "type": "string",
+            "nullable": true,
+            "description": "CEP, 8 normalized digits"
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Avatars stay initials in v1 (Trocar foto is a placeholder)"
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "birthDate",
+          "phone",
+          "gender",
+          "cpf",
+          "cpfLocked",
+          "rg",
+          "rgLocked",
+          "addressLine",
+          "addressCity",
+          "addressState",
+          "addressZip",
+          "emergencyContactName",
+          "emergencyContactPhone",
+          "avatarUrl"
+        ]
+      },
+      "UpdateAlunoProfileDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "description": "Syncs onto the linked student row in the same transaction"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "female",
+              "male",
+              "other",
+              "unspecified"
+            ],
+            "nullable": true
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true,
+            "description": "Digits, spaces, +, -, parentheses"
+          },
+          "cpf": {
+            "type": "string",
+            "description": "Write-once. Masked or bare digits — normalized and checksum-validated"
+          },
+          "rg": {
+            "type": "string",
+            "description": "Write-once. Free format (state formats vary), trimmed"
+          },
+          "addressLine": {
+            "type": "object",
+            "nullable": true
+          },
+          "addressCity": {
+            "type": "object",
+            "nullable": true
+          },
+          "addressState": {
+            "type": "object",
+            "nullable": true,
+            "description": "UF — validated against the 27 federative units"
+          },
+          "addressZip": {
+            "type": "object",
+            "nullable": true,
+            "description": "CEP — masked or bare digits, normalized to 8"
+          },
+          "emergencyContactName": {
+            "type": "object",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "object",
+            "nullable": true
+          },
+          "email": {
+            "type": "object",
+            "description": "Read-only — sending it is a 422 profile.field_read_only"
+          },
+          "birthDate": {
+            "type": "object",
+            "description": "Read-only — sending it is a 422 profile.field_read_only"
+          }
+        }
       },
       "InviteAcademyDto": {
         "type": "object",
@@ -10461,7 +11309,7 @@
           },
           "certificateAvailable": {
             "type": "boolean",
-            "description": "Render-only \"Ver certificado\" placeholder — non-reversed belt awards only"
+            "description": "\"Ver certificado\" unlock (real since spec 013) — true exactly on non-reversed belt promotions; the certificate view renders client-side from timeline + session brand"
           }
         },
         "required": [
@@ -10932,6 +11780,1219 @@
           "graduationId",
           "revocationId",
           "belt"
+        ]
+      },
+      "FinanceiroSummaryDto": {
+        "type": "object",
+        "properties": {
+          "receitaCents": {
+            "type": "number",
+            "description": "Succeeded payments by paid_at in the month (cents)"
+          },
+          "previstoCents": {
+            "type": "number",
+            "description": "Open charges due inside the month (cents, predicate)"
+          },
+          "inadimplenciaPct": {
+            "type": "number",
+            "description": "Overdue-open plan amount ÷ month plan total (0-100)"
+          }
+        },
+        "required": [
+          "receitaCents",
+          "previstoCents",
+          "inadimplenciaPct"
+        ]
+      },
+      "FinanceiroRowDto": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for professor-buyer order charges"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "plan",
+              "event",
+              "order"
+            ]
+          },
+          "periodStart": {
+            "type": "string",
+            "nullable": true,
+            "description": "Competência — plan charges only"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-08-05"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "chargeId",
+          "studentName",
+          "origin",
+          "periodStart",
+          "dueDate",
+          "status",
+          "amountCents",
+          "paidAt"
+        ]
+      },
+      "FinanceiroReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "financeiro"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/FinanceiroSummaryDto"
+          },
+          "rows": {
+            "description": "Every charge touching the month",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceiroRowDto"
+            }
+          },
+          "materialization": {
+            "description": "The on-read pass that ran first",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaterializationResultDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "summary",
+          "rows",
+          "materialization"
+        ]
+      },
+      "FrequenciaStudentDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "presencas": {
+            "type": "number"
+          },
+          "faltas": {
+            "type": "number",
+            "description": "Month sessions minus presenças (honest denominator)"
+          },
+          "presencePct": {
+            "type": "number",
+            "description": "0-100 over the materialized sessions"
+          }
+        },
+        "required": [
+          "studentId",
+          "studentName",
+          "presencas",
+          "faltas",
+          "presencePct"
+        ]
+      },
+      "FrequenciaClassDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "sessionsCount": {
+            "type": "number",
+            "description": "Materialized sessions in the month — a day nobody opened never happened"
+          },
+          "students": {
+            "description": "Actively enrolled students",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrequenciaStudentDto"
+            }
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "sessionsCount",
+          "students"
+        ]
+      },
+      "FrequenciaReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "frequencia"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrequenciaClassDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "classes"
+        ]
+      },
+      "InadimplenciaTotalsDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "totalCents": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "totalCents"
+        ]
+      },
+      "InadimplenciaRowDto": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Bill-to responsável when set"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-07-05"
+          },
+          "daysOverdue": {
+            "type": "number"
+          },
+          "notificationsSent": {
+            "type": "number",
+            "description": "Payer's payment-category notifications since the due date — honest approximation (no charge FK by design)"
+          }
+        },
+        "required": [
+          "chargeId",
+          "studentName",
+          "guardianName",
+          "amountCents",
+          "dueDate",
+          "daysOverdue",
+          "notificationsSent"
+        ]
+      },
+      "InadimplenciaReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "inadimplencia"
+            ]
+          },
+          "asOf": {
+            "type": "string",
+            "example": "2026-08-16",
+            "description": "As-of-now snapshot (ignores month=)"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InadimplenciaTotalsDto"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InadimplenciaRowDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "asOf",
+          "totals",
+          "rows"
+        ]
+      },
+      "ReportWindowDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "`YYYY-MM` for months, `YYYY-S1`/`YYYY-S2` for semesters"
+          },
+          "start": {
+            "type": "string",
+            "example": "2026-08-01",
+            "description": "Inclusive tenant-local first day"
+          },
+          "endExclusive": {
+            "type": "string",
+            "example": "2026-09-01",
+            "description": "Exclusive tenant-local end day"
+          }
+        },
+        "required": [
+          "label",
+          "start",
+          "endExclusive"
+        ]
+      },
+      "GraduacoesRowDto": {
+        "type": "object",
+        "properties": {
+          "graduationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "degree",
+              "belt"
+            ],
+            "description": "Revocations and reversed awards excluded"
+          },
+          "beltName": {
+            "type": "string",
+            "example": "Azul"
+          },
+          "degree": {
+            "type": "number",
+            "description": "0 on belt promotions"
+          },
+          "awardedByName": {
+            "type": "string"
+          },
+          "awardedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "graduationId",
+          "studentName",
+          "kind",
+          "beltName",
+          "degree",
+          "awardedByName",
+          "awardedAt"
+        ]
+      },
+      "GraduacoesReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "graduacoes"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08",
+            "description": "The chosen month — the window is its semester"
+          },
+          "semester": {
+            "description": "Calendar half (Jan–Jun / Jul–Dec)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportWindowDto"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraduacoesRowDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "semester",
+          "rows"
+        ]
+      },
+      "LojaTotalsDto": {
+        "type": "object",
+        "properties": {
+          "pedidos": {
+            "type": "number",
+            "description": "Orders that reached paid or beyond (canceled excluded)"
+          },
+          "itens": {
+            "type": "number",
+            "description": "Item quantity sum over the counted orders"
+          },
+          "vendasCents": {
+            "type": "number",
+            "description": "Order total sum over the counted orders (cents)"
+          }
+        },
+        "required": [
+          "pedidos",
+          "itens",
+          "vendasCents"
+        ]
+      },
+      "LojaRowDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "number",
+            "example": 2431
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-08-14"
+          },
+          "buyerName": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "amountCents": {
+            "type": "number",
+            "description": "Item snapshot: unit price × quantity (cents)"
+          },
+          "status": {
+            "type": "string",
+            "description": "pending/canceled rows are listed but never counted in totals"
+          }
+        },
+        "required": [
+          "orderId",
+          "number",
+          "date",
+          "buyerName",
+          "productName",
+          "size",
+          "quantity",
+          "amountCents",
+          "status"
+        ]
+      },
+      "LojaReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "loja"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/LojaTotalsDto"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LojaRowDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "totals",
+          "rows"
+        ]
+      },
+      "RankingRowDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "description": "1-based after count-desc, name-asc sort"
+          },
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number",
+            "description": "Aulas no mês / eventos no semestre"
+          },
+          "isMe": {
+            "type": "boolean",
+            "description": "The requesting student's own row (\"você\" chip)"
+          }
+        },
+        "required": [
+          "position",
+          "name",
+          "count",
+          "isMe"
+        ]
+      },
+      "RankingMeDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "position",
+          "count"
+        ]
+      },
+      "RankingResponseDto": {
+        "type": "object",
+        "properties": {
+          "by": {
+            "type": "string",
+            "enum": [
+              "lessons",
+              "events"
+            ]
+          },
+          "window": {
+            "description": "Month for lessons, semester for events",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportWindowDto"
+              }
+            ]
+          },
+          "top": {
+            "description": "Top 10",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankingRowDto"
+            }
+          },
+          "me": {
+            "nullable": true,
+            "description": "Own position for student requesters; always null for professors",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankingMeDto"
+              }
+            ]
+          },
+          "totalRanked": {
+            "type": "number",
+            "description": "Active students ranked (zero counts included)"
+          }
+        },
+        "required": [
+          "by",
+          "window",
+          "top",
+          "me",
+          "totalRanked"
+        ]
+      },
+      "MrrPointDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-08",
+            "description": "YYYY-MM"
+          },
+          "cents": {
+            "type": "number",
+            "example": 1924000
+          }
+        },
+        "required": [
+          "month",
+          "cents"
+        ]
+      },
+      "AttentionRowDto": {
+        "type": "object",
+        "properties": {
+          "academyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "academyName": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "trial_ending",
+              "subscription_overdue"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "example": "Trial termina em 9 dias"
+          }
+        },
+        "required": [
+          "academyId",
+          "academyName",
+          "kind",
+          "reason"
+        ]
+      },
+      "PlatformOverviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "mrrCents": {
+            "type": "number",
+            "description": "Live subscription revenue this month, in cents"
+          },
+          "mrrDeltaPct": {
+            "type": "number",
+            "nullable": true,
+            "description": "Whole percent vs. last month"
+          },
+          "academyCount": {
+            "type": "number"
+          },
+          "studentCount": {
+            "type": "number"
+          },
+          "delinquencyPct": {
+            "type": "number",
+            "description": "Delinquent share of non-suspended academies, one decimal"
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MrrPointDto"
+            }
+          },
+          "attention": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttentionRowDto"
+            }
+          }
+        },
+        "required": [
+          "mrrCents",
+          "mrrDeltaPct",
+          "academyCount",
+          "studentCount",
+          "delinquencyPct",
+          "series",
+          "attention"
+        ]
+      },
+      "PlatformAcademyRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "trial",
+              "active",
+              "delinquent",
+              "suspended"
+            ]
+          },
+          "studentCount": {
+            "type": "number"
+          },
+          "planName": {
+            "type": "string",
+            "nullable": true
+          },
+          "planPriceCents": {
+            "type": "number",
+            "nullable": true
+          },
+          "subscriptionStatus": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "city",
+          "status",
+          "studentCount",
+          "planName",
+          "planPriceCents",
+          "subscriptionStatus"
+        ]
+      },
+      "PlatformAcademyListResponseDto": {
+        "type": "object",
+        "properties": {
+          "academies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformAcademyRowDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "academies",
+          "total"
+        ]
+      },
+      "RegisterAcademyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80,
+            "example": "Horizonte BJJ"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "example": "São Paulo / SP"
+          },
+          "adminEmail": {
+            "type": "string",
+            "example": "admin@horizontebjj.com.br"
+          },
+          "adminFullName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Admin display name; falls back to the academy name"
+          },
+          "platformPlanId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "name",
+          "city",
+          "adminEmail",
+          "platformPlanId"
+        ]
+      },
+      "PendingPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priceCents": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "priceCents"
+        ]
+      },
+      "PlatformAcademyDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "trial",
+              "active",
+              "delinquent",
+              "suspended"
+            ]
+          },
+          "studentCount": {
+            "type": "number"
+          },
+          "planName": {
+            "type": "string",
+            "nullable": true
+          },
+          "planPriceCents": {
+            "type": "number",
+            "nullable": true
+          },
+          "subscriptionStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "professorCount": {
+            "type": "number"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "pendingPlan": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingPlanDto"
+              }
+            ]
+          },
+          "currentPeriodEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "city",
+          "status",
+          "studentCount",
+          "planName",
+          "planPriceCents",
+          "subscriptionStatus",
+          "createdAt",
+          "professorCount",
+          "contactEmail",
+          "pendingPlan",
+          "currentPeriodEnd"
+        ]
+      },
+      "RegisterAcademyResponseDto": {
+        "type": "object",
+        "properties": {
+          "academy": {
+            "$ref": "#/components/schemas/PlatformAcademyDetailDto"
+          },
+          "adminUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "adminUserCreated": {
+            "type": "boolean"
+          },
+          "passwordEmailSent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "academy",
+          "adminUserId",
+          "adminUserCreated",
+          "passwordEmailSent"
+        ]
+      },
+      "SchedulePlanChangeDto": {
+        "type": "object",
+        "properties": {
+          "platformPlanId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "platformPlanId"
+        ]
+      },
+      "PlanFeatureDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "store"
+          },
+          "label": {
+            "type": "string",
+            "example": "Loja da academia"
+          }
+        },
+        "required": [
+          "slug",
+          "label"
+        ]
+      },
+      "PlatformPlanRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priceCents": {
+            "type": "number"
+          },
+          "studentLimit": {
+            "type": "number",
+            "nullable": true,
+            "description": "null = unlimited"
+          },
+          "features": {
+            "description": "Inherited chips excluded when inheritsFrom is set",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanFeatureDto"
+            }
+          },
+          "academyCount": {
+            "type": "number"
+          },
+          "isMostSubscribed": {
+            "type": "boolean",
+            "description": "Derived from live subscriptions, never stored"
+          },
+          "inheritsFrom": {
+            "type": "string",
+            "nullable": true,
+            "description": "Drives the \"Tudo do X\" chip"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "priceCents",
+          "studentLimit",
+          "features",
+          "academyCount",
+          "isMostSubscribed",
+          "inheritsFrom",
+          "isActive",
+          "sortOrder"
+        ]
+      },
+      "PlatformPlanCatalogResponseDto": {
+        "type": "object",
+        "properties": {
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformPlanRowDto"
+            }
+          },
+          "featureRegistry": {
+            "description": "The plataforma-06 toggle rows",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanFeatureDto"
+            }
+          }
+        },
+        "required": [
+          "plans",
+          "featureRegistry"
+        ]
+      },
+      "PlatformPlanWriteDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 40,
+            "example": "Pro"
+          },
+          "priceCents": {
+            "type": "number",
+            "minimum": 0,
+            "example": 19900,
+            "description": "Monthly price in cents"
+          },
+          "studentLimit": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "description": "null = unlimited students"
+          },
+          "features": {
+            "description": "Feature registry slugs; unknown slugs are rejected",
+            "example": [
+              "attendance",
+              "graduations"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "priceCents",
+          "studentLimit",
+          "features"
+        ]
+      },
+      "PlatformTeamMemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "support",
+              "finance"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "fullName",
+          "email",
+          "role",
+          "status"
+        ]
+      },
+      "PlatformTeamResponseDto": {
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformTeamMemberDto"
+            }
+          }
+        },
+        "required": [
+          "members"
+        ]
+      },
+      "InviteTeamMemberDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Paula Andrade"
+          },
+          "email": {
+            "type": "string",
+            "example": "paula@tatame.app"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "support",
+              "finance"
+            ],
+            "example": "support"
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "role"
+        ]
+      },
+      "InviteTeamMemberResponseDto": {
+        "type": "object",
+        "properties": {
+          "member": {
+            "$ref": "#/components/schemas/PlatformTeamMemberDto"
+          },
+          "userCreated": {
+            "type": "boolean"
+          },
+          "passwordEmailSent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "member",
+          "userCreated",
+          "passwordEmailSent"
+        ]
+      },
+      "PlatformIntegrationDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "pix"
+          },
+          "initials": {
+            "type": "string",
+            "example": "PIX"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pix · PSP TatamePay"
+          },
+          "detail": {
+            "type": "string",
+            "example": "Liquidação instantânea · taxa 0,9%"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "configurable": {
+            "type": "boolean",
+            "description": "v1 is read-only — the switch renders disabled"
+          }
+        },
+        "required": [
+          "key",
+          "initials",
+          "name",
+          "detail",
+          "enabled",
+          "configurable"
+        ]
+      },
+      "PlatformIntegrationsResponseDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "stripe"
+            ]
+          },
+          "integrations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlatformIntegrationDto"
+            }
+          }
+        },
+        "required": [
+          "provider",
+          "integrations"
         ]
       },
       "NotificationDto": {

@@ -16,6 +16,8 @@ import EnrollmentFeature
 import EventsFeature
 import GraduationFeature
 import NotificationsFeature
+import ProfileFeature
+import RankingsFeature
 import StoreFeature
 import SwiftUI
 import TatameCore
@@ -79,6 +81,11 @@ struct PersonaShellView: View {
     /// Meus pedidos pushed from a tapped `orders` notification row
     /// (spec 010 route map — aluno and professor storefront surface).
     @State private var homeOrdersOpen = false
+    /// Full ranking screen pushed from the aluno home card / professor
+    /// dashboard "Ver todos" (spec 013, REP.17).
+    @State private var homeRankingOpen = false
+    /// Dados pessoais pushed from the aluno perfil row (spec 013, REP.16).
+    @State private var perfilDadosPessoaisOpen = false
     /// Home-header unread badge (spec 010, stories 1, 8) — created lazily
     /// once the environment repository is reachable, refetched on focus.
     @State private var notificationsBadge: NotificationsBadgeModel?
@@ -114,6 +121,8 @@ struct PersonaShellView: View {
                             // product detail.
                             onOpenStore: { homeStoreOpen = true },
                             onOpenStoreProduct: { homeStoreProductTarget = StoreProductTarget(id: $0.id) },
+                            // "Ranking do mês" card → full screen (REP.17).
+                            onOpenRanking: { homeRankingOpen = true },
                             // Home-header bell + Notificações screen
                             // (spec 010, NOT.12 — aluno-20).
                             hasUnreadNotifications: notificationsBadge?.hasUnread ?? false,
@@ -121,7 +130,18 @@ struct PersonaShellView: View {
                         )
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showGraduation) {
-                            AlunoGraduationView()
+                            // Session identity feeds the certificate
+                            // composition (spec 013, REP.18).
+                            AlunoGraduationView(
+                                studentName: context.user.fullName,
+                                academyName: context.activeMembership.academyName
+                            )
+                        }
+                        .navigationDestination(isPresented: $homeRankingOpen) {
+                            RankingView(
+                                persona: .aluno,
+                                academyName: context.activeMembership.academyName
+                            )
                         }
                         .navigationDestination(isPresented: $homeNotificationsOpen) {
                             NotificationsView(
@@ -187,6 +207,9 @@ struct PersonaShellView: View {
                             professorUserId: context.user.id,
                             onVerTurmas: { selection = .turmas },
                             onOpenCalendar: { showProfessorCalendar = true },
+                            // Dashboard "Ver todos" → professor-05/06
+                            // full ranking screen (REP.17).
+                            onOpenRanking: { homeRankingOpen = true },
                             // Home-header bell + Notificações screen
                             // (spec 010, NOT.13 — story 13).
                             hasUnreadNotifications: notificationsBadge?.hasUnread ?? false,
@@ -195,6 +218,12 @@ struct PersonaShellView: View {
                         .navigationBarHiddenOnIOS()
                         .navigationDestination(isPresented: $showProfessorCalendar) {
                             MonthCalendarView(persona: .professor, repository: agendaRepository)
+                        }
+                        .navigationDestination(isPresented: $homeRankingOpen) {
+                            RankingView(
+                                persona: .professor,
+                                academyName: context.activeMembership.academyName
+                            )
                         }
                         .navigationDestination(isPresented: $homeNotificationsOpen) {
                             NotificationsView(
@@ -338,9 +367,10 @@ struct PersonaShellView: View {
         switch persona {
         case .aluno:
             // Aluno additionally gets the functional "Tema escuro" switch
-            // (spec 011, CFG.17); professor/responsável toggles stay design
-            // backlog per the handoff.
-            perfilTabWithStore(showsNovoPill: true, showsThemeSwitch: true) {
+            // (spec 011, CFG.17) and the real "Dados pessoais" row (spec
+            // 013, REP.16 — the Phase-1 stub retires); professor/responsável
+            // toggles stay design backlog per the handoff.
+            perfilTabWithStore(showsNovoPill: true, showsThemeSwitch: true, showsDadosPessoais: true) {
                 AlunoProfileHeader(fullName: context.user.fullName)
             }
         case .professor:
@@ -365,6 +395,7 @@ struct PersonaShellView: View {
     private func perfilTabWithStore(
         showsNovoPill: Bool,
         showsThemeSwitch: Bool = false,
+        showsDadosPessoais: Bool = false,
         @ViewBuilder header: () -> some View
     ) -> some View {
         NavigationStack {
@@ -377,6 +408,13 @@ struct PersonaShellView: View {
                         header()
                         StoreEntryRow(showsNovoPill: showsNovoPill) {
                             perfilStoreOpen = true
+                        }
+                        // "Dados pessoais" → aluno-18 screen (spec 013,
+                        // REP.16 — aluno-19 row order: below the Loja).
+                        if showsDadosPessoais {
+                            DadosPessoaisRow {
+                                perfilDadosPessoaisOpen = true
+                            }
                         }
                         // The perfil "Notificações" switch (spec 010,
                         // story 9): mute silences the badge only.
@@ -400,6 +438,9 @@ struct PersonaShellView: View {
                     academyName: context.activeMembership.academyName,
                     repository: storeRepository
                 )
+            }
+            .navigationDestination(isPresented: $perfilDadosPessoaisOpen) {
+                DadosPessoaisView(fullNameFallback: context.user.fullName)
             }
         }
         .tabItem {

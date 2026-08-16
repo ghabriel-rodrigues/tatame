@@ -12,6 +12,8 @@ import EnrollmentFeature
 import EventsFeature
 import GraduationFeature
 import NotificationsFeature
+import ProfileFeature
+import RankingsFeature
 import StoreFeature
 import SwiftUI
 import TatameAPI
@@ -33,6 +35,8 @@ struct TatameApp: App {
                 .environment(\.eventsRepository, composition.eventsRepository)
                 .environment(\.storeRepository, composition.storeRepository)
                 .environment(\.notificationsRepository, composition.notificationsRepository)
+                .environment(\.profileRepository, composition.profileRepository)
+                .environment(\.rankingsRepository, composition.rankingsRepository)
         }
     }
 }
@@ -63,6 +67,8 @@ final class AppComposition {
     let eventsRepository: any EventsRepository
     let storeRepository: any StoreRepository
     let notificationsRepository: any NotificationsRepository
+    let profileRepository: any ProfileRepository
+    let rankingsRepository: any RankingsRepository
 
     init() {
         // Dev server URL. Environment-specific .xcconfig wiring is ticket 08
@@ -91,5 +97,7 @@ final class AppComposition {
         eventsRepository = stack.eventsRepository
         storeRepository = stack.storeRepository
         notificationsRepository = stack.notificationsRepository
+        profileRepository = stack.profileRepository
+        rankingsRepository = stack.rankingsRepository
     }
 }

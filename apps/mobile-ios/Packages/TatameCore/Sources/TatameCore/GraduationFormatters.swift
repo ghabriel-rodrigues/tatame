@@ -82,6 +82,14 @@ public enum GraduationFormatters {
         return raw.prefix(1).uppercased() + raw.dropFirst()
     }
 
+    /// Certificate date line: "20 de novembro de 2024" (pt-BR).
+    public static func fullDatePTBR(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "pt_BR")
+        formatter.dateFormat = "d 'de' MMMM 'de' yyyy"
+        return formatter.string(from: date)
+    }
+
     /// Timeline / note author line: "Prof. Rafael Nunes".
     public static func professorLinePTBR(_ actor: GraduationActor) -> String {
         "Prof. \(actor.fullName)"

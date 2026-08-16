@@ -1,7 +1,8 @@
 // Professor dashboard model (spec 004, ATT.24 — stories 34-36): live tiles
 // (alunos hoje, presença média) and the next-class hero with its check-in
-// count. Ranking/graduation/payment sections stay explicit placeholders
-// owned by their slices.
+// count. The ranking section is real since spec 013 (REP.17, self-loading
+// in RankingsFeature); graduation/payment sections stay explicit
+// placeholders owned by their slices.
 
 import Foundation
 import Observation

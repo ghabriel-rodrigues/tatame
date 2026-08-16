@@ -7,6 +7,7 @@
 
 import DesignSystem
 import NotificationsFeature
+import RankingsFeature
 import SwiftUI
 import TatameCore
 
@@ -18,6 +19,7 @@ public struct AlunoHomeView: View {
     private let onOpenEvent: ((EventListItem) -> Void)?
     private let onOpenStore: (() -> Void)?
     private let onOpenStoreProduct: ((StoreProductCard) -> Void)?
+    private let onOpenRanking: (() -> Void)?
     private let hasUnreadNotifications: Bool
     private let onOpenNotifications: (() -> Void)?
 
@@ -29,6 +31,7 @@ public struct AlunoHomeView: View {
         onOpenEvent: ((EventListItem) -> Void)? = nil,
         onOpenStore: (() -> Void)? = nil,
         onOpenStoreProduct: ((StoreProductCard) -> Void)? = nil,
+        onOpenRanking: (() -> Void)? = nil,
         hasUnreadNotifications: Bool = false,
         onOpenNotifications: (() -> Void)? = nil
     ) {
@@ -39,6 +42,7 @@ public struct AlunoHomeView: View {
         self.onOpenEvent = onOpenEvent
         self.onOpenStore = onOpenStore
         self.onOpenStoreProduct = onOpenStoreProduct
+        self.onOpenRanking = onOpenRanking
         self.hasUnreadNotifications = hasUnreadNotifications
         self.onOpenNotifications = onOpenNotifications
     }
@@ -52,6 +56,7 @@ public struct AlunoHomeView: View {
             onOpenEvent: onOpenEvent,
             onOpenStore: onOpenStore,
             onOpenStoreProduct: onOpenStoreProduct,
+            onOpenRanking: onOpenRanking,
             hasUnreadNotifications: hasUnreadNotifications,
             onOpenNotifications: onOpenNotifications
         )
@@ -66,6 +71,7 @@ struct AlunoHomeContent: View {
     var onOpenEvent: ((EventListItem) -> Void)?
     var onOpenStore: (() -> Void)?
     var onOpenStoreProduct: ((StoreProductCard) -> Void)?
+    var onOpenRanking: (() -> Void)?
     var hasUnreadNotifications = false
     var onOpenNotifications: (() -> Void)?
     @Environment(\.tatameTheme) private var theme
@@ -89,7 +95,12 @@ struct AlunoHomeContent: View {
                     graduationCard(home)
                     upcomingEventsSection(home)
                     storeStripSection(home)
-                    rankingPlaceholder
+                    // Real "Ranking do mês" entry (spec 013, REP.17 — the
+                    // Phase-4 placeholder pays out): live position line,
+                    // opening the full aluno-06/07 screen.
+                    AlunoRankingHomeCard {
+                        onOpenRanking?()
+                    }
                     mensalidadeAlert(home)
                 }
             }
@@ -422,32 +433,6 @@ struct AlunoHomeContent: View {
         }
     }
 
-    private var rankingPlaceholder: some View {
-        HStack(spacing: LumiraTokens.Space.s3) {
-            Image(systemName: "chart.bar.fill")
-                .foregroundStyle(ThemedColors.inkPink)
-                .frame(width: 36, height: 36)
-                .background(ThemedColors.pink100)
-                .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Ranking do mês")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
-                    .foregroundStyle(ThemedColors.fg1)
-                Text("Chega com os relatórios de presença")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
-                    .foregroundStyle(ThemedColors.fg4)
-            }
-            Spacer()
-        }
-        .padding(LumiraTokens.Space.s4)
-        .background(ThemedColors.bgSurface)
-        .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous)
-                .strokeBorder(ThemedColors.border1, lineWidth: 1)
-        )
-        .opacity(0.7)
-    }
 }
 
 /// One card of the home "Loja da academia" strip (spec 009): the monogram

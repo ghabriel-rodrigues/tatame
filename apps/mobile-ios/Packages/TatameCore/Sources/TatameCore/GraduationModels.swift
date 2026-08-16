@@ -38,7 +38,8 @@ public struct BeltView: Sendable, Equatable {
 }
 
 /// Catalog belt reference without a degree count (timeline entries).
-public struct BeltRef: Sendable, Equatable {
+/// Hashable so navigation targets (the certificate) can carry it.
+public struct BeltRef: Sendable, Equatable, Hashable {
     public let beltId: UUID
     public let name: String
     public let colorSlug: String

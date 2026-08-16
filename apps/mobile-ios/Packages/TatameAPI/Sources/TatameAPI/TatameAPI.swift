@@ -33,6 +33,12 @@ public struct AuthStack: Sendable {
     /// Notifications slice repository (spec 010) — same authenticated
     /// client; persona-neutral feed/badge/settings routes.
     public let notificationsRepository: any NotificationsRepository
+    /// Aluno profile repository (spec 013, REP.16) — same authenticated
+    /// client plus the hand-rolled PUT (generated body type unusable).
+    public let profileRepository: any ProfileRepository
+    /// Rankings repository (spec 013, REP.17) — same authenticated client;
+    /// shared by the aluno and professor shells.
+    public let rankingsRepository: any RankingsRepository
 }
 
 public enum TatameClientFactory {
@@ -68,11 +74,13 @@ public enum TatameClientFactory {
             },
             onSessionInvalidated: onSessionInvalidated
         )
+        let transport = URLSessionTransport()
+        let middlewares: [any ClientMiddleware] = [AuthMiddleware(coordinator: coordinator)]
         let client = Client(
             serverURL: serverURL,
             configuration: TatameClientDefaults.configuration,
-            transport: URLSessionTransport(),
-            middlewares: [AuthMiddleware(coordinator: coordinator)]
+            transport: transport,
+            middlewares: middlewares
         )
         return AuthStack(
             repository: LiveAuthRepository(client: client, coordinator: coordinator),
@@ -84,7 +92,14 @@ public enum TatameClientFactory {
             agendaRepository: LiveAgendaRepository(client: client),
             eventsRepository: LiveEventsRepository(client: client),
             storeRepository: LiveStoreRepository(client: client),
-            notificationsRepository: LiveNotificationsRepository(client: client)
+            notificationsRepository: LiveNotificationsRepository(client: client),
+            profileRepository: LiveProfileRepository(
+                client: client,
+                serverURL: serverURL,
+                transport: transport,
+                middlewares: middlewares
+            ),
+            rankingsRepository: LiveRankingsRepository(client: client)
         )
     }
 }

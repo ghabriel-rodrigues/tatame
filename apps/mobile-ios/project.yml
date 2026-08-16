@@ -47,6 +47,10 @@ targets:
         product: EventsFeature
       - package: Features
         product: StoreFeature
+      - package: Features
+        product: RankingsFeature
+      - package: Features
+        product: ProfileFeature
       - package: TatameAPI
         product: TatameAPI
       - package: TatameCore

@@ -1,8 +1,9 @@
 // Aluno Graduação (handoff aluno-09): the purple hero card — "FAIXA ATUAL",
 // drawn BeltBar with degrees, progress bar to the next milestone against the
 // academy's real rule — and the "Histórico de evolução" timeline (belt or
-// degree, date, professor, observação, render-only "Ver certificado" on belt
-// promotions). PT-BR copy; Lumira tokens only.
+// degree, date, professor, observação). "Ver certificado" on belt promotions
+// is real since spec 013 (REP.18): it pushes the branded certificate view.
+// PT-BR copy; Lumira tokens only.
 
 import DesignSystem
 import SwiftUI
@@ -11,13 +12,26 @@ import TatameCore
 public struct AlunoGraduationView: View {
     @Environment(\.graduationRepository) private var repository
     @State private var model: AlunoGraduationModel?
+    private let studentName: String
+    private let academyName: String?
 
-    public init() {}
+    /// The certificate states the session's identity facts (spec 013: the
+    /// view renders from timeline + session — no new endpoint), so the
+    /// shell passes them in; empty defaults keep the certificate locked
+    /// out of nameless contexts (previews).
+    public init(studentName: String = "", academyName: String? = nil) {
+        self.studentName = studentName
+        self.academyName = academyName
+    }
 
     public var body: some View {
         Group {
             if let model {
-                AlunoGraduationContent(model: model)
+                AlunoGraduationContent(
+                    model: model,
+                    studentName: studentName,
+                    academyName: academyName
+                )
             } else {
                 ThemedColors.bgApp
             }
@@ -34,6 +48,10 @@ public struct AlunoGraduationView: View {
 
 struct AlunoGraduationContent: View {
     let model: AlunoGraduationModel
+    var studentName = ""
+    var academyName: String?
+    /// Belt-promotion certificate pushed from a timeline row (REP.18).
+    @State private var certificateTarget: CertificateData?
     @Environment(\.tatameTheme) private var theme
 
     var body: some View {
@@ -61,6 +79,9 @@ struct AlunoGraduationContent: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .refreshable { await model.load() }
+        .navigationDestination(item: $certificateTarget) { data in
+            CertificateView(data: data)
+        }
     }
 
     private var loadingState: some View {
@@ -146,7 +167,15 @@ struct AlunoGraduationContent: View {
         } else {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 ForEach(timeline) { entry in
-                    TimelineEntryRow(entry: entry)
+                    TimelineEntryRow(entry: entry) {
+                        // Unlocked exactly on non-reversed belt promotions
+                        // (REP.18); CertificateData re-checks the rule.
+                        certificateTarget = CertificateData(
+                            entry: entry,
+                            studentName: studentName,
+                            academyName: academyName
+                        )
+                    }
                 }
             }
         }
@@ -156,6 +185,7 @@ struct AlunoGraduationContent: View {
 /// One "Histórico de evolução" row: marker dot + card (aluno-09).
 struct TimelineEntryRow: View {
     let entry: GraduationEntry
+    var onVerCertificado: () -> Void = {}
 
     var body: some View {
         HStack(alignment: .top, spacing: LumiraTokens.Space.s3) {
@@ -193,17 +223,21 @@ struct TimelineEntryRow: View {
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 if entry.certificateAvailable {
-                    // Render-only placeholder — generation is a later slice.
-                    Text("Ver certificado")
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
-                        .foregroundStyle(ThemedColors.inkPurple.opacity(0.5))
-                        .padding(.horizontal, LumiraTokens.Space.s3)
-                        .padding(.vertical, LumiraTokens.Space.s1)
-                        .overlay(
-                            Capsule().strokeBorder(ThemedColors.inkPurple.opacity(0.35), lineWidth: 1)
-                        )
-                        .padding(.top, LumiraTokens.Space.s1)
-                        .accessibilityIdentifier("ver-certificado-placeholder")
+                    // Real since spec 013 (REP.18): pushes the branded
+                    // certificate view rendered from this entry + session.
+                    Button(action: onVerCertificado) {
+                        Text("Ver certificado")
+                            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                            .foregroundStyle(ThemedColors.inkPurple)
+                            .padding(.horizontal, LumiraTokens.Space.s3)
+                            .padding(.vertical, LumiraTokens.Space.s1)
+                            .overlay(
+                                Capsule().strokeBorder(ThemedColors.inkPurple, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, LumiraTokens.Space.s1)
+                    .accessibilityIdentifier("ver-certificado-button")
                 }
             }
             .padding(LumiraTokens.Space.s4)

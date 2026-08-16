@@ -28,6 +28,8 @@ let package = Package(
         .library(name: "AgendaFeature", targets: ["AgendaFeature"]),
         .library(name: "StoreFeature", targets: ["StoreFeature"]),
         .library(name: "NotificationsFeature", targets: ["NotificationsFeature"]),
+        .library(name: "RankingsFeature", targets: ["RankingsFeature"]),
+        .library(name: "ProfileFeature", targets: ["ProfileFeature"]),
         .library(name: "AppShell", targets: ["AppShell"]),
     ],
     dependencies: [
@@ -55,11 +57,33 @@ let package = Package(
             ]
         ),
         .target(
+            // Rankings slice (spec 013, REP.17): the aluno/professor
+            // "Ranking do mês" full screen plus the home entry card and the
+            // professor dashboard section that open it.
+            name: "RankingsFeature",
+            dependencies: [
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
+            // Aluno Dados pessoais (spec 013, REP.16): the perfil row's
+            // aluno-18 screen with locked CPF/RG and the profile PUT.
+            name: "ProfileFeature",
+            dependencies: [
+                .product(name: "DesignSystem", package: "DesignSystem"),
+                .product(name: "TatameCore", package: "TatameCore"),
+            ]
+        ),
+        .target(
             name: "AttendanceFeature",
             dependencies: [
                 // The home-header bell (spec 010) renders inside the aluno
                 // Início and professor dashboard headers.
                 "NotificationsFeature",
+                // The home "Ranking do mês" card and the professor dashboard
+                // "Ranking de presença" section (spec 013, REP.17).
+                "RankingsFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -136,6 +160,8 @@ let package = Package(
                 "AgendaFeature",
                 "StoreFeature",
                 "NotificationsFeature",
+                "RankingsFeature",
+                "ProfileFeature",
                 .product(name: "DesignSystem", package: "DesignSystem"),
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
@@ -152,6 +178,8 @@ let package = Package(
                 "AgendaFeature",
                 "StoreFeature",
                 "NotificationsFeature",
+                "RankingsFeature",
+                "ProfileFeature",
                 "AppShell",
                 .product(name: "TatameCore", package: "TatameCore"),
             ]
