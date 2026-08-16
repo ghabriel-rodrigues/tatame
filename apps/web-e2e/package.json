@@ -1,0 +1,14 @@
+{
+  "name": "@org/web-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "web-e2e",
+    "implicitDependencies": [
+      "web"
+    ]
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}

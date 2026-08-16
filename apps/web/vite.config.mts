@@ -19,6 +19,12 @@ export default defineConfig(() => ({
   preview: {
     port: 4200,
     host: 'localhost',
+    // RLS.7: the e2e smoke lane runs against `vite preview` (built app) —
+    // mirror the dev proxy so /v1 stays same-origin and the httpOnly
+    // refresh cookie remains first-party, as in dev and prod (Netlify).
+    proxy: {
+      '/v1': 'http://localhost:3000',
+    },
   },
   plugins: [react()],
   resolve: {
@@ -26,7 +32,13 @@ export default defineConfig(() => ({
     // supports-color transitive) — one for the app, one for the linked
     // design-system. Two instances mean two Emotion ThemeContexts and a
     // silently ignored theme; force a single copy.
-    dedupe: ['react', 'react-dom', '@emotion/react', '@emotion/styled', '@mui/material'],
+    dedupe: [
+      'react',
+      'react-dom',
+      '@emotion/react',
+      '@emotion/styled',
+      '@mui/material',
+    ],
   },
   // Uncomment this if you are using workers.
   // worker: {

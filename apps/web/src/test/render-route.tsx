@@ -8,11 +8,17 @@ import { render, type RenderResult } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { MeResponse } from '@tatame/shared';
 import { appRoutes } from '../app/routes';
+import { preloadSurfaces } from '../app/lazy-surface';
 import { queryClient } from '../api/api';
 import { authTestApi } from '../auth/auth-store';
 // CFG.8: tests render through the real session-driven theme provider so
 // branding assertions exercise the production path.
 import { AppThemeProvider } from '../app/AppThemeProvider';
+
+// RLS.6: routes are lazy per persona surface in production; tests preload
+// every surface chunk once per file so lazy routes resolve synchronously
+// and the suites stay unchanged (no Suspense fallback in assertions).
+await preloadSurfaces();
 
 export interface RenderRouteOptions {
   /**
@@ -25,7 +31,10 @@ export type RenderRouteResult = RenderResult & {
   router: ReturnType<typeof createMemoryRouter>;
 };
 
-export function renderRoute(path: string, options: RenderRouteOptions = {}): RenderRouteResult {
+export function renderRoute(
+  path: string,
+  options: RenderRouteOptions = {},
+): RenderRouteResult {
   if (options.session === 'booting') {
     authTestApi.seed({ status: 'booting', session: null }, null);
   } else if (options.session) {
