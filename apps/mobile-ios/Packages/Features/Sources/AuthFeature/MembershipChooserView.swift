@@ -12,10 +12,10 @@ struct MembershipChooserView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
             Text("Escolha onde entrar")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text("Sua conta participa de mais de uma academia ou perfil.")
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
 
             ScrollView {
@@ -39,16 +39,16 @@ struct MembershipChooserView: View {
         HStack(spacing: LumiraTokens.Space.s3) {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                 Text(membership.academyName ?? "Plataforma Tatame")
-                    .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text(membership.role.displayNamePTBR)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.inkPurple)
             }
             Spacer()
             if membership.id == session.activeMembershipId {
                 Text("Último acesso")
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)

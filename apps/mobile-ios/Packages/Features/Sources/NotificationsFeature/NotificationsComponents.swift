@@ -73,19 +73,19 @@ struct NotificationRowCard: View {
                 chipView
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                         .multilineTextAlignment(.leading)
                     if let body = item.body {
                         Text(body)
-                            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                             .foregroundStyle(ThemedColors.fg3)
                             .multilineTextAlignment(.leading)
                     }
                 }
                 Spacer(minLength: LumiraTokens.Space.s2)
                 Text(NotificationsFormatters.relativeTimestampPTBR(item.createdAt, now: now))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.fg4)
             }
             .padding(LumiraTokens.Space.s4)
@@ -110,7 +110,7 @@ struct NotificationRowCard: View {
                 .frame(width: 38, height: 38)
             if let chip = item.chip {
                 Text(chip)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .bold))
                     .foregroundStyle(ThemedColors.purple600)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)

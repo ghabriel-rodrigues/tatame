@@ -84,7 +84,7 @@ public struct StoreMonogramTile: View {
                 endPoint: .topTrailing
             )
             Text(monogram)
-                .font(.system(size: monogramSize, weight: .bold, design: .rounded))
+                .font(.quicksand(size: monogramSize, weight: .bold))
                 .tracking(monogramSize * 0.16)
                 .foregroundStyle(LumiraTokens.Colors.fgOnColor)
         }

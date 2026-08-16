@@ -88,7 +88,7 @@ struct ResponsavelHomeContent: View {
                 case .loaded(let dependents):
                     if dependents.isEmpty {
                         Text("Nenhum aluno vinculado a você ainda.")
-                            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                             .foregroundStyle(ThemedColors.fg3)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, LumiraTokens.Space.s8)
@@ -141,10 +141,10 @@ struct ResponsavelHomeContent: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                 Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "pt_BR"))))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                 Text("Olá,\n\(firstName)")
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
             }
             Spacer()
@@ -183,7 +183,7 @@ struct ResponsavelHomeContent: View {
                 Image(systemName: "plus")
                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 Text("Cadastrar aluno")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
             }
             .foregroundStyle(ThemedColors.inkPurple)
             .frame(maxWidth: .infinity)
@@ -211,10 +211,10 @@ struct DependentCard: View {
                 AvatarCircle(initials: NameInitials.from(dependent.fullName), size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(dependent.fullName)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text(subtitle)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
@@ -234,7 +234,7 @@ struct DependentCard: View {
                         size: .sm
                     )
                     Text(GraduationFormatters.chipLabelPTBR(belt: belt))
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
             }
@@ -254,7 +254,7 @@ struct DependentCard: View {
                     Image(systemName: "creditcard")
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     Text("Mensalidade em aberto · \(BillingFormatters.alertLinePTBR(alert: alert))")
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 }
                 .foregroundStyle(ThemedColors.warning500)
                 .frame(maxWidth: .infinity, alignment: .leading)

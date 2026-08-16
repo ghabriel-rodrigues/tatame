@@ -512,7 +512,7 @@ struct ReadOnlyBanner: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: LumiraTokens.FontSize.textSm))
             Text("Pagamento da academia pendente — modo somente leitura.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
         }
         .foregroundStyle(ThemedColors.warning500)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -531,7 +531,7 @@ struct SessionContextCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
             Text(shellTitle)
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             row(label: "Nome", value: context.user.fullName)
             row(label: "Email", value: context.user.email)
@@ -553,10 +553,10 @@ struct SessionContextCard: View {
     private func row(label: String, value: String) -> some View {
         HStack(spacing: LumiraTokens.Space.s2) {
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg4)
             Text(value)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg2)
         }
     }
@@ -571,7 +571,7 @@ struct LogoutButton: View {
             Task { await session.logout() }
         } label: {
             Text("Sair")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)

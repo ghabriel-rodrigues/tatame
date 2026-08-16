@@ -93,7 +93,7 @@ struct QRScannerPanel: View {
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
                 .foregroundStyle(ThemedColors.fg4)
             Text("Câmera indisponível neste aparelho.\nUse a aba Código para digitar os 4 dígitos.")
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
                 .multilineTextAlignment(.center)
         }

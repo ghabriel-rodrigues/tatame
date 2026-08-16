@@ -55,7 +55,7 @@ struct AlunoEventDetailContent: View {
                         infoCard(detail)
                         if let description = detail.description {
                             Text(description)
-                                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                                 .foregroundStyle(ThemedColors.fg3)
                                 .accessibilityIdentifier("event-description")
                         }
@@ -101,7 +101,7 @@ struct AlunoEventDetailContent: View {
 
             if let detail = model.detail {
                 Text(EventFormatters.valorChipPTBR(priceCents: detail.priceCents))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)
@@ -111,7 +111,7 @@ struct AlunoEventDetailContent: View {
             }
             if let name {
                 Text(name)
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .accessibilityIdentifier("event-banner-name")
             }
@@ -171,7 +171,7 @@ struct AlunoEventDetailContent: View {
                 .foregroundStyle(ThemedColors.inkPurple)
                 .frame(width: 18)
             Text(text)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg2)
         }
         .accessibilityIdentifier(identifier)
@@ -209,7 +209,7 @@ struct AlunoEventDetailContent: View {
                 Task { await model.cancelParticipation() }
             } label: {
                 Text("Cancelar participação")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.danger500)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -224,7 +224,7 @@ struct AlunoEventDetailContent: View {
             Image(systemName: "checkmark.circle.fill")
             Text(EventsMessages.confirmed)
         }
-        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
         .foregroundStyle(ThemedColors.success500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s4)
@@ -238,7 +238,7 @@ struct AlunoEventDetailContent: View {
             Image(systemName: "clock")
             Text(EventsMessages.pendingPayment)
         }
-        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
         .foregroundStyle(ThemedColors.warning500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s3)
@@ -254,7 +254,7 @@ struct AlunoEventDetailContent: View {
     ) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
@@ -299,12 +299,12 @@ struct AlunoEventDetailContent: View {
     private func errorBanner(_ message: String, retry: (() -> Void)?) -> some View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let retry {
                 Button("Tentar novamente", action: retry)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

@@ -27,10 +27,10 @@ public struct LoginView: View {
                     .padding(.bottom, LumiraTokens.Space.s6)
 
                 Text("Bem-vindo de volta")
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text("Entre para acompanhar seus treinos.")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                     .foregroundStyle(ThemedColors.fg3)
                     .padding(.top, LumiraTokens.Space.s1)
                     .padding(.bottom, LumiraTokens.Space.s6)
@@ -66,13 +66,13 @@ public struct LoginView: View {
                     Button("Esqueci minha senha") {
                         showForgotPasswordStub = true
                     }
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
 
                     Spacer()
 
                     Text("Criar conta")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 .padding(.top, LumiraTokens.Space.s4)
@@ -118,7 +118,7 @@ public struct LoginView: View {
                         .tint(ThemedColors.fgOnColor)
                 } else {
                     Text("Entrar")
-                        .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                 }
             }
             .foregroundStyle(ThemedColors.fgOnColor)
@@ -146,7 +146,7 @@ public struct LoginView: View {
 
     private func errorBanner(_ message: String) -> some View {
         Text(message)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
@@ -157,7 +157,7 @@ public struct LoginView: View {
 
     private func noticeBanner(_ message: String) -> some View {
         Text(message)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.inkPurple)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
@@ -171,7 +171,7 @@ public struct LoginView: View {
                 .font(.system(size: LumiraTokens.FontSize.textMd))
                 .foregroundStyle(ThemedColors.inkPurple)
             Text(inviteNoticeText)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -184,7 +184,7 @@ public struct LoginView: View {
     private var inviteNoticeText: AttributedString {
         var prefix = AttributedString("Novo na academia? Peça ao seu professor o ")
         var link = AttributedString("link de convite")
-        link.font = .system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded)
+        link.font = .quicksand(size: LumiraTokens.FontSize.textXs, weight: .bold)
         link.foregroundColor = ThemedColors.inkPurple
         let suffix = AttributedString(" — seu cadastro já entra vinculado à turma certa.")
         prefix.append(link)
@@ -211,7 +211,7 @@ public struct LoginView: View {
 private struct LoginFieldStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.fg1)
             .padding(.horizontal, LumiraTokens.Space.s4)
             .frame(height: 48)

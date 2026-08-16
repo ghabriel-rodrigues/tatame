@@ -104,11 +104,11 @@ struct AlunoGraduationContent: View {
     private func heroCard(_ graduation: AlunoGraduation) -> some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("FAIXA ATUAL")
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .tracking(LumiraTokens.FontSize.text2xs * LumiraTokens.Tracking.caps)
                 .foregroundStyle(ThemedColors.fgOnColor.opacity(0.7))
             Text(GraduationFormatters.heroTitlePTBR(belt: graduation.belt))
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .accessibilityIdentifier("graduation-hero-title")
 
@@ -122,11 +122,11 @@ struct AlunoGraduationContent: View {
 
             HStack {
                 Text(graduation.progress.label)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.fgOnColor.opacity(0.7))
                 Spacer()
                 Text(GraduationFormatters.progressLinePTBR(graduation.progress))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .accessibilityIdentifier("graduation-progress-line")
             }
@@ -154,13 +154,13 @@ struct AlunoGraduationContent: View {
     @ViewBuilder
     private func timelineSection(_ timeline: [GraduationEntry]) -> some View {
         Text("Histórico de evolução")
-            .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
             .foregroundStyle(ThemedColors.fg1)
             .padding(.top, LumiraTokens.Space.s2)
 
         if timeline.isEmpty {
             Text("Sua jornada começa aqui — as graduações aparecem neste histórico.")
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, LumiraTokens.Space.s8)
@@ -198,11 +198,11 @@ struct TimelineEntryRow: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(GraduationFormatters.timelineTitlePTBR(entry: entry))
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     if entry.reversed {
                         Text("Revogada")
-                            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                             .foregroundStyle(ThemedColors.danger500)
                             .padding(.horizontal, LumiraTokens.Space.s2)
                             .padding(.vertical, 2)
@@ -211,15 +211,15 @@ struct TimelineEntryRow: View {
                     }
                     Spacer()
                     Text(GraduationFormatters.monthYearPTBR(entry.awardedAt))
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 Text(GraduationFormatters.professorLinePTBR(entry.awardedBy))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                 if let notes = entry.notes, !notes.isEmpty {
                     Text("“\(notes)”")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded).italic())
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs).italic())
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 if entry.certificateAvailable {
@@ -227,7 +227,7 @@ struct TimelineEntryRow: View {
                     // certificate view rendered from this entry + session.
                     Button(action: onVerCertificado) {
                         Text("Ver certificado")
-                            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                             .foregroundStyle(ThemedColors.inkPurple)
                             .padding(.horizontal, LumiraTokens.Space.s3)
                             .padding(.vertical, LumiraTokens.Space.s1)

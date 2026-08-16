@@ -75,10 +75,10 @@ struct ResponsavelEventosContent: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Eventos")
-                .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xl, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text("Confirme a participação por dependente")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
         }
         .padding(.top, LumiraTokens.Space.s6)
@@ -93,7 +93,7 @@ struct ResponsavelEventosContent: View {
                 HStack {
                     Spacer()
                     Text(EventFormatters.valorChipPTBR(priceCents: event.priceCents))
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                         .foregroundStyle(ThemedColors.inkPurple)
                         .padding(.horizontal, LumiraTokens.Space.s2)
                         .padding(.vertical, LumiraTokens.Space.s1)
@@ -101,7 +101,7 @@ struct ResponsavelEventosContent: View {
                         .clipShape(Capsule())
                 }
                 Text(event.name)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .bold))
                     .foregroundStyle(ThemedColors.fgOnColor)
             }
             .padding(LumiraTokens.Space.s4)
@@ -117,7 +117,7 @@ struct ResponsavelEventosContent: View {
             // "Dom, 15 de setembro · 09:30 · Ginásio Municipal"
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text(dateLine(event))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("guardian-event-line")
 
@@ -160,7 +160,7 @@ struct ResponsavelEventosContent: View {
                         .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 }
                 Text(firstName(dependent.fullName))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
             }
             .foregroundStyle(chipForeground(dependent))
             .padding(.horizontal, LumiraTokens.Space.s4)
@@ -241,10 +241,10 @@ struct ResponsavelEventosContent: View {
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
                 .foregroundStyle(ThemedColors.purple400)
             Text("Nenhum evento por aqui")
-                .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
             Text("Quando a academia publicar um evento, ele aparece aqui para você confirmar seus dependentes.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
@@ -256,12 +256,12 @@ struct ResponsavelEventosContent: View {
     private func errorBanner(_ message: String, retry: (() -> Void)?) -> some View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let retry {
                 Button("Tentar novamente", action: retry)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

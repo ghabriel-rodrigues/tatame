@@ -83,7 +83,7 @@ struct NotificationsContent: View {
             }
             .accessibilityIdentifier("notifications-back-button")
             Text(NotificationsMessages.title)
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Spacer()
         }
@@ -139,10 +139,10 @@ struct NotificationsContent: View {
                 .font(.system(size: LumiraTokens.FontSize.textXl))
                 .foregroundStyle(ThemedColors.fg4)
             Text(NotificationsMessages.empty)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
             Text(NotificationsMessages.emptyCaption)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
@@ -156,13 +156,13 @@ struct NotificationsContent: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(ThemedColors.warning500)
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg2)
             Spacer()
             Button("Tentar de novo") {
                 Task { await model.open() }
             }
-            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
             .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)

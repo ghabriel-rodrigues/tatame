@@ -62,10 +62,10 @@ struct ResponsavelPagamentosContent: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Pagamentos")
-                .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xl, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text("Mensalidades dos seus dependentes")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
         }
         .padding(.top, LumiraTokens.Space.s6)
@@ -88,10 +88,10 @@ struct ResponsavelPagamentosContent: View {
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
                 .foregroundStyle(ThemedColors.purple400)
             Text("Nenhuma mensalidade por aqui")
-                .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
             Text("Quando a academia atribuir um plano aos seus dependentes, as mensalidades aparecem aqui.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
@@ -111,7 +111,7 @@ struct ResponsavelPagamentosContent: View {
                         fullName: dependent.fullName,
                         periodStart: charge.periodStart
                     ))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("dependent-charge-title")
                     Spacer()
@@ -119,14 +119,14 @@ struct ResponsavelPagamentosContent: View {
                 }
 
                 Text(BillingFormatters.amountBRL(charge.amountCents))
-                    .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                     .padding(.top, LumiraTokens.Space.s2)
 
                 if charge.isOpen {
                     // "Vence em 10 de agosto · plano Kids mensal" (story 17).
                     Text(BillingFormatters.dependentDueLinePTBR(dueDate: charge.dueDate, plan: dependent.plan))
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg3)
                         .accessibilityIdentifier("dependent-due-line")
 
@@ -140,7 +140,7 @@ struct ResponsavelPagamentosContent: View {
                         payment: payment,
                         recurrenceActive: dependent.recurrenceActive
                     ))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("dependent-paid-line")
 
@@ -169,7 +169,7 @@ struct ResponsavelPagamentosContent: View {
         if !history.isEmpty {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Histórico")
-                    .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .padding(.top, LumiraTokens.Space.s2)
 

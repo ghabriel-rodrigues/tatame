@@ -49,7 +49,7 @@ struct RankingContent: View {
         ScrollView {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
                 Text(model.subtitle)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                     .accessibilityIdentifier("ranking-subtitle")
 
@@ -98,7 +98,7 @@ struct RankingContent: View {
     private func rankingList(_ ranking: Ranking) -> some View {
         if ranking.top.isEmpty {
             Text("Ninguém pontuou nesta janela ainda — o ranking começa na próxima presença.")
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, LumiraTokens.Space.s8)
@@ -153,7 +153,7 @@ struct RankingContent: View {
     private func meOutsideRow(_ me: RankingMe, ranking: Ranking) -> some View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text("···")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .bold))
                 .foregroundStyle(ThemedColors.fg4)
             RankingRowView(
                 row: RankingRow(position: me.position, name: "Sua posição", count: me.count, isMe: true),
@@ -175,7 +175,7 @@ struct RankingContent: View {
 
     private var footnoteCard: some View {
         RankingFootnoteText(copy: model.footnote)
-            .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
             .foregroundStyle(ThemedColors.fg4)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s4)
@@ -199,12 +199,12 @@ struct RankingRowView: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
                 HStack(spacing: LumiraTokens.Space.s2) {
                     Text(row.name)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                         .lineLimit(1)
                     if showsVoce, row.isMe {
                         Text("você")
-                            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                             .foregroundStyle(ThemedColors.inkPurple)
                             .padding(.horizontal, LumiraTokens.Space.s2)
                             .padding(.vertical, 1)
@@ -214,7 +214,7 @@ struct RankingRowView: View {
                     }
                     Spacer()
                     Text(RankingsFormatters.countLabelPTBR(count: row.count, by: ranking.by))
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 RankingGradientBar(fraction: ranking.barFraction(count: row.count))
@@ -229,7 +229,7 @@ struct RankingPositionCircle: View {
 
     var body: some View {
         Text("\(position)")
-            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .bold))
             .foregroundStyle(position == 1 ? ThemedColors.fgOnColor : ThemedColors.fg3)
             .frame(width: 28, height: 28)
             .background(position == 1 ? ThemedColors.purple700 : ThemedColors.bgSunken)
@@ -279,10 +279,9 @@ struct RankingFootnoteText: View {
         for name in RankingsMessages.seloNames {
             if let range = attributed.range(of: name) {
                 attributed[range].foregroundColor = ThemedColors.inkPink
-                attributed[range].font = .system(
+                attributed[range].font = .quicksand(
                     size: LumiraTokens.FontSize.text2xs,
-                    weight: .semibold,
-                    design: .rounded
+                    weight: .semibold
                 )
             }
         }
@@ -298,11 +297,11 @@ struct RankingErrorBanner: View {
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg2)
                 .multilineTextAlignment(.center)
             Button("Tentar novamente", action: onRetry)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPurple)
         }
         .frame(maxWidth: .infinity)

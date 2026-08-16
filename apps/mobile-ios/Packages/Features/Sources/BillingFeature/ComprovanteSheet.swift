@@ -50,7 +50,7 @@ struct ComprovanteSheet: View {
     var body: some View {
         SheetScaffold {
             Text("Comprovante")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
 
             switch model.phase {
@@ -76,11 +76,11 @@ struct ComprovanteSheet: View {
                     .foregroundStyle(ThemedColors.success500)
             }
             Text(BillingFormatters.amountBRL(receipt.payment.amountCents))
-                .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xl, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("receipt-amount")
             Text(BillingFormatters.mensalidadeTitlePTBR(periodStart: receipt.charge.periodStart))
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
 
             VStack(spacing: LumiraTokens.Space.s2) {
@@ -118,11 +118,11 @@ struct ComprovanteSheet: View {
     private func row(_ label: String, _ value: String) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg4)
             Spacer()
             Text(value)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
         }
     }

@@ -22,10 +22,10 @@ struct RegisterDependentSheet: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                     Text("Cadastrar aluno")
-                        .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text("O cadastro nasce vinculado a você e à academia.")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 .padding(.top, LumiraTokens.Space.s6)
@@ -47,7 +47,7 @@ struct RegisterDependentSheet: View {
 
                 if case .failed(let message) = model.phase {
                     Text(message)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                         .foregroundStyle(ThemedColors.danger500)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(LumiraTokens.Space.s3)
@@ -58,7 +58,7 @@ struct RegisterDependentSheet: View {
 
                 if case .registered(let message) = model.phase {
                     Text(message)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                         .foregroundStyle(ThemedColors.success500)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(LumiraTokens.Space.s3)
@@ -101,10 +101,9 @@ struct RegisterDependentSheet: View {
                                     .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold))
                             }
                             Text("\(suggestion.name) · \(suggestion.schedules.suggestionLinePTBR)")
-                                .font(.system(
+                                .font(.quicksand(
                                     size: LumiraTokens.FontSize.textSm,
-                                    weight: .semibold,
-                                    design: .rounded
+                                    weight: .semibold
                                 ))
                         }
                         .foregroundStyle(ThemedColors.inkPurple)
@@ -120,7 +119,7 @@ struct RegisterDependentSheet: View {
                 }
             } else {
                 Text("Nenhuma turma com vaga para essa idade — o cadastro segue sem matrícula.")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
             }
         }
@@ -128,7 +127,7 @@ struct RegisterDependentSheet: View {
 
     private var suggestionLabel: some View {
         Text("Turma sugerida pela idade")
-            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
             .foregroundStyle(ThemedColors.fg3)
     }
 
@@ -151,7 +150,7 @@ struct RegisterDependentSheet: View {
                         .tint(ThemedColors.fgOnColor)
                 } else {
                     Text("Cadastrar")
-                        .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                 }
             }
             .foregroundStyle(ThemedColors.fgOnColor)
@@ -178,7 +177,7 @@ struct RegisterDependentSheet: View {
 private struct SheetFieldStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.fg1)
             .padding(.horizontal, LumiraTokens.Space.s4)
             .frame(height: 48)

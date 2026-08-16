@@ -75,10 +75,10 @@ struct MonthCalendarContent: View {
             .accessibilityIdentifier("calendar-back-button")
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.grid.titlePTBR)
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text(model.persona.subtitlePTBR)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
             }
             Spacer()
@@ -111,7 +111,7 @@ struct MonthCalendarContent: View {
         LazyVGrid(columns: gridColumns, spacing: 2) {
             ForEach(Array(MonthGrid.weekdayLettersPTBR.enumerated()), id: \.offset) { _, letter in
                 Text(letter)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             }
         }
@@ -137,7 +137,7 @@ struct MonthCalendarContent: View {
         } label: {
             VStack(spacing: 2) {
                 Text("\(day)")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg1)
                 HStack(spacing: 2) {
                     if model.hasClassDot(day: day) {
@@ -190,7 +190,7 @@ struct MonthCalendarContent: View {
                 .fill(color)
                 .frame(width: 5, height: 5)
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg3)
         }
     }
@@ -200,13 +200,13 @@ struct MonthCalendarContent: View {
     private var dayAgenda: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text(model.selectedDayHeadingPTBR)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("calendar-day-heading")
 
             if model.showsEmptyDay {
                 Text(model.persona.emptyDayPTBR)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, LumiraTokens.Space.s6)
@@ -228,20 +228,20 @@ struct MonthCalendarContent: View {
     private func dayItemRow(_ item: CalendarClassItem) -> some View {
         HStack(spacing: LumiraTokens.Space.s3) {
             Text(item.startTime)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .bold))
                 .foregroundStyle(ThemedColors.inkPurple)
                 .frame(width: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.className)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text(subtitle(for: item))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
             }
             Spacer()
             Text("Aula")
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .foregroundStyle(ThemedColors.purple800)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
@@ -263,20 +263,20 @@ struct MonthCalendarContent: View {
     private func dayEventRow(_ event: EventListItem) -> some View {
         let row = HStack(spacing: LumiraTokens.Space.s3) {
             Text(event.time ?? "—")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .bold))
                 .foregroundStyle(ThemedColors.inkPink)
                 .frame(width: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(event.name)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text(event.location ?? EventFormatters.valorChipPTBR(priceCents: event.priceCents))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
             }
             Spacer()
             Text("Evento")
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .foregroundStyle(ThemedColors.pink700)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)

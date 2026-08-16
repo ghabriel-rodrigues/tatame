@@ -113,11 +113,11 @@ struct DependentDetailContent: View {
             AvatarCircle(initials: NameInitials.from(dependent.fullName), size: 56)
             VStack(alignment: .leading, spacing: 2) {
                 Text(dependent.fullName)
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 if let ageLabel = BirthDates.ageLabelPTBR(fromISO: dependent.birthDate) {
                     Text(ageLabel)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 // Derived belt chip (spec 005, story 34).
@@ -136,22 +136,22 @@ struct DependentDetailContent: View {
         if let enrolledClass = dependent.enrolledClass {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Turma")
-                    .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
 
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
                     Text(enrolledClass.name)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text(enrolledClass.schedules.scheduleLinePTBR)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg4)
                     if let nextSlot = enrolledClass.nextSlot {
                         HStack(spacing: LumiraTokens.Space.s2) {
                             Image(systemName: "calendar")
                                 .font(.system(size: LumiraTokens.FontSize.textXs))
                             Text("Próxima aula: \(nextSlot.nextSlotLabelPTBR)")
-                                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         }
                         .foregroundStyle(ThemedColors.inkPurple)
                         .padding(.top, LumiraTokens.Space.s1)
@@ -168,7 +168,7 @@ struct DependentDetailContent: View {
             }
         } else {
             Text("Ainda sem turma — a matrícula acontece quando houver vaga.")
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(LumiraTokens.Space.s4)

@@ -90,7 +90,7 @@ struct StoreOrdersContent: View {
             }
             .accessibilityIdentifier("orders-back-button")
             Text("Meus pedidos")
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Spacer()
         }
@@ -102,7 +102,7 @@ struct StoreOrdersContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             HStack(spacing: LumiraTokens.Space.s2) {
                 Text(StoreFormatters.orderTitlePTBR(order: order))
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .lineLimit(1)
                 Spacer(minLength: LumiraTokens.Space.s2)
@@ -121,11 +121,11 @@ struct StoreOrdersContent: View {
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(StoreFormatters.orderItemLinePTBR(order: order))
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg2)
                         .lineLimit(1)
                     Text(StoreFormatters.orderDateLinePTBR(createdAt: order.createdAt))
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
@@ -137,7 +137,7 @@ struct StoreOrdersContent: View {
                         .font(.system(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.inkPurple)
                     Text(order.pickupNote)
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 .accessibilityIdentifier("order-pickup-note")
@@ -148,7 +148,7 @@ struct StoreOrdersContent: View {
                     model.pay(order)
                 } label: {
                     Text("Pagar")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                         .frame(maxWidth: .infinity)
                         .frame(height: 38)
@@ -162,7 +162,7 @@ struct StoreOrdersContent: View {
                     Task { await model.cancel(order) }
                 } label: {
                     Text("Cancelar pedido")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.danger500)
                         .frame(maxWidth: .infinity)
                         .frame(height: 34)

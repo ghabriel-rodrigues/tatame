@@ -60,7 +60,7 @@ struct DadosPessoaisContent: View {
                     }
                     if let bannerError = model.bannerError {
                         Text(bannerError)
-                            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                             .foregroundStyle(ThemedColors.danger500)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(LumiraTokens.Space.s3)
@@ -111,7 +111,7 @@ struct DadosPessoaisContent: View {
                 ProgressView()
             } else {
                 Text("Salvar")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .padding(.horizontal, LumiraTokens.Space.s4)
                     .frame(height: 30)
@@ -128,7 +128,7 @@ struct DadosPessoaisContent: View {
             Image(systemName: "checkmark.circle.fill")
             Text(ProfileMessages.saved)
         }
-        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
         .foregroundStyle(ThemedColors.success500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s3)
@@ -144,7 +144,7 @@ struct DadosPessoaisContent: View {
             ProfileAvatar(name: model.fullName.isEmpty ? fullNameFallback : model.fullName)
             // Rendered as the placeholder it is (upload is recorded debt).
             Text(ProfileMessages.photoPlaceholder)
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg4)
                 .padding(.horizontal, LumiraTokens.Space.s3)
                 .padding(.vertical, LumiraTokens.Space.s1)
@@ -204,7 +204,7 @@ struct DadosPessoaisContent: View {
             } label: {
                 HStack {
                     Text(model.gender?.labelPTBR ?? "Gênero")
-                        .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                         .foregroundStyle(model.gender == nil ? ThemedColors.fg4 : ThemedColors.fg1)
                     Spacer()
                     Image(systemName: "chevron.down")
@@ -329,7 +329,7 @@ struct ProfileSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
             Text(title.uppercased())
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .tracking(LumiraTokens.FontSize.text2xs * LumiraTokens.Tracking.caps)
                 .foregroundStyle(ThemedColors.fg4)
                 .padding(.top, LumiraTokens.Space.s2)
@@ -352,7 +352,7 @@ struct ProfileField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
             TextField(placeholder, text: $text)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg1)
                 .autocorrectionDisabled()
                 .focused($focused)
@@ -385,7 +385,7 @@ struct ProfileFieldError: View {
 
     var body: some View {
         Text(message)
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(ThemedColors.danger500)
     }
 }
@@ -398,7 +398,7 @@ struct ProfileReadOnlyBox: View {
 
     var body: some View {
         Text(value)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.fg3)
             .lineLimit(1)
             .padding(.horizontal, LumiraTokens.Space.s3)
@@ -421,7 +421,7 @@ struct ProfileLockedBox: View {
     var body: some View {
         HStack(spacing: LumiraTokens.Space.s2) {
             Text("\(label) · \(value)")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -452,7 +452,7 @@ struct ProfileAvatar: View {
 
     var body: some View {
         Text(initials)
-            .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
             .foregroundStyle(ThemedColors.fgOnColor)
             .frame(width: 56, height: 56)
             .background(
@@ -482,11 +482,11 @@ struct ProfileErrorBanner: View {
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg2)
                 .multilineTextAlignment(.center)
             Button("Tentar novamente", action: onRetry)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPurple)
         }
         .frame(maxWidth: .infinity)

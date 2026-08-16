@@ -66,14 +66,14 @@ struct LiveChamadaContent: View {
     private func header(_ code: LiveCode, closed: Bool) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("\(closed ? "Chamada encerrada" : "Chamada aberta") · \(code.session.className)")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(
                 closed
                     ? "O código e o QR foram invalidados."
                     : "Os alunos podem entrar com o código ou lendo o QR."
             )
-            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs))
             .foregroundStyle(ThemedColors.fg4)
         }
         .padding(.top, LumiraTokens.Space.s6)
@@ -93,7 +93,7 @@ struct LiveChamadaContent: View {
                         ? "Código expirado — reabra a chamada para gerar outro"
                         : "Expira em \(AttendanceFormatters.countdown(until: code.expiresAt, from: context.date)) · sem presenças duplicadas"
                 )
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(expired ? ThemedColors.danger500 : ThemedColors.fg4)
             }
 
@@ -119,13 +119,13 @@ struct LiveChamadaContent: View {
                     .fill(ThemedColors.success500)
                     .frame(width: 8, height: 8)
                 Text(AttendanceFormatters.liveCounterLabelPTBR(model.presentCount))
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.success500)
                     .accessibilityIdentifier("live-counter")
                 Spacer()
                 if model.connection == .polling {
                     Text("atualizando a cada 5 s")
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg4)
                         .accessibilityIdentifier("polling-indicator")
                 }
@@ -137,7 +137,7 @@ struct LiveChamadaContent: View {
                         HStack(spacing: LumiraTokens.Space.s3) {
                             AttendanceAvatar(initials: NameInitials.from(attendee.studentName), size: 30)
                             Text(attendee.studentName)
-                                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                                 .foregroundStyle(ThemedColors.fg1)
                             Spacer()
                             if let marker = attendee.method.markerLabelPTBR {
@@ -168,7 +168,7 @@ struct LiveChamadaContent: View {
             Task { await model.encerrar() }
         } label: {
             Text("Encerrar chamada")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
@@ -184,7 +184,7 @@ struct LiveChamadaContent: View {
                 Task { await model.reopen() }
             } label: {
                 Text("Reabrir chamada")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -196,7 +196,7 @@ struct LiveChamadaContent: View {
                 dismiss()
             } label: {
                 Text("Fechar")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg3)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -210,7 +210,7 @@ struct LiveChamadaContent: View {
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
                 .foregroundStyle(ThemedColors.success500)
             Text(AttendanceFormatters.liveCounterLabelPTBR(model.presentCount))
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
         }
         .frame(maxWidth: .infinity)

@@ -29,10 +29,10 @@ public struct AlunoRankingHomeCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Ranking do mês")
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text(model?.homeCardLine ?? RankingsFormatters.homeCardLinePTBR(me: nil))
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg4)
                         .multilineTextAlignment(.leading)
                         .accessibilityIdentifier("ranking-card-line")
@@ -78,12 +78,12 @@ public struct ProfessorRankingSection: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             HStack {
                 Text(model?.dashboardTitle ?? "Ranking de presença")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .accessibilityIdentifier("ranking-section-title")
                 Spacer()
                 Button("Ver todos", action: onVerTodos)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .accessibilityIdentifier("ranking-ver-todos")
             }
@@ -96,7 +96,7 @@ public struct ProfessorRankingSection: View {
                 }
             } else {
                 Text("As presenças do mês montam o pódio aqui.")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
             }
         }

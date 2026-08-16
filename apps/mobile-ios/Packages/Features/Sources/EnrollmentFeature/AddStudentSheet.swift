@@ -15,17 +15,17 @@ struct AddStudentSheet: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s4) {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                 Text("Adicionar aluno")
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text("Turma \(turmaName) · gestão compartilhada com o admin")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
             }
             .padding(.top, LumiraTokens.Space.s6)
 
             if let actionError = model.actionError {
                 Text(actionError)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                     .foregroundStyle(ThemedColors.danger500)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(LumiraTokens.Space.s3)
@@ -46,7 +46,7 @@ struct AddStudentSheet: View {
             case .loaded(let candidates):
                 if candidates.isEmpty {
                     Text("Nenhum aluno disponível para adicionar.")
-                        .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                         .foregroundStyle(ThemedColors.fg3)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, LumiraTokens.Space.s8)
@@ -79,12 +79,12 @@ private struct CandidateRow: View {
         HStack(spacing: LumiraTokens.Space.s3) {
             AvatarCircle(initials: NameInitials.from(student.fullName))
             Text(student.fullName)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg1)
             Spacer()
             Button(action: onAdd) {
                 Text("+ adicionar")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
             }
             .accessibilityIdentifier("add-candidate-\(student.studentId.uuidString.lowercased())")

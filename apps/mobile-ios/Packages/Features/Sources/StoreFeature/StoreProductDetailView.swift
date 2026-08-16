@@ -54,7 +54,7 @@ struct StoreProductDetailContent: View {
                         titleRow(detail)
                         if let description = detail.description {
                             Text(description)
-                                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                                 .foregroundStyle(ThemedColors.fg3)
                                 .accessibilityIdentifier("product-description")
                         }
@@ -106,7 +106,7 @@ struct StoreProductDetailContent: View {
                 Spacer()
                 if let categoryName = model.detail?.categoryName {
                     Text(categoryName)
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                         .foregroundStyle(ThemedColors.inkPurple)
                         .padding(.horizontal, LumiraTokens.Space.s2)
                         .padding(.vertical, LumiraTokens.Space.s1)
@@ -118,7 +118,7 @@ struct StoreProductDetailContent: View {
 
             if let detail = model.detail {
                 Text(detail.monogram)
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: 34, weight: .bold))
                     .tracking(6)
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .frame(maxWidth: .infinity)
@@ -131,7 +131,7 @@ struct StoreProductDetailContent: View {
             HStack {
                 Spacer()
                 Text(StoreFormatters.fotoIndicatorPTBR(index: model.galleryIndex, count: gallerySlugs.count))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)
@@ -203,13 +203,13 @@ struct StoreProductDetailContent: View {
     private func titleRow(_ detail: StoreProductDetail) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: LumiraTokens.Space.s3) {
             Text(detail.name)
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("product-name")
             Spacer(minLength: LumiraTokens.Space.s2)
             Text(BillingFormatters.amountBRL(detail.priceCents))
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.inkPurple)
                 .accessibilityIdentifier("product-price")
         }
@@ -226,7 +226,7 @@ struct StoreProductDetailContent: View {
         if purchase.needsSize {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
                 Text("Tamanho")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg2)
                 HStack(spacing: LumiraTokens.Space.s2) {
                     ForEach(detail.sizes, id: \.self) { size in
@@ -239,7 +239,7 @@ struct StoreProductDetailContent: View {
         if !purchase.soldOut {
             HStack {
                 Text("Quantidade")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg2)
                 Spacer()
                 StoreQtyStepper(
@@ -253,7 +253,7 @@ struct StoreProductDetailContent: View {
         }
 
         Text(StoreFormatters.stockLinePTBR(stockQty: detail.stockQty))
-            .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
             .foregroundStyle(purchase.soldOut ? ThemedColors.danger500 : ThemedColors.fg4)
             .accessibilityIdentifier("stock-line")
 
@@ -265,7 +265,7 @@ struct StoreProductDetailContent: View {
             Task { await model.buy() }
         } label: {
             Text(purchase.ctaLabelPTBR)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
@@ -286,7 +286,7 @@ struct StoreProductDetailContent: View {
             model.toggleSize(size)
         } label: {
             Text(size)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg2)
                 .frame(minWidth: 46)
                 .frame(height: 34)
@@ -311,7 +311,7 @@ struct StoreProductDetailContent: View {
             Image(systemName: "checkmark.circle.fill")
             Text(StoreMessages.orderPaid)
         }
-        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
         .foregroundStyle(ThemedColors.success500)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(LumiraTokens.Space.s3)
@@ -367,7 +367,7 @@ private struct FlowTagChips: View {
         ) {
             ForEach(tags, id: \.self) { tag in
                 Text(StoreFormatters.tagChipPTBR(tag))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg3)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)

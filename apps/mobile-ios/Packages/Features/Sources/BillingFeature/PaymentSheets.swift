@@ -71,10 +71,10 @@ public struct PixSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Pagar com Pix")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(subtitle)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
                 .accessibilityIdentifier("pix-sheet-subtitle")
         }
@@ -104,11 +104,11 @@ public struct PixSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.md, style: .continuous))
                 }
                 Text(BillingFormatters.amountBRL(payment.amountCents))
-                    .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 if let confirmation = model.copyConfirmation {
                     Text(confirmation)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.success500)
                         .accessibilityIdentifier("pix-copy-confirmation")
                 }
@@ -159,12 +159,12 @@ struct BoletoSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Boleto bancário")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(
                 "\(BillingFormatters.mensalidadeDePTBR(periodStart: model.charge.periodStart)) · vence em \(BillingFormatters.shortDatePTBR(fromISO: model.charge.dueDate)) · \(BillingFormatters.amountBRL(model.charge.amountCents))"
             )
-            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs))
             .foregroundStyle(ThemedColors.fg3)
         }
     }
@@ -196,7 +196,7 @@ struct BoletoSheet: View {
 
                 if let confirmation = model.copyConfirmation {
                     Text(confirmation)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.success500)
                         .accessibilityIdentifier("boleto-copy-confirmation")
                 }
@@ -213,7 +213,7 @@ struct BoletoSheet: View {
                     }
                 }
                 Text("Boletos compensam em até 2 dias úteis.")
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.fg4)
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
@@ -256,12 +256,12 @@ struct CartaoSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Pagar com cartão")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(
                 "\(BillingFormatters.mensalidadeDePTBR(periodStart: model.charge.periodStart)) · \(BillingFormatters.amountBRL(model.charge.amountCents))"
             )
-            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs))
             .foregroundStyle(ThemedColors.fg3)
         }
     }
@@ -279,7 +279,7 @@ struct CartaoSheet: View {
             // "Usar este cartão na recorrência mensal" (story 12).
             HStack(spacing: LumiraTokens.Space.s3) {
                 Text("Usar este cartão na recorrência mensal")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg2)
                 Spacer()
                 Toggle("", isOn: $model.recurrenceToggle)
@@ -315,7 +315,7 @@ struct CartaoSheet: View {
         identifier: String
     ) -> some View {
         TextField(placeholder, text: text)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.fg1)
             .textFieldStyle(.plain)
             #if os(iOS)
@@ -361,7 +361,7 @@ struct PaymentProgress: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             ProgressView()
             Text("Processando…")
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
         }
         .frame(maxWidth: .infinity)
@@ -378,7 +378,7 @@ struct PaymentFailure: View {
         VStack(spacing: LumiraTokens.Space.s3) {
             BillingActionErrorBanner(message: message, identifier: "payment-error")
             Button("Tentar novamente", action: retry)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(.top, LumiraTokens.Space.s4)
@@ -400,30 +400,30 @@ struct PaymentSuccessView: View {
             BillingSuccessPop()
                 .padding(.top, LumiraTokens.Space.s8)
             Text(title)
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("payment-success")
             Text(successLine)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg3)
                 .multilineTextAlignment(.center)
             if let caption {
                 Text(caption)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .multilineTextAlignment(.center)
                     .accessibilityIdentifier("payment-success-caption")
             }
             if mandateCreated {
                 Text("Recorrência ativada no cartão — as próximas mensalidades são pagas automaticamente.")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .multilineTextAlignment(.center)
                     .accessibilityIdentifier("payment-mandate-created")
             }
             Button(action: close) {
                 Text("Fechar")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)

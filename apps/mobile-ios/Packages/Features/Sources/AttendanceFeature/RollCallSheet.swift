@@ -64,11 +64,11 @@ struct RollCallContent: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Chamada · \(model.session?.className ?? "")")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             if case .loaded = model.phase {
                 Text(model.headerCountPTBR)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                     .accessibilityIdentifier("roll-call-count")
             }
@@ -96,7 +96,7 @@ struct RollCallContent: View {
             dismiss()
         } label: {
             Text("Salvar chamada")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
@@ -120,7 +120,7 @@ struct RollCallRowView: View {
             AttendanceAvatar(initials: NameInitials.from(row.fullName))
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.fullName)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 // Derived belt (spec 005 — the Phase-4 chip deferral).
                 if let belt = row.belt {

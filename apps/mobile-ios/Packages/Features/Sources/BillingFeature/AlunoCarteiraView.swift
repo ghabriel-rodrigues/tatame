@@ -73,11 +73,11 @@ struct AlunoCarteiraContent: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Carteira")
-                .font(.system(size: LumiraTokens.FontSize.text2xl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xl, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             if let plan = model.wallet?.plan {
                 Text(BillingFormatters.planHeaderPTBR(plan: plan))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("carteira-plan-header")
             }
@@ -105,10 +105,10 @@ struct AlunoCarteiraContent: View {
                 .font(.system(size: LumiraTokens.FontSize.text2xl))
                 .foregroundStyle(ThemedColors.purple400)
             Text("Nenhum plano de mensalidade")
-                .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
             Text("Quando a academia atribuir um plano a você, suas mensalidades aparecem aqui.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
         }
@@ -123,7 +123,7 @@ struct AlunoCarteiraContent: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(BillingFormatters.mensalidadeTitlePTBR(periodStart: charge.periodStart))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("mensalidade-title")
                 Spacer()
@@ -131,14 +131,14 @@ struct AlunoCarteiraContent: View {
             }
 
             Text(BillingFormatters.amountBRL(charge.amountCents))
-                .font(.system(size: LumiraTokens.FontSize.text3xl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text3xl, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .padding(.top, LumiraTokens.Space.s2)
                 .accessibilityIdentifier("mensalidade-amount")
 
             if charge.isOpen {
                 Text(BillingFormatters.dueLinePTBR(fromISO: charge.dueDate))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("mensalidade-due-line")
 
@@ -162,7 +162,7 @@ struct AlunoCarteiraContent: View {
                         payment: payment,
                         recurrenceActive: model.wallet?.recurrence.active ?? false
                     ))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .accessibilityIdentifier("mensalidade-paid-line")
 
@@ -198,13 +198,13 @@ struct AlunoCarteiraContent: View {
             }
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
                 Text(BillingFormatters.recurrenceBannerPTBR(nextChargeDueDate: recurrence.nextChargeDueDate))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                 Button {
                     Task { await model.cancelRecurrence() }
                 } label: {
                     Text(model.cancelingRecurrence ? "Cancelando…" : "Cancelar recorrência")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.danger500)
                 }
                 .disabled(model.cancelingRecurrence)
@@ -225,7 +225,7 @@ struct AlunoCarteiraContent: View {
         if !history.isEmpty {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Histórico")
-                    .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .padding(.top, LumiraTokens.Space.s2)
 

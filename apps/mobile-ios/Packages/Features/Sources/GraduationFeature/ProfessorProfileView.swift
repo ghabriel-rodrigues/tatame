@@ -105,10 +105,10 @@ struct ProfessorProfileContent: View {
         VStack(spacing: LumiraTokens.Space.s2) {
             GraduationAvatar(initials: GraduationInitials.from(fullName), size: 64)
             Text(fullName)
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(subtitle)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
             if let belt = model.profile?.belt {
                 BeltChip(belt: belt, style: .prominent)
@@ -131,13 +131,13 @@ struct ProfessorProfileContent: View {
     private func validGraduationsCard(_ ladder: [ValidGraduation]) -> some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Graduações válidas")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(
                 "Definição conjunta com o admin, para todo o ambiente do treino. "
                     + "Faixas infantis são opcionais — toque para ativar ou desativar fica com o admin."
             )
-            .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
             .foregroundStyle(ThemedColors.fg4)
 
             FlowChips(ladder: ladder)

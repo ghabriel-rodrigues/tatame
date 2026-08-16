@@ -129,16 +129,16 @@ struct StudentProfileContent: View {
             GraduationAvatar(initials: GraduationInitials.from(profile.student.fullName))
             VStack(alignment: .leading, spacing: 2) {
                 Text(profile.student.fullName)
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text(GraduationFormatters.chipLabelPTBR(belt: profile.belt))
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
             }
             Spacer()
             if profile.student.badge == .pendente {
                 Text("Pendente")
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg3)
                     .padding(.horizontal, LumiraTokens.Space.s2)
                     .padding(.vertical, LumiraTokens.Space.s1)
@@ -162,11 +162,11 @@ struct StudentProfileContent: View {
             )
             HStack(alignment: .firstTextBaseline) {
                 Text(GraduationFormatters.chipLabelPTBR(belt: profile.belt))
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Text(GraduationFormatters.progressCaptionPTBR(profile.progress))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.fg4)
                     .accessibilityIdentifier("student-progress-caption")
             }
@@ -178,7 +178,7 @@ struct StudentProfileContent: View {
                         model.askAward(.degree)
                     } label: {
                         Text("Adicionar grau")
-                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                             .foregroundStyle(ThemedColors.fgOnColor)
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
@@ -193,7 +193,7 @@ struct StudentProfileContent: View {
                         model.askAward(.belt)
                     } label: {
                         Text("Promover faixa")
-                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                             .foregroundStyle(ThemedColors.inkPurple)
                             .frame(maxWidth: .infinity)
                             .frame(height: 40)
@@ -235,17 +235,17 @@ struct StudentProfileContent: View {
     private func notesSection(_ profile: StudentProfile) -> some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Observações")
-                .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg1)
                 .padding(.top, LumiraTokens.Space.s2)
 
             ForEach(profile.notes) { note in
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                     Text(note.body)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                         .foregroundStyle(ThemedColors.fg2)
                     Text(GraduationFormatters.noteMetaPTBR(note))
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 .padding(LumiraTokens.Space.s4)
@@ -260,7 +260,7 @@ struct StudentProfileContent: View {
 
             HStack(spacing: LumiraTokens.Space.s2) {
                 TextField("Nova observação", text: $model.noteDraft, axis: .vertical)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                     .padding(.horizontal, LumiraTokens.Space.s3)
                     .padding(.vertical, LumiraTokens.Space.s2)
                     .background(ThemedColors.bgSurface)
@@ -274,7 +274,7 @@ struct StudentProfileContent: View {
                     Task { await model.saveNote() }
                 } label: {
                     Text("Salvar")
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s4)
                         .frame(height: 38)
@@ -298,14 +298,14 @@ struct ProfileStatTile: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                 .foregroundStyle(ThemedColors.fg4)
             if let footnote {
                 Text(footnote)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             }
         }

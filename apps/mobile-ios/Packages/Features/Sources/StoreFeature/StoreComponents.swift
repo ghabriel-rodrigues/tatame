@@ -34,18 +34,18 @@ struct StoreGridCard: View {
                     .frame(height: 96)
                     .frame(maxWidth: .infinity)
                 Text(product.name)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .firstTextBaseline) {
                     Text(BillingFormatters.amountBRL(product.priceCents))
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .bold))
                         .foregroundStyle(ThemedColors.inkPurple)
                     Spacer(minLength: LumiraTokens.Space.s1)
                     if let categoryName = product.categoryName {
                         Text(categoryName)
-                            .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                             .foregroundStyle(ThemedColors.fg4)
                             .lineLimit(1)
                     }
@@ -76,7 +76,7 @@ struct StoreCategoryChip: View {
     var body: some View {
         Button(action: onTap) {
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg2)
                 .padding(.horizontal, LumiraTokens.Space.s3)
                 .frame(height: 32)
@@ -102,7 +102,7 @@ struct StoreStatusChip: View {
 
     var body: some View {
         Text(StoreFormatters.statusLabelPTBR(status))
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(foreground)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -145,7 +145,7 @@ struct StoreQtyStepper: View {
         HStack(spacing: LumiraTokens.Space.s3) {
             stepButton("minus", enabled: canDecrement, identifier: "qty-decrement", action: onDecrement)
             Text("\(quantity)")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .frame(minWidth: 20)
                 .accessibilityIdentifier("qty-value")
@@ -199,16 +199,16 @@ public struct StoreEntryRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: LumiraTokens.Radius.sm, style: .continuous))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Loja da academia")
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text("Produtos oficiais · retirada na recepção")
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
                 if showsNovoPill {
                     Text("Novo")
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s2)
                         .padding(.vertical, LumiraTokens.Space.s1)
@@ -244,12 +244,12 @@ struct StoreErrorBanner: View {
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s2) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let retry {
                 Button("Tentar novamente", action: retry)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -270,10 +270,10 @@ struct StoreEmptyCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
             Text(title)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(caption)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
         }
         .padding(LumiraTokens.Space.s4)

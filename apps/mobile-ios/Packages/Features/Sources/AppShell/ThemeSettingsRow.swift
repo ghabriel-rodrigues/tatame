@@ -20,7 +20,7 @@ struct ThemeSettingsRow: View {
                     .foregroundStyle(ThemedColors.purple600)
             }
             Text("Tema escuro")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg1)
             Spacer()
             Toggle("", isOn: darkModeBinding)

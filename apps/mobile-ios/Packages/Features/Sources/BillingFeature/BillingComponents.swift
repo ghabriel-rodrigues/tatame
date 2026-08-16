@@ -17,7 +17,7 @@ struct ChargeStatusChip: View {
 
     var body: some View {
         Text(open ? "Em aberto" : "Paga")
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(open ? ThemedColors.warning500 : ThemedColors.success500)
             .padding(.horizontal, LumiraTokens.Space.s3)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -39,7 +39,7 @@ struct BillingPrimaryButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 46)
@@ -66,7 +66,7 @@ struct BillingSecondaryButton: View {
                         .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 }
                 Text(title)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
             }
             .foregroundStyle(ThemedColors.inkPurple)
             .frame(maxWidth: .infinity)
@@ -191,11 +191,11 @@ struct BillingErrorBanner: View {
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
@@ -211,7 +211,7 @@ struct BillingActionErrorBanner: View {
 
     var body: some View {
         Text(message)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
@@ -245,15 +245,15 @@ struct HistoryRow: View {
                 }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text(subtitle)
-                        .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 Spacer()
                 Text(amount)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .bold))
                     .foregroundStyle(ThemedColors.fg2)
             }
             .padding(.horizontal, LumiraTokens.Space.s4)

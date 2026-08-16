@@ -147,10 +147,10 @@ struct AlunoHomeContent: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(AttendanceFormatters.headerDatePTBR())
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                 Text("Olá, \(AttendanceFormatters.firstName(home.studentName))")
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
             }
             Spacer()
@@ -176,10 +176,10 @@ struct AlunoHomeContent: View {
             if let todayClass = home.todayClass {
                 heroChip(todayClass)
                 Text(todayClass.className)
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                 Text("\(AttendanceFormatters.todayRangePTBR(slot: todayClass.slot)) · \(todayClass.slot.durationMinutes) min")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fgOnColor.opacity(0.75))
 
                 HStack(spacing: LumiraTokens.Space.s3) {
@@ -191,7 +191,7 @@ struct AlunoHomeContent: View {
                                 Image(systemName: "qrcode.viewfinder")
                                 Text("Fazer check-in")
                             }
-                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                             .foregroundStyle(ThemedColors.inkPurple)
                             .padding(.horizontal, LumiraTokens.Space.s4)
                             .frame(height: 38)
@@ -205,17 +205,17 @@ struct AlunoHomeContent: View {
                     Button("Ver agenda") {
                         onOpenAgenda?()
                     }
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .accessibilityIdentifier("ver-agenda-button")
                 }
                 .padding(.top, LumiraTokens.Space.s2)
             } else {
                 Text("Sem aula hoje")
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                 Text("Aproveite o descanso — seu próximo treino aparece aqui.")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fgOnColor.opacity(0.75))
             }
         }
@@ -241,7 +241,7 @@ struct AlunoHomeContent: View {
                 Image(systemName: "checkmark")
                 Text("Presença registrada")
             }
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(ThemedColors.success500)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -253,7 +253,7 @@ struct AlunoHomeContent: View {
                 Image(systemName: "clock")
                 Text(AttendanceFormatters.todayChipPTBR(slot: todayClass.slot))
             }
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(ThemedColors.fgOnColor)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -297,7 +297,7 @@ struct AlunoHomeContent: View {
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
                     HStack {
                         Text("Sua graduação")
-                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                             .foregroundStyle(ThemedColors.fg1)
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -313,11 +313,11 @@ struct AlunoHomeContent: View {
                     )
                     HStack {
                         Text(graduation.progress.label)
-                            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                             .foregroundStyle(ThemedColors.fg3)
                         Spacer()
                         Text("\(graduation.progress.current) de \(graduation.progress.target) aulas")
-                            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                             .foregroundStyle(ThemedColors.fg3)
                             .accessibilityIdentifier("graduation-lesson-count")
                     }
@@ -354,10 +354,10 @@ struct AlunoHomeContent: View {
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(BillingFormatters.alertTitlePTBR(alert: alert))
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text(BillingFormatters.alertLinePTBR(alert: alert))
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg3)
                 }
                 Spacer()
@@ -365,7 +365,7 @@ struct AlunoHomeContent: View {
                     onOpenCarteira?()
                 } label: {
                     Text("Pagar")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s4)
                         .frame(height: 36)
@@ -390,7 +390,7 @@ struct AlunoHomeContent: View {
         if !home.upcomingEvents.isEmpty {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Próximos eventos")
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 ForEach(home.upcomingEvents) { item in
                     EventRowCard(item: item, onTap: onOpenEvent.map { open in { open(item) } })
@@ -411,13 +411,13 @@ struct AlunoHomeContent: View {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 HStack {
                     Text("Loja da academia")
-                        .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                         .foregroundStyle(ThemedColors.fg1)
                     Spacer()
                     Button("Ver tudo") {
                         onOpenStore?()
                     }
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .accessibilityIdentifier("loja-ver-tudo")
                 }
@@ -452,13 +452,13 @@ struct StoreStripCard: View {
                 .frame(height: 72)
                 .frame(maxWidth: .infinity)
                 Text(product.name)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(BillingFormatters.amountBRL(product.priceCents))
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .bold))
                     .foregroundStyle(ThemedColors.inkPurple)
             }
             .padding(LumiraTokens.Space.s2)
@@ -486,15 +486,15 @@ struct AlunoStatTile: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(accent ? ThemedColors.inkPink : ThemedColors.fg1)
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                 .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
             if let footnote {
                 Text(footnote)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             }
         }

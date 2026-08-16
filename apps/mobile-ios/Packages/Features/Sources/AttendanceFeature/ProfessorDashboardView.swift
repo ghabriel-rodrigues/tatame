@@ -121,10 +121,10 @@ struct ProfessorDashboardContent: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(AttendanceFormatters.headerDatePTBR())
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                 Text("\(AttendanceFormatters.greetingPTBR(hour: Calendar.current.component(.hour, from: Date()))),\n\(AttendanceFormatters.firstName(professorName))")
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
             }
             Spacer()
@@ -195,7 +195,7 @@ struct ProfessorDashboardContent: View {
         if !dashboard.upcomingEvents.isEmpty {
             VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
                 Text("Eventos futuros")
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 ForEach(dashboard.upcomingEvents) { event in
                     EventRowCard(event: event)
@@ -216,7 +216,7 @@ struct ProfessorDashboardContent: View {
                     Image(systemName: "clock")
                     Text("Próxima aula · \(nextClass.slot.nextSlotLabelPTBR)")
                 }
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
@@ -224,10 +224,10 @@ struct ProfessorDashboardContent: View {
                 .clipShape(Capsule())
 
                 Text(nextClass.className)
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                 Text("\(nextClass.checkedInCount) confirmados")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fgOnColor.opacity(0.75))
                     .accessibilityIdentifier("hero-checked-in-count")
 
@@ -236,7 +236,7 @@ struct ProfessorDashboardContent: View {
                         model.iniciarChamada()
                     } label: {
                         Text("Iniciar chamada")
-                            .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                             .foregroundStyle(ThemedColors.inkPurple)
                             .padding(.horizontal, LumiraTokens.Space.s4)
                             .frame(height: 38)
@@ -246,16 +246,16 @@ struct ProfessorDashboardContent: View {
                     .accessibilityIdentifier("iniciar-chamada-button")
 
                     Button("Ver turmas", action: onVerTurmas)
-                        .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                 }
                 .padding(.top, LumiraTokens.Space.s2)
             } else {
                 Text("Sem aulas hoje")
-                    .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                 Button("Ver turmas", action: onVerTurmas)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
             }
         }
@@ -278,15 +278,15 @@ struct ProfessorDashboardContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s2) {
             HStack {
                 Text("Próximos da graduação")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Text("Fase 5")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             }
             Text("A fila de graduação chega com as regras de graduação.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
         }
         .padding(LumiraTokens.Space.s4)

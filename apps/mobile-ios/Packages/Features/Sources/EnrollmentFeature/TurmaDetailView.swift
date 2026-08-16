@@ -118,7 +118,7 @@ struct TurmaDetailContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
             HStack(spacing: LumiraTokens.Space.s2) {
                 Text(summary.schedules.scheduleLinePTBR)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                 if summary.lotada {
                     EnrollmentChip(text: "Lotada", style: .danger)
@@ -152,7 +152,7 @@ struct TurmaDetailContent: View {
                 model.showLiveChamada = true
             } label: {
                 Text("Fazer chamada de hoje")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -174,7 +174,7 @@ struct TurmaDetailContent: View {
                 model.showRollCall = true
             } label: {
                 Text("Chamada manual")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPurple)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -187,7 +187,7 @@ struct TurmaDetailContent: View {
 
     private func actionErrorBanner(_ message: String) -> some View {
         Text(message)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
@@ -202,7 +202,7 @@ struct TurmaDetailContent: View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             HStack {
                 Text("Alunos")
-                    .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Button {
@@ -210,7 +210,7 @@ struct TurmaDetailContent: View {
                     Task { await model.loadCandidates() }
                 } label: {
                     Text("Adicionar aluno")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s3)
                         .padding(.vertical, LumiraTokens.Space.s2)
@@ -223,7 +223,7 @@ struct TurmaDetailContent: View {
 
             if detail.roster.isEmpty {
                 Text("Nenhum aluno matriculado ainda.")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                     .foregroundStyle(ThemedColors.fg3)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, LumiraTokens.Space.s8)
@@ -277,7 +277,7 @@ struct RosterRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(student.fullName)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 HStack(spacing: LumiraTokens.Space.s2) {
                     // Derived belt (spec 005 — the Phase-3 chip deferral).
@@ -293,7 +293,7 @@ struct RosterRow: View {
                     }
                     if let ageLabel = BirthDates.ageLabelPTBR(fromISO: student.birthDate) {
                         Text(ageLabel)
-                            .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                             .foregroundStyle(ThemedColors.fg4)
                     }
                 }
@@ -326,14 +326,14 @@ struct StatTile: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
             if let footnote {
                 Text(footnote)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             }
         }
@@ -355,7 +355,7 @@ struct AvatarCircle: View {
 
     var body: some View {
         Text(initials)
-            .font(.system(size: size * 0.33, weight: .bold, design: .rounded))
+            .font(.quicksand(size: size * 0.33, weight: .bold))
             .foregroundStyle(ThemedColors.inkPurple)
             .frame(width: size, height: size)
             .background(ThemedColors.purple100)

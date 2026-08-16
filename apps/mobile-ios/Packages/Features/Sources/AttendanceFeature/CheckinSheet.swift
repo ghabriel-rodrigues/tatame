@@ -42,10 +42,10 @@ public struct CheckinSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Check-in · \(model.todayClass.className)")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             Text(AttendanceFormatters.todayRangePTBR(slot: model.todayClass.slot))
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
         }
         .padding(.top, LumiraTokens.Space.s6)
@@ -60,7 +60,7 @@ public struct CheckinSheet: View {
                     model.method = method
                 } label: {
                     Text(method.labelPTBR)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(
                             model.method == method
                                 ? ThemedColors.fgOnColor
@@ -92,7 +92,7 @@ public struct CheckinSheet: View {
             VStack(spacing: LumiraTokens.Space.s3) {
                 ProgressView()
                 Text("Registrando presença…")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                     .foregroundStyle(ThemedColors.fg3)
             }
             .frame(maxWidth: .infinity)
@@ -116,7 +116,7 @@ public struct CheckinSheet: View {
             }
             .frame(height: 240)
             Text("Aponte para o QR Code exibido pelo professor no tatame.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
@@ -144,7 +144,7 @@ public struct CheckinSheet: View {
                 }
             }
             Text("Digite o código de 4 dígitos mostrado pelo professor.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
             primaryButton("Confirmar código", enabled: model.canSubmitCode) {
                 Task { await model.submitCode() }
@@ -160,7 +160,7 @@ public struct CheckinSheet: View {
                 Image(systemName: "location")
                     .foregroundStyle(ThemedColors.inkPurple)
                 Text("Verificação de localização em breve — por enquanto seu check-in é registrado direto para a aula de hoje.")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
             }
             .padding(LumiraTokens.Space.s3)
@@ -178,7 +178,7 @@ public struct CheckinSheet: View {
     private func primaryButton(_ title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fgOnColor)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
@@ -195,19 +195,19 @@ public struct CheckinSheet: View {
             SuccessCheckPop()
                 .padding(.top, LumiraTokens.Space.s8)
             Text(outcome.alreadyCheckedIn ? "Presença já registrada" : "Presença registrada")
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier(
                     outcome.alreadyCheckedIn ? "checkin-already-registered" : "checkin-success"
                 )
             if outcome.alreadyCheckedIn {
                 Text("Você já tinha feito check-in nesta aula — está tudo certo.")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                     .foregroundStyle(ThemedColors.fg3)
                     .multilineTextAlignment(.center)
             } else if let streakLine = outcome.streakLinePTBR {
                 Text(streakLine)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.inkPink)
                     .multilineTextAlignment(.center)
                     .accessibilityIdentifier("checkin-streak-line")
@@ -216,7 +216,7 @@ public struct CheckinSheet: View {
                 dismiss()
             } label: {
                 Text("Fechar")
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)

@@ -25,7 +25,7 @@ public struct EventValorChip: View {
                 Image(systemName: "checkmark")
                 Text("Confirmado")
             }
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(ThemedColors.success500)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -34,7 +34,7 @@ public struct EventValorChip: View {
             .accessibilityIdentifier("event-confirmado-chip")
         } else {
             Text(EventFormatters.valorChipPTBR(priceCents: priceCents))
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPink)
                 .padding(.horizontal, LumiraTokens.Space.s2)
                 .padding(.vertical, LumiraTokens.Space.s1)
@@ -57,10 +57,10 @@ public struct EventDaySquare: View {
         VStack(spacing: 0) {
             if let square = EventFormatters.daySquare(date: date) {
                 Text(square.day)
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.inkPurple)
                 Text(square.month)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             } else {
                 Image(systemName: "calendar")
@@ -115,11 +115,11 @@ public struct EventRowCard: View {
             EventDaySquare(date: date)
             VStack(alignment: .leading, spacing: 2) {
                 Text(name)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                     .lineLimit(1)
                 Text(line)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                     .lineLimit(1)
             }

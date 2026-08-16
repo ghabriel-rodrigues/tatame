@@ -35,10 +35,10 @@ public struct SplashView: View {
                 BrandBadge(style: .glass, size: 64)
                     .padding(.bottom, LumiraTokens.Space.s2)
                 Text("Tatame")
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .semibold))
                     .foregroundStyle(ThemedColors.fgOnColor)
                 Text("Gestão para escolas de Jiu-Jitsu")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, weight: .medium, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .medium))
                     .foregroundStyle(ThemedColors.fgOnColor.opacity(0.72))
             }
             .offset(y: -LumiraTokens.Space.s6)

@@ -57,11 +57,11 @@ public struct ProfessorTurmasView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
             Text("Minhas turmas")
-                .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             if let academyName {
                 Text(academyName)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
             }
         }
@@ -82,7 +82,7 @@ public struct ProfessorTurmasView: View {
 
     private var emptyState: some View {
         Text("Você ainda não tem turmas atribuídas.")
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.fg3)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.vertical, LumiraTokens.Space.s12)
@@ -98,10 +98,10 @@ struct TurmaCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: LumiraTokens.Space.s1) {
                     Text(summary.name)
-                        .font(.system(size: LumiraTokens.FontSize.textBase, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textBase, weight: .semibold))
                         .foregroundStyle(ThemedColors.fg1)
                     Text(summary.schedules.scheduleLinePTBR)
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg4)
                 }
                 Spacer()
@@ -149,7 +149,7 @@ struct EnrollmentChip: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
             .foregroundStyle(foreground)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -213,11 +213,11 @@ struct EnrollmentErrorBanner: View {
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)

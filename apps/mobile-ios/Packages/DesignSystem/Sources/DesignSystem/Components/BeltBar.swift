@@ -202,7 +202,7 @@ public struct BeltChip: View {
             )
             .frame(width: 34)
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(foreground)
         }
         .padding(.horizontal, LumiraTokens.Space.s3)

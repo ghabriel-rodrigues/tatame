@@ -12,7 +12,7 @@ struct AttendanceAvatar: View {
 
     var body: some View {
         Text(initials)
-            .font(.system(size: size * 0.33, weight: .bold, design: .rounded))
+            .font(.quicksand(size: size * 0.33, weight: .bold))
             .foregroundStyle(ThemedColors.inkPurple)
             .frame(width: size, height: size)
             .background(ThemedColors.purple100)
@@ -33,7 +33,7 @@ struct AttendanceChip: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
             .foregroundStyle(foreground)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -66,11 +66,11 @@ struct AttendanceErrorBanner: View {
     var body: some View {
         VStack(spacing: LumiraTokens.Space.s3) {
             Text(message)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.danger500)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button("Tentar novamente", action: retry)
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.inkPurple)
         }
         .padding(LumiraTokens.Space.s4)
@@ -86,7 +86,7 @@ struct AttendanceActionErrorBanner: View {
 
     var body: some View {
         Text(message)
-            .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.textSm))
             .foregroundStyle(ThemedColors.danger500)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(LumiraTokens.Space.s3)
@@ -105,7 +105,7 @@ struct CodeDigitBoxes: View {
         HStack(spacing: LumiraTokens.Space.s2) {
             ForEach(0..<4, id: \.self) { index in
                 Text(digit(at: index))
-                    .font(.system(size: boxSize * 0.46, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: boxSize * 0.46, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                     .frame(width: boxSize, height: boxSize * 1.15)
                     .background(ThemedColors.bgSurface)

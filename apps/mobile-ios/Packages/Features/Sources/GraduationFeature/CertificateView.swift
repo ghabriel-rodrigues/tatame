@@ -81,7 +81,7 @@ public struct CertificateView: View {
 
     private var shareHint: some View {
         Text("Use compartilhar para salvar, imprimir ou publicar.")
-            .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
             .foregroundStyle(ThemedColors.fg4)
     }
 
@@ -110,32 +110,32 @@ struct CertificateCard: View {
                 .padding(.top, LumiraTokens.Space.s5)
 
             Text(data.academyName.uppercased())
-                .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                 .tracking(LumiraTokens.FontSize.text2xs * LumiraTokens.Tracking.caps)
                 .foregroundStyle(ThemedColors.fg4)
                 .accessibilityIdentifier("certificado-academia")
 
             Text("Certificado de Graduação")
-                .font(.system(size: LumiraTokens.FontSize.textLg, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textLg, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
 
             Text("Certificamos que")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
 
             Text(data.studentName)
-                .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                 .foregroundStyle(ThemedColors.inkPurple)
                 .multilineTextAlignment(.center)
                 .accessibilityIdentifier("certificado-aluno")
 
             Text("foi promovido(a) à")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
 
             VStack(spacing: LumiraTokens.Space.s2) {
                 Text("Faixa \(data.belt.name)")
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                     .accessibilityIdentifier("certificado-faixa")
                 // The belt itself through the shared tokenized component —
@@ -151,7 +151,7 @@ struct CertificateCard: View {
             }
 
             Text(GraduationFormatters.fullDatePTBR(data.awardedAt))
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
                 .accessibilityIdentifier("certificado-data")
 
@@ -162,11 +162,11 @@ struct CertificateCard: View {
                 Text(GraduationFormatters.professorLinePTBR(
                     GraduationActor(userId: UUID(), fullName: data.professorName)
                 ))
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg1)
                 .accessibilityIdentifier("certificado-professor")
                 Text("Professor responsável")
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.fg4)
             }
             .padding(.top, LumiraTokens.Space.s3)

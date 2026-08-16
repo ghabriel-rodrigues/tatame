@@ -47,7 +47,7 @@ struct NotificationsSettingsRowContent: View {
                         .foregroundStyle(ThemedColors.purple600)
                 }
                 Text(NotificationsMessages.settingsRow)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Spacer()
                 Toggle("", isOn: toggleBinding)
@@ -58,7 +58,7 @@ struct NotificationsSettingsRowContent: View {
             }
             if let error = model?.errorMessage {
                 Text(error)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.danger500)
             }
         }

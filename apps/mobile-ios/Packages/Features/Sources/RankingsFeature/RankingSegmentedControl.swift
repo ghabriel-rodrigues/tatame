@@ -24,7 +24,7 @@ struct RankingSegmentedControl: View {
             onSelect(by)
         } label: {
             Text(label)
-                .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 .foregroundStyle(selection == by ? ThemedColors.inkPurple : ThemedColors.fg4)
                 .frame(maxWidth: .infinity)
                 .frame(height: 32)

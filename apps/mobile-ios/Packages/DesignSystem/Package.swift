@@ -10,7 +10,14 @@ let package = Package(
         .library(name: "DesignSystem", targets: ["DesignSystem"])
     ],
     targets: [
-        .target(name: "DesignSystem"),
+        .target(
+            name: "DesignSystem",
+            resources: [
+                // .copy keeps the Fonts/ folder (TTFs + OFL license) intact so
+                // FontLoader can enumerate Bundle.module's "Fonts" subdirectory.
+                .copy("Resources/Fonts")
+            ]
+        ),
         .testTarget(
             name: "DesignSystemTests",
             dependencies: ["DesignSystem"],

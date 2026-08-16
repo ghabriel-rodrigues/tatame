@@ -111,12 +111,12 @@ struct StoreVitrineContent: View {
             .accessibilityIdentifier("store-back-button")
             VStack(alignment: .leading, spacing: 2) {
                 Text(academyName.map { "Loja \($0)" } ?? "Loja da academia")
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                     .lineLimit(1)
                     .accessibilityIdentifier("store-title")
                 Text("Produtos oficiais · retirada na recepção")
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs))
                     .foregroundStyle(ThemedColors.fg4)
                     .lineLimit(1)
             }
@@ -145,7 +145,7 @@ struct StoreVitrineContent: View {
                 .font(.system(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg4)
             TextField("Buscar por nome ou tag (ex: kimono, treino)", text: $model.searchText)
-                .font(.system(size: LumiraTokens.FontSize.textSm, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm))
                 .foregroundStyle(ThemedColors.fg1)
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled()

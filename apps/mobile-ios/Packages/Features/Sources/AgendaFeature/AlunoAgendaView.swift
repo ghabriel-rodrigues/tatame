@@ -106,11 +106,11 @@ struct AlunoAgendaContent: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Agenda")
-                    .font(.system(size: LumiraTokens.FontSize.textXl, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXl, weight: .bold))
                     .foregroundStyle(ThemedColors.fg1)
                 if let academyName {
                     Text("Horários da \(academyName)")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                         .foregroundStyle(ThemedColors.fg3)
                 }
             }
@@ -122,7 +122,7 @@ struct AlunoAgendaContent: View {
                     Image(systemName: "calendar")
                         .font(.system(size: LumiraTokens.FontSize.textSm))
                     Text("Mês")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                 }
                 .foregroundStyle(ThemedColors.fg2)
                 .padding(.horizontal, LumiraTokens.Space.s4)
@@ -147,7 +147,7 @@ struct AlunoAgendaContent: View {
                         Task { await model.select(weekday: weekday) }
                     } label: {
                         Text(WeekdayLabels.short(weekday))
-                            .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                            .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                             .foregroundStyle(selected ? ThemedColors.fgOnColor : ThemedColors.fg2)
                             .frame(width: 44, height: 40)
                             .background(selected ? ThemedColors.purple700 : ThemedColors.bgSurface)
@@ -172,10 +172,10 @@ struct AlunoAgendaContent: View {
         HStack(spacing: LumiraTokens.Space.s3) {
             VStack(spacing: 2) {
                 Text(item.startTime)
-                    .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                     .foregroundStyle(ThemedColors.inkPurple)
                 Text(item.endTime)
-                    .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg4)
             }
             .frame(width: 54)
@@ -186,10 +186,10 @@ struct AlunoAgendaContent: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.className)
-                    .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                     .foregroundStyle(ThemedColors.fg1)
                 Text(item.professorName)
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg3)
                 HStack(spacing: LumiraTokens.Space.s2) {
                     chip(item.levelChipLabelPTBR, brand: true)
@@ -204,7 +204,7 @@ struct AlunoAgendaContent: View {
                     model.openCheckin(for: item)
                 } label: {
                     Text("Check-in")
-                        .font(.system(size: LumiraTokens.FontSize.textXs, weight: .semibold, design: .rounded))
+                        .font(.quicksand(size: LumiraTokens.FontSize.textXs, weight: .semibold))
                         .foregroundStyle(ThemedColors.fgOnColor)
                         .padding(.horizontal, LumiraTokens.Space.s3)
                         .frame(height: 36)
@@ -234,7 +234,7 @@ struct AlunoAgendaContent: View {
 
     private func chip(_ text: String, brand: Bool) -> some View {
         Text(text)
-            .font(.system(size: LumiraTokens.FontSize.text2xs, weight: .semibold, design: .rounded))
+            .font(.quicksand(size: LumiraTokens.FontSize.text2xs, weight: .semibold))
             .foregroundStyle(brand ? ThemedColors.purple800 : ThemedColors.fg3)
             .padding(.horizontal, LumiraTokens.Space.s2)
             .padding(.vertical, LumiraTokens.Space.s1)
@@ -253,10 +253,10 @@ struct AlunoAgendaContent: View {
                 .background(ThemedColors.purple50)
                 .clipShape(Circle())
             Text("Sem aulas neste dia")
-                .font(.system(size: LumiraTokens.FontSize.textSm, weight: .semibold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textSm, weight: .semibold))
                 .foregroundStyle(ThemedColors.fg2)
             Text("Bom descanso — o tatame espera você amanhã.")
-                .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                 .foregroundStyle(ThemedColors.fg3)
                 .multilineTextAlignment(.center)
         }
@@ -271,11 +271,11 @@ struct AlunoAgendaContent: View {
     private func eventosSection(_ events: [EventListItem]) -> some View {
         VStack(alignment: .leading, spacing: LumiraTokens.Space.s3) {
             Text("Eventos do mês")
-                .font(.system(size: LumiraTokens.FontSize.textMd, weight: .bold, design: .rounded))
+                .font(.quicksand(size: LumiraTokens.FontSize.textMd, weight: .bold))
                 .foregroundStyle(ThemedColors.fg1)
             if events.isEmpty {
                 Text("Nenhum evento neste mês")
-                    .font(.system(size: LumiraTokens.FontSize.textXs, design: .rounded))
+                    .font(.quicksand(size: LumiraTokens.FontSize.textXs))
                     .foregroundStyle(ThemedColors.fg4)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, LumiraTokens.Space.s5)
