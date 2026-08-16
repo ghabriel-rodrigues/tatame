@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  check,
   date,
   index,
   inet,
@@ -37,10 +38,38 @@ export const users = pgTable(
     avatarUrl: text('avatar_url'),
     locale: text('locale').notNull().default('pt-BR'),
     status: userStatus('status').notNull().default('active'),
+    /*
+     * Dados pessoais (spec 013, REP.1) — additive nullable profile columns.
+     * The profile describes the PERSON, not the tenant: one profile across
+     * academies, reusable by future guardian/professor screens without
+     * migration (a tenant-scoped student_profiles table was rejected — it
+     * would duplicate CPF per academy and orphan data on transfer).
+     * CPF/RG write-once is SERVICE-enforced (settable while NULL, 422 after)
+     * — a product rule with a future admin-unlock story, not a DB trigger.
+     * No CPF uniqueness in v1 (recorded: cross-user dedupe is out of scope).
+     */
+    /** Small fixed set (CHECK below); clients render PT-BR labels. */
+    gender: text('gender'),
+    /** 11 normalized digits (CHECK) — clients render the mask; checksum is service-validated. */
+    cpf: text('cpf'),
+    /** Free-format trimmed text — state formats vary. */
+    rg: text('rg'),
+    addressLine: text('address_line'),
+    addressCity: text('address_city'),
+    /** UF — 2 uppercase letters (CHECK). */
+    addressState: text('address_state'),
+    /** CEP — 8 normalized digits (CHECK); clients render the mask. */
+    addressZip: text('address_zip'),
+    emergencyContactName: text('emergency_contact_name'),
+    emergencyContactPhone: text('emergency_contact_phone'),
     ...timestamps,
   },
   (t) => [
     uniqueIndex('users_email_lower_uq').on(sql`lower(${t.email})`),
+    check('users_gender_ck', sql`${t.gender} IS NULL OR ${t.gender} IN ('female', 'male', 'other', 'unspecified')`),
+    check('users_cpf_format_ck', sql`${t.cpf} IS NULL OR ${t.cpf} ~ '^[0-9]{11}$'`),
+    check('users_address_zip_format_ck', sql`${t.addressZip} IS NULL OR ${t.addressZip} ~ '^[0-9]{8}$'`),
+    check('users_address_state_format_ck', sql`${t.addressState} IS NULL OR ${t.addressState} ~ '^[A-Z]{2}$'`),
     pgPolicy('users_self_select', {
       for: 'select',
       to: appRole,

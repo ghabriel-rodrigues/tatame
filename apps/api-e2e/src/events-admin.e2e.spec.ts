@@ -73,8 +73,15 @@ describe('events: admin console + lifecycle', () => {
       time: null,
       location: null,
     });
+    // Published rows stay chronological (the spec-013 report/ranking seeds
+    // add past events, so assert relative order rather than an exact list).
     const rest = res.body.events.slice(1).map((e: any) => e.id);
-    expect(rest).toEqual([openMatId, exameId]); // +14d before +30d
+    expect(rest).toContain(openMatId);
+    expect(rest).toContain(exameId);
+    expect(rest.indexOf(openMatId)).toBeLessThan(rest.indexOf(exameId)); // +14d before +30d
+    const published = res.body.events.slice(1);
+    const stamps = published.map((e: any) => Date.parse(e.startsAt));
+    expect([...stamps].sort((a: number, b: number) => a - b)).toEqual(stamps);
 
     const openMat = res.body.events.find((e: any) => e.id === openMatId);
     expect(openMat).toMatchObject({

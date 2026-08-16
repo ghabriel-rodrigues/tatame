@@ -63,7 +63,10 @@ export interface GraduationEntry {
   reversed: boolean;
   /** Set on revocation rows — the reversed award. */
   reversesGraduationId: string | null;
-  /** Render-only "Ver certificado" placeholder — belt awards only (GRD.7). */
+  /**
+   * "Ver certificado" unlock — real since spec 013 (REP.7): true exactly on
+   * non-reversed belt-promotion entries; the certificate renders client-side.
+   */
   certificateAvailable: boolean;
 }
 

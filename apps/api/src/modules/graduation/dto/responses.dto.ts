@@ -47,7 +47,9 @@ export class GraduationEntryDto {
   reversesGraduationId!: string | null;
 
   @ApiProperty({
-    description: 'Render-only "Ver certificado" placeholder — non-reversed belt awards only',
+    description:
+      '"Ver certificado" unlock (real since spec 013) — true exactly on non-reversed belt ' +
+      'promotions; the certificate view renders client-side from timeline + session brand',
   })
   certificateAvailable!: boolean;
 }

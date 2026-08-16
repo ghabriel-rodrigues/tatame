@@ -13,6 +13,7 @@ import {
   seedNotificationFixtures,
   seedPlatformConsoleFixtures,
   seedPlatformPlans,
+  seedReportFixtures,
   seedStoreFixtures,
 } from '../seed/index.js';
 
@@ -42,6 +43,8 @@ try {
   console.log('Notification fixtures seeded.');
   await seedPlatformConsoleFixtures({ platformDb: platform.db });
   console.log('Platform console fixtures seeded.');
+  await seedReportFixtures({ appDb: app.db, platformDb: platform.db });
+  console.log('Report & ranking fixtures seeded.');
 } catch (error) {
   console.error(error);
   process.exitCode = 1;

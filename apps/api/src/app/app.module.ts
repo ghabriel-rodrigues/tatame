@@ -21,6 +21,7 @@ import { GraduationModule } from '../modules/graduation/graduation.module.js';
 import { IdentityModule } from '../modules/identity/identity.module.js';
 import { NotificationsFeedModule } from '../modules/notifications/notifications.module.js';
 import { PlatformModule } from '../modules/platform/platform.module.js';
+import { ReportsModule } from '../modules/reports/reports.module.js';
 import { StoreModule } from '../modules/store/store.module.js';
 
 function flattenValidationErrors(
@@ -61,6 +62,9 @@ function flattenValidationErrors(
     BillingModule,
     EventsModule,
     StoreModule,
+    // Reports & rankings (spec 013): the admin Relatórios read models + CSV
+    // exports and the academy-wide ranking endpoint.
+    ReportsModule,
     // Plataforma console (spec 012): cross-tenant read models + the SaaS
     // owner's writes. Imports identity for the audit/status/reset seams.
     PlatformModule,

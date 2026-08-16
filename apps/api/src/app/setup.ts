@@ -34,6 +34,7 @@ export function buildOpenApiDocument(app: INestApplication): OpenAPIObject {
       .addTag('billing')
       .addTag('store')
       .addTag('notifications')
+      .addTag('rankings')
       .addTag('platform')
       .build(),
   );

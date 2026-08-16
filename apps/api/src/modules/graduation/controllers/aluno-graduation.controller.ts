@@ -22,8 +22,8 @@ export class AlunoGraduationController {
     summary: 'Graduação: belt hero, progress to the next milestone, evolution timeline',
     description:
       'Current belt is derived (latest non-reversed award; white default). Progress counts ' +
-      'active lessons since the last award against the academy rule; belt entries carry the ' +
-      'render-only "Ver certificado" placeholder flag.',
+      'active lessons since the last award against the academy rule; non-reversed belt entries ' +
+      'carry certificateAvailable: true (spec 013) — the certificate renders client-side.',
   })
   @ApiOkResponse({ type: AlunoGraduationResponseDto })
   async graduation() {

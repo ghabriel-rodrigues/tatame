@@ -24,6 +24,7 @@ import {
   seedNotificationFixtures,
   seedPlatformConsoleFixtures,
   seedPlatformPlans,
+  seedReportFixtures,
   seedStoreFixtures,
   testAdminUrl,
   type FreshDb,
@@ -86,6 +87,10 @@ export async function createTestApp(overrides?: {
   // trial ending inside the attention window, and backdated subscriptions so
   // the overview's 6-month series has real history.
   await seedPlatformConsoleFixtures({ platformDb: platformDb.db });
+  // Report & ranking fixtures (spec 013, REP.2): the fixture aluno's full
+  // locked profile plus the attendance/event/graduation spread that keeps the
+  // five reports and both ranking segments non-empty with a distinct top 3.
+  await seedReportFixtures({ appDb: appDb.db, platformDb: platformDb.db });
 
   process.env['DATABASE_URL'] = fresh.url;
   process.env['JWT_ACCESS_SECRET'] ??= 'e2e-jwt-secret-with-32-characters!!';

@@ -332,6 +332,70 @@
         ]
       }
     },
+    "/v1/aluno/profile": {
+      "get": {
+        "description": "Email and birth date are read-only (birth date served from the linked student row — the age-rule authority). cpfLocked/rgLocked drive the aluno-18 dashed lock boxes.",
+        "operationId": "AlunoProfileController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dados pessoais: identificação (CPF/RG lock state), contato, endereço, emergência",
+        "tags": [
+          "aluno"
+        ]
+      },
+      "put": {
+        "description": "CPF is normalized to digits and checksum-validated; CPF/RG are write-once (422 profile.field_locked on any change after set). Email/birthDate in the payload are a 422 profile.field_read_only. Name edits sync onto the linked student row in-transaction.",
+        "operationId": "AlunoProfileController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlunoProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoProfileResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Salvar dados pessoais (partial update, per-field validation)",
+        "tags": [
+          "aluno"
+        ]
+      }
+    },
     "/v1/public/invites/{token}": {
       "get": {
         "operationId": "PublicInvitesController_landing_v1",
@@ -3859,7 +3923,7 @@
     },
     "/v1/aluno/graduation": {
       "get": {
-        "description": "Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only \"Ver certificado\" placeholder flag.",
+        "description": "Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; non-reversed belt entries carry certificateAvailable: true (spec 013) — the certificate renders client-side.",
         "operationId": "AlunoGraduationController_graduation_v1",
         "parameters": [],
         "responses": {
@@ -4343,6 +4407,177 @@
         "summary": "Persist an observação as the admin",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/v1/admin/reports/{report}": {
+      "get": {
+        "description": "Slugs: financeiro, frequencia, inadimplencia, graduacoes, loja. `financeiro`, `frequencia` and `loja` take month=YYYY-MM (default: current month); `graduacoes` reports the semester containing it; `inadimplencia` is an as-of-now snapshot. financeiro runs the idempotent charge-materialization pass first.",
+        "operationId": "AdminReportsController_report_v1",
+        "parameters": [
+          {
+            "name": "report",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "financeiro",
+                "frequencia",
+                "inadimplencia",
+                "graduacoes",
+                "loja"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/FinanceiroReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FrequenciaReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InadimplenciaReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/GraduacoesReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LojaReportDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "One of the five admin reports as JSON (month/semester windows, tenant timezone)",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/reports/{report}/csv": {
+      "get": {
+        "description": "UTF-8 with BOM, semicolon delimiter, decimal-comma money, ISO dates — opens correctly in pt-BR Excel by double-click. Content-Disposition filename `<slug>-<YYYY-MM>.csv`.",
+        "operationId": "AdminReportsController_reportCsv_v1",
+        "parameters": [
+          {
+            "name": "report",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "financeiro",
+                "frequencia",
+                "inadimplencia",
+                "graduacoes",
+                "loja"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file attachment",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The same report as a streamed CSV download",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/rankings": {
+      "get": {
+        "description": "Active students only, count-desc then name-asc (deterministic ties), top 10 plus the requesting student's own position (`me` — always null for professors). Windows are tenant-timezone calendar month / calendar half.",
+        "operationId": "RankingsController_ranking_v1",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08"
+            }
+          },
+          {
+            "name": "by",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "lessons",
+                "events"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Academy-wide ranking: Por aulas (month) / Por eventos (semester)",
+        "tags": [
+          "rankings"
         ]
       }
     },
@@ -5032,6 +5267,10 @@
       "description": ""
     },
     {
+      "name": "rankings",
+      "description": ""
+    },
+    {
       "name": "platform",
       "description": ""
     }
@@ -5556,6 +5795,170 @@
         "required": [
           "recoveryCodes"
         ]
+      },
+      "AlunoProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "description": "Read-only (login identity)"
+          },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "example": "2000-03-15",
+            "description": "Read-only — served from the linked student row (the age-rule authority)"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "female",
+              "male",
+              "other",
+              "unspecified"
+            ],
+            "nullable": true
+          },
+          "cpf": {
+            "type": "string",
+            "nullable": true,
+            "description": "11 normalized digits — clients render the mask"
+          },
+          "cpfLocked": {
+            "type": "boolean",
+            "description": "True once set — the aluno-18 dashed lock state"
+          },
+          "rg": {
+            "type": "string",
+            "nullable": true
+          },
+          "rgLocked": {
+            "type": "boolean",
+            "description": "True once set — the aluno-18 dashed lock state"
+          },
+          "addressLine": {
+            "type": "string",
+            "nullable": true
+          },
+          "addressCity": {
+            "type": "string",
+            "nullable": true
+          },
+          "addressState": {
+            "type": "string",
+            "nullable": true,
+            "description": "UF, 2 uppercase letters"
+          },
+          "addressZip": {
+            "type": "string",
+            "nullable": true,
+            "description": "CEP, 8 normalized digits"
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Avatars stay initials in v1 (Trocar foto is a placeholder)"
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "birthDate",
+          "phone",
+          "gender",
+          "cpf",
+          "cpfLocked",
+          "rg",
+          "rgLocked",
+          "addressLine",
+          "addressCity",
+          "addressState",
+          "addressZip",
+          "emergencyContactName",
+          "emergencyContactPhone",
+          "avatarUrl"
+        ]
+      },
+      "UpdateAlunoProfileDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "description": "Syncs onto the linked student row in the same transaction"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "female",
+              "male",
+              "other",
+              "unspecified"
+            ],
+            "nullable": true
+          },
+          "phone": {
+            "type": "object",
+            "nullable": true,
+            "description": "Digits, spaces, +, -, parentheses"
+          },
+          "cpf": {
+            "type": "string",
+            "description": "Write-once. Masked or bare digits — normalized and checksum-validated"
+          },
+          "rg": {
+            "type": "string",
+            "description": "Write-once. Free format (state formats vary), trimmed"
+          },
+          "addressLine": {
+            "type": "object",
+            "nullable": true
+          },
+          "addressCity": {
+            "type": "object",
+            "nullable": true
+          },
+          "addressState": {
+            "type": "object",
+            "nullable": true,
+            "description": "UF — validated against the 27 federative units"
+          },
+          "addressZip": {
+            "type": "object",
+            "nullable": true,
+            "description": "CEP — masked or bare digits, normalized to 8"
+          },
+          "emergencyContactName": {
+            "type": "object",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "object",
+            "nullable": true
+          },
+          "email": {
+            "type": "object",
+            "description": "Read-only — sending it is a 422 profile.field_read_only"
+          },
+          "birthDate": {
+            "type": "object",
+            "description": "Read-only — sending it is a 422 profile.field_read_only"
+          }
+        }
       },
       "InviteAcademyDto": {
         "type": "object",
@@ -10906,7 +11309,7 @@
           },
           "certificateAvailable": {
             "type": "boolean",
-            "description": "Render-only \"Ver certificado\" placeholder — non-reversed belt awards only"
+            "description": "\"Ver certificado\" unlock (real since spec 013) — true exactly on non-reversed belt promotions; the certificate view renders client-side from timeline + session brand"
           }
         },
         "required": [
@@ -11377,6 +11780,586 @@
           "graduationId",
           "revocationId",
           "belt"
+        ]
+      },
+      "FinanceiroSummaryDto": {
+        "type": "object",
+        "properties": {
+          "receitaCents": {
+            "type": "number",
+            "description": "Succeeded payments by paid_at in the month (cents)"
+          },
+          "previstoCents": {
+            "type": "number",
+            "description": "Open charges due inside the month (cents, predicate)"
+          },
+          "inadimplenciaPct": {
+            "type": "number",
+            "description": "Overdue-open plan amount ÷ month plan total (0-100)"
+          }
+        },
+        "required": [
+          "receitaCents",
+          "previstoCents",
+          "inadimplenciaPct"
+        ]
+      },
+      "FinanceiroRowDto": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Null for professor-buyer order charges"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "plan",
+              "event",
+              "order"
+            ]
+          },
+          "periodStart": {
+            "type": "string",
+            "nullable": true,
+            "description": "Competência — plan charges only"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-08-05"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "chargeId",
+          "studentName",
+          "origin",
+          "periodStart",
+          "dueDate",
+          "status",
+          "amountCents",
+          "paidAt"
+        ]
+      },
+      "FinanceiroReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "financeiro"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/FinanceiroSummaryDto"
+          },
+          "rows": {
+            "description": "Every charge touching the month",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceiroRowDto"
+            }
+          },
+          "materialization": {
+            "description": "The on-read pass that ran first",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaterializationResultDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "summary",
+          "rows",
+          "materialization"
+        ]
+      },
+      "FrequenciaStudentDto": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "presencas": {
+            "type": "number"
+          },
+          "faltas": {
+            "type": "number",
+            "description": "Month sessions minus presenças (honest denominator)"
+          },
+          "presencePct": {
+            "type": "number",
+            "description": "0-100 over the materialized sessions"
+          }
+        },
+        "required": [
+          "studentId",
+          "studentName",
+          "presencas",
+          "faltas",
+          "presencePct"
+        ]
+      },
+      "FrequenciaClassDto": {
+        "type": "object",
+        "properties": {
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "sessionsCount": {
+            "type": "number",
+            "description": "Materialized sessions in the month — a day nobody opened never happened"
+          },
+          "students": {
+            "description": "Actively enrolled students",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrequenciaStudentDto"
+            }
+          }
+        },
+        "required": [
+          "classId",
+          "className",
+          "sessionsCount",
+          "students"
+        ]
+      },
+      "FrequenciaReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "frequencia"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrequenciaClassDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "classes"
+        ]
+      },
+      "InadimplenciaTotalsDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          },
+          "totalCents": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "count",
+          "totalCents"
+        ]
+      },
+      "InadimplenciaRowDto": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Bill-to responsável when set"
+          },
+          "amountCents": {
+            "type": "number"
+          },
+          "dueDate": {
+            "type": "string",
+            "example": "2026-07-05"
+          },
+          "daysOverdue": {
+            "type": "number"
+          },
+          "notificationsSent": {
+            "type": "number",
+            "description": "Payer's payment-category notifications since the due date — honest approximation (no charge FK by design)"
+          }
+        },
+        "required": [
+          "chargeId",
+          "studentName",
+          "guardianName",
+          "amountCents",
+          "dueDate",
+          "daysOverdue",
+          "notificationsSent"
+        ]
+      },
+      "InadimplenciaReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "inadimplencia"
+            ]
+          },
+          "asOf": {
+            "type": "string",
+            "example": "2026-08-16",
+            "description": "As-of-now snapshot (ignores month=)"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InadimplenciaTotalsDto"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InadimplenciaRowDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "asOf",
+          "totals",
+          "rows"
+        ]
+      },
+      "ReportWindowDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "`YYYY-MM` for months, `YYYY-S1`/`YYYY-S2` for semesters"
+          },
+          "start": {
+            "type": "string",
+            "example": "2026-08-01",
+            "description": "Inclusive tenant-local first day"
+          },
+          "endExclusive": {
+            "type": "string",
+            "example": "2026-09-01",
+            "description": "Exclusive tenant-local end day"
+          }
+        },
+        "required": [
+          "label",
+          "start",
+          "endExclusive"
+        ]
+      },
+      "GraduacoesRowDto": {
+        "type": "object",
+        "properties": {
+          "graduationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "degree",
+              "belt"
+            ],
+            "description": "Revocations and reversed awards excluded"
+          },
+          "beltName": {
+            "type": "string",
+            "example": "Azul"
+          },
+          "degree": {
+            "type": "number",
+            "description": "0 on belt promotions"
+          },
+          "awardedByName": {
+            "type": "string"
+          },
+          "awardedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "graduationId",
+          "studentName",
+          "kind",
+          "beltName",
+          "degree",
+          "awardedByName",
+          "awardedAt"
+        ]
+      },
+      "GraduacoesReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "graduacoes"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08",
+            "description": "The chosen month — the window is its semester"
+          },
+          "semester": {
+            "description": "Calendar half (Jan–Jun / Jul–Dec)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportWindowDto"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraduacoesRowDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "semester",
+          "rows"
+        ]
+      },
+      "LojaTotalsDto": {
+        "type": "object",
+        "properties": {
+          "pedidos": {
+            "type": "number",
+            "description": "Orders that reached paid or beyond (canceled excluded)"
+          },
+          "itens": {
+            "type": "number",
+            "description": "Item quantity sum over the counted orders"
+          },
+          "vendasCents": {
+            "type": "number",
+            "description": "Order total sum over the counted orders (cents)"
+          }
+        },
+        "required": [
+          "pedidos",
+          "itens",
+          "vendasCents"
+        ]
+      },
+      "LojaRowDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "number": {
+            "type": "number",
+            "example": 2431
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-08-14"
+          },
+          "buyerName": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "amountCents": {
+            "type": "number",
+            "description": "Item snapshot: unit price × quantity (cents)"
+          },
+          "status": {
+            "type": "string",
+            "description": "pending/canceled rows are listed but never counted in totals"
+          }
+        },
+        "required": [
+          "orderId",
+          "number",
+          "date",
+          "buyerName",
+          "productName",
+          "size",
+          "quantity",
+          "amountCents",
+          "status"
+        ]
+      },
+      "LojaReportDto": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "enum": [
+              "loja"
+            ]
+          },
+          "month": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/LojaTotalsDto"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LojaRowDto"
+            }
+          }
+        },
+        "required": [
+          "report",
+          "month",
+          "totals",
+          "rows"
+        ]
+      },
+      "RankingRowDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "description": "1-based after count-desc, name-asc sort"
+          },
+          "name": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number",
+            "description": "Aulas no mês / eventos no semestre"
+          },
+          "isMe": {
+            "type": "boolean",
+            "description": "The requesting student's own row (\"você\" chip)"
+          }
+        },
+        "required": [
+          "position",
+          "name",
+          "count",
+          "isMe"
+        ]
+      },
+      "RankingMeDto": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "position",
+          "count"
+        ]
+      },
+      "RankingResponseDto": {
+        "type": "object",
+        "properties": {
+          "by": {
+            "type": "string",
+            "enum": [
+              "lessons",
+              "events"
+            ]
+          },
+          "window": {
+            "description": "Month for lessons, semester for events",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportWindowDto"
+              }
+            ]
+          },
+          "top": {
+            "description": "Top 10",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RankingRowDto"
+            }
+          },
+          "me": {
+            "nullable": true,
+            "description": "Own position for student requesters; always null for professors",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RankingMeDto"
+              }
+            ]
+          },
+          "totalRanked": {
+            "type": "number",
+            "description": "Active students ranked (zero counts included)"
+          }
+        },
+        "required": [
+          "by",
+          "window",
+          "top",
+          "me",
+          "totalRanked"
         ]
       },
       "MrrPointDto": {

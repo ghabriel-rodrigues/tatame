@@ -47,6 +47,7 @@ import {
   seedNotificationFixtures,
   seedPlatformConsoleFixtures,
   seedPlatformPlans,
+  seedReportFixtures,
   seedStoreFixtures,
 } from '../seed/index.js';
 import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
@@ -1015,5 +1016,77 @@ describe('seeds', () => {
     await seedPlatformConsoleFixtures({ platformDb: platform.db });
     const after = await count();
     expect(after).toEqual(before);
+  });
+
+  it('report & ranking fixtures: locked aluno profile + non-empty spread, idempotent (REP.2)', async () => {
+    await seedReportFixtures({ appDb: app.db, platformDb: platform.db });
+
+    // The fixture aluno's profile is full with CPF/RG set (locked demoable).
+    const [ana] = await withPlatform(platform.db, (tx) =>
+      tx
+        .select({ cpf: users.cpf, rg: users.rg, gender: users.gender, uf: users.addressState, zip: users.addressZip })
+        .from(users)
+        .where(sql`lower(${users.email}) = 'aluno@tatame.dev'`),
+    );
+    expect(ana).toMatchObject({ cpf: '39053344705', gender: 'female', uf: 'SP', zip: '01310100' });
+    expect(ana!.rg).not.toBeNull();
+
+    for (const slug of ['alpha-jj', 'bravo-bjj']) {
+      const [academy] = await withPlatform(platform.db, (tx) =>
+        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      );
+      const tenantId = academy!.id;
+      await withTenant(app.db, tenantId, async (tx) => {
+        // The graded ranking cast exists, unenrolled, with attendances.
+        const cast = await tx
+          .select({ id: students.id, name: students.fullName })
+          .from(students)
+          .where(sql`${students.fullName} LIKE '%Ranking'`);
+        expect(cast.map((s) => s.name).sort()).toEqual([
+          'Renan Ranking',
+          'Rita Ranking',
+          'Rodrigo Ranking',
+        ]);
+        const [enrolledCast] = await tx
+          .select({ n: sql<number>`count(*)::int` })
+          .from(enrollments)
+          .where(sql`${enrollments.studentId} IN (SELECT id FROM students WHERE full_name LIKE '%Ranking')`);
+        expect(enrolledCast!.n).toBe(0);
+
+        // Both ranking windows are fed: semester events with confirmed
+        // registrations, and an in-semester belt award for the report.
+        const semesterEvents = await tx
+          .select({ id: events.id, name: events.name })
+          .from(events)
+          .where(sql`${events.name} IN ('Copa Interna', 'Festival de Verao', 'Desafio Interno')`);
+        expect(semesterEvents).toHaveLength(3);
+        const [confirmed] = await tx
+          .select({ n: sql<number>`count(*)::int` })
+          .from(eventRegistrations)
+          .where(sql`${eventRegistrations.status} = 'confirmed'`);
+        expect(confirmed!.n).toBeGreaterThanOrEqual(4);
+        const rita = cast.find((s) => s.name === 'Rita Ranking')!;
+        const award = await tx
+          .select({ kind: studentGraduations.kind })
+          .from(studentGraduations)
+          .where(eq(studentGraduations.studentId, rita.id));
+        expect(award).toEqual([{ kind: 'belt' }]);
+      });
+    }
+
+    // Idempotent: a re-run inserts nothing anywhere.
+    const count = () =>
+      withPlatform(platform.db, async (tx) => {
+        const tables = [users, students, classSessions, attendances, events, eventRegistrations, studentGraduations, auditLogs];
+        const out: number[] = [];
+        for (const table of tables) {
+          const [row] = await tx.select({ n: sql<number>`count(*)::int` }).from(table);
+          out.push(row!.n);
+        }
+        return out;
+      });
+    const before = await count();
+    await seedReportFixtures({ appDb: app.db, platformDb: platform.db });
+    expect(await count()).toEqual(before);
   });
 });

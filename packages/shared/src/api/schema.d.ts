@@ -191,6 +191,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/aluno/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dados pessoais: identificação (CPF/RG lock state), contato, endereço, emergência
+         * @description Email and birth date are read-only (birth date served from the linked student row — the age-rule authority). cpfLocked/rgLocked drive the aluno-18 dashed lock boxes.
+         */
+        get: operations["AlunoProfileController_get_v1"];
+        /**
+         * Salvar dados pessoais (partial update, per-field validation)
+         * @description CPF is normalized to digits and checksum-validated; CPF/RG are write-once (422 profile.field_locked on any change after set). Email/birthDate in the payload are a 422 profile.field_read_only. Name edits sync onto the linked student row in-transaction.
+         */
+        put: operations["AlunoProfileController_update_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/public/invites/{token}": {
         parameters: {
             query?: never;
@@ -1724,7 +1748,7 @@ export interface paths {
         };
         /**
          * Graduação: belt hero, progress to the next milestone, evolution timeline
-         * @description Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; belt entries carry the render-only "Ver certificado" placeholder flag.
+         * @description Current belt is derived (latest non-reversed award; white default). Progress counts active lessons since the last award against the academy rule; non-reversed belt entries carry certificateAvailable: true (spec 013) — the certificate renders client-side.
          */
         get: operations["AlunoGraduationController_graduation_v1"];
         put?: never;
@@ -1881,6 +1905,66 @@ export interface paths {
         put?: never;
         /** Persist an observação as the admin */
         post: operations["AdminGraduationController_createNote_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports/{report}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One of the five admin reports as JSON (month/semester windows, tenant timezone)
+         * @description Slugs: financeiro, frequencia, inadimplencia, graduacoes, loja. `financeiro`, `frequencia` and `loja` take month=YYYY-MM (default: current month); `graduacoes` reports the semester containing it; `inadimplencia` is an as-of-now snapshot. financeiro runs the idempotent charge-materialization pass first.
+         */
+        get: operations["AdminReportsController_report_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reports/{report}/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The same report as a streamed CSV download
+         * @description UTF-8 with BOM, semicolon delimiter, decimal-comma money, ISO dates — opens correctly in pt-BR Excel by double-click. Content-Disposition filename `<slug>-<YYYY-MM>.csv`.
+         */
+        get: operations["AdminReportsController_reportCsv_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rankings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Academy-wide ranking: Por aulas (month) / Por eventos (semester)
+         * @description Active students only, count-desc then name-asc (deterministic ties), top 10 plus the requesting student's own position (`me` — always null for professors). Windows are tenant-timezone calendar month / calendar half.
+         */
+        get: operations["RankingsController_ranking_v1"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2333,6 +2417,60 @@ export interface components {
         TotpEnableResponseDto: {
             /** @description Single-use recovery codes — shown exactly once */
             recoveryCodes: string[];
+        };
+        AlunoProfileResponseDto: {
+            fullName: string;
+            /** @description Read-only (login identity) */
+            email: string;
+            /**
+             * @description Read-only — served from the linked student row (the age-rule authority)
+             * @example 2000-03-15
+             */
+            birthDate: string | null;
+            phone: string | null;
+            /** @enum {string|null} */
+            gender: "female" | "male" | "other" | "unspecified" | null;
+            /** @description 11 normalized digits — clients render the mask */
+            cpf: string | null;
+            /** @description True once set — the aluno-18 dashed lock state */
+            cpfLocked: boolean;
+            rg: string | null;
+            /** @description True once set — the aluno-18 dashed lock state */
+            rgLocked: boolean;
+            addressLine: string | null;
+            addressCity: string | null;
+            /** @description UF, 2 uppercase letters */
+            addressState: string | null;
+            /** @description CEP, 8 normalized digits */
+            addressZip: string | null;
+            emergencyContactName: string | null;
+            emergencyContactPhone: string | null;
+            /** @description Avatars stay initials in v1 (Trocar foto is a placeholder) */
+            avatarUrl: string | null;
+        };
+        UpdateAlunoProfileDto: {
+            /** @description Syncs onto the linked student row in the same transaction */
+            fullName?: string;
+            /** @enum {string|null} */
+            gender?: "female" | "male" | "other" | "unspecified" | null;
+            /** @description Digits, spaces, +, -, parentheses */
+            phone?: Record<string, never> | null;
+            /** @description Write-once. Masked or bare digits — normalized and checksum-validated */
+            cpf?: string;
+            /** @description Write-once. Free format (state formats vary), trimmed */
+            rg?: string;
+            addressLine?: Record<string, never> | null;
+            addressCity?: Record<string, never> | null;
+            /** @description UF — validated against the 27 federative units */
+            addressState?: Record<string, never> | null;
+            /** @description CEP — masked or bare digits, normalized to 8 */
+            addressZip?: Record<string, never> | null;
+            emergencyContactName?: Record<string, never> | null;
+            emergencyContactPhone?: Record<string, never> | null;
+            /** @description Read-only — sending it is a 422 profile.field_read_only */
+            email?: Record<string, never>;
+            /** @description Read-only — sending it is a 422 profile.field_read_only */
+            birthDate?: Record<string, never>;
         };
         InviteAcademyDto: {
             name: string;
@@ -4178,7 +4316,7 @@ export interface components {
              * @description Set on revocation rows
              */
             reversesGraduationId: string | null;
-            /** @description Render-only "Ver certificado" placeholder — non-reversed belt awards only */
+            /** @description "Ver certificado" unlock (real since spec 013) — true exactly on non-reversed belt promotions; the certificate view renders client-side from timeline + session brand */
             certificateAvailable: boolean;
         };
         AlunoGraduationResponseDto: {
@@ -4344,6 +4482,195 @@ export interface components {
             revocationId: string;
             /** @description Restored current belt after the reversal */
             belt: components["schemas"]["BeltViewDto"];
+        };
+        FinanceiroSummaryDto: {
+            /** @description Succeeded payments by paid_at in the month (cents) */
+            receitaCents: number;
+            /** @description Open charges due inside the month (cents, predicate) */
+            previstoCents: number;
+            /** @description Overdue-open plan amount ÷ month plan total (0-100) */
+            inadimplenciaPct: number;
+        };
+        FinanceiroRowDto: {
+            /** Format: uuid */
+            chargeId: string;
+            /** @description Null for professor-buyer order charges */
+            studentName: string | null;
+            /** @enum {string} */
+            origin: "plan" | "event" | "order";
+            /** @description Competência — plan charges only */
+            periodStart: string | null;
+            /** @example 2026-08-05 */
+            dueDate: string;
+            status: string;
+            amountCents: number;
+            /** Format: date-time */
+            paidAt: string | null;
+        };
+        FinanceiroReportDto: {
+            /** @enum {string} */
+            report: "financeiro";
+            /** @example 2026-08 */
+            month: string;
+            summary: components["schemas"]["FinanceiroSummaryDto"];
+            /** @description Every charge touching the month */
+            rows: components["schemas"]["FinanceiroRowDto"][];
+            /** @description The on-read pass that ran first */
+            materialization: components["schemas"]["MaterializationResultDto"];
+        };
+        FrequenciaStudentDto: {
+            /** Format: uuid */
+            studentId: string;
+            studentName: string;
+            presencas: number;
+            /** @description Month sessions minus presenças (honest denominator) */
+            faltas: number;
+            /** @description 0-100 over the materialized sessions */
+            presencePct: number;
+        };
+        FrequenciaClassDto: {
+            /** Format: uuid */
+            classId: string;
+            className: string;
+            /** @description Materialized sessions in the month — a day nobody opened never happened */
+            sessionsCount: number;
+            /** @description Actively enrolled students */
+            students: components["schemas"]["FrequenciaStudentDto"][];
+        };
+        FrequenciaReportDto: {
+            /** @enum {string} */
+            report: "frequencia";
+            /** @example 2026-08 */
+            month: string;
+            classes: components["schemas"]["FrequenciaClassDto"][];
+        };
+        InadimplenciaTotalsDto: {
+            count: number;
+            totalCents: number;
+        };
+        InadimplenciaRowDto: {
+            /** Format: uuid */
+            chargeId: string;
+            studentName: string | null;
+            /** @description Bill-to responsável when set */
+            guardianName: string | null;
+            amountCents: number;
+            /** @example 2026-07-05 */
+            dueDate: string;
+            daysOverdue: number;
+            /** @description Payer's payment-category notifications since the due date — honest approximation (no charge FK by design) */
+            notificationsSent: number;
+        };
+        InadimplenciaReportDto: {
+            /** @enum {string} */
+            report: "inadimplencia";
+            /**
+             * @description As-of-now snapshot (ignores month=)
+             * @example 2026-08-16
+             */
+            asOf: string;
+            totals: components["schemas"]["InadimplenciaTotalsDto"];
+            rows: components["schemas"]["InadimplenciaRowDto"][];
+        };
+        ReportWindowDto: {
+            /** @description `YYYY-MM` for months, `YYYY-S1`/`YYYY-S2` for semesters */
+            label: string;
+            /**
+             * @description Inclusive tenant-local first day
+             * @example 2026-08-01
+             */
+            start: string;
+            /**
+             * @description Exclusive tenant-local end day
+             * @example 2026-09-01
+             */
+            endExclusive: string;
+        };
+        GraduacoesRowDto: {
+            /** Format: uuid */
+            graduationId: string;
+            studentName: string;
+            /**
+             * @description Revocations and reversed awards excluded
+             * @enum {string}
+             */
+            kind: "degree" | "belt";
+            /** @example Azul */
+            beltName: string;
+            /** @description 0 on belt promotions */
+            degree: number;
+            awardedByName: string;
+            /** Format: date-time */
+            awardedAt: string;
+        };
+        GraduacoesReportDto: {
+            /** @enum {string} */
+            report: "graduacoes";
+            /**
+             * @description The chosen month — the window is its semester
+             * @example 2026-08
+             */
+            month: string;
+            /** @description Calendar half (Jan–Jun / Jul–Dec) */
+            semester: components["schemas"]["ReportWindowDto"];
+            rows: components["schemas"]["GraduacoesRowDto"][];
+        };
+        LojaTotalsDto: {
+            /** @description Orders that reached paid or beyond (canceled excluded) */
+            pedidos: number;
+            /** @description Item quantity sum over the counted orders */
+            itens: number;
+            /** @description Order total sum over the counted orders (cents) */
+            vendasCents: number;
+        };
+        LojaRowDto: {
+            /** Format: uuid */
+            orderId: string;
+            /** @example 2431 */
+            number: number;
+            /** @example 2026-08-14 */
+            date: string;
+            buyerName: string;
+            productName: string;
+            size: string | null;
+            quantity: number;
+            /** @description Item snapshot: unit price × quantity (cents) */
+            amountCents: number;
+            /** @description pending/canceled rows are listed but never counted in totals */
+            status: string;
+        };
+        LojaReportDto: {
+            /** @enum {string} */
+            report: "loja";
+            /** @example 2026-08 */
+            month: string;
+            totals: components["schemas"]["LojaTotalsDto"];
+            rows: components["schemas"]["LojaRowDto"][];
+        };
+        RankingRowDto: {
+            /** @description 1-based after count-desc, name-asc sort */
+            position: number;
+            name: string;
+            /** @description Aulas no mês / eventos no semestre */
+            count: number;
+            /** @description The requesting student's own row ("você" chip) */
+            isMe: boolean;
+        };
+        RankingMeDto: {
+            position: number;
+            count: number;
+        };
+        RankingResponseDto: {
+            /** @enum {string} */
+            by: "lessons" | "events";
+            /** @description Month for lessons, semester for events */
+            window: components["schemas"]["ReportWindowDto"];
+            /** @description Top 10 */
+            top: components["schemas"]["RankingRowDto"][];
+            /** @description Own position for student requesters; always null for professors */
+            me: components["schemas"]["RankingMeDto"] | null;
+            /** @description Active students ranked (zero counts included) */
+            totalRanked: number;
         };
         MrrPointDto: {
             /**
@@ -4833,6 +5160,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TotpEnableResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoProfileController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlunoProfileResponseDto"];
+                };
+            };
+        };
+    };
+    AlunoProfileController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAlunoProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlunoProfileResponseDto"];
                 };
             };
         };
@@ -7219,6 +7588,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StudentNoteResponseDto"];
+                };
+            };
+        };
+    };
+    AdminReportsController_report_v1: {
+        parameters: {
+            query?: {
+                month?: string;
+            };
+            header?: never;
+            path: {
+                report: "financeiro" | "frequencia" | "inadimplencia" | "graduacoes" | "loja";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceiroReportDto"] | components["schemas"]["FrequenciaReportDto"] | components["schemas"]["InadimplenciaReportDto"] | components["schemas"]["GraduacoesReportDto"] | components["schemas"]["LojaReportDto"];
+                };
+            };
+        };
+    };
+    AdminReportsController_reportCsv_v1: {
+        parameters: {
+            query?: {
+                month?: string;
+            };
+            header?: never;
+            path: {
+                report: "financeiro" | "frequencia" | "inadimplencia" | "graduacoes" | "loja";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CSV file attachment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+        };
+    };
+    RankingsController_ranking_v1: {
+        parameters: {
+            query?: {
+                month?: unknown;
+                by?: "lessons" | "events";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingResponseDto"];
                 };
             };
         };

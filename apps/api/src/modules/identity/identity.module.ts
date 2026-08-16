@@ -5,6 +5,7 @@ import { DbModule } from '../../infra/db/db.module.js';
 import { NotificationsModule } from '../../infra/notifications/notifications.module.js';
 import { AdminAcademyController } from './controllers/admin-academy.controller.js';
 import { AdminPermissionsController } from './controllers/admin-permissions.controller.js';
+import { AlunoProfileController } from './controllers/aluno-profile.controller.js';
 import { AuthController } from './controllers/auth.controller.js';
 import { InvitesController } from './controllers/invites.controller.js';
 import { PlatformImpersonationController } from './controllers/platform-impersonation.controller.js';
@@ -19,6 +20,7 @@ import { MembershipService } from './services/membership.service.js';
 import { PasswordResetService } from './services/password-reset.service.js';
 import { PasswordService } from './services/password.service.js';
 import { PermissionsService } from './services/permissions.service.js';
+import { ProfileService } from './services/profile.service.js';
 import { SessionService } from './services/session.service.js';
 import { TokenService } from './services/token.service.js';
 import { TotpService } from './services/totp.service.js';
@@ -41,6 +43,9 @@ import { TotpService } from './services/totp.service.js';
   ],
   controllers: [
     AuthController,
+    // Aluno Dados pessoais (spec 013, REP.6) — the identity module owns
+    // `users`, so the profile endpoints live here.
+    AlunoProfileController,
     PublicInvitesController,
     InvitesController,
     AdminAcademyController,
@@ -57,6 +62,7 @@ import { TotpService } from './services/totp.service.js';
     InviteService,
     TotpService,
     PermissionsService,
+    ProfileService,
     AcademySettingsService,
     AcademyStatusService,
     ImpersonationService,

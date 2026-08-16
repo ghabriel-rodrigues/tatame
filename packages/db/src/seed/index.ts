@@ -19,3 +19,4 @@ export {
   seedPlatformConsoleFixtures,
   type SeedPlatformConsoleHandles,
 } from './platform.js';
+export { seedReportFixtures, type SeedReportHandles } from './reports.js';

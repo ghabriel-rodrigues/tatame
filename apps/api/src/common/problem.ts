@@ -73,6 +73,11 @@ export const ErrorCodes = {
   STORE_ORDER_NOT_CANCELABLE: 'store.order_not_cancelable',
   /** Board transition outside paid → ready → delivered (+ canceled from paid/ready). */
   STORE_ORDER_INVALID_TRANSITION: 'store.order_invalid_transition',
+  // profile (spec 013)
+  /** CPF/RG change after being set — write-once (settable while NULL only). */
+  PROFILE_FIELD_LOCKED: 'profile.field_locked',
+  /** Email/birth date in the profile payload — read-only identity/auth facts. */
+  PROFILE_FIELD_READ_ONLY: 'profile.field_read_only',
   // generic
   VALIDATION_FAILED: 'validation.failed',
   NOT_FOUND: 'resource.not_found',

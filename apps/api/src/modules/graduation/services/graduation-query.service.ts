@@ -170,8 +170,11 @@ export class GraduationQueryService {
   /**
    * Full immutable history, newest first — the aluno "Histórico de evolução"
    * timeline and the admin per-student history (revocations included; awards
-   * carry a `reversed` flag; belt awards carry the render-only certificate
-   * placeholder flag).
+   * carry a `reversed` flag). `certificateAvailable` is REAL since spec 013
+   * (REP.7): true exactly on non-reversed belt-promotion entries — the
+   * client-rendered certificate view unlocks on it; degree, revocation and
+   * reversed entries stay false. No certificate endpoint exists — the view
+   * renders from timeline data plus the session's academy name and brand.
    */
   async timeline(tx: DbTransaction, studentId: string): Promise<GraduationEntry[]> {
     const rows = await tx
