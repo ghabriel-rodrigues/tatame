@@ -393,6 +393,73 @@
     <string name="theme_perfil_row_title">Tema escuro</string>
     <string name="theme_perfil_row_subtitle">Aplica o tema escuro em todo o app</string>
 
+    <!-- Aluno Dados pessoais (REP.13, spec 013 — aluno-18) -->
+    <string name="profile_title">Dados pessoais</string>
+    <string name="profile_save_cta">Salvar</string>
+    <string name="profile_saved">Dados salvos.</string>
+    <string name="profile_change_photo">Trocar foto</string>
+    <string name="profile_section_identification">Identificação</string>
+    <string name="profile_section_contact">Contato</string>
+    <string name="profile_section_address">Endereço</string>
+    <string name="profile_section_emergency">Contato de emergência</string>
+    <string name="profile_field_full_name">Nome completo</string>
+    <string name="profile_field_cpf">CPF (somente números)</string>
+    <string name="profile_field_rg">RG</string>
+    <string name="profile_field_phone">Telefone</string>
+    <string name="profile_field_address_line">Rua, número e complemento</string>
+    <string name="profile_field_city_uf">Cidade / UF</string>
+    <string name="profile_field_cep">CEP</string>
+    <string name="profile_field_emergency_name">Nome do contato</string>
+    <string name="profile_field_emergency_phone">Telefone do contato</string>
+    <string name="profile_locked_cpf">CPF · %1$s</string>
+    <string name="profile_locked_rg">RG · %1$s</string>
+    <string name="profile_birth_missing">Data de nascimento não informada</string>
+    <string name="profile_gender_placeholder">Gênero</string>
+    <string name="profile_gender_female">Feminino</string>
+    <string name="profile_gender_male">Masculino</string>
+    <string name="profile_gender_other">Outro</string>
+    <string name="profile_gender_unspecified">Prefiro não informar</string>
+    <string name="profile_perfil_row_title">Dados pessoais</string>
+    <string name="profile_perfil_row_subtitle">Identificação, contato e endereço</string>
+
+    <!-- Profile errors (stable codes → PT-BR copy) -->
+    <string name="error_profile_field_locked">Não pode ser alterado após definido. Fale com a sua academia.</string>
+    <string name="error_profile_field_read_only">Email e data de nascimento são gerenciados pela academia.</string>
+    <string name="profile_error_full_name">Informe o nome completo.</string>
+    <string name="profile_error_gender">Valor inválido.</string>
+    <string name="profile_error_phone">Telefone inválido.</string>
+    <string name="profile_error_cpf">CPF inválido.</string>
+    <string name="profile_error_rg">RG inválido.</string>
+    <string name="profile_error_uf">UF inválida — use o formato Cidade / UF.</string>
+    <string name="profile_error_cep">CEP inválido — use 8 dígitos.</string>
+
+    <!-- Rankings (REP.14, spec 013 — aluno-06/07 · professor-05/06) -->
+    <string name="ranking_title_aluno">Ranking do mês</string>
+    <string name="ranking_title_professor">Ranking de presença</string>
+    <string name="ranking_subtitle_month">%1$s · %2$s</string>
+    <string name="ranking_subtitle_events">Participações em eventos no semestre</string>
+    <string name="ranking_academy_fallback">sua academia</string>
+    <string name="ranking_segment_aulas">Por aulas</string>
+    <string name="ranking_segment_eventos">Por eventos</string>
+    <string name="ranking_voce_chip">você</string>
+    <string name="ranking_me_row_name">Você</string>
+    <string name="ranking_home_title">Ranking do mês</string>
+    <string name="ranking_home_line">Você está em %1$dº em presença — continue assim</string>
+    <string name="ranking_dashboard_title">Ranking de presença · %1$s</string>
+    <string name="ranking_ver_todos">Ver todos</string>
+    <string name="ranking_selo_constancia">Constância</string>
+    <string name="ranking_selo_equipe">Espírito de equipe</string>
+    <string name="ranking_footnote_aluno">12+ aulas no mês valem o selo Constância; presença em eventos vale o selo Espírito de equipe.</string>
+    <string name="ranking_footnote_professor_lessons">Alunos com 12+ aulas no mês ganham o selo Constância no app — parte da gamificação da academia.</string>
+    <string name="ranking_footnote_professor_events">Alunos com presença em eventos ganham o selo Espírito de equipe no app — parte da gamificação da academia.</string>
+
+    <!-- Certificado (REP.15, spec 013 — aluno-09) -->
+    <string name="certificate_screen_title">Certificado</string>
+    <string name="certificate_title">Certificado de graduação</string>
+    <string name="certificate_conferred">conferido a</string>
+    <string name="certificate_share_cta">Compartilhar</string>
+    <string name="certificate_share_subject">Certificado de graduação — %1$s</string>
+
     <!-- Web-only roles -->
     <string name="web_only_title">Use o console web</string>
     <string name="web_only_body">O perfil %1$s é gerenciado pelo console web do Tatame. Acesse pelo navegador do seu computador.</string>

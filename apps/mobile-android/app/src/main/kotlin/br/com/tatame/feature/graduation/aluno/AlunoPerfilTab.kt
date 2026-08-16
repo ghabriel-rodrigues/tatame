@@ -29,16 +29,18 @@ import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
 import br.com.tatame.core.theme.ThemePerfilRow
 import br.com.tatame.feature.notifications.NotificationsPerfilRow
+import br.com.tatame.feature.profile.DadosPessoaisScreen
+import br.com.tatame.feature.profile.ProfilePerfilRow
 import br.com.tatame.feature.store.StorePerfilRow
 import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
 import org.koin.androidx.compose.koinViewModel
 
 /**
- * Aluno Perfil tab (GRD.19, story 7): the real derived belt chip replaces the
- * shell placeholder — full profile management is a later slice, so only the
- * identity block + belt + the "Loja da academia" row (STO.12 — the perfil
- * shortcut with its "Novo" pill, finally working) + logout render.
+ * Aluno Perfil tab (GRD.19, story 7): identity block + the real derived belt
+ * chip + the perfil rows — "Dados pessoais" (REP.13 — the Phase-1 stub
+ * finally opens the aluno-18 screen), "Loja da academia" (STO.12),
+ * Notificações, Tema escuro — and logout.
  */
 @Composable
 fun AlunoPerfilTab(
@@ -50,6 +52,13 @@ fun AlunoPerfilTab(
 ) {
     val state by viewModel.uiState.collectAsState()
     var lojaOpen by rememberSaveable { mutableStateOf(false) }
+    var dadosOpen by rememberSaveable { mutableStateOf(false) }
+
+    // REP.13 — the "Dados pessoais" row opens the aluno-18 screen in place.
+    if (dadosOpen) {
+        DadosPessoaisScreen(onBack = { dadosOpen = false }, modifier = modifier)
+        return
+    }
 
     // STO.12 — the perfil row opens the shared storefront in place.
     if (lojaOpen) {
@@ -103,9 +112,13 @@ fun AlunoPerfilTab(
             }
         }
 
+        // REP.13 — "Dados pessoais" row (the recorded Phase-1 stub, now real).
+        Spacer(Modifier.height(LumiraTokens.Space.S6))
+        ProfilePerfilRow(onOpen = { dadosOpen = true })
+
         // STO.12 — "Loja da academia" row with the "Novo" pill (aluno perfil
         // placement per the prototypes; spec 009 story 16).
-        Spacer(Modifier.height(LumiraTokens.Space.S6))
+        Spacer(Modifier.height(LumiraTokens.Space.S3))
         StorePerfilRow(onOpen = { lojaOpen = true }, showNovoPill = true)
 
         // NOT.10 — the "Notificações" switch wired to the per-membership

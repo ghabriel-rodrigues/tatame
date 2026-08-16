@@ -8,6 +8,8 @@ import br.com.tatame.feature.enrollment.di.enrollmentFeatureModule
 import br.com.tatame.feature.events.di.eventsFeatureModule
 import br.com.tatame.feature.graduation.di.graduationFeatureModule
 import br.com.tatame.feature.notifications.di.notificationsFeatureModule
+import br.com.tatame.feature.profile.di.profileFeatureModule
+import br.com.tatame.feature.rankings.di.rankingsFeatureModule
 import br.com.tatame.feature.store.di.storeFeatureModule
 import org.koin.core.module.Module
 
@@ -31,6 +33,8 @@ val featureModules: List<Module> = listOf(
     eventsFeatureModule,
     storeFeatureModule,
     notificationsFeatureModule,
+    profileFeatureModule,
+    rankingsFeatureModule,
 )
 
 val appModules: List<Module> = coreModules + featureModules

@@ -25,6 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,7 +42,6 @@ import br.com.tatame.core.designsystem.components.BeltBarSize
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.AlunoGraduationResponse
 import br.com.tatame.core.network.dto.GraduationEntry
-import br.com.tatame.core.network.dto.GraduationKinds
 import br.com.tatame.feature.enrollment.EnrollmentErrorState
 import br.com.tatame.feature.graduation.GraduationFormat
 import br.com.tatame.feature.graduation.toBeltDisplay
@@ -49,16 +51,32 @@ import org.koin.androidx.compose.koinViewModel
 /**
  * Aluno Graduação screen (GRD.19, aluno-09): purple hero card with the drawn
  * belt and its degrees, the progress bar toward the academy-rule target, and
- * the "Histórico de evolução" timeline with the render-only "Ver certificado"
- * placeholder on non-reversed belt promotions.
+ * the "Histórico de evolução" timeline. "Ver certificado" is REAL since
+ * REP.15 — belt-promotion entries open the rendered certificate view
+ * ([studentName]/[academyName] compose the branded certificate).
  */
 @Composable
 fun AlunoGraduacaoScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    studentName: String? = null,
+    academyName: String? = null,
     viewModel: AlunoGraduacaoViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    var certificateEntry by remember { mutableStateOf<GraduationEntry?>(null) }
+
+    // REP.15 — the timeline's "Ver certificado" pushes the certificate view.
+    certificateEntry?.let { entry ->
+        CertificateScreen(
+            entry = entry,
+            studentName = studentName.orEmpty(),
+            academyName = academyName,
+            onBack = { certificateEntry = null },
+            modifier = modifier,
+        )
+        return
+    }
 
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(LumiraTokens.Space.S6))
@@ -79,14 +97,20 @@ fun AlunoGraduacaoScreen(
             is AlunoGraduacaoState.Loading -> CenteredLoading()
             is AlunoGraduacaoState.Error ->
                 EnrollmentErrorState(messageRes = loaded.messageRes, onRetry = viewModel::refresh)
-            is AlunoGraduacaoState.Loaded -> GraduacaoContent(data = loaded.data)
+            is AlunoGraduacaoState.Loaded -> GraduacaoContent(
+                data = loaded.data,
+                onOpenCertificate = { certificateEntry = it },
+            )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
     }
 }
 
 @Composable
-private fun GraduacaoContent(data: AlunoGraduationResponse) {
+private fun GraduacaoContent(
+    data: AlunoGraduationResponse,
+    onOpenCertificate: (GraduationEntry) -> Unit,
+) {
     GraduacaoHeroCard(data = data)
     Spacer(Modifier.height(LumiraTokens.Space.S5))
     Text(
@@ -96,7 +120,9 @@ private fun GraduacaoContent(data: AlunoGraduationResponse) {
     )
     Spacer(Modifier.height(LumiraTokens.Space.S3))
     Column(verticalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S3)) {
-        data.timeline.forEach { entry -> TimelineRow(entry = entry) }
+        data.timeline.forEach { entry ->
+            TimelineRow(entry = entry, onOpenCertificate = onOpenCertificate)
+        }
     }
 }
 
@@ -163,7 +189,7 @@ private fun GraduacaoHeroCard(data: AlunoGraduationResponse) {
 // ---- timeline (Histórico de evolução) ------------------------------------
 
 @Composable
-private fun TimelineRow(entry: GraduationEntry) {
+private fun TimelineRow(entry: GraduationEntry, onOpenCertificate: (GraduationEntry) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(LumiraTokens.Space.S3)) {
         // Timeline marker: the entry's belt color; dimmed when reversed.
         Box(
@@ -177,12 +203,20 @@ private fun TimelineRow(entry: GraduationEntry) {
                 )
                 .border(1.dp, LumiraTokens.Colors.BeltOutline, PillShape),
         )
-        TimelineCard(entry = entry, modifier = Modifier.weight(1f))
+        TimelineCard(
+            entry = entry,
+            onOpenCertificate = onOpenCertificate,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
 @Composable
-private fun TimelineCard(entry: GraduationEntry, modifier: Modifier = Modifier) {
+private fun TimelineCard(
+    entry: GraduationEntry,
+    onOpenCertificate: (GraduationEntry) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         shape = RoundedCornerShape(LumiraTokens.Radius.Md),
         color = MaterialTheme.colorScheme.surface,
@@ -216,21 +250,28 @@ private fun TimelineCard(entry: GraduationEntry, modifier: Modifier = Modifier) 
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (entry.kind == GraduationKinds.BELT && entry.certificateAvailable) {
+            // REP.15 — the placeholder debt paid: belt promotions open the
+            // rendered certificate (degree/revocation entries keep no button).
+            if (GraduationFormat.certificateUnlocked(
+                    kind = entry.kind,
+                    certificateAvailable = entry.certificateAvailable,
+                    reversed = entry.reversed,
+                )
+            ) {
                 Spacer(Modifier.height(LumiraTokens.Space.S2))
-                CertificatePlaceholderPill()
+                CertificatePill(onClick = { onOpenCertificate(entry) })
             }
         }
     }
 }
 
-/** Render-only placeholder — certificate generation is a recorded later-slice debt. */
+/** "Ver certificado" — real since REP.15 (was the Phase-5 render-only placeholder). */
 @Composable
-private fun CertificatePlaceholderPill() {
+private fun CertificatePill(onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .alpha(0.6f)
             .border(width = 1.dp, color = LumiraTokens.Colors.Purple300, shape = PillShape)
+            .clickable(onClick = onClick)
             .padding(horizontal = LumiraTokens.Space.S3, vertical = LumiraTokens.Space.S1),
     ) {
         Text(

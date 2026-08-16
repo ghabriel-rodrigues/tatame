@@ -95,6 +95,20 @@ object GraduationFormat {
             .replace(".", "")
     }.getOrDefault(isoInstant.take(10))
 
+    /** "14 de novembro de 2024" (certificate award date); raw date on parse failure. */
+    fun fullDate(isoInstant: String): String = runCatching {
+        OffsetDateTime.parse(isoInstant)
+            .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", PT_BR))
+    }.getOrDefault(isoInstant.take(10))
+
+    /**
+     * "Ver certificado" unlock rule (REP.15, aluno-09): belt promotions with
+     * the server flag, never reversed awards — degree and revocation entries
+     * keep no certificate (certificates mean belt promotions, story 30).
+     */
+    fun certificateUnlocked(kind: String, certificateAvailable: Boolean, reversed: Boolean): Boolean =
+        kind == GraduationKinds.BELT && certificateAvailable && !reversed
+
     /**
      * Default "Promover faixa" target: the first *enabled* belt after the
      * current one in the merged régua order (kids belts toggled off are

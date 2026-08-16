@@ -13,6 +13,8 @@ import br.com.tatame.core.network.EventsApi
 import br.com.tatame.core.network.GraduationApi
 import br.com.tatame.core.network.NotificationsApi
 import br.com.tatame.core.network.ProblemJson
+import br.com.tatame.core.network.ProfileApi
+import br.com.tatame.core.network.RankingsApi
 import br.com.tatame.core.network.RefreshAuthenticator
 import br.com.tatame.core.network.SessionTokenProvider
 import br.com.tatame.core.network.StoreApi
@@ -97,6 +99,12 @@ val networkModule = module {
     }
     single<NotificationsApi> {
         buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(NotificationsApi::class.java)
+    }
+    single<ProfileApi> {
+        buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(ProfileApi::class.java)
+    }
+    single<RankingsApi> {
+        buildRetrofit(get<ApiConfig>().baseUrl, get(), get()).create(RankingsApi::class.java)
     }
 }
 

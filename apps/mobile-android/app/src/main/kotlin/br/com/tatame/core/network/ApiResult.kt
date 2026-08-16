@@ -94,6 +94,10 @@ fun mapProblem(status: Int, problem: ProblemDetails?): ApiError = when (problem?
     ApiErrorCodes.STORE_PRODUCT_NOT_PURCHASABLE -> ApiError.Store.ProductNotPurchasable
     ApiErrorCodes.STORE_ORDER_NOT_CANCELABLE -> ApiError.Store.OrderNotCancelable
     ApiErrorCodes.STORE_ORDER_INVALID_TRANSITION -> ApiError.Store.OrderInvalidTransition
+    ApiErrorCodes.PROFILE_FIELD_LOCKED ->
+        ApiError.Profile.FieldLocked(problem.errors.orEmpty().map { it.field })
+    ApiErrorCodes.PROFILE_FIELD_READ_ONLY ->
+        ApiError.Profile.FieldReadOnly(problem.errors.orEmpty().map { it.field })
     else -> when {
         status == 401 -> ApiError.Auth.SessionExpired
         status == 403 -> ApiError.Auth.Forbidden

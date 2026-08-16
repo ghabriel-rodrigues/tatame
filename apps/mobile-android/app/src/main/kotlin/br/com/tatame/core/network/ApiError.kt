@@ -78,6 +78,10 @@ object ApiErrorCodes {
     const val STORE_PRODUCT_NOT_PURCHASABLE = "store.product_not_purchasable"
     const val STORE_ORDER_NOT_CANCELABLE = "store.order_not_cancelable"
     const val STORE_ORDER_INVALID_TRANSITION = "store.order_invalid_transition"
+
+    // Reports slice (spec 013) additions.
+    const val PROFILE_FIELD_LOCKED = "profile.field_locked"
+    const val PROFILE_FIELD_READ_ONLY = "profile.field_read_only"
 }
 
 /**
@@ -215,6 +219,15 @@ sealed interface ApiError {
 
         /** `store.order_invalid_transition` — admin board path (web console). */
         data object OrderInvalidTransition : Store
+    }
+
+    /** Profile-slice stable codes (spec 013) the Dados pessoais UX maps to PT-BR copy. */
+    sealed interface Profile : ApiError {
+        /** `profile.field_locked` — CPF/RG change after set (write-once); carries the fields. */
+        data class FieldLocked(val fields: List<String>) : Profile
+
+        /** `profile.field_read_only` — email/birthDate in the payload; carries the fields. */
+        data class FieldReadOnly(val fields: List<String>) : Profile
     }
 
     /** 422 `validation.failed` with field-level errors. */

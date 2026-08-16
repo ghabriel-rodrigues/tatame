@@ -310,9 +310,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] REP.10 RN: aluno Dados pessoais per aluno-18 — sections, locked CPF/RG boxes, read-only email/birthDate, Cidade / UF + CEP row, Trocar foto placeholder, Salvar round trip
 - [ ] REP.11 RN: rankings — aluno home "Ranking do mês" card with live position + full screen per aluno-06/07, professor dashboard real "Ranking de presença" section + full screen per professor-05/06 (segments, bars, você highlight, selos footnote)
 - [ ] REP.12 RN: certificado — belt-promotion "Ver certificado" unlocked, branded certificate view (BeltBar, name, belt, date, professor line), OS share/print action
-- [ ] REP.13 Android: aluno Dados pessoais (REP.10 scope)
-- [ ] REP.14 Android: rankings — aluno + professor (REP.11 scope)
-- [ ] REP.15 Android: certificado (REP.12 scope)
+- [x] REP.13 Android: aluno Dados pessoais (REP.10 scope)
+- [x] REP.14 Android: rankings — aluno + professor (REP.11 scope)
+- [x] REP.15 Android: certificado (REP.12 scope)
 - [ ] REP.16 iOS: aluno Dados pessoais (REP.10 scope)
 - [ ] REP.17 iOS: rankings — aluno + professor (REP.11 scope)
 - [ ] REP.18 iOS: certificado (REP.12 scope)

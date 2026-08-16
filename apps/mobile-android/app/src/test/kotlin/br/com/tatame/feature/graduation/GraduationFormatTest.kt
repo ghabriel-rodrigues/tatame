@@ -6,7 +6,9 @@ import br.com.tatame.testutil.beltView
 import br.com.tatame.testutil.defaultRegua
 import br.com.tatame.testutil.validGraduation
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** GRD.19/20 — pure PT-BR label building mirroring the handoff copy. */
@@ -110,5 +112,56 @@ class GraduationFormatTest {
             validGraduation("b-gray", "Cinza", "belt.gray", ladderKind = "kids", enabled = false),
         )
         assertNull(GraduationFormat.nextEnabledBelt(onlyKidsAfter, "b-white"))
+    }
+
+    // ---- certificate unlock (REP.15) -------------------------------------
+
+    @Test
+    fun `certificate unlocks exactly on available non-reversed belt promotions`() {
+        assertTrue(
+            GraduationFormat.certificateUnlocked(
+                kind = GraduationKinds.BELT,
+                certificateAvailable = true,
+                reversed = false,
+            ),
+        )
+        // Degree entries never carry a certificate (story 30).
+        assertFalse(
+            GraduationFormat.certificateUnlocked(
+                kind = GraduationKinds.DEGREE,
+                certificateAvailable = true,
+                reversed = false,
+            ),
+        )
+        // Server flag off (e.g. initial belt) keeps the button away.
+        assertFalse(
+            GraduationFormat.certificateUnlocked(
+                kind = GraduationKinds.BELT,
+                certificateAvailable = false,
+                reversed = false,
+            ),
+        )
+        // Reversed awards lose the keepsake.
+        assertFalse(
+            GraduationFormat.certificateUnlocked(
+                kind = GraduationKinds.BELT,
+                certificateAvailable = true,
+                reversed = true,
+            ),
+        )
+        // Revocation rows are never certificates.
+        assertFalse(
+            GraduationFormat.certificateUnlocked(
+                kind = GraduationKinds.REVOCATION,
+                certificateAvailable = true,
+                reversed = false,
+            ),
+        )
+    }
+
+    @Test
+    fun `fullDate renders the PT-BR long date and survives garbage`() {
+        assertEquals("14 de novembro de 2024", GraduationFormat.fullDate("2024-11-14T18:00:00.000Z"))
+        assertEquals("2024-11-14", GraduationFormat.fullDate("2024-11-14bogus"))
     }
 }

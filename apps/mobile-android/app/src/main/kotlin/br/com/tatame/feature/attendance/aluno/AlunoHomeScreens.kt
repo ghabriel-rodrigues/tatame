@@ -68,6 +68,9 @@ import br.com.tatame.feature.notifications.NotificationsBellBubble
 import br.com.tatame.feature.notifications.NotificationsBellViewModel
 import br.com.tatame.feature.notifications.NotificationsPersona
 import br.com.tatame.feature.notifications.NotificationsScreen
+import br.com.tatame.feature.rankings.RankingHomeCard
+import br.com.tatame.feature.rankings.RankingPersona
+import br.com.tatame.feature.rankings.RankingScreen
 import br.com.tatame.feature.store.MonogramTile
 import br.com.tatame.feature.store.pedidos.MeusPedidosScreen
 import br.com.tatame.feature.store.StoreFormat
@@ -90,6 +93,7 @@ import org.koin.androidx.compose.koinViewModel
 fun AlunoHomeTab(
     firstName: String,
     modifier: Modifier = Modifier,
+    fullName: String? = null,
     academyName: String? = null,
     openCheckinOnEnter: Boolean = false,
     onOpenCarteira: () -> Unit = {},
@@ -100,6 +104,7 @@ fun AlunoHomeTab(
     val state by viewModel.uiState.collectAsState()
     val unreadCount by bellViewModel.unreadCount.collectAsState()
     var graduacaoOpen by rememberSaveable { mutableStateOf(false) }
+    var rankingOpen by rememberSaveable { mutableStateOf(false) }
     var eventOpen by rememberSaveable { mutableStateOf<String?>(null) }
     var storeOpen by rememberSaveable { mutableStateOf(false) }
     var storeProductOpen by rememberSaveable { mutableStateOf<String?>(null) }
@@ -143,9 +148,26 @@ fun AlunoHomeTab(
         return
     }
 
-    // GRD.19 — the home graduation card links to the Graduação screen.
+    // GRD.19 — the home graduation card links to the Graduação screen
+    // (REP.15 — name/academy compose the certificate view inside it).
     if (graduacaoOpen) {
-        AlunoGraduacaoScreen(onBack = { graduacaoOpen = false }, modifier = modifier)
+        AlunoGraduacaoScreen(
+            onBack = { graduacaoOpen = false },
+            studentName = fullName,
+            academyName = academyName,
+            modifier = modifier,
+        )
+        return
+    }
+
+    // REP.14 — the "Ranking do mês" card opens the full ranking screen.
+    if (rankingOpen) {
+        RankingScreen(
+            persona = RankingPersona.ALUNO,
+            academyName = academyName,
+            onBack = { rankingOpen = false },
+            modifier = modifier,
+        )
         return
     }
 
@@ -207,6 +229,7 @@ fun AlunoHomeTab(
                 home = home.home,
                 onCheckin = viewModel::openCheckinSheet,
                 onOpenGraduacao = { graduacaoOpen = true },
+                onOpenRanking = { rankingOpen = true },
                 onOpenCarteira = onOpenCarteira,
                 onOpenAgenda = onOpenAgenda,
                 onOpenEvent = { eventOpen = it },
@@ -262,6 +285,7 @@ private fun AlunoHomeContent(
     home: AlunoHomeResponse,
     onCheckin: () -> Unit,
     onOpenGraduacao: () -> Unit,
+    onOpenRanking: () -> Unit,
     onOpenCarteira: () -> Unit,
     onOpenAgenda: () -> Unit,
     onOpenEvent: (String) -> Unit,
@@ -283,6 +307,10 @@ private fun AlunoHomeContent(
         totalLessons = home.stats.totalLessons,
         onOpen = onOpenGraduacao,
     )
+    // REP.14 — "Ranking do mês" entry card with the live `me` position
+    // (renders itself, spacing included, only once the lessons ranking has
+    // loaded with a `me` — an entry card never shows placeholder numbers).
+    RankingHomeCard(onOpen = onOpenRanking)
     // EVT.12 — "Próximos eventos": the next 2 published events with own
     // state (spec 008); the section hides entirely when nothing is upcoming.
     if (home.upcomingEvents.isNotEmpty()) {

@@ -46,6 +46,9 @@ import br.com.tatame.feature.notifications.NotificationsBellBubble
 import br.com.tatame.feature.notifications.NotificationsBellViewModel
 import br.com.tatame.feature.notifications.NotificationsPersona
 import br.com.tatame.feature.notifications.NotificationsScreen
+import br.com.tatame.feature.rankings.RankingDashboardSection
+import br.com.tatame.feature.rankings.RankingPersona
+import br.com.tatame.feature.rankings.RankingScreen
 import br.com.tatame.feature.store.pedidos.MeusPedidosScreen
 import br.com.tatame.feature.store.vitrine.StoreFlowScreen
 import com.tatame.designsystem.tokens.LumiraTokens
@@ -73,6 +76,7 @@ fun ProfessorHomeTab(
     val unreadCount by bellViewModel.unreadCount.collectAsState()
     var chamadaFor by remember { mutableStateOf<Pair<String, String>?>(null) } // classId to name
     var calendarOpen by rememberSaveable { mutableStateOf(false) }
+    var rankingOpen by rememberSaveable { mutableStateOf(false) }
     var notificacoesOpen by rememberSaveable { mutableStateOf(false) }
     var pedidosOpen by rememberSaveable { mutableStateOf(false) }
     var storeOpen by rememberSaveable { mutableStateOf(false) }
@@ -121,6 +125,17 @@ fun ProfessorHomeTab(
         return
     }
 
+    // REP.14 — "Ver todos" opens the full ranking screen (professor-05/06).
+    if (rankingOpen) {
+        RankingScreen(
+            persona = RankingPersona.PROFESSOR,
+            academyName = academyName,
+            onBack = { rankingOpen = false },
+            modifier = modifier,
+        )
+        return
+    }
+
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(LumiraTokens.Space.S6))
         Row(
@@ -157,6 +172,7 @@ fun ProfessorHomeTab(
                 dashboard = dashboard.dashboard,
                 onStartChamada = { classId, className -> chamadaFor = classId to className },
                 onVerTurmas = onVerTurmas,
+                onVerRanking = { rankingOpen = true },
             )
         }
         Spacer(Modifier.height(LumiraTokens.Space.S8))
@@ -197,6 +213,7 @@ private fun DashboardContent(
     dashboard: ProfessorDashboardResponse,
     onStartChamada: (classId: String, className: String) -> Unit,
     onVerTurmas: () -> Unit,
+    onVerRanking: () -> Unit,
 ) {
     // Stat tiles (professor-02): all three are real now — eventos futuros
     // carries the upcoming-events count (EVT.13, spec 008).
@@ -235,6 +252,11 @@ private fun DashboardContent(
             }
         }
     }
+
+    // REP.14 — "Ranking de presença" (the Phase-4 placeholder finally paid):
+    // real top 3 + "Ver todos"; the section renders itself, spacing included,
+    // only once the lessons ranking has loaded with rows.
+    RankingDashboardSection(onVerTodos = onVerRanking)
 
     // "Eventos futuros" — read-only program view (EVT.13, professor-02).
     if (dashboard.upcomingEvents.isNotEmpty()) {
