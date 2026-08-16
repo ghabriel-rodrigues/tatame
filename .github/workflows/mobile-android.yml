@@ -1,0 +1,42 @@
+# Native Android lane (spec 014 §A.1, infra-03). apps/mobile-android is
+# outside the nx graph (infra-01), so path filters are the only correct
+# trigger. Assemble + unit tests; no emulator/instrumented tests in v1.
+name: Mobile Android
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/mobile-android/**'
+      - '.github/workflows/mobile-android.yml'
+  pull_request:
+    paths:
+      - 'apps/mobile-android/**'
+      - '.github/workflows/mobile-android.yml'
+
+concurrency:
+  group: mobile-android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle (with wrapper + dependency caching)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build (assemble + unit tests)
+        working-directory: apps/mobile-android
+        run: ./gradlew build

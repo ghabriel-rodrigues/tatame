@@ -1,0 +1,47 @@
+# Native iOS lane (spec 014 §A.1, infra-03). apps/mobile-ios is outside the
+# nx graph (infra-01), so path filters are the only correct trigger.
+# project.yml is the committed source of truth (.xcodeproj is gitignored);
+# no signing in CI v1 — signing/TestFlight land with RLS.H6/H7.
+name: Mobile iOS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/mobile-ios/**'
+      - '.github/workflows/mobile-ios.yml'
+  pull_request:
+    paths:
+      - 'apps/mobile-ios/**'
+      - '.github/workflows/mobile-ios.yml'
+
+concurrency:
+  group: mobile-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Tatame.xcodeproj
+        working-directory: apps/mobile-ios
+        run: xcodegen generate
+
+      - name: Build and test (simulator, no signing)
+        working-directory: apps/mobile-ios
+        run: >
+          xcodebuild build test
+          -project Tatame.xcodeproj
+          -scheme Tatame
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+          -skipPackagePluginValidation
+          CODE_SIGNING_ALLOWED=NO

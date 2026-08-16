@@ -1,0 +1,21 @@
+# Shared pnpm/node setup for every ci.yml job (infra-03: extracted as a
+# composite action once a fourth job appeared — web-smoke is the fourth).
+name: Setup pnpm workspace
+description: corepack-managed pnpm (pinned via packageManager), Node 24 with pnpm cache, frozen install
+
+runs:
+  using: composite
+  steps:
+    - name: Enable corepack (pnpm pinned by packageManager in package.json)
+      shell: bash
+      run: corepack enable
+
+    - name: Setup Node 24 with pnpm cache
+      uses: actions/setup-node@v5
+      with:
+        node-version: 24
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

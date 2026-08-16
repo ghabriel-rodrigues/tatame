@@ -1,3 +1,9 @@
+# TS-lane CI — everything inside the nx graph (spec 014 §A.1, infra-03).
+# Authored before any git remote exists (charter: remote is the human's call);
+# goes live on the first push after RLS.H1. Native apps are outside the nx
+# graph and have their own path-filtered lanes (mobile-android.yml,
+# mobile-ios.yml). Netlify builds/deploys the web app on its own
+# infrastructure — deploy is deliberately not a job here (infra-04).
 name: CI
 
 on:
@@ -6,35 +12,129 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  actions: read
+  actions: read # nx-set-shas reads past workflow runs to pick the affected base
   contents: read
 
 jobs:
+  # Lint, typecheck, unit/integration tests and builds for affected projects.
+  # Integration/DB tests use Testcontainers Postgres against the ubuntu
+  # runner's Docker daemon — no `services:` container (db-01/backend-07).
   main:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
-          filter: tree:0
           fetch-depth: 0
+          filter: tree:0
 
-      # This enables task distribution via Nx Cloud
-      # Run this command as early as possible, before dependencies are installed
-      # Learn more at https://nx.dev/docs/reference/nx-cloud-cli#npx-nxcloud-startcirun
-      - run: npx nx start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e"
+      - uses: ./.github/actions/setup-pnpm
 
-      # Cache node_modules
-      - uses: actions/setup-node@v5
+      - name: Derive affected base/head SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Format check
+        run: pnpm nx format:check
+
+      - name: Affected lint / typecheck / test / build
+        run: pnpm nx affected -t lint typecheck test build
+
+  # Drizzle drift gate: a schema change without its committed migration fails
+  # here — `generate` would emit a new migration + journal update the working
+  # tree doesn't have (infra-03).
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Detect conflicting migrations
+        working-directory: packages/db
+        run: pnpm exec drizzle-kit check
+
+      - name: Regenerate migrations from the schema
+        working-directory: packages/db
+        run: pnpm exec drizzle-kit generate
+
+      - name: Fail on drift (uncommitted migration output)
+        run: |
+          git add -N packages/db/drizzle
+          git diff --exit-code -- packages/db/drizzle
+
+  # OpenAPI freshness gate: controllers and the committed spec/types under
+  # packages/shared/src/api must agree (infra-03; real path per spec 014 —
+  # the emit target writes packages/shared/src/api/openapi.json).
+  openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Emit OpenAPI spec from the API
+        run: pnpm nx run api:openapi
+
+      - name: Regenerate the typed client schema
+        run: pnpm nx run shared:generate-api
+
+      - name: Fail on drift (spec or schema.d.ts changed)
+        run: git diff --exit-code -- packages/shared/src/api/openapi.json packages/shared/src/api/schema.d.ts
+
+  # Playwright smoke lane (spec 014 §A.4, web-07): the six specs that prove
+  # what MSW structurally can't — real cookie/refresh loop, real proxy wiring.
+  # Runs only when web-e2e is affected (web/shared/api changes reach it
+  # through the graph). The web-e2e Playwright config owns starting the built
+  # web artifact + the real API; CI provides Postgres, migrations and seeds.
+  web-smoke:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://tatame:tatame_dev@localhost:5432/tatame
+    steps:
+      - uses: actions/checkout@v5
         with:
-          node-version: 24
-          cache: 'npm'
+          fetch-depth: 0
+          filter: tree:0
 
-      - run: npm ci
+      - uses: ./.github/actions/setup-pnpm
 
-      # Prepend any command with "nx record --" to record its logs to Nx Cloud
-      - run: npx nx record -- npx nx format:check --base="remotes/origin/main"
-      - run: npx nx run-many -t lint test build typecheck e2e
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/docs/features/ci-features/self-healing-ci
-      - run: npx nx fix-ci
-        if: always()
+      - name: Derive affected base/head SHAs
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Check whether web-e2e is affected
+        id: affected
+        run: |
+          if pnpm nx show projects --affected | grep -qx 'web-e2e'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Start Postgres (docker compose)
+        if: steps.affected.outputs.run == 'true'
+        run: docker compose up -d --wait postgres
+
+      - name: Apply migrations + seed fixtures
+        if: steps.affected.outputs.run == 'true'
+        run: |
+          pnpm --filter @tatame/db run migrate
+          pnpm --filter @tatame/db run seed
+
+      - name: Cache Playwright browsers
+        if: steps.affected.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.affected.outputs.run == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run the smoke suite
+        if: steps.affected.outputs.run == 'true'
+        run: pnpm nx e2e web-e2e

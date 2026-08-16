@@ -1,0 +1,48 @@
+# Netlify deploy wiring for the web app (spec 014 §A.3 — resolves infra-04).
+# Netlify builds from the repo on its own infrastructure (never a CI artifact,
+# never runs tests). Env vars are set per deploy context in the Netlify UI,
+# VITE_* only — the contract is documented in docs/RELEASE.md (Netlify page).
+# pnpm is picked up via the `packageManager` pin in package.json (corepack).
+
+[build]
+  base = "."
+  command = "pnpm nx build web"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# --- /api proxy placeholder (activate with RLS.H3) -------------------------
+# Same-origin proxy to the production API: avoids CORS entirely and keeps the
+# refresh cookie first-party. Activate by uncommenting and replacing
+# <PRODUCTION_API_ORIGIN> once the API host exists (docs/RELEASE.md, H3 page).
+# Order matters: this block must stay ABOVE the SPA fallback.
+# Until it is active, production builds rely on VITE_API_URL (infra-05 §4).
+#
+# [[redirects]]
+#   from = "/api/*"
+#   to = "<PRODUCTION_API_ORIGIN>/api/:splat"
+#   status = 200
+#   force = true
+
+# SPA fallback — required for the React Router SPA: every non-asset path
+# serves index.html and the client router takes over.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Vite's hashed output under /assets/* is content-addressed — cache forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Security headers on everything. CSP is deferred until the API origin is
+# known (spec 014 §A.3, recorded).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
