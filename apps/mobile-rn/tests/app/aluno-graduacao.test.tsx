@@ -2,8 +2,9 @@
  * Aluno Graduação (GRD.16, aluno-09): screen fed by GET /v1/aluno/graduation
  * — belt hero with the drawn BeltBar and the academy-rule progress, the
  * Histórico de evolução timeline (belt/degree, date, professor, observação)
- * with the render-only "Ver certificado" placeholder — plus the home
- * graduation card now linking here with the real target.
+ * with "Ver certificado" on belt promotions (real since REP.12, spec 013 —
+ * covered by aluno-certificado.test) — plus the home graduation card now
+ * linking here with the real target.
  */
 
 import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
@@ -93,14 +94,14 @@ describe('aluno Graduação (GRD.16)', () => {
     expect(screen.getByText('“Início da jornada.”')).toBeTruthy();
   });
 
-  it('belt promotions carry the disabled Ver certificado placeholder', async () => {
+  it('belt promotions carry the unlocked Ver certificado action (REP.12)', async () => {
     renderAluno();
     await openGraduacao();
 
     const certificado = screen.getByText('Ver certificado');
     expect(certificado).toBeTruthy();
-    // Render-only placeholder: one belt entry has the flag, and the action
-    // is disabled until the certificate slice lands.
+    // Exactly the certificateAvailable belt entry — degree and initial
+    // entries keep no button (certificate view covered by REP.12's suite).
     expect(screen.getAllByText('Ver certificado')).toHaveLength(1);
   });
 

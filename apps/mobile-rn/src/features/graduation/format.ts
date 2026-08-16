@@ -80,6 +80,13 @@ export function monthYearPt(iso: string): string {
   return `${month.charAt(0).toUpperCase()}${month.slice(1)} de ${date.getFullYear()}`;
 }
 
+/** "14 de novembro de 2024" — certificate award date (REP.12, spec 013). */
+export function fullDatePt(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${date.getDate()} de ${MONTH_LONG[date.getMonth()] ?? ''} de ${date.getFullYear()}`;
+}
+
 /** "12 jul" — observação meta line (professor-11). */
 export function shortDatePt(iso: string): string {
   const date = new Date(iso);

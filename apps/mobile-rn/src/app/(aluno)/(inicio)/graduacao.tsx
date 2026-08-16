@@ -4,10 +4,13 @@
  * degrees, the progress bar toward the next milestone ("Próximo 3º grau ·
  * 26 de 40 aulas" — the academy's rule, never a hardcoded target) and the
  * "Histórico de evolução" timeline (belt/degree, date, awarding professor,
- * observação). Belt promotions carry the render-only "Ver certificado"
- * placeholder (generation is a recorded debt of a later slice).
+ * observação). Belt promotions carry the real "Ver certificado" (REP.12,
+ * spec 013 — the Phase-5 placeholder paid): certificateAvailable entries
+ * open the branded CertificateSheet with the OS share action; degree and
+ * initial-belt entries keep no button.
  */
 
+import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
@@ -22,6 +25,7 @@ import {
   useTheme,
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
+import { CertificateSheet } from '../../../features/graduation/CertificateSheet';
 import {
   beltHeroTitle,
   monthYearPt,
@@ -30,7 +34,15 @@ import {
 import type { GraduationEntry } from '../../../features/graduation/types';
 import { QueryState } from '../../../features/enrollment/ui';
 
-function TimelineEntry({ entry, last }: { entry: GraduationEntry; last: boolean }) {
+function TimelineEntry({
+  entry,
+  last,
+  onOpenCertificate,
+}: {
+  entry: GraduationEntry;
+  last: boolean;
+  onOpenCertificate: (entry: GraduationEntry) => void;
+}) {
   const theme = useTheme();
   const reversed = entry.reversed || entry.kind === 'revocation';
   return (
@@ -79,8 +91,14 @@ function TimelineEntry({ entry, last }: { entry: GraduationEntry; last: boolean 
           ) : null}
           {entry.certificateAvailable ? (
             <View style={{ flexDirection: 'row', marginTop: 4 }}>
-              {/* Render-only placeholder — PDF generation is a later slice. */}
-              <TatameButton size="sm" variant="secondary" label="Ver certificado" disabled />
+              {/* REP.12: real — opens the branded certificate view. */}
+              <TatameButton
+                size="sm"
+                variant="secondary"
+                label="Ver certificado"
+                onPress={() => onOpenCertificate(entry)}
+                testID={`certificado-${entry.id}`}
+              />
             </View>
           ) : null}
         </View>
@@ -94,6 +112,7 @@ export default function AlunoGraduacaoScreen() {
   const router = useRouter();
   const query = api.useQuery('get', '/v1/aluno/graduation');
   const data = query.data;
+  const [certificateEntry, setCertificateEntry] = useState<GraduationEntry | null>(null);
 
   const fraction =
     data && data.progress.target > 0
@@ -180,6 +199,7 @@ export default function AlunoGraduacaoScreen() {
                         key={entry.id}
                         entry={entry}
                         last={index === data.timeline.length - 1}
+                        onOpenCertificate={setCertificateEntry}
                       />
                     ))}
                   </View>
@@ -189,6 +209,9 @@ export default function AlunoGraduacaoScreen() {
           </QueryState>
         </Animated.View>
       </ScrollView>
+
+      {/* REP.12: branded certificate view + OS share (spec 013). */}
+      <CertificateSheet entry={certificateEntry} onClose={() => setCertificateEntry(null)} />
     </SafeAreaView>
   );
 }

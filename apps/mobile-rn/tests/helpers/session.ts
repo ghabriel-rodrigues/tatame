@@ -116,6 +116,18 @@ function notificationDefaults(method: string, path: string): Response | null {
   if (method === 'GET' && path === '/v1/notifications/settings') {
     return json(200, { enabled: true });
   }
+  // REP.11 baseline: the aluno home and professor dashboard now always
+  // query the ranking. Tests not about rankings get a quiet empty payload
+  // (no card, no section) — unless their handler answers first.
+  if (method === 'GET' && path === '/v1/rankings') {
+    return json(200, {
+      by: 'lessons',
+      window: { label: '2026-08', start: '2026-08-01', endExclusive: '2026-09-01' },
+      top: [],
+      me: null,
+      totalRanked: 0,
+    });
+  }
   return null;
 }
 

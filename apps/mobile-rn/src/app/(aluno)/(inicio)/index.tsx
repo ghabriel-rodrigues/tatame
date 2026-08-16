@@ -9,19 +9,19 @@
  * the next 2 published events with own registration state, tapping a card
  * pushes the event detail. "Loja da academia" strip (STO.10, spec 009): the
  * first 3 active products from the home payload with "Ver tudo" opening the
- * vitrine, cards pushing the product detail. Ranking stays an explicit
- * placeholder card.
+ * vitrine, cards pushing the product detail. "Ranking do mês" entry card
+ * (REP.11, spec 013): live position from GET /v1/rankings?by=lessons (`me`),
+ * opening the full ranking screen — the Phase-4 placeholder finally paid.
  */
 
 import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { CheckCircle2, ChevronRight } from 'lucide-react-native';
+import { BarChart3, CheckCircle2, ChevronRight } from 'lucide-react-native';
 import {
   BeltBar,
   Card,
-  Chip,
   ScreenHeader,
   TatameButton,
   Text,
@@ -36,6 +36,8 @@ import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../fea
 import { UPCOMING_EVENTS_TITLE } from '../../../features/events/copy';
 import { NotificationBell } from '../../../features/notifications/ui';
 import { EventCard } from '../../../features/events/ui';
+import { homeRankingLine, RANKING_TITLE_ALUNO } from '../../../features/rankings/copy';
+import { positionOrdinal } from '../../../features/rankings/format';
 import { STORE_ROW_TITLE } from '../../../features/store/copy';
 import { StoreStripCard } from '../../../features/store/ui';
 import { isReadOnly, useSession } from '../../../session/session-store';
@@ -45,6 +47,11 @@ export default function AlunoInicioScreen() {
   const router = useRouter();
   const { session } = useSession();
   const homeQuery = api.useQuery('get', '/v1/aluno/home');
+  // REP.11: live position for the "Ranking do mês" entry card (`me` is
+  // always populated for a ranked student, inside or outside the top 10).
+  const rankingQuery = api.useQuery('get', '/v1/rankings', {
+    params: { query: { by: 'lessons' } },
+  });
 
   if (!session) return null;
   const firstName = session.user.fullName.split(' ')[0] ?? session.user.fullName;
@@ -57,6 +64,7 @@ export default function AlunoInicioScreen() {
   const mensalidade = home?.mensalidade ?? null;
   const upcomingEvents = home?.upcomingEvents ?? [];
   const storeStrip = home?.storeStrip ?? [];
+  const rankingMe = rankingQuery.data?.me ?? null;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -332,12 +340,46 @@ export default function AlunoInicioScreen() {
               </View>
             ) : null}
 
-            <Card>
-              <View style={{ gap: 4 }}>
-                <Text variant="label">Ranking do mês</Text>
-                <Text variant="caption">Em breve — chega com a fase de relatórios.</Text>
-              </View>
-            </Card>
+            {rankingMe ? (
+              // REP.11: real entry card — live position from the endpoint's
+              // `me`, opening the full ranking screen (aluno-06/07).
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={RANKING_TITLE_ALUNO}
+                testID="ranking-card"
+                onPress={() => router.push('/ranking')}
+              >
+                <Card>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: theme.space['3'],
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 12,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: theme.color.pink['100'],
+                      }}
+                    >
+                      <BarChart3 size={18} color={theme.color.brand.accent} />
+                    </View>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text variant="label">{RANKING_TITLE_ALUNO}</Text>
+                      <Text variant="caption">
+                        {homeRankingLine(positionOrdinal(rankingMe.position))}
+                      </Text>
+                    </View>
+                    <ChevronRight size={16} color={theme.color.fg['4']} />
+                  </View>
+                </Card>
+              </Pressable>
+            ) : null}
           </QueryState>
         </Animated.View>
       </ScrollView>

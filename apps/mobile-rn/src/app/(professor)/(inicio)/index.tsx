@@ -5,8 +5,10 @@
  * hero with its checked-in count and "Iniciar chamada" (→ ATT.17 live
  * chamada), and the read-only "Eventos futuros" list (date square, name,
  * "N confirmados · gratuito/R$ X" — academy-wide data, no professor event
- * actions by design). "Próximos da graduação" stays an explicit placeholder
- * owned by its slice.
+ * actions by design). "Ranking de presença" section (REP.11, spec 013):
+ * the month's real top 3 from GET /v1/rankings?by=lessons with "Ver todos"
+ * opening the full ranking screen — the Phase-4 placeholder finally paid.
+ * "Próximos da graduação" stays an explicit placeholder owned by its slice.
  */
 
 import { Pressable, ScrollView, View } from 'react-native';
@@ -29,6 +31,8 @@ import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollme
 import { confirmadosLine, eventDateLine } from '../../../features/events/format';
 import { EventDateSquare } from '../../../features/events/ui';
 import { NotificationBell } from '../../../features/notifications/ui';
+import { RANKING_TITLE_PROFESSOR } from '../../../features/rankings/copy';
+import { countLabel, windowMonthPt } from '../../../features/rankings/format';
 import { isReadOnly, useSession } from '../../../session/session-store';
 
 export default function ProfessorInicioScreen() {
@@ -36,12 +40,18 @@ export default function ProfessorInicioScreen() {
   const router = useRouter();
   const { session } = useSession();
   const dashboardQuery = api.useQuery('get', '/v1/professor/dashboard');
+  // REP.11: the month's real top 3 for the "Ranking de presença" section.
+  const rankingQuery = api.useQuery('get', '/v1/rankings', {
+    params: { query: { by: 'lessons' } },
+  });
 
   if (!session) return null;
   const firstName = session.user.fullName.split(' ')[0] ?? session.user.fullName;
   const readOnly = isReadOnly(session);
   const dashboard = dashboardQuery.data;
   const nextClass = dashboard?.nextClass ?? null;
+  const ranking = rankingQuery.data ?? null;
+  const rankingTop = (ranking?.top ?? []).slice(0, 3);
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -171,6 +181,89 @@ export default function ProfessorInicioScreen() {
                     )}
                   </View>
                 </Card>
+
+                {ranking && rankingTop.length > 0 ? (
+                  // REP.11: real top 3 + "Ver todos" → full ranking screen
+                  // (professor-02 section, professor-05/06 screen).
+                  <View style={{ gap: theme.space['3'] }} testID="ranking-section">
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'baseline',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Text variant="subtitle">
+                        {RANKING_TITLE_PROFESSOR} · {windowMonthPt(ranking.window)}
+                      </Text>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Ver todos"
+                        onPress={() => router.push('/ranking')}
+                        hitSlop={8}
+                      >
+                        <Text variant="caption" weight="bold" color={theme.color.brand['2']}>
+                          Ver todos
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <Card padding={0}>
+                      {rankingTop.map((row, index) => (
+                        <View
+                          key={row.position}
+                          testID={`dashboard-ranking-${row.position}`}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: theme.space['3'],
+                            paddingVertical: 13,
+                            paddingHorizontal: 16,
+                            borderBottomWidth: index < rankingTop.length - 1 ? 1 : 0,
+                            borderBottomColor: theme.color.border['1'],
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: theme.radius.pill,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor:
+                                row.position === 1
+                                  ? theme.color.brand['1']
+                                  : theme.color.purple['100'],
+                            }}
+                          >
+                            <Text
+                              variant="caption"
+                              weight="bold"
+                              style={{ fontSize: 12.5 }}
+                              color={
+                                row.position === 1
+                                  ? theme.color.fg.onColor
+                                  : theme.color.purple['800']
+                              }
+                            >
+                              {row.position}
+                            </Text>
+                          </View>
+                          <Text variant="label" weight="bold" style={{ flex: 1 }} numberOfLines={1}>
+                            {row.name}
+                          </Text>
+                          <Text
+                            variant="caption"
+                            weight="bold"
+                            color={theme.color.fg['2']}
+                            style={{ fontSize: 12.5 }}
+                          >
+                            {countLabel(row.count, 'lessons')}
+                          </Text>
+                        </View>
+                      ))}
+                    </Card>
+                  </View>
+                ) : null}
 
                 {(dashboard.upcomingEvents ?? []).length > 0 ? (
                   // EVT.11 (story 22): read-only academy events from Início.

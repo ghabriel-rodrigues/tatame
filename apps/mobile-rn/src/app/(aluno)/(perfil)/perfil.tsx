@@ -4,7 +4,8 @@
  * everywhere, story 7) with a "Ver graduação" entry into the Graduação
  * screen, the "Loja da academia" row with its "Novo" pill opening the
  * vitrine (spec 009 story 16 — the dead shortcut finally works) + the real
- * "Tema escuro" switch (CFG.13, spec 011) + "Sair".
+ * "Tema escuro" switch (CFG.13, spec 011) + the "Dados pessoais" row
+ * (REP.10, spec 013 — supersedes the Phase-1 stub) + "Sair".
  */
 
 import { View } from 'react-native';
@@ -54,6 +55,14 @@ export default function AlunoPerfilScreen() {
       }
     >
       <Card padding={0}>
+        {/* REP.10: the Dados pessoais screen (aluno-18) — stub row paid. */}
+        <ListRow
+          title="Dados pessoais"
+          subtitle="Identificação, contato e endereço"
+          chevron
+          onPress={() => router.push('/dados-pessoais')}
+          testID="perfil-dados-row"
+        />
         <ListRow
           title={STORE_ROW_TITLE}
           subtitle={STORE_SUBTITLE}
