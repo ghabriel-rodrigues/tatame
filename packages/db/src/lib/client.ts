@@ -29,14 +29,25 @@ function createHandle(databaseUrl: string, role: string | null, max: number): Db
   if (role !== null && !/^[a-z_][a-z0-9_]*$/.test(role)) {
     throw new Error(`Invalid database role name: ${role}`);
   }
-  // The whole pool is dedicated to one role: the `role` GUC in the startup
-  // packet is the SET ROLE equivalent, applied server-side before any query
-  // (the login user must be a member of the role, or a superuser in dev/test).
-  const pool = new pg.Pool({
-    connectionString: databaseUrl,
-    max,
-    ...(role !== null ? { options: `-c role=${role}` } : {}),
-  });
+  // The whole pool is dedicated to one role. SET ROLE runs as the first
+  // command on every new connection (the login user must be a member of the
+  // role, or a superuser in dev/test). It is NOT passed as a startup-packet
+  // `options=-c role=...` GUC: connection poolers (Supabase's Supavisor)
+  // strip startup parameters, which would silently leave every connection on
+  // the login role — on managed Postgres that role can hold BYPASSRLS, i.e.
+  // tenant isolation off. client.query is FIFO per connection, so the SET
+  // ROLE always lands before any pooled query; on failure the connection is
+  // torn down (fail closed) rather than serving queries as the login role.
+  const pool = new pg.Pool({ connectionString: databaseUrl, max });
+  if (role !== null) {
+    pool.on('connect', (client) => {
+      client.query(`SET ROLE ${role}`).catch((error: unknown) => {
+        void client.end();
+        // Surface on the pool's error channel instead of crashing the process.
+        pool.emit('error', error instanceof Error ? error : new Error(String(error)), client);
+      });
+    });
+  }
   const db = drizzle(pool, { schema });
   return { db, pool, close: () => pool.end() };
 }
