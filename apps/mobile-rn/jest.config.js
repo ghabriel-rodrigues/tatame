@@ -23,6 +23,10 @@ module.exports = {
   preset: 'jest-expo',
   resolver: '<rootDir>/jest.resolver.js',
   setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
+  // Interaction-heavy suites regularly clear jest's 5s default locally but
+  // not on 2-core CI runners under full parallel load — a per-test chase
+  // (responsavel-eventos was the first) doesn't scale; this covers the class.
+  testTimeout: 20_000,
   testMatch: [
     '<rootDir>/tests/**/*.test.@(ts|tsx)',
     '<rootDir>/src/**/*.test.@(ts|tsx)',

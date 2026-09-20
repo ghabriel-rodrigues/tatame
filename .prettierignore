@@ -22,3 +22,6 @@ apps/web/public/downloads
 /.agents
 /.github/skills
 /.opencode
+# OpenAPI codegen outputs (api:openapi + shared:generate-api) — regenerate, never reformat
+packages/shared/src/api/openapi.json
+packages/shared/src/api/schema.d.ts
