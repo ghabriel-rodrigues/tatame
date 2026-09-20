@@ -92,9 +92,7 @@
       "uniqueConstraints": {
         "academies_slug_unique": {
           "name": "academies_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "nullsNotDistinct": false
         }
       },
@@ -103,9 +101,7 @@
           "name": "academies_own_row_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"academies\".\"id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -190,13 +186,9 @@
         "credentials_user_id_users_id_fk": {
           "name": "credentials_user_id_users_id_fk",
           "tableFrom": "credentials",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -208,18 +200,14 @@
           "name": "credentials_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"credentials\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
         "credentials_self_update": {
           "name": "credentials_self_update",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"credentials\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid",
           "withCheck": "\"credentials\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
@@ -290,13 +278,9 @@
         "password_reset_tokens_user_id_users_id_fk": {
           "name": "password_reset_tokens_user_id_users_id_fk",
           "tableFrom": "password_reset_tokens",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -305,9 +289,7 @@
       "uniqueConstraints": {
         "password_reset_tokens_token_hash_unique": {
           "name": "password_reset_tokens_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -316,9 +298,7 @@
           "name": "password_reset_tokens_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"password_reset_tokens\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
       },
@@ -394,26 +374,18 @@
         "refresh_tokens_session_id_sessions_id_fk": {
           "name": "refresh_tokens_session_id_sessions_id_fk",
           "tableFrom": "refresh_tokens",
-          "columnsFrom": [
-            "session_id"
-          ],
+          "columnsFrom": ["session_id"],
           "tableTo": "sessions",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "refresh_tokens_replaced_by_id_refresh_tokens_id_fk": {
           "name": "refresh_tokens_replaced_by_id_refresh_tokens_id_fk",
           "tableFrom": "refresh_tokens",
-          "columnsFrom": [
-            "replaced_by_id"
-          ],
+          "columnsFrom": ["replaced_by_id"],
           "tableTo": "refresh_tokens",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -422,9 +394,7 @@
       "uniqueConstraints": {
         "refresh_tokens_token_hash_unique": {
           "name": "refresh_tokens_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -433,9 +403,7 @@
           "name": "refresh_tokens_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "EXISTS (\n        SELECT 1 FROM sessions s\n        WHERE s.id = \"refresh_tokens\".\"session_id\"\n          AND s.user_id = NULLIF(current_setting('app.user_id', true), '')::uuid\n      )"
         }
       },
@@ -548,39 +516,27 @@
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "sessions_impersonator_user_id_users_id_fk": {
           "name": "sessions_impersonator_user_id_users_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "impersonator_user_id"
-          ],
+          "columnsFrom": ["impersonator_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "sessions_impersonated_tenant_id_academies_id_fk": {
           "name": "sessions_impersonated_tenant_id_academies_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "impersonated_tenant_id"
-          ],
+          "columnsFrom": ["impersonated_tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -592,18 +548,14 @@
           "name": "sessions_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"sessions\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
         "sessions_self_update": {
           "name": "sessions_self_update",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"sessions\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid",
           "withCheck": "\"sessions\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
@@ -706,18 +658,14 @@
           "name": "users_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"users\".\"id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
         "users_self_update": {
           "name": "users_self_update",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"users\".\"id\" = NULLIF(current_setting('app.user_id', true), '')::uuid",
           "withCheck": "\"users\".\"id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
@@ -725,9 +673,7 @@
           "name": "users_tenant_member_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "EXISTS (\n        SELECT 1 FROM memberships m\n        WHERE m.user_id = \"users\".\"id\"\n          AND m.tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid\n      )"
         }
       },
@@ -842,26 +788,18 @@
         "invites_tenant_id_academies_id_fk": {
           "name": "invites_tenant_id_academies_id_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "invites_created_by_user_id_users_id_fk": {
           "name": "invites_created_by_user_id_users_id_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -870,17 +808,12 @@
       "uniqueConstraints": {
         "invites_token_hash_unique": {
           "name": "invites_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         },
         "invites_tenant_id_id_uq": {
           "name": "invites_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -889,9 +822,7 @@
           "name": "invites_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"invites\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"invites\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -978,41 +909,27 @@
         "memberships_tenant_id_academies_id_fk": {
           "name": "memberships_tenant_id_academies_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "memberships_user_id_users_id_fk": {
           "name": "memberships_user_id_users_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "memberships_invite_fk": {
           "name": "memberships_invite_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "tenant_id",
-            "invite_id"
-          ],
+          "columnsFrom": ["tenant_id", "invite_id"],
           "tableTo": "invites",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1021,19 +938,12 @@
       "uniqueConstraints": {
         "memberships_tenant_user_role_uq": {
           "name": "memberships_tenant_user_role_uq",
-          "columns": [
-            "tenant_id",
-            "user_id",
-            "role"
-          ],
+          "columns": ["tenant_id", "user_id", "role"],
           "nullsNotDistinct": false
         },
         "memberships_tenant_id_id_uq": {
           "name": "memberships_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -1042,9 +952,7 @@
           "name": "memberships_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"memberships\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"memberships\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         },
@@ -1052,9 +960,7 @@
           "name": "memberships_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"memberships\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
       },
@@ -1116,13 +1022,9 @@
         "role_permissions_tenant_id_academies_id_fk": {
           "name": "role_permissions_tenant_id_academies_id_fk",
           "tableFrom": "role_permissions",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1131,19 +1033,12 @@
       "uniqueConstraints": {
         "role_permissions_tenant_role_key_uq": {
           "name": "role_permissions_tenant_role_key_uq",
-          "columns": [
-            "tenant_id",
-            "role",
-            "permission_key"
-          ],
+          "columns": ["tenant_id", "role", "permission_key"],
           "nullsNotDistinct": false
         },
         "role_permissions_tenant_id_id_uq": {
           "name": "role_permissions_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -1152,9 +1047,7 @@
           "name": "role_permissions_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"role_permissions\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"role_permissions\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -1253,39 +1146,27 @@
         "academy_subscriptions_academy_id_academies_id_fk": {
           "name": "academy_subscriptions_academy_id_academies_id_fk",
           "tableFrom": "academy_subscriptions",
-          "columnsFrom": [
-            "academy_id"
-          ],
+          "columnsFrom": ["academy_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "academy_subscriptions_platform_plan_id_platform_plans_id_fk": {
           "name": "academy_subscriptions_platform_plan_id_platform_plans_id_fk",
           "tableFrom": "academy_subscriptions",
-          "columnsFrom": [
-            "platform_plan_id"
-          ],
+          "columnsFrom": ["platform_plan_id"],
           "tableTo": "platform_plans",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "academy_subscriptions_pending_platform_plan_id_platform_plans_id_fk": {
           "name": "academy_subscriptions_pending_platform_plan_id_platform_plans_id_fk",
           "tableFrom": "academy_subscriptions",
-          "columnsFrom": [
-            "pending_platform_plan_id"
-          ],
+          "columnsFrom": ["pending_platform_plan_id"],
           "tableTo": "platform_plans",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1297,9 +1178,7 @@
           "name": "academy_subscriptions_own_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"academy_subscriptions\".\"academy_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -1382,9 +1261,7 @@
       "uniqueConstraints": {
         "platform_plans_name_unique": {
           "name": "platform_plans_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "nullsNotDistinct": false
         }
       },
@@ -1393,9 +1270,7 @@
           "name": "platform_plans_public_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "true"
         }
       },
@@ -1471,13 +1346,9 @@
         "platform_users_user_id_users_id_fk": {
           "name": "platform_users_user_id_users_id_fk",
           "tableFrom": "platform_users",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1486,9 +1357,7 @@
       "uniqueConstraints": {
         "platform_users_user_id_unique": {
           "name": "platform_users_user_id_unique",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "nullsNotDistinct": false
         }
       },
@@ -1592,39 +1461,27 @@
         "audit_logs_tenant_id_academies_id_fk": {
           "name": "audit_logs_tenant_id_academies_id_fk",
           "tableFrom": "audit_logs",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "audit_logs_actor_user_id_users_id_fk": {
           "name": "audit_logs_actor_user_id_users_id_fk",
           "tableFrom": "audit_logs",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
+          "columnsFrom": ["actor_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "audit_logs_impersonator_user_id_users_id_fk": {
           "name": "audit_logs_impersonator_user_id_users_id_fk",
           "tableFrom": "audit_logs",
-          "columnsFrom": [
-            "impersonator_user_id"
-          ],
+          "columnsFrom": ["impersonator_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1640,72 +1497,42 @@
     "public.academy_status": {
       "name": "academy_status",
       "schema": "public",
-      "values": [
-        "trial",
-        "active",
-        "delinquent",
-        "suspended"
-      ]
+      "values": ["trial", "active", "delinquent", "suspended"]
     },
     "public.credential_provider": {
       "name": "credential_provider",
       "schema": "public",
-      "values": [
-        "password"
-      ]
+      "values": ["password"]
     },
     "public.invite_kind": {
       "name": "invite_kind",
       "schema": "public",
-      "values": [
-        "student",
-        "guardian"
-      ]
+      "values": ["student", "guardian"]
     },
     "public.membership_role": {
       "name": "membership_role",
       "schema": "public",
-      "values": [
-        "student",
-        "professor",
-        "admin",
-        "guardian"
-      ]
+      "values": ["student", "professor", "admin", "guardian"]
     },
     "public.membership_status": {
       "name": "membership_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended"
-      ]
+      "values": ["active", "suspended"]
     },
     "public.platform_role": {
       "name": "platform_role",
       "schema": "public",
-      "values": [
-        "owner",
-        "support",
-        "finance"
-      ]
+      "values": ["owner", "support", "finance"]
     },
     "public.subscription_status": {
       "name": "subscription_status",
       "schema": "public",
-      "values": [
-        "trialing",
-        "active",
-        "past_due",
-        "canceled"
-      ]
+      "values": ["trialing", "active", "past_due", "canceled"]
     },
     "public.user_status": {
       "name": "user_status",
       "schema": "public",
-      "values": [
-        "active",
-        "disabled"
-      ]
+      "values": ["active", "disabled"]
     }
   },
   "schemas": {},

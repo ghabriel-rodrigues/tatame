@@ -23,7 +23,10 @@ export interface RosterScope {
   professorUserId?: string;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Enrollment mutations (ENR.9). Capacity is enforced inside the tenant
@@ -49,17 +52,26 @@ export class EnrollmentService {
         .from(students)
         .where(eq(students.id, studentId));
       const student = studentRows[0];
-      if (!student) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
+      if (!student)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
       if (student.status !== 'active') {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Archived students cannot be enrolled', [
-          { field: 'studentId', messages: ['Student is archived'] },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Archived students cannot be enrolled',
+          [{ field: 'studentId', messages: ['Student is archived'] }],
+        );
       }
 
       const existing = await tx
         .select({ id: enrollments.id, status: enrollments.status })
         .from(enrollments)
-        .where(and(eq(enrollments.classId, classId), eq(enrollments.studentId, studentId)));
+        .where(
+          and(
+            eq(enrollments.classId, classId),
+            eq(enrollments.studentId, studentId),
+          ),
+        );
       if (existing[0]?.status === 'active') {
         throw problem(
           409,
@@ -79,7 +91,11 @@ export class EnrollmentService {
         .insert(enrollments)
         .values({ tenantId: ctx.tenantId as string, classId, studentId })
         .onConflictDoUpdate({
-          target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
+          target: [
+            enrollments.tenantId,
+            enrollments.classId,
+            enrollments.studentId,
+          ],
           set: { status: 'active', updatedAt: new Date() },
         });
 
@@ -106,7 +122,8 @@ export class EnrollmentService {
           ),
         )
         .returning({ id: enrollments.id });
-      if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Active enrollment not found');
+      if (!row)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Active enrollment not found');
       return { classId, studentId, status: 'removed' as const };
     });
   }
@@ -144,7 +161,10 @@ export class EnrollmentService {
           422,
           ErrorCodes.VALIDATION_FAILED,
           'Archived students cannot be moved',
-          archived.map((row) => ({ field: row.id, messages: ['Student is archived'] })),
+          archived.map((row) => ({
+            field: row.id,
+            messages: ['Student is archived'],
+          })),
         );
       }
 
@@ -166,9 +186,10 @@ export class EnrollmentService {
           409,
           ErrorCodes.CLASS_CAPACITY_EXCEEDED,
           `Destination has ${Math.max(free, 0)} free slot(s) for ${studentIds.length} student(s)`,
-          studentIds
-            .slice(Math.max(free, 0))
-            .map((id) => ({ field: id, messages: ['No seat available in the destination class'] })),
+          studentIds.slice(Math.max(free, 0)).map((id) => ({
+            field: id,
+            messages: ['No seat available in the destination class'],
+          })),
         );
       }
 
@@ -177,14 +198,27 @@ export class EnrollmentService {
       await tx
         .update(enrollments)
         .set({ status: 'removed', updatedAt: new Date() })
-        .where(and(inArray(enrollments.studentId, studentIds), eq(enrollments.status, 'active')));
+        .where(
+          and(
+            inArray(enrollments.studentId, studentIds),
+            eq(enrollments.status, 'active'),
+          ),
+        );
 
       for (const studentId of studentIds) {
         await tx
           .insert(enrollments)
-          .values({ tenantId: ctx.tenantId as string, classId: destinationClassId, studentId })
+          .values({
+            tenantId: ctx.tenantId as string,
+            classId: destinationClassId,
+            studentId,
+          })
           .onConflictDoUpdate({
-            target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
+            target: [
+              enrollments.tenantId,
+              enrollments.classId,
+              enrollments.studentId,
+            ],
             set: { status: 'active', updatedAt: new Date() },
           });
       }
@@ -204,7 +238,11 @@ export class EnrollmentService {
     classId: string,
     studentId: string,
   ): Promise<boolean> {
-    const rows = await tx.select().from(classes).where(eq(classes.id, classId)).for('update');
+    const rows = await tx
+      .select()
+      .from(classes)
+      .where(eq(classes.id, classId))
+      .for('update');
     const target = rows[0];
     if (!target || target.status !== 'active') return false;
     const occupancy = await this.activeCount(tx, classId);
@@ -213,7 +251,11 @@ export class EnrollmentService {
       .insert(enrollments)
       .values({ tenantId, classId, studentId })
       .onConflictDoUpdate({
-        target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
+        target: [
+          enrollments.tenantId,
+          enrollments.classId,
+          enrollments.studentId,
+        ],
         set: { status: 'active', updatedAt: new Date() },
       });
     return true;
@@ -229,10 +271,17 @@ export class EnrollmentService {
     scope: RosterScope,
     options: { allowArchived?: boolean } = {},
   ): Promise<typeof classes.$inferSelect> {
-    const rows = await tx.select().from(classes).where(eq(classes.id, classId)).for('update');
+    const rows = await tx
+      .select()
+      .from(classes)
+      .where(eq(classes.id, classId))
+      .for('update');
     const target = rows[0];
     if (!target) throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found');
-    if (scope.professorUserId && target.professorUserId !== scope.professorUserId) {
+    if (
+      scope.professorUserId &&
+      target.professorUserId !== scope.professorUserId
+    ) {
       throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found');
     }
     if (!options.allowArchived && target.status !== 'active') {
@@ -241,11 +290,16 @@ export class EnrollmentService {
     return target;
   }
 
-  private async activeCount(tx: DbTransaction, classId: string): Promise<number> {
+  private async activeCount(
+    tx: DbTransaction,
+    classId: string,
+  ): Promise<number> {
     const [row] = await tx
       .select({ total: count() })
       .from(enrollments)
-      .where(and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')));
+      .where(
+        and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')),
+      );
     return Number(row?.total ?? 0);
   }
 }

@@ -17,7 +17,8 @@ import { emitAuthLost, getAccessToken, setAccessToken } from '../auth/token';
  * Same-origin in dev (Vite proxy) and prod (Netlify rewrite). Tests run in
  * jsdom whose fetch requires absolute URLs — pin the jsdom origin there.
  */
-export const apiBaseUrl = import.meta.env.MODE === 'test' ? 'http://localhost' : '';
+export const apiBaseUrl =
+  import.meta.env.MODE === 'test' ? 'http://localhost' : '';
 
 export const apiClient = createApiClient({
   baseUrl: apiBaseUrl,

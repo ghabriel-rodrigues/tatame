@@ -1,12 +1,20 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { RequiresPermission, Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
 import { EventsQueryService } from '../../events/services/events-query.service.js';
 import { StorefrontService } from '../../store/services/storefront.service.js';
 import { CheckinRequestDto } from '../dto/requests.dto.js';
-import { AlunoHomeResponseDto, CheckinResponseDto } from '../dto/responses.dto.js';
+import {
+  AlunoHomeResponseDto,
+  CheckinResponseDto,
+} from '../dto/responses.dto.js';
 import { CheckinService } from '../services/checkin.service.js';
 import { StatsService } from '../services/stats.service.js';
 
@@ -50,7 +58,8 @@ export class AlunoAttendanceController {
 
   @Get('home')
   @ApiOperation({
-    summary: 'Início: today-class hero, presença %, streak, graduation card, próximos eventos',
+    summary:
+      'Início: today-class hero, presença %, streak, graduation card, próximos eventos',
     description:
       'Streak is null when the academy disabled the gamification.streak toggle. The graduation ' +
       'card carries the derived belt and the progress against the academy rule (GRD.7). ' +

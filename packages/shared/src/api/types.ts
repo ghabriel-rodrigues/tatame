@@ -10,12 +10,14 @@ export type MembershipView = ApiSchemas['MembershipViewDto'];
 export type AuthSessionResponse = ApiSchemas['AuthSessionResponseDto'];
 export type MfaChallengeResponse = ApiSchemas['MfaChallengeResponseDto'];
 export type TokenPairResponse = ApiSchemas['TokenPairResponseDto'];
-export type SwitchMembershipResponse = ApiSchemas['SwitchMembershipResponseDto'];
+export type SwitchMembershipResponse =
+  ApiSchemas['SwitchMembershipResponseDto'];
 export type MeResponse = ApiSchemas['MeResponseDto'];
 export type MeAcademy = ApiSchemas['MeAcademyDto'];
 export type InviteLandingResponse = ApiSchemas['InviteLandingResponseDto'];
 export type InviteAcceptResponse = ApiSchemas['InviteAcceptResponseDto'];
-export type ImpersonationGrantResponse = ApiSchemas['ImpersonationGrantResponseDto'];
+export type ImpersonationGrantResponse =
+  ApiSchemas['ImpersonationGrantResponseDto'];
 
 // Enrollment registry (ENR.13-16 web surface).
 export type StudentListItem = ApiSchemas['StudentListItemDto'];
@@ -29,7 +31,8 @@ export type MoveStudentsResponse = ApiSchemas['MoveStudentsResponseDto'];
 
 // Attendance admin visibility (ATT.14 web surface).
 export type AdminSessionRow = ApiSchemas['AdminSessionRowDto'];
-export type AdminSessionListResponse = ApiSchemas['AdminSessionListResponseDto'];
+export type AdminSessionListResponse =
+  ApiSchemas['AdminSessionListResponseDto'];
 
 // Attendance mobile surface (ATT.15-18).
 export type CheckinRequest = ApiSchemas['CheckinRequestDto'];
@@ -47,8 +50,10 @@ export type RollCallResponse = ApiSchemas['RollCallResponseDto'];
 export type RollCallRosterRow = ApiSchemas['RosterRowDto'];
 export type RosterAttendance = ApiSchemas['RosterAttendanceDto'];
 export type MarkAttendanceResponse = ApiSchemas['MarkAttendanceResponseDto'];
-export type RevokeAttendanceResponse = ApiSchemas['RevokeAttendanceResponseDto'];
-export type ProfessorDashboardResponse = ApiSchemas['ProfessorDashboardResponseDto'];
+export type RevokeAttendanceResponse =
+  ApiSchemas['RevokeAttendanceResponseDto'];
+export type ProfessorDashboardResponse =
+  ApiSchemas['ProfessorDashboardResponseDto'];
 export type ProfessorStudent = ApiSchemas['ProfessorStudentDto'];
 
 // Graduation web surface (GRD.12-14).
@@ -56,12 +61,14 @@ export type BeltView = ApiSchemas['BeltViewDto'];
 export type BeltRef = ApiSchemas['BeltRefDto'];
 export type GraduationActor = ApiSchemas['GraduationActorDto'];
 export type GraduationEntry = ApiSchemas['GraduationEntryDto'];
-export type GraduationHistoryResponse = ApiSchemas['GraduationHistoryResponseDto'];
+export type GraduationHistoryResponse =
+  ApiSchemas['GraduationHistoryResponseDto'];
 export type GraduationRuleRow = ApiSchemas['GraduationRuleRowDto'];
 export type GraduationRulesResponse = ApiSchemas['GraduationRulesResponseDto'];
 export type GraduationRuleEntry = ApiSchemas['GraduationRuleEntryDto'];
 export type UpdateGraduationRules = ApiSchemas['UpdateGraduationRulesDto'];
-export type RevokeGraduationResponse = ApiSchemas['RevokeGraduationResponseDto'];
+export type RevokeGraduationResponse =
+  ApiSchemas['RevokeGraduationResponseDto'];
 export type AwardGraduationResponse = ApiSchemas['AwardGraduationResponseDto'];
 export type ValidGraduation = ApiSchemas['ValidGraduationDto'];
 export type AlunoGraduationResponse = ApiSchemas['AlunoGraduationResponseDto'];
@@ -98,10 +105,13 @@ export type StoreOrderStatus = AdminStoreOrder['status'];
 // Notifications feed (NOT.7 web surface, spec 010).
 export type NotificationView = ApiSchemas['NotificationDto'];
 export type NotificationCategory = NotificationView['category'];
-export type NotificationsListResponse = ApiSchemas['NotificationsListResponseDto'];
+export type NotificationsListResponse =
+  ApiSchemas['NotificationsListResponseDto'];
 export type UnreadCountResponse = ApiSchemas['UnreadCountResponseDto'];
-export type NotificationSettingsResponse = ApiSchemas['NotificationSettingsResponseDto'];
-export type UpdateNotificationSettings = ApiSchemas['UpdateNotificationSettingsDto'];
+export type NotificationSettingsResponse =
+  ApiSchemas['NotificationSettingsResponseDto'];
+export type UpdateNotificationSettings =
+  ApiSchemas['UpdateNotificationSettingsDto'];
 
 // White-label config web surface (CFG.8-11, spec 011).
 export type BrandTheme = ApiSchemas['BrandThemeDto'];
@@ -109,29 +119,34 @@ export type AdminAcademyResponse = ApiSchemas['AdminAcademyResponseDto'];
 export type UpdateAcademyRequest = ApiSchemas['UpdateAcademyDto'];
 export type ResolvedPermission = ApiSchemas['ResolvedPermissionDto'];
 export type RoleMemberCounts = ApiSchemas['RoleMemberCountsDto'];
-export type PermissionMatrixResponse = ApiSchemas['PermissionMatrixResponseDto'];
+export type PermissionMatrixResponse =
+  ApiSchemas['PermissionMatrixResponseDto'];
 export type PermissionEntry = ApiSchemas['PermissionEntryDto'];
 export type UpdatePermissionsRequest = ApiSchemas['UpdatePermissionsDto'];
 
 // Plataforma console (PLT.10-14 web surface, spec 012).
-export type PlatformOverviewResponse = ApiSchemas['PlatformOverviewResponseDto'];
+export type PlatformOverviewResponse =
+  ApiSchemas['PlatformOverviewResponseDto'];
 export type MrrPoint = ApiSchemas['MrrPointDto'];
 export type AttentionRow = ApiSchemas['AttentionRowDto'];
 export type PlatformAcademyRow = ApiSchemas['PlatformAcademyRowDto'];
 export type PlatformAcademyStatus = PlatformAcademyRow['status'];
-export type PlatformAcademyListResponse = ApiSchemas['PlatformAcademyListResponseDto'];
+export type PlatformAcademyListResponse =
+  ApiSchemas['PlatformAcademyListResponseDto'];
 export type PlatformAcademyDetail = ApiSchemas['PlatformAcademyDetailDto'];
 export type RegisterAcademyRequest = ApiSchemas['RegisterAcademyDto'];
 export type RegisterAcademyResponse = ApiSchemas['RegisterAcademyResponseDto'];
 export type PlanFeature = ApiSchemas['PlanFeatureDto'];
 export type PlatformPlanRow = ApiSchemas['PlatformPlanRowDto'];
-export type PlatformPlanCatalogResponse = ApiSchemas['PlatformPlanCatalogResponseDto'];
+export type PlatformPlanCatalogResponse =
+  ApiSchemas['PlatformPlanCatalogResponseDto'];
 export type PlatformPlanWriteRequest = ApiSchemas['PlatformPlanWriteDto'];
 export type PlatformTeamMember = ApiSchemas['PlatformTeamMemberDto'];
 export type PlatformTeamResponse = ApiSchemas['PlatformTeamResponseDto'];
 export type InviteTeamMemberRequest = ApiSchemas['InviteTeamMemberDto'];
 export type PlatformIntegration = ApiSchemas['PlatformIntegrationDto'];
-export type PlatformIntegrationsResponse = ApiSchemas['PlatformIntegrationsResponseDto'];
+export type PlatformIntegrationsResponse =
+  ApiSchemas['PlatformIntegrationsResponseDto'];
 
 // Admin reports web surface (REP.9, spec 013).
 export type ReportWindow = ApiSchemas['ReportWindowDto'];
@@ -158,5 +173,11 @@ export type AdminReport =
 export type AdminReportSlug = AdminReport['report'];
 
 export type AnyRoleName = MembershipView['role'];
-export type AcademyRoleName = Extract<AnyRoleName, 'student' | 'professor' | 'admin' | 'guardian'>;
-export type PlatformRoleName = Extract<AnyRoleName, 'owner' | 'support' | 'finance'>;
+export type AcademyRoleName = Extract<
+  AnyRoleName,
+  'student' | 'professor' | 'admin' | 'guardian'
+>;
+export type PlatformRoleName = Extract<
+  AnyRoleName,
+  'owner' | 'support' | 'finance'
+>;

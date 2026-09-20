@@ -25,19 +25,27 @@ describe('events: admin console + lifecycle', () => {
   let seminarioId: string; // seeded draft ("Data a definir")
   let openMatId: string; // seeded published free
   let exameId: string; // seeded published paid (R$ 60)
-  const emitted: Record<string, any[]> = { published: [], canceled: [], announced: [] };
+  const emitted: Record<string, any[]> = {
+    published: [],
+    canceled: [],
+    announced: [],
+  };
 
   beforeAll(async () => {
     t = await createTestApp();
     admin = (await t.login('admin@tatame.dev')).accessToken;
 
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
 
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
-    const byName = (name: string) => list.body.events.find((e: any) => e.name === name).id;
+    const byName = (name: string) =>
+      list.body.events.find((e: any) => e.name === name).id;
     seminarioId = byName('Seminario de Guarda');
     openMatId = byName('Open Mat de Verao');
     exameId = byName('Exame de Faixa');
@@ -45,7 +53,9 @@ describe('events: admin console + lifecycle', () => {
     const emitter = t.app.get(EventEmitter2);
     emitter.on(EVENTS_EVENT_PUBLISHED, (e) => emitted['published']!.push(e));
     emitter.on(EVENTS_EVENT_CANCELED, (e) => emitted['canceled']!.push(e));
-    emitter.on(EVENTS_ANNOUNCEMENT_REQUESTED, (e) => emitted['announced']!.push(e));
+    emitter.on(EVENTS_ANNOUNCEMENT_REQUESTED, (e) =>
+      emitted['announced']!.push(e),
+    );
   });
 
   afterAll(async () => {
@@ -57,7 +67,9 @@ describe('events: admin console + lifecycle', () => {
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.action, action), eq(auditLogs.targetId, targetId))),
+        .where(
+          and(eq(auditLogs.action, action), eq(auditLogs.targetId, targetId)),
+        ),
     );
 
   it('lists drafts first with card data + confirmados/inscritos/arrecadado totals', async () => {
@@ -105,24 +117,44 @@ describe('events: admin console + lifecycle', () => {
   });
 
   it('inscritos view: who registered, status, who confirmed, paid amount + totals', async () => {
-    const res = await t.http().get(`/v1/admin/events/${exameId}/registrations`).set(bearer(admin));
+    const res = await t
+      .http()
+      .get(`/v1/admin/events/${exameId}/registrations`)
+      .set(bearer(admin));
     expect(res.status).toBe(200);
-    expect(res.body.totals).toEqual({ inscritos: 2, confirmados: 1, arrecadadoCents: 6000 });
+    expect(res.body.totals).toEqual({
+      inscritos: 2,
+      confirmados: 1,
+      arrecadadoCents: 6000,
+    });
 
-    const ana = res.body.registrations.find((r: any) => r.student.fullName === 'Ana Aluna');
+    const ana = res.body.registrations.find(
+      (r: any) => r.student.fullName === 'Ana Aluna',
+    );
     expect(ana).toMatchObject({ status: 'confirmed', paidAmountCents: 6000 });
     expect(ana.confirmedBy.fullName).toBe('Ana Aluna'); // self-confirmed
 
-    const lara = res.body.registrations.find((r: any) => r.student.fullName === 'Lara Kids');
-    expect(lara).toMatchObject({ status: 'pending_payment', paidAmountCents: null });
+    const lara = res.body.registrations.find(
+      (r: any) => r.student.fullName === 'Lara Kids',
+    );
+    expect(lara).toMatchObject({
+      status: 'pending_payment',
+      paidAmountCents: null,
+    });
     expect(lara.confirmedBy.fullName).toBe('Renata Responsavel'); // guardian acted
   });
 
   it('publish requires date AND local — the friendly 422 of events_published_ck', async () => {
-    const res = await t.http().post(`/v1/admin/events/${seminarioId}/publish`).set(bearer(admin));
+    const res = await t
+      .http()
+      .post(`/v1/admin/events/${seminarioId}/publish`)
+      .set(bearer(admin));
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('event.publish_requirements');
-    expect(res.body.errors.map((e: any) => e.field).sort()).toEqual(['location', 'startsAt']);
+    expect(res.body.errors.map((e: any) => e.field).sort()).toEqual([
+      'location',
+      'startsAt',
+    ]);
   });
 
   it('edit fills the draft; publish then succeeds, emits + audits', async () => {
@@ -143,12 +175,21 @@ describe('events: admin console + lifecycle', () => {
     expect(published.body.status).toBe('published');
     expect(published.body.date).toBeTruthy();
 
-    expect(emitted['published']!.find((e) => e.eventId === seminarioId)).toBeTruthy();
-    expect(await auditRows('events.event.published', seminarioId)).toHaveLength(1);
-    expect(await auditRows('events.event.updated', seminarioId)).toHaveLength(1);
+    expect(
+      emitted['published']!.find((e) => e.eventId === seminarioId),
+    ).toBeTruthy();
+    expect(await auditRows('events.event.published', seminarioId)).toHaveLength(
+      1,
+    );
+    expect(await auditRows('events.event.updated', seminarioId)).toHaveLength(
+      1,
+    );
 
     // Re-publishing a published event is a conflict, not an idempotent no-op.
-    const again = await t.http().post(`/v1/admin/events/${seminarioId}/publish`).set(bearer(admin));
+    const again = await t
+      .http()
+      .post(`/v1/admin/events/${seminarioId}/publish`)
+      .set(bearer(admin));
     expect(again.status).toBe(409);
   });
 
@@ -167,7 +208,10 @@ describe('events: admin console + lifecycle', () => {
       .http()
       .post('/v1/admin/events')
       .set(bearer(admin))
-      .send({ name: 'Evento Orfao', responsibleUserId: '00000000-0000-0000-0000-000000000001' });
+      .send({
+        name: 'Evento Orfao',
+        responsibleUserId: '00000000-0000-0000-0000-000000000001',
+      });
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('validation.failed');
     expect(res.body.errors[0].field).toBe('responsibleUserId');
@@ -180,14 +224,24 @@ describe('events: admin console + lifecycle', () => {
       .set(bearer(admin))
       .send({ name: 'Treino Beneficente', responsibleUserId: professorUserId });
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ status: 'draft', startsAt: null, priceCents: null });
-    expect(await auditRows('events.event.created', res.body.id)).toHaveLength(1);
+    expect(res.body).toMatchObject({
+      status: 'draft',
+      startsAt: null,
+      priceCents: null,
+    });
+    expect(await auditRows('events.event.created', res.body.id)).toHaveLength(
+      1,
+    );
 
     const zero = await t
       .http()
       .post('/v1/admin/events')
       .set(bearer(admin))
-      .send({ name: 'Gratis Errado', responsibleUserId: professorUserId, priceCents: 0 });
+      .send({
+        name: 'Gratis Errado',
+        responsibleUserId: professorUserId,
+        priceCents: 0,
+      });
     expect(zero.status).toBe(422);
     expect(zero.body.code).toBe('validation.failed');
   });
@@ -205,7 +259,10 @@ describe('events: admin console + lifecycle', () => {
     expect(gated.status).toBe(422);
     expect(gated.body.code).toBe('event.not_published');
 
-    const res = await t.http().post(`/v1/admin/events/${openMatId}/announce`).set(bearer(admin));
+    const res = await t
+      .http()
+      .post(`/v1/admin/events/${openMatId}/announce`)
+      .set(bearer(admin));
     expect(res.status).toBe(202);
     expect(res.body.recipients).toBe(2); // Ana + Kiko (non-canceled inscritos)
 
@@ -214,16 +271,24 @@ describe('events: admin console + lifecycle', () => {
     expect(events[0].audience).toHaveLength(2);
     const kiko = events[0].audience.find((a: any) => a.guardianId !== null);
     expect(kiko.audience).toBe('guardian'); // dependent addressed via responsável
-    expect(await auditRows('events.event.announced', openMatId)).toHaveLength(1);
+    expect(await auditRows('events.event.announced', openMatId)).toHaveLength(
+      1,
+    );
   });
 
   it('cancel cascades: open event charges void, pending rows cancel, confirmed keep history', async () => {
     const before = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select().from(charges).where(and(eq(charges.origin, 'event'), eq(charges.status, 'open'))),
+      tx
+        .select()
+        .from(charges)
+        .where(and(eq(charges.origin, 'event'), eq(charges.status, 'open'))),
     );
     expect(before.length).toBeGreaterThanOrEqual(1); // Lara's seeded open charge
 
-    const res = await t.http().post(`/v1/admin/events/${exameId}/cancel`).set(bearer(admin));
+    const res = await t
+      .http()
+      .post(`/v1/admin/events/${exameId}/cancel`)
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('canceled');
 
@@ -237,17 +302,25 @@ describe('events: admin console + lifecycle', () => {
       .http()
       .get(`/v1/admin/events/${exameId}/registrations`)
       .set(bearer(admin));
-    const ana = detail.body.registrations.find((r: any) => r.student.fullName === 'Ana Aluna');
+    const ana = detail.body.registrations.find(
+      (r: any) => r.student.fullName === 'Ana Aluna',
+    );
     expect(ana.status).toBe('confirmed');
-    const lara = detail.body.registrations.find((r: any) => r.student.fullName === 'Lara Kids');
+    const lara = detail.body.registrations.find(
+      (r: any) => r.student.fullName === 'Lara Kids',
+    );
     expect(lara.status).toBe('canceled');
-    expect(await auditRows('events.registration.canceled', lara.id)).toHaveLength(1);
+    expect(
+      await auditRows('events.registration.canceled', lara.id),
+    ).toHaveLength(1);
 
     const laraCharge = await withPlatform(t.platformDb.db, (tx) =>
       tx.select().from(charges).where(eq(charges.eventRegistrationId, lara.id)),
     );
     expect(laraCharge[0]!.status).toBe('canceled');
-    expect(await auditRows('billing.charge.canceled', laraCharge[0]!.id)).toHaveLength(1);
+    expect(
+      await auditRows('billing.charge.canceled', laraCharge[0]!.id),
+    ).toHaveLength(1);
     expect(await auditRows('events.event.canceled', exameId)).toHaveLength(1);
 
     // Never hard-deleted, but frozen: edit and re-cancel are conflicts.
@@ -257,7 +330,10 @@ describe('events: admin console + lifecycle', () => {
       .set(bearer(admin))
       .send({ name: 'Zumbi' });
     expect(edit.status).toBe(409);
-    const again = await t.http().post(`/v1/admin/events/${exameId}/cancel`).set(bearer(admin));
+    const again = await t
+      .http()
+      .post(`/v1/admin/events/${exameId}/cancel`)
+      .set(bearer(admin));
     expect(again.status).toBe(409);
   });
 
@@ -275,7 +351,10 @@ describe('events: admin console + lifecycle', () => {
       expect(res.body.code).toBe('authz.forbidden_role');
     }
     const aluno = await t.login('aluno@tatame.dev');
-    const denied = await t.http().get('/v1/admin/events').set(bearer(aluno.accessToken));
+    const denied = await t
+      .http()
+      .get('/v1/admin/events')
+      .set(bearer(aluno.accessToken));
     expect(denied.status).toBe(403);
 
     // RLS backstop: a bravo admin sees an alpha event id as 404, never 403.
@@ -310,7 +389,8 @@ describe('events: admin console + lifecycle', () => {
       for (const wrapper of module.controllers.values()) {
         const metatype = wrapper.metatype as (new () => unknown) | undefined;
         if (!metatype) continue;
-        const controllerPath: string = Reflect.getMetadata('path', metatype) ?? '';
+        const controllerPath: string =
+          Reflect.getMetadata('path', metatype) ?? '';
         const prototype = metatype.prototype as Record<string, unknown>;
         for (const name of Object.getOwnPropertyNames(prototype)) {
           if (name === 'constructor') continue;
@@ -320,7 +400,8 @@ describe('events: admin console + lifecycle', () => {
           const method = Reflect.getMetadata('method', handler);
           if (path === undefined || method === undefined) continue;
           const full = `${controllerPath}/${path}`.replaceAll('//', '/');
-          if (full.includes('event')) eventRoutes.push({ controller: metatype.name, path: full });
+          if (full.includes('event'))
+            eventRoutes.push({ controller: metatype.name, path: full });
         }
       }
     }

@@ -23,7 +23,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { styled } from '@mui/material/styles';
 
-export type FormFieldType = 'text' | 'email' | 'password' | 'tel' | 'number' | 'date' | 'time';
+export type FormFieldType =
+  'text' | 'email' | 'password' | 'tel' | 'number' | 'date' | 'time';
 
 export interface FormFieldProps {
   label: string;
@@ -93,7 +94,11 @@ export function FormField({
   const isPassword = type === 'password';
   const inputType = isPassword && showPassword ? 'text' : type;
   const message = error ?? helperText;
-  const classes = ['FormField-root', error ? 'FormField-error' : null, className]
+  const classes = [
+    'FormField-root',
+    error ? 'FormField-error' : null,
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
 

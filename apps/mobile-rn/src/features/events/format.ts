@@ -20,7 +20,15 @@ const WEEKDAY_LONG = [
   'Sábado',
 ] as const;
 
-const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
+const WEEKDAY_SHORT = [
+  'Dom',
+  'Seg',
+  'Ter',
+  'Qua',
+  'Qui',
+  'Sex',
+  'Sáb',
+] as const;
 
 const MONTH_ABBREV = [
   'JAN',
@@ -57,7 +65,10 @@ export function dateSquare(date: string): { day: string; month: string } {
 }
 
 /** "Sábado, 15 de agosto · 10:00" (aluno-10/11); "Data a definir" guard. */
-export function eventDateLine(date?: string | null, time?: string | null): string {
+export function eventDateLine(
+  date?: string | null,
+  time?: string | null,
+): string {
   if (!date) return 'Data a definir';
   const label = `${WEEKDAY_LONG[weekdayOfDate(date)]}, ${Number(date.slice(8, 10))} de ${monthNamePt(date)}`;
   return time ? `${label} · ${time}` : label;
@@ -93,7 +104,8 @@ export function eventStateChip(
 ): { label: string; tone: ChipTone } {
   const status = registrationStatus(registration);
   if (status === 'confirmed') return { label: 'Confirmado', tone: 'success' };
-  if (status === 'pending') return { label: 'Pagamento pendente', tone: 'warning' };
+  if (status === 'pending')
+    return { label: 'Pagamento pendente', tone: 'warning' };
   return priceCents == null
     ? { label: 'Gratuito', tone: 'brand' }
     : { label: formatBRL(priceCents), tone: 'neutral' };
@@ -123,7 +135,8 @@ export function detailAction(
   if (status === 'pending' && priceCents != null) {
     return { kind: 'pending', label: payLabel(priceCents) };
   }
-  if (priceCents == null) return { kind: 'confirm', label: 'Confirmar presença' };
+  if (priceCents == null)
+    return { kind: 'confirm', label: 'Confirmar presença' };
   return { kind: 'pay', label: payLabel(priceCents) };
 }
 
@@ -144,7 +157,8 @@ export function canCancel(
  * Responsável dependent-chip mapping (spec 008 stories 18-21): what one
  * tap on the chip does for this dependent's current state.
  */
-export type DependentChipAction = 'confirm' | 'pay' | 'resume-payment' | 'cancel' | 'none';
+export type DependentChipAction =
+  'confirm' | 'pay' | 'resume-payment' | 'cancel' | 'none';
 
 export function dependentChipAction(
   priceCents: number | null | undefined,
@@ -181,7 +195,9 @@ export function eventDayMap(
     (map[day] ??= []).push(event);
   }
   for (const day of Object.keys(map)) {
-    map[Number(day)]!.sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''));
+    map[Number(day)]!.sort((a, b) =>
+      (a.time ?? '').localeCompare(b.time ?? ''),
+    );
   }
   return map;
 }

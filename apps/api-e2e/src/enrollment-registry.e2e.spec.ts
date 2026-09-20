@@ -49,13 +49,25 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
   });
 
   it('refuses a minor without a guardian, accepts one linked (minor ⇒ guardian rule)', async () => {
-    const minor = { fullName: 'Criança Sem Vínculo', birthDate: isoYearsAgo(9) };
-    const refused = await t.http().post('/v1/admin/students').set(bearer(admin)).send(minor);
+    const minor = {
+      fullName: 'Criança Sem Vínculo',
+      birthDate: isoYearsAgo(9),
+    };
+    const refused = await t
+      .http()
+      .post('/v1/admin/students')
+      .set(bearer(admin))
+      .send(minor);
     expect(refused.status).toBe(422);
     expect(refused.body.code).toBe('invite.minor_requires_guardian');
 
-    const guardians = await t.http().get('/v1/admin/guardians').set(bearer(admin));
-    const renata = guardians.body.guardians.find((g: any) => g.fullName === 'Renata Responsavel');
+    const guardians = await t
+      .http()
+      .get('/v1/admin/guardians')
+      .set(bearer(admin));
+    const renata = guardians.body.guardians.find(
+      (g: any) => g.fullName === 'Renata Responsavel',
+    );
     const accepted = await t
       .http()
       .post('/v1/admin/students')
@@ -96,8 +108,13 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
   });
 
   it('soft-archives a student and ends their active enrollments atomically', async () => {
-    const classesRes = await t.http().get('/v1/admin/classes').set(bearer(admin));
-    const adulto = classesRes.body.classes.find((c: any) => c.name === 'Adulto Gi');
+    const classesRes = await t
+      .http()
+      .get('/v1/admin/classes')
+      .set(bearer(admin));
+    const adulto = classesRes.body.classes.find(
+      (c: any) => c.name === 'Adulto Gi',
+    );
 
     const created = await t
       .http()
@@ -119,8 +136,13 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
     expect(archived.status).toBe(204);
 
     // Hidden from the active listing, visible under the inactive filter.
-    const activeList = await t.http().get('/v1/admin/students').set(bearer(admin));
-    expect(activeList.body.students.some((s: any) => s.id === studentId)).toBe(false);
+    const activeList = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    expect(activeList.body.students.some((s: any) => s.id === studentId)).toBe(
+      false,
+    );
     const inactiveList = await t
       .http()
       .get('/v1/admin/students?status=inactive')
@@ -129,14 +151,21 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
     expect(row.status).toBe('inactive');
     expect(row.classes).toEqual([]); // enrollment ended in the same transaction
 
-    const roster = await t.http().get(`/v1/admin/classes/${adulto.id}`).set(bearer(admin));
-    expect(roster.body.class.roster.some((r: any) => r.studentId === studentId)).toBe(false);
+    const roster = await t
+      .http()
+      .get(`/v1/admin/classes/${adulto.id}`)
+      .set(bearer(admin));
+    expect(
+      roster.body.class.roster.some((r: any) => r.studentId === studentId),
+    ).toBe(false);
   });
 
   it('lists guardians with dependent counts and creates login-less records', async () => {
     const list = await t.http().get('/v1/admin/guardians').set(bearer(admin));
     expect(list.status).toBe(200);
-    const renata = list.body.guardians.find((g: any) => g.fullName === 'Renata Responsavel');
+    const renata = list.body.guardians.find(
+      (g: any) => g.fullName === 'Renata Responsavel',
+    );
     expect(renata.badge).toBe('ativo'); // claimed by responsavel@tatame.dev
     expect(renata.dependentCount).toBeGreaterThanOrEqual(2);
 
@@ -144,7 +173,11 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
       .http()
       .post('/v1/admin/guardians')
       .set(bearer(admin))
-      .send({ fullName: 'Pai Novo', phone: '+55 11 90000-0000', email: 'Pai.Novo@example.com' });
+      .send({
+        fullName: 'Pai Novo',
+        phone: '+55 11 90000-0000',
+        email: 'Pai.Novo@example.com',
+      });
     expect(created.status).toBe(201);
     expect(created.body.guardian.badge).toBe('pendente');
     expect(created.body.guardian.email).toBe('pai.novo@example.com');
@@ -182,15 +215,20 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
       .send({ token, newPassword: 'SenhaProf!123' });
     expect([200, 204]).toContain(set.status);
 
-    const login = await t
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: 'nova.prof@example.com', password: 'SenhaProf!123', transport: 'body' });
+    const login = await t.http().post('/v1/auth/login').send({
+      email: 'nova.prof@example.com',
+      password: 'SenhaProf!123',
+      transport: 'body',
+    });
     expect(login.status).toBe(200);
     expect(login.body.memberships[0].role).toBe('professor');
 
     const list = await t.http().get('/v1/admin/professors').set(bearer(admin));
-    expect(list.body.professors.some((p: any) => p.email === 'nova.prof@example.com')).toBe(true);
+    expect(
+      list.body.professors.some(
+        (p: any) => p.email === 'nova.prof@example.com',
+      ),
+    ).toBe(true);
 
     // Registering the same email again in the same academy is a conflict.
     const dup = await t
@@ -230,7 +268,10 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
       [admin, 'get', '/v1/professor/classes'],
       [admin, 'get', '/v1/responsavel/dependents'],
     ] as const) {
-      const res = await (t.http() as any)[method](path).set(bearer(token)).send({});
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(token))
+        .send({});
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code).toBe('authz.forbidden_role');
     }
@@ -257,24 +298,39 @@ describe('enrollment: admin registry (ENR.6/ENR.7)', () => {
   it('RLS: registry listings never cross tenants', async () => {
     const bravoAdmin = (await t.login('admin.bravo@tatame.dev')).accessToken;
 
-    const students = await t.http().get('/v1/admin/students').set(bearer(bravoAdmin));
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(bravoAdmin));
     const names = students.body.students.map((s: any) => s.fullName);
     expect(names).toContain('Bento Bravo Jr');
     expect(names).not.toContain('Ana Aluna');
     expect(names).not.toContain('Kiko Kids');
 
-    const guardians = await t.http().get('/v1/admin/guardians').set(bearer(bravoAdmin));
+    const guardians = await t
+      .http()
+      .get('/v1/admin/guardians')
+      .set(bearer(bravoAdmin));
     const guardianNames = guardians.body.guardians.map((g: any) => g.fullName);
     expect(guardianNames).toContain('Gustavo Guardiao');
     expect(guardianNames).not.toContain('Renata Responsavel');
 
     // Same fixture class names exist in both academies — ids must differ.
-    const alphaClasses = await t.http().get('/v1/admin/classes').set(bearer(admin));
-    const bravoClasses = await t.http().get('/v1/admin/classes').set(bearer(bravoAdmin));
+    const alphaClasses = await t
+      .http()
+      .get('/v1/admin/classes')
+      .set(bearer(admin));
+    const bravoClasses = await t
+      .http()
+      .get('/v1/admin/classes')
+      .set(bearer(bravoAdmin));
     const alphaIds = new Set(alphaClasses.body.classes.map((c: any) => c.id));
-    for (const c of bravoClasses.body.classes) expect(alphaIds.has(c.id)).toBe(false);
+    for (const c of bravoClasses.body.classes)
+      expect(alphaIds.has(c.id)).toBe(false);
     expect(
-      bravoClasses.body.classes.every((c: any) => c.professor.fullName === 'Marcos Multi'),
+      bravoClasses.body.classes.every(
+        (c: any) => c.professor.fullName === 'Marcos Multi',
+      ),
     ).toBe(true);
   });
 });

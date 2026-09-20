@@ -35,8 +35,18 @@ export function makePlan(overrides: Partial<AcademyPlan> = {}): AcademyPlan {
 /** Seed-faithful plan catalog (BIL.5): two active plans + one archived. */
 export function makePlanCatalog(): AcademyPlan[] {
   return [
-    makePlan({ name: 'Mensal', amountCents: 18_000, recurrence: 'monthly', dueDay: 5 }),
-    makePlan({ name: 'Kids Mensal', amountCents: 15_000, recurrence: 'monthly', dueDay: 10 }),
+    makePlan({
+      name: 'Mensal',
+      amountCents: 18_000,
+      recurrence: 'monthly',
+      dueDay: 5,
+    }),
+    makePlan({
+      name: 'Kids Mensal',
+      amountCents: 15_000,
+      recurrence: 'monthly',
+      dueDay: 10,
+    }),
     makePlan({
       name: 'Trimestral',
       amountCents: 48_000,
@@ -64,7 +74,9 @@ export function makeDelinquentStudent(
 
 let upcomingCounter = 0;
 /** One "Próximos vencimentos" group with per-charge rows for the given day. */
-export function makeUpcomingGroup(overrides: Partial<UpcomingGroup> = {}): UpcomingGroup {
+export function makeUpcomingGroup(
+  overrides: Partial<UpcomingGroup> = {},
+): UpcomingGroup {
   upcomingCounter += 1;
   const charges = overrides.charges ?? [
     {
@@ -154,7 +166,9 @@ export function makeAdminOverview(
 }
 
 let repasseCounter = 0;
-export function makeRepasseRow(overrides: Partial<RepasseRow> = {}): RepasseRow {
+export function makeRepasseRow(
+  overrides: Partial<RepasseRow> = {},
+): RepasseRow {
   repasseCounter += 1;
   return {
     academyId: uuid('8014', repasseCounter),
@@ -177,7 +191,9 @@ export function makeRepasseRow(overrides: Partial<RepasseRow> = {}): RepasseRow 
  * is the delinquent-academy Retido fixture (charter retention rule, the
  * seed's charlie-fc shape). fee = gross × fee_bps, net = gross − fee.
  */
-export function makeRepasses(overrides: Partial<RepassesResponse> = {}): RepassesResponse {
+export function makeRepasses(
+  overrides: Partial<RepassesResponse> = {},
+): RepassesResponse {
   return {
     totals: {
       subscriptionsMonthCents: 1_924_000,

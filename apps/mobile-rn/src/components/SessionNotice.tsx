@@ -31,7 +31,9 @@ export function SessionNotice({ title, body, children }: SessionNoticeProps) {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: 'center', padding: theme.space['6'] }}>
+      <View
+        style={{ flex: 1, justifyContent: 'center', padding: theme.space['6'] }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <BrandLogo size="md" />
           <View style={{ gap: theme.space['1'] }}>

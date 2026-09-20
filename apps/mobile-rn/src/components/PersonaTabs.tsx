@@ -12,7 +12,11 @@
 import { useState, type ComponentType, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { GlassTabBar, Toast, type GlassTabItem } from '@tatame/design-system/native';
+import {
+  GlassTabBar,
+  Toast,
+  type GlassTabItem,
+} from '@tatame/design-system/native';
 
 export interface PersonaTabConfig {
   /** Route group name, e.g. "(inicio)". */
@@ -54,7 +58,9 @@ export function PersonaTabs({ tabs, fab }: PersonaTabsProps) {
 
   const renderTabBar = (props: TabBarAdapterProps): ReactNode => {
     const items: GlassTabItem[] = tabs.map((tab) => {
-      const routeIndex = props.state.routes.findIndex((route) => route.name === tab.name);
+      const routeIndex = props.state.routes.findIndex(
+        (route) => route.name === tab.name,
+      );
       const route = props.state.routes[routeIndex];
       const active = props.state.index === routeIndex;
       const Icon = tab.icon;
@@ -69,7 +75,8 @@ export function PersonaTabs({ tabs, fab }: PersonaTabsProps) {
             target: route?.key,
             canPreventDefault: true,
           });
-          if (!active && !event.defaultPrevented) props.navigation.navigate(tab.name);
+          if (!active && !event.defaultPrevented)
+            props.navigation.navigate(tab.name);
         },
       };
     });
@@ -96,7 +103,11 @@ export function PersonaTabs({ tabs, fab }: PersonaTabsProps) {
         screenOptions={{ headerShown: false }}
       >
         {tabs.map((tab) => (
-          <Tabs.Screen key={tab.name} name={tab.name} options={{ title: tab.title }} />
+          <Tabs.Screen
+            key={tab.name}
+            name={tab.name}
+            options={{ title: tab.title }}
+          />
         ))}
       </Tabs>
       <Toast

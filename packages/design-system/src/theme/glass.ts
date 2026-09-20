@@ -19,11 +19,16 @@ import { tokens } from '../../build/web/tokens.ts';
 export type GlassVariant = 'regular' | 'deep';
 
 /** CSS-in-JS object shape (Emotion/MUI `sx`/`styled` compatible). */
-export type CssMixin = Record<string, string | number | Record<string, string | number>>;
+export type CssMixin = Record<
+  string,
+  string | number | Record<string, string | number>
+>;
 
 export function glassSurface(variant: GlassVariant = 'regular'): CssMixin {
-  const background = variant === 'deep' ? 'var(--glass-bg-deep)' : 'var(--glass-bg)';
-  const blur = variant === 'deep' ? 'var(--glass-blur-strong)' : 'var(--glass-blur)';
+  const background =
+    variant === 'deep' ? 'var(--glass-bg-deep)' : 'var(--glass-bg)';
+  const blur =
+    variant === 'deep' ? 'var(--glass-blur-strong)' : 'var(--glass-blur)';
   const filter = `blur(${blur}) saturate(var(--glass-saturation))`;
   return {
     position: 'relative',
@@ -47,7 +52,13 @@ export function glassSurface(variant: GlassVariant = 'regular'): CssMixin {
 /** Uppercase-hex `#RRGGBB` -> `rgba(r, g, b, alpha)`. */
 export function hexToRgba(hex: string, alpha: number): string {
   const n = hex.replace('#', '');
-  const full = n.length === 3 ? n.split('').map((ch) => ch + ch).join('') : n;
+  const full =
+    n.length === 3
+      ? n
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : n;
   const int = Number.parseInt(full, 16);
   if (full.length !== 6 || Number.isNaN(int)) {
     throw new Error(`hexToRgba: invalid hex color "${hex}"`);
@@ -61,7 +72,9 @@ export function hexToRgba(hex: string, alpha: number): string {
  * from the `shadow.glow` token; color follows the brand's vibrant (purple-500
  * slot) so tenant CTAs glow in their own brand.
  */
-export function glowShadow(vibrantHex: string = tokens.color.purple[500]): string {
+export function glowShadow(
+  vibrantHex: string = tokens.color.purple[500],
+): string {
   const [g] = tokens.shadow.glow;
   // Reuse the token's own opacity (rgba alpha) so only the hue is re-branded.
   const alpha = Number(/([0-9.]+)\)\s*$/.exec(g.color)?.[1] ?? 0.35);

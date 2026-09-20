@@ -35,18 +35,36 @@ function TurmaCard({ turma }: { turma: ClassListItem }) {
     >
       <Card padding={theme.space['4']}>
         <View style={{ gap: theme.space['2'] }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: theme.space['2'],
+            }}
+          >
             <Text variant="subtitle" style={{ flex: 1 }} numberOfLines={1}>
               {turma.name}
             </Text>
             <ChevronRight size={16} color={theme.color.fg['4']} />
           </View>
           <Text variant="caption">{scheduleSummary(turma.schedules)}</Text>
-          <View style={{ flexDirection: 'row', gap: theme.space['2'], flexWrap: 'wrap' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: theme.space['2'],
+              flexWrap: 'wrap',
+            }}
+          >
             {turma.ageMin !== null && turma.ageMax !== null ? (
-              <Chip label={`${turma.ageMin} a ${turma.ageMax} anos`} tone="brand" />
+              <Chip
+                label={`${turma.ageMin} a ${turma.ageMax} anos`}
+                tone="brand"
+              />
             ) : null}
-            <Chip label={`${turma.occupancy} de ${turma.capacity} vagas`} tone="neutral" />
+            <Chip
+              label={`${turma.occupancy} de ${turma.capacity} vagas`}
+              tone="neutral"
+            />
             {turma.lotada ? <Chip label="Lotada" tone="warning" /> : null}
           </View>
           <OccupancyBar
@@ -68,16 +86,25 @@ export default function ProfessorTurmasScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
-          <ScreenHeader title="Minhas turmas" subtitle={session?.academy?.name ?? undefined} />
+          <ScreenHeader
+            title="Minhas turmas"
+            subtitle={session?.academy?.name ?? undefined}
+          />
           <QueryState loading={query.isPending} error={query.isError}>
             {turmas.length === 0 ? (
               <Card>
                 <View style={{ gap: 4 }}>
                   <Text variant="label">Nenhuma turma</Text>
                   <Text variant="caption">
-                    Você ainda não tem turmas atribuídas. Fale com o admin da academia.
+                    Você ainda não tem turmas atribuídas. Fale com o admin da
+                    academia.
                   </Text>
                 </View>
               </Card>

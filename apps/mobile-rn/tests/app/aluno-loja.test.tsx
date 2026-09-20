@@ -11,11 +11,22 @@
  * stay mounted, so assertions use testIDs / getAllByText where copy repeats.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 import { makePixPayment } from '../helpers/billing';
 import {
@@ -81,12 +92,16 @@ function renderAlunoStore(
       const all = [makeProductCard(), makeRashGuardCard(), makeFaixaCard()];
       const products = all.filter((product) => {
         if (categoryId && product.categoryId !== categoryId) return false;
-        if (search && !product.name.toLowerCase().includes(search)) return false;
+        if (search && !product.name.toLowerCase().includes(search))
+          return false;
         return true;
       });
       return json(200, makeVitrine(products));
     }
-    if (request.method === 'GET' && request.path === `/v1/store/products/${detail.id}`) {
+    if (
+      request.method === 'GET' &&
+      request.path === `/v1/store/products/${detail.id}`
+    ) {
       return json(200, detail);
     }
     if (request.method === 'POST' && request.path === '/v1/store/orders') {
@@ -121,18 +136,22 @@ function renderAlunoStore(
         mandateCreated: false,
       });
     }
-    const simulateMatch = /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(
-      request.path,
-    );
+    const simulateMatch =
+      /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(request.path);
     if (request.method === 'POST' && simulateMatch) {
       log.simulated.push(simulateMatch[1] ?? '');
       // The normalized-event handler: order → paid, stock decremented.
       const quantity = orders[0]?.item?.quantity ?? 1;
       orders = orders.map((order) =>
-        order.status === 'pending' ? { ...order, status: 'paid', chargeId: null } : order,
+        order.status === 'pending'
+          ? { ...order, status: 'paid', chargeId: null }
+          : order,
       );
       detail = { ...detail, stockQty: detail.stockQty - quantity };
-      return json(200, { payment: makePixPayment({ status: 'succeeded' }), charge: null });
+      return json(200, {
+        payment: makePixPayment({ status: 'succeeded' }),
+        charge: null,
+      });
     }
     if (request.method === 'GET' && request.path === '/v1/aluno/wallet') {
       return json(200, {
@@ -145,7 +164,10 @@ function renderAlunoStore(
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -158,7 +180,9 @@ async function openVitrineFromHome(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Ver tudo'));
   });
-  await waitFor(() => expect(screen.getByText('Loja Alpha Jiu-Jitsu')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByText('Loja Alpha Jiu-Jitsu')).toBeTruthy(),
+  );
   await waitFor(() => expect(screen.getByTestId('product-grid')).toBeTruthy());
 }
 
@@ -167,7 +191,9 @@ async function openDetail(productId: string): Promise<void> {
     fireEvent.press(screen.getByTestId(`product-${productId}`));
   });
   // The banner renders immediately; the thumbnails need the loaded product.
-  await waitFor(() => expect(screen.getByTestId('gallery-thumb-0')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('gallery-thumb-0')).toBeTruthy(),
+  );
 }
 
 describe('aluno store (STO.10)', () => {
@@ -195,7 +221,9 @@ describe('aluno store (STO.10)', () => {
       screen.getAllByText('Produtos oficiais · retirada na recepção').length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getByPlaceholderText('Buscar por nome ou tag (ex: kimono, treino)'),
+      screen.getByPlaceholderText(
+        'Buscar por nome ou tag (ex: kimono, treino)',
+      ),
     ).toBeTruthy();
     expect(screen.getByTestId('category-chips').props.horizontal).toBe(true);
     expect(screen.getByTestId(`product-${KIMONO_ID}`)).toBeTruthy();
@@ -211,7 +239,9 @@ describe('aluno store (STO.10)', () => {
       fireEvent.press(screen.getByTestId(`home-store-${KIMONO_ID}`));
     });
 
-    await waitFor(() => expect(screen.getByTestId('gallery-indicator')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('gallery-indicator')).toBeTruthy(),
+    );
     expect(screen.getByText('Foto 1 de 3')).toBeTruthy();
   });
 
@@ -219,19 +249,27 @@ describe('aluno store (STO.10)', () => {
     const log = renderAlunoStore();
     await openVitrineFromHome();
 
-    const input = screen.getByPlaceholderText('Buscar por nome ou tag (ex: kimono, treino)');
+    const input = screen.getByPlaceholderText(
+      'Buscar por nome ou tag (ex: kimono, treino)',
+    );
     await act(async () => {
       fireEvent.changeText(input, 'rash');
     });
 
-    await waitFor(() => expect(screen.queryByTestId(`product-${KIMONO_ID}`)).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByTestId(`product-${KIMONO_ID}`)).toBeNull(),
+    );
     expect(screen.getByTestId(`product-${RASH_GUARD_ID}`)).toBeTruthy();
-    expect(log.vitrineSearches.some((s) => s.includes('search=rash'))).toBe(true);
+    expect(log.vitrineSearches.some((s) => s.includes('search=rash'))).toBe(
+      true,
+    );
 
     await act(async () => {
       fireEvent.changeText(input, 'inexistente');
     });
-    await waitFor(() => expect(screen.getByTestId('vitrine-empty')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('vitrine-empty')).toBeTruthy(),
+    );
     expect(screen.getByText('Nenhum produto encontrado')).toBeTruthy();
   });
 
@@ -241,22 +279,32 @@ describe('aluno store (STO.10)', () => {
 
     // "Tudo" + one chip per category, in a horizontally scrollable carousel.
     expect(screen.getByTestId('category-chip-all')).toBeTruthy();
-    expect(screen.getByTestId(`category-chip-${KIMONOS_CATEGORY_ID}`)).toBeTruthy();
-    expect(screen.getByTestId(`category-chip-${NO_GI_CATEGORY_ID}`)).toBeTruthy();
+    expect(
+      screen.getByTestId(`category-chip-${KIMONOS_CATEGORY_ID}`),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId(`category-chip-${NO_GI_CATEGORY_ID}`),
+    ).toBeTruthy();
 
     await act(async () => {
       fireEvent.press(screen.getByTestId(`category-chip-${NO_GI_CATEGORY_ID}`));
     });
-    await waitFor(() => expect(screen.queryByTestId(`product-${KIMONO_ID}`)).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByTestId(`product-${KIMONO_ID}`)).toBeNull(),
+    );
     expect(screen.getByTestId(`product-${RASH_GUARD_ID}`)).toBeTruthy();
     expect(
-      log.vitrineSearches.some((s) => s.includes(`categoryId=${NO_GI_CATEGORY_ID}`)),
+      log.vitrineSearches.some((s) =>
+        s.includes(`categoryId=${NO_GI_CATEGORY_ID}`),
+      ),
     ).toBe(true);
 
     await act(async () => {
       fireEvent.press(screen.getByTestId('category-chip-all'));
     });
-    await waitFor(() => expect(screen.getByTestId(`product-${KIMONO_ID}`)).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId(`product-${KIMONO_ID}`)).toBeTruthy(),
+    );
   });
 
   it('renders the aluno-17 detail anatomy with switching gallery variants', async () => {
@@ -267,7 +315,9 @@ describe('aluno store (STO.10)', () => {
     expect(screen.getByTestId('product-banner')).toBeTruthy();
     expect(screen.getByTestId('product-category-pill')).toBeTruthy();
     expect(screen.getByText('Foto 1 de 3')).toBeTruthy();
-    expect(screen.getByText(/Trançado leve com bordados oficiais/)).toBeTruthy();
+    expect(
+      screen.getByText(/Trançado leve com bordados oficiais/),
+    ).toBeTruthy();
     expect(screen.getByTestId('tag-kimono')).toBeTruthy();
     expect(screen.getByTestId('tag-competição')).toBeTruthy();
     expect(screen.getByText('Tamanho')).toBeTruthy();
@@ -308,12 +358,20 @@ describe('aluno store (STO.10)', () => {
     // Pending order + order-origin charge → the EXISTING Pix rails on the
     // persona-neutral store route, addressed "Pedido #NNNN · <produto>".
     await waitFor(() => expect(screen.getByTestId('pix-sheet')).toBeTruthy());
-    expect(log.orderBodies).toEqual([{ productId: KIMONO_ID, size: 'M', quantity: 1 }]);
-    expect(log.paymentPaths).toEqual([`/v1/store/charges/${ORDER_CHARGE_ID}/payments`]);
-    expect(screen.getByText('Pedido #2431 · Kimono oficial Horizonte')).toBeTruthy();
+    expect(log.orderBodies).toEqual([
+      { productId: KIMONO_ID, size: 'M', quantity: 1 },
+    ]);
+    expect(log.paymentPaths).toEqual([
+      `/v1/store/charges/${ORDER_CHARGE_ID}/payments`,
+    ]);
+    expect(
+      screen.getByText('Pedido #2431 · Kimono oficial Horizonte'),
+    ).toBeTruthy();
 
     // Simulated provider → the simulate affordance (same gating as billing).
-    await waitFor(() => expect(screen.getByText('Simular pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Simular pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Simular pagamento'));
     });
@@ -332,7 +390,9 @@ describe('aluno store (STO.10)', () => {
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Voltar'));
     });
-    await waitFor(() => expect(screen.getByTestId('my-orders-entry')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('my-orders-entry')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByTestId('my-orders-entry'));
     });
@@ -379,14 +439,20 @@ describe('aluno store (STO.10)', () => {
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Perfil'));
     });
-    await waitFor(() => expect(screen.getByTestId('perfil-loja-row')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('perfil-loja-row')).toBeTruthy(),
+    );
     expect(screen.getByTestId('loja-novo-pill')).toBeTruthy();
     expect(screen.getByText('Novo')).toBeTruthy();
 
     await act(async () => {
       fireEvent.press(screen.getByTestId('perfil-loja-row'));
     });
-    await waitFor(() => expect(screen.getByText('Loja Alpha Jiu-Jitsu')).toBeTruthy());
-    await waitFor(() => expect(screen.getByTestId('product-grid')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Loja Alpha Jiu-Jitsu')).toBeTruthy(),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('product-grid')).toBeTruthy(),
+    );
   });
 });

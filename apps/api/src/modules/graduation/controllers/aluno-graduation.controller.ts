@@ -1,5 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
@@ -19,7 +24,8 @@ export class AlunoGraduationController {
 
   @Get('graduation')
   @ApiOperation({
-    summary: 'Graduação: belt hero, progress to the next milestone, evolution timeline',
+    summary:
+      'Graduação: belt hero, progress to the next milestone, evolution timeline',
     description:
       'Current belt is derived (latest non-reversed award; white default). Progress counts ' +
       'active lessons since the last award against the academy rule; non-reversed belt entries ' +

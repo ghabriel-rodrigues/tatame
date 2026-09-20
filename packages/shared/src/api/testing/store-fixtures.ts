@@ -41,14 +41,26 @@ export function makeStoreCategory(
 /** admin-03 chip row: Kimonos 1 · No-gi 1 · Acessórios 3 · Casual 1. */
 export function makeStoreCategoryList(): StoreCategoryFixture[] {
   return [
-    makeStoreCategory({ id: FIXTURE_CATEGORY_IDS.kimonos, name: 'Kimonos', productCount: 1 }),
-    makeStoreCategory({ id: FIXTURE_CATEGORY_IDS.nogi, name: 'No-gi', productCount: 1 }),
+    makeStoreCategory({
+      id: FIXTURE_CATEGORY_IDS.kimonos,
+      name: 'Kimonos',
+      productCount: 1,
+    }),
+    makeStoreCategory({
+      id: FIXTURE_CATEGORY_IDS.nogi,
+      name: 'No-gi',
+      productCount: 1,
+    }),
     makeStoreCategory({
       id: FIXTURE_CATEGORY_IDS.acessorios,
       name: 'Acessórios',
       productCount: 3,
     }),
-    makeStoreCategory({ id: FIXTURE_CATEGORY_IDS.casual, name: 'Casual', productCount: 1 }),
+    makeStoreCategory({
+      id: FIXTURE_CATEGORY_IDS.casual,
+      name: 'Casual',
+      productCount: 1,
+    }),
   ];
 }
 
@@ -161,7 +173,9 @@ export function makeAdminStoreProductList(): AdminStoreProductFixture[] {
 }
 
 /** admin-03 tiles: R$ 3.240 vendas · 23 pedidos · 1 estoque baixo. */
-export function makeStoreOverview(overrides: Partial<StoreOverview> = {}): StoreOverview {
+export function makeStoreOverview(
+  overrides: Partial<StoreOverview> = {},
+): StoreOverview {
   return {
     month: '2026-08',
     vendasMesCents: 324_000,
@@ -212,7 +226,10 @@ export function makeAdminStoreOrder(
     createdAt: '2026-08-08T14:00:00.000Z',
     item: makeStoreOrderItem(),
     chargeId: null,
-    buyer: { userId: uuid('8054', orderCounter), fullName: `Comprador ${orderCounter}` },
+    buyer: {
+      userId: uuid('8054', orderCounter),
+      fullName: `Comprador ${orderCounter}`,
+    },
     ...overrides,
   };
 }

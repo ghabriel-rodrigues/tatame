@@ -52,7 +52,10 @@ export interface TatameButtonProps {
 }
 
 /** Font px + paddings mirror the web executor's size overrides. */
-const SIZES: Record<TatameButtonSize, { fontSize: number; padV: number; padH: number }> = {
+const SIZES: Record<
+  TatameButtonSize,
+  { fontSize: number; padV: number; padH: number }
+> = {
   sm: { fontSize: 13, padV: 8, padH: 16 },
   md: { fontSize: 14, padV: 12, padH: 22 },
   lg: { fontSize: 16, padV: 15, padH: 28 },
@@ -93,7 +96,9 @@ export function TatameButton({
 
   // Glow lives on the outer (non-clipping) node so iOS doesn't clip it.
   const glow =
-    variant === 'primary' && !blocked ? shadowStyle(theme.shadow.glow as ShadowLayer[]) : null;
+    variant === 'primary' && !blocked
+      ? shadowStyle(theme.shadow.glow as ShadowLayer[])
+      : null;
 
   return (
     <AnimatedPressable
@@ -115,7 +120,12 @@ export function TatameButton({
         style,
       ]}
     >
-      <View style={[{ borderRadius: theme.radius.pill, overflow: 'hidden' }, surface]}>
+      <View
+        style={[
+          { borderRadius: theme.radius.pill, overflow: 'hidden' },
+          surface,
+        ]}
+      >
         {variant === 'primary' ? (
           <LinearGradient
             colors={[theme.color.brand['1'], theme.color.brand['2']]}
@@ -135,11 +145,16 @@ export function TatameButton({
             paddingHorizontal: s.padH,
           }}
         >
-          {loading ? <ActivityIndicator size="small" color={textColor} /> : null}
+          {loading ? (
+            <ActivityIndicator size="small" color={textColor} />
+          ) : null}
           <Text
             weight="bold"
             color={textColor}
-            style={{ fontSize: s.fontSize, lineHeight: Math.round(s.fontSize * 1.3) }}
+            style={{
+              fontSize: s.fontSize,
+              lineHeight: Math.round(s.fontSize * 1.3),
+            }}
           >
             {children ?? label}
           </Text>

@@ -1,4 +1,8 @@
-import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  type CanActivate,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
@@ -40,10 +44,10 @@ export class AcademyStatusGuard implements CanActivate {
     const status = await this.statuses.getStatus(ctx.tenantId);
 
     if (status === 'suspended') {
-      const allowed = this.reflector.getAllAndOverride<boolean>(ALLOW_SUSPENDED_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+      const allowed = this.reflector.getAllAndOverride<boolean>(
+        ALLOW_SUSPENDED_KEY,
+        [context.getHandler(), context.getClass()],
+      );
       if (!allowed) {
         throw problem(403, ErrorCodes.TENANT_SUSPENDED, 'Academy is suspended');
       }
@@ -53,12 +57,16 @@ export class AcademyStatusGuard implements CanActivate {
     if (status === 'delinquent') {
       const request = context.switchToHttp().getRequest<Request>();
       if (READ_METHODS.has(request.method)) return true;
-      const bypass = this.reflector.getAllAndOverride<boolean>(BYPASS_READ_ONLY_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+      const bypass = this.reflector.getAllAndOverride<boolean>(
+        BYPASS_READ_ONLY_KEY,
+        [context.getHandler(), context.getClass()],
+      );
       if (!bypass) {
-        throw problem(403, ErrorCodes.TENANT_READ_ONLY, 'Academy is in read-only mode');
+        throw problem(
+          403,
+          ErrorCodes.TENANT_READ_ONLY,
+          'Academy is in read-only mode',
+        );
       }
     }
 

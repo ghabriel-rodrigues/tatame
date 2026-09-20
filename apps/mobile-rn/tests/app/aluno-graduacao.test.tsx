@@ -7,11 +7,22 @@
  * linking here with the real target.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 import { makeAlunoGraduation } from '../helpers/graduation';
 
@@ -31,7 +42,10 @@ function renderAluno(override?: FetchHandler): void {
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -39,7 +53,9 @@ function renderAluno(override?: FetchHandler): void {
 }
 
 async function openGraduacao(): Promise<void> {
-  await waitFor(() => expect(screen.getByLabelText('Sua graduação')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByLabelText('Sua graduação')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Sua graduação'));
   });
@@ -56,7 +72,9 @@ describe('aluno Graduação (GRD.16)', () => {
   it('home graduation card shows the real target and links to the screen', async () => {
     renderAluno();
 
-    await waitFor(() => expect(screen.getByTestId('graduation-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('graduation-card')).toBeTruthy(),
+    );
     expect(screen.getByText('26 de 40 aulas · Próximo 3º grau')).toBeTruthy();
     expect(screen.getByTestId('home-belt')).toBeTruthy();
     // graus na faixa tile fed by the derived belt.
@@ -73,7 +91,9 @@ describe('aluno Graduação (GRD.16)', () => {
 
     expect(screen.getByText('Azul · 2 graus')).toBeTruthy();
     expect(screen.getByTestId('hero-belt')).toBeTruthy();
-    expect(screen.getAllByTestId('beltbar-stripe').length).toBeGreaterThanOrEqual(2);
+    expect(
+      screen.getAllByTestId('beltbar-stripe').length,
+    ).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('Próximo 3º grau')).toBeTruthy();
     expect(screen.getByText('26 de 40 aulas')).toBeTruthy();
     expect(screen.getByTestId('hero-progress-bar')).toBeTruthy();
@@ -90,7 +110,9 @@ describe('aluno Graduação (GRD.16)', () => {
     expect(screen.getByText('Faixa azul')).toBeTruthy();
     expect(screen.getByText('Faixa branca')).toBeTruthy();
     expect(screen.getAllByText('Prof. Rafael Nunes')).toHaveLength(4);
-    expect(screen.getByText('“Exame de faixa — aprovado com distinção.”')).toBeTruthy();
+    expect(
+      screen.getByText('“Exame de faixa — aprovado com distinção.”'),
+    ).toBeTruthy();
     expect(screen.getByText('“Início da jornada.”')).toBeTruthy();
   });
 
@@ -107,12 +129,16 @@ describe('aluno Graduação (GRD.16)', () => {
 
   it('perfil tab shows the derived belt chip (rank consistent everywhere)', async () => {
     renderAluno();
-    await waitFor(() => expect(screen.getByTestId('graduation-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('graduation-card')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Perfil'));
     });
-    await waitFor(() => expect(screen.getByTestId('perfil-belt-chip')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('perfil-belt-chip')).toBeTruthy(),
+    );
     expect(screen.getByText('Faixa azul · 2 graus')).toBeTruthy();
 
     // Second entry point into the Graduação screen (GRD.16).

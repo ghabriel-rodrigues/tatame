@@ -106,7 +106,7 @@ The database wayfinder's graduation ticket (derived vs cached, kids-toggle home,
 
 ### Award & revocation semantics (one write path)
 
-- One award service used by professor and admin endpoints. **Add degree**: new row `kind='degree'`, same belt, `degree = current + 1`; rejected when current degree = the belt's `max_degrees`. **Promote belt**: new row `kind='belt'`, `degree = 0`, explicit target `belt_id` — the client defaults to the next belt in the merged enabled order, the server accepts any *enabled, non-current* catalog belt (transfers and skips are legitimate; revocation is the correction path). Optional `notes` on both.
+- One award service used by professor and admin endpoints. **Add degree**: new row `kind='degree'`, same belt, `degree = current + 1`; rejected when current degree = the belt's `max_degrees`. **Promote belt**: new row `kind='belt'`, `degree = 0`, explicit target `belt_id` — the client defaults to the next belt in the merged enabled order, the server accepts any _enabled, non-current_ catalog belt (transfers and skips are legitimate; revocation is the correction path). Optional `notes` on both.
 - Authorization: professor requires the **`graduations.update`** permission key (professor role, default allowed) — the handoff's "atualizar graduações" toggle riding the existing data-driven permission machinery; admin is role-fixed, never toggleable. Professors may graduate any active student of the academy, not only their rosters (grading day reality; the award row records exactly who did it).
 - **Revocation is admin-only, no time window** (charter: no edits, ever): insert `kind='revocation'` + `reverses_graduation_id`, optional reason in `notes`. Current belt derivation excludes reversed awards, so revoking the latest award restores the previous state; a follow-up correct award is just a new INSERT. The partial unique makes double-revocation impossible.
 - **Audit, in-transaction via the existing seam**: `graduation.awarded` (belt_id, degree, kind) on every award and `graduation.revoked` (reverses_graduation_id, reason) on every revocation — no exceptions; impersonated mutations carry the impersonator via the existing interceptor. Note creation is not audited (not charter history).
@@ -126,17 +126,17 @@ The database wayfinder's graduation ticket (derived vs cached, kids-toggle home,
 - Everything lands in a new `graduation` module (catalogs, rules, graduations, notes, derivation services), consuming attendance's exported lesson-count query; enrollment's student list/roster responses call graduation's exported belt-derivation service. Persona-scoped controllers under the existing guard chain: default-deny roles, academy-status guard (read-only blocks awards, rules, notes), RLS backstop; foreign student/graduation ids are 404, never 403.
 - Endpoint surface (versioned prefix, generated into the OpenAPI spec):
 
-| Endpoint | Role | Purpose |
-|---|---|---|
-| `GET /aluno/graduation` | student | hero (currentBelt), progress, evolution timeline (certificate placeholder flag on belt entries) |
-| `GET /professor/students/:id/profile` | professor | currentBelt + progress + attendance tiles + notes (mensalidade tile stays placeholder) |
-| `POST /professor/students/:id/graduations` | professor (toggle) | add degree / promote belt |
-| `GET/POST /professor/students/:id/notes` | professor | observações list / create |
-| `GET /professor/profile` | professor | own belt chip + graduações válidas (merged enabled ladder) |
-| `GET /admin/graduation-rules` · `PUT /admin/graduation-rules` | admin | merged ladder with rules / bulk upsert |
-| `GET /admin/students/:id/graduations` | admin | full history including revocations |
-| `POST /admin/students/:id/graduations` | admin | award (no toggle) |
-| `POST /admin/graduations/:id/revoke` | admin | compensation-row revocation |
+| Endpoint                                                      | Role               | Purpose                                                                                         |
+| ------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------- |
+| `GET /aluno/graduation`                                       | student            | hero (currentBelt), progress, evolution timeline (certificate placeholder flag on belt entries) |
+| `GET /professor/students/:id/profile`                         | professor          | currentBelt + progress + attendance tiles + notes (mensalidade tile stays placeholder)          |
+| `POST /professor/students/:id/graduations`                    | professor (toggle) | add degree / promote belt                                                                       |
+| `GET/POST /professor/students/:id/notes`                      | professor          | observações list / create                                                                       |
+| `GET /professor/profile`                                      | professor          | own belt chip + graduações válidas (merged enabled ladder)                                      |
+| `GET /admin/graduation-rules` · `PUT /admin/graduation-rules` | admin              | merged ladder with rules / bulk upsert                                                          |
+| `GET /admin/students/:id/graduations`                         | admin              | full history including revocations                                                              |
+| `POST /admin/students/:id/graduations`                        | admin              | award (no toggle)                                                                               |
+| `POST /admin/graduations/:id/revoke`                          | admin              | compensation-row revocation                                                                     |
 
 - Existing endpoints extended, not duplicated: `GET /aluno/home` (real progress target, graus na faixa), `GET /professor/students`, rosters, `GET /responsavel/dependents`, admin registry lists (currentBelt payload); admin turma create/update accepts `minBeltId`/`maxBeltId`; admin student create accepts `initialBeltId`; admin professor form accepts belt display fields.
 - New stable problem+json codes: degree at maximum, belt disabled/invalid target, graduation already reversed, lessons-per-degree below minimum, cannot disable non-kids belt; permission-disabled reused from Phase 2.

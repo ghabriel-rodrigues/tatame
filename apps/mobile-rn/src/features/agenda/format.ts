@@ -22,7 +22,8 @@ type LevelFields = {
 export function levelChipLabel(item: LevelFields): string {
   const min = item.minBelt ?? null;
   const max = item.maxBelt ?? null;
-  if (min && max) return min.name === max.name ? min.name : `${min.name} a ${max.name}`;
+  if (min && max)
+    return min.name === max.name ? min.name : `${min.name} a ${max.name}`;
   if (min || max) return (min ?? max)!.name;
   if (item.ageMin !== null && item.ageMax !== null) {
     return `${item.ageMin} a ${item.ageMax} anos`;
@@ -31,7 +32,10 @@ export function levelChipLabel(item: LevelFields): string {
 }
 
 /** "12 de 20 vagas" — occupancy is always N de M (capacity is NOT NULL). */
-export function vagasLabel(occupancy: { active: number; capacity: number }): string {
+export function vagasLabel(occupancy: {
+  active: number;
+  capacity: number;
+}): string {
   return `${occupancy.active} de ${occupancy.capacity} vagas`;
 }
 
@@ -41,7 +45,10 @@ export function timeRangeLabel(startTime: string, endTime: string): string {
 }
 
 /** The check-in affordance rule (spec 007 story 6-9): button iff today and unchecked. */
-export function showCheckinButton(isToday: boolean, checkedIn: boolean): boolean {
+export function showCheckinButton(
+  isToday: boolean,
+  checkedIn: boolean,
+): boolean {
   return isToday && !checkedIn;
 }
 
@@ -117,6 +124,11 @@ export function expandMonthMarks(
  * Selected-day agenda: the weekday's bucket sorted by start time (spec 007
  * story 17/26 — events merge in when their phase lands).
  */
-export function dayAgendaItems(buckets: CalendarBuckets, weekday: Weekday): CalendarClassItem[] {
-  return [...(buckets[weekday] ?? [])].sort((a, b) => a.startTime.localeCompare(b.startTime));
+export function dayAgendaItems(
+  buckets: CalendarBuckets,
+  weekday: Weekday,
+): CalendarClassItem[] {
+  return [...(buckets[weekday] ?? [])].sort((a, b) =>
+    a.startTime.localeCompare(b.startTime),
+  );
 }

@@ -82,7 +82,10 @@ export async function createTestApp(overrides?: {
   await seedStoreFixtures({ appDb: appDb.db, platformDb: platformDb.db });
   // Notification fixtures (spec 010, NOT.2): mixed read/unread rows across
   // all five categories so the feed/badge surfaces are demoable.
-  await seedNotificationFixtures({ appDb: appDb.db, platformDb: platformDb.db });
+  await seedNotificationFixtures({
+    appDb: appDb.db,
+    platformDb: platformDb.db,
+  });
   // Platform console fixtures (spec 012, PLT.2): the suspended academy, the
   // trial ending inside the attention window, and backdated subscriptions so
   // the overview's 6-month series has real history.
@@ -97,7 +100,8 @@ export async function createTestApp(overrides?: {
   process.env['NODE_ENV'] = 'test';
   delete process.env['RESEND_API_KEY']; // never depend on network in tests
   // Deterministic driver unless a spec overrides it (env-swap gating test).
-  process.env['PAYMENTS_PROVIDER'] = overrides?.env?.['PAYMENTS_PROVIDER'] ?? 'simulated';
+  process.env['PAYMENTS_PROVIDER'] =
+    overrides?.env?.['PAYMENTS_PROVIDER'] ?? 'simulated';
   for (const [key, value] of Object.entries(overrides?.env ?? {})) {
     process.env[key] = value;
   }
@@ -129,13 +133,18 @@ export async function createTestApp(overrides?: {
         .post('/v1/auth/login')
         .send({ email, password, transport: 'body' });
       if (res.status !== 200 && res.status !== 202) {
-        throw new Error(`login(${email}) failed: ${res.status} ${JSON.stringify(res.body)}`);
+        throw new Error(
+          `login(${email}) failed: ${res.status} ${JSON.stringify(res.body)}`,
+        );
       }
       return res.body;
     },
     academyIdBySlug: async (slug) => {
       const rows = await withPlatform(platformDb.db, (tx) =>
-        tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+        tx
+          .select({ id: academies.id })
+          .from(academies)
+          .where(eq(academies.slug, slug)),
       );
       if (!rows[0]) throw new Error(`academy ${slug} not seeded`);
       return rows[0].id;

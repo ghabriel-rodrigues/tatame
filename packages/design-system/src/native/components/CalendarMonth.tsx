@@ -81,8 +81,16 @@ export function CalendarMonth({
     <View testID={testID} style={[{ gap: theme.space['2'] }, style]}>
       <View style={{ flexDirection: 'row' }}>
         {WEEKDAY_LETTERS.map((letter, index) => (
-          <View key={index} style={{ width: `${100 / 7}%`, alignItems: 'center' }}>
-            <Text variant="caption" color={theme.color.fg['4']} weight="bold" style={{ fontSize: 11 }}>
+          <View
+            key={index}
+            style={{ width: `${100 / 7}%`, alignItems: 'center' }}
+          >
+            <Text
+              variant="caption"
+              color={theme.color.fg['4']}
+              weight="bold"
+              style={{ fontSize: 11 }}
+            >
               {letter}
             </Text>
           </View>
@@ -92,7 +100,12 @@ export function CalendarMonth({
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
         {cells.map((day, index) => {
           if (day === null) {
-            return <View key={`blank-${index}`} style={{ width: `${100 / 7}%`, height: 44 }} />;
+            return (
+              <View
+                key={`blank-${index}`}
+                style={{ width: `${100 / 7}%`, height: 44 }}
+              />
+            );
           }
           const selected = day === selectedDay;
           const isToday = day === today;
@@ -135,12 +148,25 @@ export function CalendarMonth({
                   {day}
                 </Text>
               </View>
-              <View style={{ flexDirection: 'row', gap: 3, height: 6, alignItems: 'center' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 3,
+                  height: 6,
+                  alignItems: 'center',
+                }}
+              >
                 {dayMarks.classDot ? (
-                  <Dot color={theme.color.brand['2']} testID={`class-dot-${day}`} />
+                  <Dot
+                    color={theme.color.brand['2']}
+                    testID={`class-dot-${day}`}
+                  />
                 ) : null}
                 {dayMarks.eventDot ? (
-                  <Dot color={theme.color.brand.accent} testID={`event-dot-${day}`} />
+                  <Dot
+                    color={theme.color.brand.accent}
+                    testID={`event-dot-${day}`}
+                  />
                 ) : null}
               </View>
             </Pressable>
@@ -149,7 +175,13 @@ export function CalendarMonth({
       </View>
 
       {legend ? (
-        <View style={{ flexDirection: 'row', gap: theme.space['4'], paddingTop: theme.space['1'] }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: theme.space['4'],
+            paddingTop: theme.space['1'],
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Dot color={theme.color.brand['2']} testID="legend-class-dot" />
             <Text variant="caption" style={{ fontSize: 11 }}>

@@ -19,8 +19,17 @@ export async function assertAssignablePlan(
     .select({ id: academyPlans.id, isActive: academyPlans.isActive })
     .from(academyPlans)
     .where(eq(academyPlans.id, academyPlanId));
-  if (!plan) throw problem(404, ErrorCodes.PLAN_NOT_FOUND, 'Plan not found in this academy');
+  if (!plan)
+    throw problem(
+      404,
+      ErrorCodes.PLAN_NOT_FOUND,
+      'Plan not found in this academy',
+    );
   if (!plan.isActive) {
-    throw problem(409, ErrorCodes.PLAN_ARCHIVED, 'Cannot assign an archived plan');
+    throw problem(
+      409,
+      ErrorCodes.PLAN_ARCHIVED,
+      'Cannot assign an archived plan',
+    );
   }
 }

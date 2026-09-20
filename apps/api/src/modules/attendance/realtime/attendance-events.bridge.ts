@@ -41,7 +41,10 @@ export class AttendanceEventsBridge {
   onRevoke(event: AttendanceRevokedEvent): void {
     this.rooms.publish(event.classSessionId, {
       type: 'revoke',
-      data: { attendanceId: event.attendanceId, presentCount: event.presentCount },
+      data: {
+        attendanceId: event.attendanceId,
+        presentCount: event.presentCount,
+      },
     });
   }
 }

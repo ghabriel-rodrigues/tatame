@@ -7,21 +7,11 @@
     "emitDeclarationOnly": true,
     "forceConsistentCasingInFileNames": true,
     "rewriteRelativeImportExtensions": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "jsx": "react-jsx",
-    "lib": [
-      "es2022",
-      "dom",
-      "dom.iterable"
-    ]
+    "lib": ["es2022", "dom", "dom.iterable"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "build/**/*.ts"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "build/**/*.ts"],
   "references": [],
   "exclude": [
     "vite.config.ts",

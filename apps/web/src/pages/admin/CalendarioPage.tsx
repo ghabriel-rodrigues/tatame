@@ -52,14 +52,20 @@ export interface MonthGridCell {
  * Sunday-first month grid cells for a "YYYY-MM" month: `leading` blank
  * cells pad the first week, then one cell per day with its weekday.
  */
-export function buildMonthGrid(month: string): { leading: number; cells: MonthGridCell[] } {
+export function buildMonthGrid(month: string): {
+  leading: number;
+  cells: MonthGridCell[];
+} {
   const year = Number(month.slice(0, 4));
   const monthIndex = Number(month.slice(5, 7)) - 1;
   const leading = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
   const cells: MonthGridCell[] = [];
   for (let day = 1; day <= daysInMonth; day += 1) {
-    cells.push({ day, weekday: new Date(year, monthIndex, day).getDay() as Weekday });
+    cells.push({
+      day,
+      weekday: new Date(year, monthIndex, day).getDay() as Weekday,
+    });
   }
   return { leading, cells };
 }
@@ -80,7 +86,12 @@ function Dot({ color, testId }: { color: string; testId?: string }) {
     <Box
       component="span"
       {...(testId ? { 'data-testid': testId } : {})}
-      sx={{ width: '4px', height: '4px', borderRadius: '999px', background: color }}
+      sx={{
+        width: '4px',
+        height: '4px',
+        borderRadius: '999px',
+        background: color,
+      }}
     />
   );
 }
@@ -100,7 +111,12 @@ function LegendEntry({ color, label }: { color: string; label: string }) {
     >
       <Box
         component="span"
-        sx={{ width: '5px', height: '5px', borderRadius: '999px', background: color }}
+        sx={{
+          width: '5px',
+          height: '5px',
+          borderRadius: '999px',
+          background: color,
+        }}
       />
       {label}
     </Typography>
@@ -189,18 +205,26 @@ function DayAgendaRow({ item }: { item: CalendarClassItem }) {
       }}
     >
       <Box sx={{ flex: 'none', width: '46px', textAlign: 'center' }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--purple-ink)' }}>
+        <Typography
+          sx={{ fontWeight: 700, fontSize: 13, color: 'var(--purple-ink)' }}
+        >
           {item.startTime}
         </Typography>
-        <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-4)' }}>
+        <Typography
+          sx={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-4)' }}
+        >
           {item.endTime}
         </Typography>
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}
+        >
           {item.className}
         </Typography>
-        <Typography sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '1px' }}>
+        <Typography
+          sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '1px' }}
+        >
           {`Prof. ${item.professorName} · ${item.occupancy.active} de ${item.occupancy.capacity}`}
         </Typography>
       </Box>
@@ -239,15 +263,21 @@ function DayEventRow({ item }: { item: CalendarEventItem }) {
       }}
     >
       <Box sx={{ flex: 'none', width: '46px', textAlign: 'center' }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--pink-ink)' }}>
+        <Typography
+          sx={{ fontWeight: 700, fontSize: 13, color: 'var(--pink-ink)' }}
+        >
           {item.time ?? '—'}
         </Typography>
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}
+        >
           {item.name}
         </Typography>
-        <Typography sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '1px' }}>
+        <Typography
+          sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '1px' }}
+        >
           {details}
         </Typography>
       </Box>
@@ -289,7 +319,9 @@ export function CalendarioPage() {
   const [pickedDay, setPickedDay] = useState<number | null>(null);
 
   const grid = data ? buildMonthGrid(data.month) : null;
-  const monthEvents = data ? eventsByDay(data.month, data.events) : new Map<number, CalendarEventItem[]>();
+  const monthEvents = data
+    ? eventsByDay(data.month, data.events)
+    : new Map<number, CalendarEventItem[]>();
 
   // Default selection: today when the rendered month is the current one
   // (it always is in v1 — the server echoes the current tenant-local
@@ -299,7 +331,8 @@ export function CalendarioPage() {
   const todayInMonth = data?.month === currentPeriod ? today.getDate() : null;
   const selectedDay = pickedDay ?? todayInMonth ?? 1;
 
-  const selectedCell = grid?.cells.find((cell) => cell.day === selectedDay) ?? null;
+  const selectedCell =
+    grid?.cells.find((cell) => cell.day === selectedDay) ?? null;
   const dayClasses: CalendarClassItem[] =
     data && selectedCell
       ? [...data.classesByWeekday[selectedCell.weekday]].sort((a, b) =>
@@ -311,11 +344,19 @@ export function CalendarioPage() {
     : [];
   // Aulas + Evento entries merged into one agenda, sorted by start time.
   const dayItems: Array<
-    { kind: 'aula'; time: string; item: CalendarClassItem }
+    | { kind: 'aula'; time: string; item: CalendarClassItem }
     | { kind: 'evento'; time: string; item: CalendarEventItem }
   > = [
-    ...dayClasses.map((item) => ({ kind: 'aula' as const, time: item.startTime, item })),
-    ...dayEvents.map((item) => ({ kind: 'evento' as const, time: item.time ?? '', item })),
+    ...dayClasses.map((item) => ({
+      kind: 'aula' as const,
+      time: item.startTime,
+      item,
+    })),
+    ...dayEvents.map((item) => ({
+      kind: 'evento' as const,
+      time: item.time ?? '',
+      item,
+    })),
   ].sort((a, b) => a.time.localeCompare(b.time));
 
   return (
@@ -327,7 +368,9 @@ export function CalendarioPage() {
         />
 
         {calendar.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando calendário…
           </Typography>
         ) : null}
@@ -366,7 +409,13 @@ export function CalendarioPage() {
                   </Typography>
                 ))}
               </Box>
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(7, 1fr)',
+                  gap: '2px',
+                }}
+              >
                 {Array.from({ length: grid.leading }, (_, index) => (
                   <Box key={`blank-${index}`} data-testid="cal-blank" />
                 ))}
@@ -375,7 +424,8 @@ export function CalendarioPage() {
                     key={cell.day}
                     cell={cell}
                     hasClasses={
-                      (data.classesByWeekday as CalendarBuckets)[cell.weekday].length > 0
+                      (data.classesByWeekday as CalendarBuckets)[cell.weekday]
+                        .length > 0
                     }
                     hasEvents={monthEvents.has(cell.day)}
                     isToday={cell.day === todayInMonth}
@@ -393,7 +443,10 @@ export function CalendarioPage() {
                   borderTop: '1px solid var(--border-1)',
                 }}
               >
-                <LegendEntry color="var(--purple-500)" label="aulas recorrentes" />
+                <LegendEntry
+                  color="var(--purple-500)"
+                  label="aulas recorrentes"
+                />
                 <LegendEntry color="var(--pink-500)" label="evento" />
               </Stack>
             </Card>
@@ -430,7 +483,10 @@ export function CalendarioPage() {
                         item={entry.item}
                       />
                     ) : (
-                      <DayEventRow key={`${entry.item.id}-${index}`} item={entry.item} />
+                      <DayEventRow
+                        key={`${entry.item.id}-${index}`}
+                        item={entry.item}
+                      />
                     ),
                   )}
                 </Stack>

@@ -101,7 +101,7 @@ The admin web console gets minimal visibility: the turma detail's placeholder ti
 - Session status: "Encerrar chamada" sets `done`; sessions from past dates are treated as done for all derived stats regardless of the column (lazy semantics, no cron/finalizer job in v1). `canceled` is reserved — no cancel surface ships this slice.
 - `checkin_codes`: the professor-opened window — `class_session_id` composite FK, `code` (4 numeric digits, randomly generated), `qr_token` (opaque 128-bit random token, URL-safe), `opened_by_user_id`, `expires_at`, `revoked_at`. Partial unique on `(tenant_id, code)` where active (not expired, not revoked), plus at most one active code per session. The QR encodes only the `qr_token`; both `code` and `qr_token` are stored plaintext — justified because they are short-lived, single-purpose, and grant nothing by themselves (the caller must still be an authenticated, enrolled student of that class).
 - Code TTL: `expires_at` defaults to the session's schedule-slot end plus a 15-minute grace (fallback 60 minutes from opening when the slot is not resolvable). "Encerrar chamada" sets `revoked_at`; reopening inserts a fresh row (new code, new token) for the same session.
-- `attendances`: `class_session_id` + `student_id` composite FKs, `method` enum qr/code/manual, `checked_in_at`, `recorded_by_user_id` (null = self check-in; the professor on manual roll call), plus the audit-decision columns `revoked_at` / `revoked_by_user_id`. Uniqueness is the **partial unique index `(tenant_id, class_session_id, student_id) WHERE revoked_at IS NULL`** — the charter's "check-in unique per class" means one *active* check-in; a revoke followed by a new INSERT is the sanctioned correction pattern.
+- `attendances`: `class_session_id` + `student_id` composite FKs, `method` enum qr/code/manual, `checked_in_at`, `recorded_by_user_id` (null = self check-in; the professor on manual roll call), plus the audit-decision columns `revoked_at` / `revoked_by_user_id`. Uniqueness is the **partial unique index `(tenant_id, class_session_id, student_id) WHERE revoked_at IS NULL`** — the charter's "check-in unique per class" means one _active_ check-in; a revoke followed by a new INSERT is the sanctioned correction pattern.
 
 ### Append-only enforcement (implements the audit/immutability decision verbatim)
 
@@ -149,22 +149,22 @@ The admin web console gets minimal visibility: the turma detail's placeholder ti
 - Ownership filtering per the authz design: professor endpoints resolve classes by `professor_user_id = caller`; a foreign class, session, or live code is a 404, never a 403. Aluno endpoints resolve the student record by the caller's user id.
 - Endpoint surface (versioned prefix, generated into the OpenAPI spec):
 
-| Endpoint | Role | Purpose |
-|---|---|---|
-| `POST /aluno/checkins` | student | check-in (qr / code / manual), returns attendance + fresh stats |
-| `GET /aluno/home` | student | hero context (today's class + check-in state) + stat tiles + graduation progress |
-| `POST /professor/classes/:id/live-codes` | professor | open chamada — session upsert + code/QR mint (idempotent) |
-| `POST /professor/live-codes/:id/close` | professor | encerrar chamada (revoke code, session → done) |
-| `GET /professor/live-codes/:id/attendances` | professor | snapshot + polling fallback (active rows, present count) |
-| `POST /professor/live-codes/:id/stream-ticket` | professor | mint the ~60 s signed SSE ticket |
-| `GET /professor/live-codes/:id/stream` | ticket | SSE stream (checkin / revoke events, heartbeat) — OpenAPI-documented exception |
-| `POST /professor/classes/:id/roll-call` | professor | open manual chamada — session upsert + roster with attendance states |
-| `POST /professor/sessions/:id/attendances` | professor | manual toggle-on (method manual, recorded_by professor) |
-| `POST /professor/attendances/:id/revoke` | professor | same-day toggle-off via the void seam |
-| `GET /professor/dashboard` | professor | alunos hoje, presença média, next-class hero with check-in count |
-| `GET /professor/students` | professor | academy students list with `notEnrolledInClassId` filter (Adicionar aluno picker) |
-| `POST /admin/attendances/:id/revoke` | admin | any-time audited revoke |
-| `GET /admin/classes/:id/sessions` | admin | session list with per-session attendance counts |
+| Endpoint                                       | Role      | Purpose                                                                           |
+| ---------------------------------------------- | --------- | --------------------------------------------------------------------------------- |
+| `POST /aluno/checkins`                         | student   | check-in (qr / code / manual), returns attendance + fresh stats                   |
+| `GET /aluno/home`                              | student   | hero context (today's class + check-in state) + stat tiles + graduation progress  |
+| `POST /professor/classes/:id/live-codes`       | professor | open chamada — session upsert + code/QR mint (idempotent)                         |
+| `POST /professor/live-codes/:id/close`         | professor | encerrar chamada (revoke code, session → done)                                    |
+| `GET /professor/live-codes/:id/attendances`    | professor | snapshot + polling fallback (active rows, present count)                          |
+| `POST /professor/live-codes/:id/stream-ticket` | professor | mint the ~60 s signed SSE ticket                                                  |
+| `GET /professor/live-codes/:id/stream`         | ticket    | SSE stream (checkin / revoke events, heartbeat) — OpenAPI-documented exception    |
+| `POST /professor/classes/:id/roll-call`        | professor | open manual chamada — session upsert + roster with attendance states              |
+| `POST /professor/sessions/:id/attendances`     | professor | manual toggle-on (method manual, recorded_by professor)                           |
+| `POST /professor/attendances/:id/revoke`       | professor | same-day toggle-off via the void seam                                             |
+| `GET /professor/dashboard`                     | professor | alunos hoje, presença média, next-class hero with check-in count                  |
+| `GET /professor/students`                      | professor | academy students list with `notEnrolledInClassId` filter (Adicionar aluno picker) |
+| `POST /admin/attendances/:id/revoke`           | admin     | any-time audited revoke                                                           |
+| `GET /admin/classes/:id/sessions`              | admin     | session list with per-session attendance counts                                   |
 
 - `GET /professor/students` folds the recorded backend follow-up: the mobile Adicionar aluno pickers switch from unioning other-class rosters to this endpoint with the non-enrolled filter.
 - New stable problem+json codes in the shared registry: code invalid/expired, not enrolled in class, no session today / outside check-in window, already checked in (the duplicate state), revoke window closed, chamada already open (benign — returns the active code).

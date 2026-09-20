@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { Chip } from './Chip.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('Chip', () => {
   it('renders a static badge span with the tone class', () => {
@@ -34,7 +38,9 @@ describe('Chip', () => {
 
   it('does not fire onPress when disabled', () => {
     const onPress = vi.fn();
-    const { getByRole } = renderUi(<Chip label="Dom" onPress={onPress} disabled />);
+    const { getByRole } = renderUi(
+      <Chip label="Dom" onPress={onPress} disabled />,
+    );
     const button = getByRole('button', { name: 'Dom' });
     expect((button as HTMLButtonElement).disabled).toBe(true);
     button.click();

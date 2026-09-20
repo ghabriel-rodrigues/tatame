@@ -42,7 +42,9 @@ interface DependentDraft {
   birthDate: string;
 }
 
-function brandFromTheme(theme: Record<string, unknown> | null | undefined): BrandInput | null {
+function brandFromTheme(
+  theme: Record<string, unknown> | null | undefined,
+): BrandInput | null {
   if (!theme) return null;
   const { deep, vibrant, accent } = theme as Record<string, unknown>;
   if (
@@ -65,14 +67,24 @@ function StepHeader({
   onBack: () => void;
 }) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
       <Stack direction="row" spacing="10px" sx={{ alignItems: 'center' }}>
         <TatameButton variant="ghost" size="sm" label="‹" onPress={onBack} />
         <Box>
-          <Typography sx={{ fontSize: 16, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 16, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             Seu cadastro
           </Typography>
-          <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+          <Typography
+            sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}
+          >
             {academyName}
           </Typography>
         </Box>
@@ -94,13 +106,22 @@ function StepHeader({
   );
 }
 
-function InviteFlow({ token, invite }: { token: string; invite: InviteLandingResponse }) {
+function InviteFlow({
+  token,
+  invite,
+}: {
+  token: string;
+  invite: InviteLandingResponse;
+}) {
   const navigate = useNavigate();
   const auth = useAuth();
   const [phase, setPhase] = useState<Phase>('landing');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fieldError, setFieldError] = useState<{ field: string; message: string } | null>(null);
+  const [fieldError, setFieldError] = useState<{
+    field: string;
+    message: string;
+  } | null>(null);
 
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -117,7 +138,10 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
 
   function validateDados(): boolean {
     if (fullName.trim().length < 2) {
-      setFieldError({ field: 'fullName', message: 'Informe seu nome completo.' });
+      setFieldError({
+        field: 'fullName',
+        message: 'Informe seu nome completo.',
+      });
       return false;
     }
     if (!email.includes('@')) {
@@ -125,10 +149,16 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
       return false;
     }
     if (password.length < 8) {
-      setFieldError({ field: 'password', message: 'A senha precisa de pelo menos 8 caracteres.' });
+      setFieldError({
+        field: 'password',
+        message: 'A senha precisa de pelo menos 8 caracteres.',
+      });
       return false;
     }
-    if (isGuardian && dependents.some((d) => d.fullName.trim().length < 2 || !d.birthDate)) {
+    if (
+      isGuardian &&
+      dependents.some((d) => d.fullName.trim().length < 2 || !d.birthDate)
+    ) {
       setError('Preencha nome e data de nascimento de cada dependente.');
       return false;
     }
@@ -141,19 +171,27 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
     setSubmitting(true);
     setError(null);
     try {
-      const { data, error: apiError } = await apiClient.POST('/v1/public/invites/{token}/accept', {
-        params: { path: { token } },
-        body: {
-          email,
-          password,
-          fullName: fullName.trim(),
-          ...(phone ? { phone } : {}),
-          ...(birthDate ? { birthDate } : {}),
-          ...(isGuardian
-            ? { dependents: dependents.map((d) => ({ fullName: d.fullName.trim(), birthDate: d.birthDate })) }
-            : {}),
+      const { data, error: apiError } = await apiClient.POST(
+        '/v1/public/invites/{token}/accept',
+        {
+          params: { path: { token } },
+          body: {
+            email,
+            password,
+            fullName: fullName.trim(),
+            ...(phone ? { phone } : {}),
+            ...(birthDate ? { birthDate } : {}),
+            ...(isGuardian
+              ? {
+                  dependents: dependents.map((d) => ({
+                    fullName: d.fullName.trim(),
+                    birthDate: d.birthDate,
+                  })),
+                }
+              : {}),
+          },
         },
-      });
+      );
       if (data) {
         await adoptSession(data.accessToken);
         setPhase('success');
@@ -163,7 +201,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
         setPhase('email_exists');
         return;
       }
-      if (isProblemCode(apiError, ApiErrorCodes.INVITE_MINOR_REQUIRES_GUARDIAN)) {
+      if (
+        isProblemCode(apiError, ApiErrorCodes.INVITE_MINOR_REQUIRES_GUARDIAN)
+      ) {
         setPhase('dados');
         setFieldError({
           field: 'birthDate',
@@ -191,9 +231,12 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
     setSubmitting(true);
     setError(null);
     try {
-      const { data, error: apiError } = await apiClient.POST('/v1/invites/{token}/accept', {
-        params: { path: { token } },
-      });
+      const { data, error: apiError } = await apiClient.POST(
+        '/v1/invites/{token}/accept',
+        {
+          params: { path: { token } },
+        },
+      );
       if (data) {
         setPhase('success');
         return;
@@ -202,7 +245,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
         setError('Sua conta já faz parte desta academia.');
         return;
       }
-      setError('Não foi possível vincular o convite à sua conta. Tente novamente.');
+      setError(
+        'Não foi possível vincular o convite à sua conta. Tente novamente.',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -243,8 +288,16 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
         <Typography sx={{ fontSize: 22, fontWeight: 700, color: 'inherit' }}>
           Bem-vindo ao tatame
         </Typography>
-        <Typography sx={{ fontSize: 13.5, opacity: 0.85, color: 'inherit', maxWidth: 300 }}>
-          Sua conta na {academyName} está pronta. Continue no aplicativo para treinar.
+        <Typography
+          sx={{
+            fontSize: 13.5,
+            opacity: 0.85,
+            color: 'inherit',
+            maxWidth: 300,
+          }}
+        >
+          Sua conta na {academyName} está pronta. Continue no aplicativo para
+          treinar.
         </Typography>
         <TatameButton
           variant="secondary"
@@ -263,11 +316,24 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
           <Card variant="hero" padding={22}>
             <BrandLogo size="sm" boxed label={academyName} />
             <Typography
-              sx={{ fontSize: 21, fontWeight: 700, marginTop: '14px', color: 'inherit', lineHeight: 1.3 }}
+              sx={{
+                fontSize: 21,
+                fontWeight: 700,
+                marginTop: '14px',
+                color: 'inherit',
+                lineHeight: 1.3,
+              }}
             >
               Você foi convidado para treinar na {academyName}
             </Typography>
-            <Typography sx={{ fontSize: 12, marginTop: '6px', color: 'inherit', opacity: 0.75 }}>
+            <Typography
+              sx={{
+                fontSize: 12,
+                marginTop: '6px',
+                color: 'inherit',
+                opacity: 0.75,
+              }}
+            >
               {isGuardian
                 ? 'Convite para responsável — cadastre você e seus dependentes.'
                 : 'Convite de aluno enviado pela academia.'}
@@ -276,7 +342,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
           <Card>
             <Stack spacing="12px">
               <Box>
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}>
+                <Typography
+                  sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+                >
                   {invite.classId ? 'Turma vinculada' : 'Sem turma vinculada'}
                 </Typography>
                 <Typography sx={{ fontSize: 12, color: 'var(--fg-3)' }}>
@@ -285,8 +353,15 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                     : 'A academia definirá sua turma após o cadastro.'}
                 </Typography>
               </Box>
-              <Box sx={{ borderTop: '1px solid var(--border-1)', paddingTop: '12px' }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}>
+              <Box
+                sx={{
+                  borderTop: '1px solid var(--border-1)',
+                  paddingTop: '12px',
+                }}
+              >
+                <Typography
+                  sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+                >
                   {invite.academyPlanId ? 'Plano vinculado' : 'Plano a definir'}
                 </Typography>
                 <Typography sx={{ fontSize: 12, color: 'var(--fg-3)' }}>
@@ -327,13 +402,23 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                 label="Aceitar convite"
                 onPress={() => setPhase('dados')}
               />
-              <Typography sx={{ fontSize: 11.5, textAlign: 'center', color: 'var(--fg-4)' }}>
+              <Typography
+                sx={{
+                  fontSize: 11.5,
+                  textAlign: 'center',
+                  color: 'var(--fg-4)',
+                }}
+              >
                 Cadastro leva menos de 2 minutos.
                 <br />
                 Já tem conta?{' '}
                 <Box
                   component="button"
-                  onClick={() => navigate(`/login?next=${encodeURIComponent(`/convite/${token}`)}`)}
+                  onClick={() =>
+                    navigate(
+                      `/login?next=${encodeURIComponent(`/convite/${token}`)}`,
+                    )
+                  }
                   sx={{
                     border: 0,
                     background: 'none',
@@ -351,7 +436,13 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
             </>
           )}
           {error ? (
-            <Typography sx={{ fontSize: 13, color: 'var(--danger-500)', textAlign: 'center' }}>
+            <Typography
+              sx={{
+                fontSize: 13,
+                color: 'var(--danger-500)',
+                textAlign: 'center',
+              }}
+            >
               {error}
             </Typography>
           ) : null}
@@ -367,7 +458,11 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
             if (validateDados()) setPhase('revisao');
           }}
         >
-          <StepHeader academyName={academyName} step={1} onBack={() => setPhase('landing')} />
+          <StepHeader
+            academyName={academyName}
+            step={1}
+            onBack={() => setPhase('landing')}
+          />
           <Stack spacing="12px" sx={{ marginTop: '22px' }}>
             <FormField
               label="Nome completo"
@@ -376,7 +471,11 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
               autoComplete="name"
               value={fullName}
               onChangeText={setFullName}
-              error={fieldError?.field === 'fullName' ? fieldError.message : undefined}
+              error={
+                fieldError?.field === 'fullName'
+                  ? fieldError.message
+                  : undefined
+              }
             />
             <Stack direction="row" spacing="10px">
               <FormField
@@ -386,7 +485,11 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                 placeholder="AAAA-MM-DD"
                 value={birthDate}
                 onChangeText={setBirthDate}
-                error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}
+                error={
+                  fieldError?.field === 'birthDate'
+                    ? fieldError.message
+                    : undefined
+                }
               />
               <FormField
                 label="Telefone"
@@ -406,7 +509,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
               autoComplete="email"
               value={email}
               onChangeText={setEmail}
-              error={fieldError?.field === 'email' ? fieldError.message : undefined}
+              error={
+                fieldError?.field === 'email' ? fieldError.message : undefined
+              }
             />
             <FormField
               label="Criar senha"
@@ -416,12 +521,18 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
               autoComplete="new-password"
               value={password}
               onChangeText={setPassword}
-              error={fieldError?.field === 'password' ? fieldError.message : undefined}
+              error={
+                fieldError?.field === 'password'
+                  ? fieldError.message
+                  : undefined
+              }
             />
 
             {isGuardian ? (
               <Stack spacing="12px">
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}>
+                <Typography
+                  sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+                >
                   Dependentes
                 </Typography>
                 {dependents.map((dependent, index) => (
@@ -433,7 +544,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                         value={dependent.fullName}
                         onChangeText={(value) =>
                           setDependents((list) =>
-                            list.map((d, i) => (i === index ? { ...d, fullName: value } : d)),
+                            list.map((d, i) =>
+                              i === index ? { ...d, fullName: value } : d,
+                            ),
                           )
                         }
                       />
@@ -443,7 +556,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                         value={dependent.birthDate}
                         onChangeText={(value) =>
                           setDependents((list) =>
-                            list.map((d, i) => (i === index ? { ...d, birthDate: value } : d)),
+                            list.map((d, i) =>
+                              i === index ? { ...d, birthDate: value } : d,
+                            ),
                           )
                         }
                       />
@@ -453,7 +568,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                           size="sm"
                           label="Remover"
                           onPress={() =>
-                            setDependents((list) => list.filter((_, i) => i !== index))
+                            setDependents((list) =>
+                              list.filter((_, i) => i !== index),
+                            )
                           }
                         />
                       ) : null}
@@ -465,30 +582,45 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
                   size="sm"
                   label="Adicionar dependente"
                   onPress={() =>
-                    setDependents((list) => [...list, { fullName: '', birthDate: '' }])
+                    setDependents((list) => [
+                      ...list,
+                      { fullName: '', birthDate: '' },
+                    ])
                   }
                 />
               </Stack>
             ) : (
               <Card variant="tinted" padding={14}>
                 <Typography sx={{ fontSize: 12, color: 'var(--fg-2)' }}>
-                  Menor de 18 anos? Peça para um responsável abrir este mesmo link — ele
-                  cadastra você junto.
+                  Menor de 18 anos? Peça para um responsável abrir este mesmo
+                  link — ele cadastra você junto.
                 </Typography>
               </Card>
             )}
 
             {error ? (
-              <Typography sx={{ fontSize: 13, color: 'var(--danger-500)' }}>{error}</Typography>
+              <Typography sx={{ fontSize: 13, color: 'var(--danger-500)' }}>
+                {error}
+              </Typography>
             ) : null}
-            <TatameButton type="submit" variant="primary" size="lg" fullWidth label="Continuar" />
+            <TatameButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              label="Continuar"
+            />
           </Stack>
         </Box>
       ) : null}
 
       {phase === 'revisao' ? (
         <Box>
-          <StepHeader academyName={academyName} step={2} onBack={() => setPhase('dados')} />
+          <StepHeader
+            academyName={academyName}
+            step={2}
+            onBack={() => setPhase('dados')}
+          />
           <Stack spacing="14px" sx={{ marginTop: '22px' }}>
             <Card>
               <Typography
@@ -505,29 +637,61 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
               </Typography>
               <Stack spacing="8px">
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>Academia</Typography>
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+                  <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
+                    Academia
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      color: 'var(--fg-1)',
+                    }}
+                  >
                     {academyName}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>Nome</Typography>
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+                  <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
+                    Nome
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      color: 'var(--fg-1)',
+                    }}
+                  >
                     {fullName}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>Email</Typography>
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+                  <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
+                    Email
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      color: 'var(--fg-1)',
+                    }}
+                  >
                     {email}
                   </Typography>
                 </Box>
                 {isGuardian ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
                     <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)' }}>
                       Dependentes
                     </Typography>
-                    <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+                    <Typography
+                      sx={{
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        color: 'var(--fg-1)',
+                      }}
+                    >
                       {dependents.map((d) => d.fullName).join(', ')}
                     </Typography>
                   </Box>
@@ -535,7 +699,9 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
               </Stack>
             </Card>
             {error ? (
-              <Typography sx={{ fontSize: 13, color: 'var(--danger-500)' }}>{error}</Typography>
+              <Typography sx={{ fontSize: 13, color: 'var(--danger-500)' }}>
+                {error}
+              </Typography>
             ) : null}
             <TatameButton
               variant="primary"
@@ -545,9 +711,11 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
               label="Criar conta e entrar"
               onPress={() => void submitAccept()}
             />
-            <Typography sx={{ fontSize: 10.5, textAlign: 'center', color: 'var(--fg-4)' }}>
-              Ao continuar você concorda com os termos de uso e a política de privacidade da
-              academia.
+            <Typography
+              sx={{ fontSize: 10.5, textAlign: 'center', color: 'var(--fg-4)' }}
+            >
+              Ao continuar você concorda com os termos de uso e a política de
+              privacidade da academia.
             </Typography>
           </Stack>
         </Box>
@@ -556,19 +724,23 @@ function InviteFlow({ token, invite }: { token: string; invite: InviteLandingRes
       {phase === 'email_exists' ? (
         <Stack spacing="14px" sx={{ marginTop: '20px' }}>
           <BrandLogo size="md" boxed label={academyName} />
-          <Typography sx={{ fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             Você já tem conta
           </Typography>
           <Typography sx={{ fontSize: 14, color: 'var(--fg-3)' }}>
-            Já existe uma conta com o email {email}. Entre para vincular o convite da{' '}
-            {academyName} à sua conta.
+            Já existe uma conta com o email {email}. Entre para vincular o
+            convite da {academyName} à sua conta.
           </Typography>
           <TatameButton
             variant="primary"
             size="lg"
             fullWidth
             label="Entrar e aceitar convite"
-            onPress={() => navigate(`/login?next=${encodeURIComponent(`/convite/${token}`)}`)}
+            onPress={() =>
+              navigate(`/login?next=${encodeURIComponent(`/convite/${token}`)}`)
+            }
           />
           <TatameButton
             variant="ghost"
@@ -588,7 +760,9 @@ function InviteErrorState({ status }: { status: number | undefined }) {
     <PhoneCanvas>
       <Stack spacing="14px" sx={{ marginTop: '20px' }}>
         <BrandLogo size="md" boxed />
-        <Typography sx={{ fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontSize: 24, fontWeight: 700, color: 'var(--fg-1)' }}
+        >
           Convite indisponível
         </Typography>
         <Typography sx={{ fontSize: 14, color: 'var(--fg-3)' }}>
@@ -633,14 +807,17 @@ export function InvitePage() {
   }, [brand]);
 
   const theme = useMemo(
-    () => (brand ? createTatameTheme(derivePalette(brand, 'light'), 'light') : null),
+    () =>
+      brand ? createTatameTheme(derivePalette(brand, 'light'), 'light') : null,
     [brand],
   );
 
   if (query.isPending) {
     return (
       <PhoneCanvas>
-        <Typography sx={{ fontSize: 14, color: 'var(--fg-3)', marginTop: '20px' }}>
+        <Typography
+          sx={{ fontSize: 14, color: 'var(--fg-3)', marginTop: '20px' }}
+        >
           Carregando convite…
         </Typography>
       </PhoneCanvas>

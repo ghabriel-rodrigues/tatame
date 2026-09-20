@@ -23,12 +23,20 @@ import {
   students,
   users,
 } from '../schema/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('hex');
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 /** Drizzle wraps pg errors; constraint names live on the cause chain. */
-async function expectDbError(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+async function expectDbError(
+  promise: Promise<unknown>,
+  pattern: RegExp,
+): Promise<void> {
   await expect(promise).rejects.toSatisfy((error: unknown) => {
     let current = error as (Error & { cause?: unknown }) | undefined;
     while (current) {
@@ -62,11 +70,21 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
     await withPlatform(platform.db, async (tx) => {
       const [a] = await tx
         .insert(academies)
-        .values({ name: 'Bill A', slug: 'bill-a', contactEmail: 'a@b.dev', status: 'active' })
+        .values({
+          name: 'Bill A',
+          slug: 'bill-a',
+          contactEmail: 'a@b.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       const [b] = await tx
         .insert(academies)
-        .values({ name: 'Bill B', slug: 'bill-b', contactEmail: 'b@b.dev', status: 'active' })
+        .values({
+          name: 'Bill B',
+          slug: 'bill-b',
+          contactEmail: 'b@b.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       tenantA = a!.id;
       tenantB = b!.id;
@@ -81,17 +99,31 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
     await withTenant(app.db, tenantA, async (tx) => {
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantA, fullName: 'Student A', birthDate: '2000-01-01' })
+        .values({
+          tenantId: tenantA,
+          fullName: 'Student A',
+          birthDate: '2000-01-01',
+        })
         .returning({ id: students.id });
       studentA = s!.id;
       const [s2] = await tx
         .insert(students)
-        .values({ tenantId: tenantA, fullName: 'Student A2', birthDate: '2001-01-01' })
+        .values({
+          tenantId: tenantA,
+          fullName: 'Student A2',
+          birthDate: '2001-01-01',
+        })
         .returning({ id: students.id });
       studentA2 = s2!.id;
       const [p] = await tx
         .insert(academyPlans)
-        .values({ tenantId: tenantA, name: 'Mensal', amountCents: 18_000, recurrence: 'monthly', dueDay: 5 })
+        .values({
+          tenantId: tenantA,
+          name: 'Mensal',
+          amountCents: 18_000,
+          recurrence: 'monthly',
+          dueDay: 5,
+        })
         .returning({ id: academyPlans.id });
       planA = p!.id;
     });
@@ -104,12 +136,22 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       guardianB = g!.id;
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantB, fullName: 'Student B', birthDate: '2000-01-01' })
+        .values({
+          tenantId: tenantB,
+          fullName: 'Student B',
+          birthDate: '2000-01-01',
+        })
         .returning({ id: students.id });
       studentB = s!.id;
       const [p] = await tx
         .insert(academyPlans)
-        .values({ tenantId: tenantB, name: 'Mensal', amountCents: 20_000, recurrence: 'monthly', dueDay: 10 })
+        .values({
+          tenantId: tenantB,
+          name: 'Mensal',
+          amountCents: 20_000,
+          recurrence: 'monthly',
+          dueDay: 10,
+        })
         .returning({ id: academyPlans.id });
       planB = p!.id;
     });
@@ -139,7 +181,11 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
           tx.insert(academyPlans).values({
-            tenantId: tenantA, name: 'Zero', amountCents: 0, recurrence: 'monthly', dueDay: 5,
+            tenantId: tenantA,
+            name: 'Zero',
+            amountCents: 0,
+            recurrence: 'monthly',
+            dueDay: 5,
           }),
         ),
         /academy_plans_amount_ck/,
@@ -147,7 +193,11 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
           tx.insert(academyPlans).values({
-            tenantId: tenantA, name: 'Feb', amountCents: 100, recurrence: 'monthly', dueDay: 29,
+            tenantId: tenantA,
+            name: 'Feb',
+            amountCents: 100,
+            recurrence: 'monthly',
+            dueDay: 29,
           }),
         ),
         /academy_plans_due_day_ck/,
@@ -155,7 +205,11 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
           tx.insert(academyPlans).values({
-            tenantId: tenantA, name: 'Zero Day', amountCents: 100, recurrence: 'monthly', dueDay: 0,
+            tenantId: tenantA,
+            name: 'Zero Day',
+            amountCents: 100,
+            recurrence: 'monthly',
+            dueDay: 0,
           }),
         ),
         /academy_plans_due_day_ck/,
@@ -166,7 +220,11 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
           tx.insert(academyPlans).values({
-            tenantId: tenantA, name: 'Mensal', amountCents: 100, recurrence: 'monthly', dueDay: 5,
+            tenantId: tenantA,
+            name: 'Mensal',
+            amountCents: 100,
+            recurrence: 'monthly',
+            dueDay: 5,
           }),
         ),
         /academy_plans_tenant_name_uq/,
@@ -181,7 +239,9 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
 
   describe('charges origin hardening (BIL.2)', () => {
     it('accepts one charge per origin with exactly its origin column set', async () => {
-      await withTenant(app.db, tenantA, (tx) => tx.insert(charges).values(planCharge()));
+      await withTenant(app.db, tenantA, (tx) =>
+        tx.insert(charges).values(planCharge()),
+      );
       // Both non-plan linkages are composite FKs now — a real registration
       // since EVT.2 and a real order since STO.2 closed the last BIL.2 stub.
       const registrationId = await withTenant(app.db, tenantA, async (tx) => {
@@ -223,7 +283,12 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       const [order] = await withTenant(app.db, tenantA, (tx) =>
         tx
           .insert(orders)
-          .values({ tenantId: tenantA, number: 2431, buyerUserId: payerUserId, totalCents: 12_900 })
+          .values({
+            tenantId: tenantA,
+            number: 2431,
+            buyerUserId: payerUserId,
+            totalCents: 12_900,
+          })
           .returning({ id: orders.id }),
       );
       await withTenant(app.db, tenantA, (tx) =>
@@ -240,7 +305,11 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       const rows = await withTenant(app.db, tenantA, (tx) =>
         tx.select().from(charges).where(eq(charges.studentId, studentA)),
       );
-      expect(rows.map((r) => r.origin).sort()).toEqual(['event', 'order', 'plan']);
+      expect(rows.map((r) => r.origin).sort()).toEqual([
+        'event',
+        'order',
+        'plan',
+      ]);
     });
 
     it('rejects a plan charge missing its plan and any mixed-origin combination', async () => {
@@ -252,14 +321,22 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(charges).values(planCharge({ orderId: randomUUID(), periodStart: '2026-09-01' })),
+          tx
+            .insert(charges)
+            .values(
+              planCharge({ orderId: randomUUID(), periodStart: '2026-09-01' }),
+            ),
         ),
         /charges_origin_ck/,
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
           tx.insert(charges).values(
-            planCharge({ origin: 'event', academyPlanId: null, eventRegistrationId: null }),
+            planCharge({
+              origin: 'event',
+              academyPlanId: null,
+              eventRegistrationId: null,
+            }),
           ),
         ),
         /charges_origin_ck/,
@@ -278,19 +355,31 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
     it('materialization idempotency: the plan-cycle partial unique holds and upserts race safely', async () => {
       // The 2026-08 cycle for studentA exists from the origin test above.
       await expectDbError(
-        withTenant(app.db, tenantA, (tx) => tx.insert(charges).values(planCharge())),
+        withTenant(app.db, tenantA, (tx) =>
+          tx.insert(charges).values(planCharge()),
+        ),
         /charges_plan_cycle_uq/,
       );
       // insert-on-conflict-do-nothing — the concurrent wallet-open contract.
       const upserted = await withTenant(app.db, tenantA, (tx) =>
-        tx.insert(charges).values(planCharge()).onConflictDoNothing().returning({ id: charges.id }),
+        tx
+          .insert(charges)
+          .values(planCharge())
+          .onConflictDoNothing()
+          .returning({ id: charges.id }),
       );
       expect(upserted).toHaveLength(0);
       // The next cycle inserts freely.
       const next = await withTenant(app.db, tenantA, (tx) =>
         tx
           .insert(charges)
-          .values(planCharge({ periodStart: '2026-09-01', periodEnd: '2026-09-30', dueDate: '2026-09-05' }))
+          .values(
+            planCharge({
+              periodStart: '2026-09-01',
+              periodEnd: '2026-09-30',
+              dueDate: '2026-09-05',
+            }),
+          )
           .returning({ id: charges.id }),
       );
       expect(next).toHaveLength(1);
@@ -303,7 +392,9 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
         tx
           .select({ id: charges.id })
           .from(charges)
-          .where(and(eq(charges.studentId, studentA), eq(charges.origin, 'plan'))),
+          .where(
+            and(eq(charges.studentId, studentA), eq(charges.origin, 'plan')),
+          ),
       );
       const base = {
         tenantId: tenantA,
@@ -317,13 +408,19 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(payments).values({ ...base, providerPaymentId: 'SIM-PIX-1' }),
+          tx
+            .insert(payments)
+            .values({ ...base, providerPaymentId: 'SIM-PIX-1' }),
         ),
         /payments_provider_payment_uq/,
       );
       // Pending attempts without a provider id may coexist.
-      await withTenant(app.db, tenantA, (tx) => tx.insert(payments).values(base));
-      await withTenant(app.db, tenantA, (tx) => tx.insert(payments).values(base));
+      await withTenant(app.db, tenantA, (tx) =>
+        tx.insert(payments).values(base),
+      );
+      await withTenant(app.db, tenantA, (tx) =>
+        tx.insert(payments).values(base),
+      );
     });
   });
 
@@ -337,10 +434,15 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
         provider: 'simulated' as const,
       };
       const [first] = await withTenant(app.db, tenantA, (tx) =>
-        tx.insert(paymentMandates).values(mandate).returning({ id: paymentMandates.id }),
+        tx
+          .insert(paymentMandates)
+          .values(mandate)
+          .returning({ id: paymentMandates.id }),
       );
       await expectDbError(
-        withTenant(app.db, tenantA, (tx) => tx.insert(paymentMandates).values(mandate)),
+        withTenant(app.db, tenantA, (tx) =>
+          tx.insert(paymentMandates).values(mandate),
+        ),
         /payment_mandates_single_active_uq/,
       );
       await withTenant(app.db, tenantA, (tx) =>
@@ -350,7 +452,10 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
           .where(eq(paymentMandates.id, first!.id)),
       );
       const [second] = await withTenant(app.db, tenantA, (tx) =>
-        tx.insert(paymentMandates).values(mandate).returning({ id: paymentMandates.id }),
+        tx
+          .insert(paymentMandates)
+          .values(mandate)
+          .returning({ id: paymentMandates.id }),
       );
       expect(second!.id).not.toBe(first!.id);
     });
@@ -364,10 +469,14 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
         provider: 'stripe' as const,
         providerCustomerId: 'cus_test_1',
       };
-      await withTenant(app.db, tenantA, (tx) => tx.insert(billingCustomers).values(row));
+      await withTenant(app.db, tenantA, (tx) =>
+        tx.insert(billingCustomers).values(row),
+      );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(billingCustomers).values({ ...row, providerCustomerId: 'cus_test_2' }),
+          tx
+            .insert(billingCustomers)
+            .values({ ...row, providerCustomerId: 'cus_test_2' }),
         ),
         /billing_customers_tenant_user_provider_uq/,
       );
@@ -378,19 +487,31 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
     it('rejects charges referencing another tenant student, guardian or plan', async () => {
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(charges).values(planCharge({ studentId: studentB, periodStart: '2026-10-01' })),
+          tx
+            .insert(charges)
+            .values(
+              planCharge({ studentId: studentB, periodStart: '2026-10-01' }),
+            ),
         ),
         /charges_student_fk/,
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(charges).values(planCharge({ guardianId: guardianB, periodStart: '2026-10-01' })),
+          tx
+            .insert(charges)
+            .values(
+              planCharge({ guardianId: guardianB, periodStart: '2026-10-01' }),
+            ),
         ),
         /charges_guardian_fk/,
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(charges).values(planCharge({ academyPlanId: planB, periodStart: '2026-10-01' })),
+          tx
+            .insert(charges)
+            .values(
+              planCharge({ academyPlanId: planB, periodStart: '2026-10-01' }),
+            ),
         ),
         /charges_academy_plan_fk/,
       );
@@ -462,7 +583,10 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
       );
       // Same-tenant bindings work.
       await withTenant(app.db, tenantA, (tx) =>
-        tx.update(students).set({ academyPlanId: planA }).where(eq(students.id, studentA)),
+        tx
+          .update(students)
+          .set({ academyPlanId: planA })
+          .where(eq(students.id, studentA)),
       );
       await withTenant(app.db, tenantA, (tx) =>
         tx.insert(invites).values({
@@ -487,16 +611,22 @@ describe('billing schema (spec 006, BIL.1–BIL.4)', () => {
     });
 
     it('keeps each tenant blind to the other tenant money', async () => {
-      const rowsB = await withTenant(app.db, tenantB, (tx) => tx.select().from(charges));
+      const rowsB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(charges),
+      );
       expect(rowsB.length).toBeGreaterThanOrEqual(1);
       expect(rowsB.every((c) => c.tenantId === tenantB)).toBe(true);
 
-      const plansB = await withTenant(app.db, tenantB, (tx) => tx.select().from(academyPlans));
+      const plansB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(academyPlans),
+      );
       expect(plansB.every((p) => p.tenantId === tenantB)).toBe(true);
 
       // WITH CHECK blocks writing money into another academy.
       await expectDbError(
-        withTenant(app.db, tenantB, (tx) => tx.insert(charges).values(planCharge())),
+        withTenant(app.db, tenantB, (tx) =>
+          tx.insert(charges).values(planCharge()),
+        ),
         /row-level security/,
       );
     });

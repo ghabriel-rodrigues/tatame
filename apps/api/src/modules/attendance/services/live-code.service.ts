@@ -14,7 +14,11 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
-import { addMinutes, CODE_FALLBACK_TTL_MINUTES, CODE_GRACE_MINUTES } from '../lib/time.js';
+import {
+  addMinutes,
+  CODE_FALLBACK_TTL_MINUTES,
+  CODE_GRACE_MINUTES,
+} from '../lib/time.js';
 import { SessionService, type MaterializedSession } from './session.service.js';
 
 export interface LiveCodeView {
@@ -48,7 +52,10 @@ export interface SnapshotView {
 
 const MINT_ATTEMPTS = 25;
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * The professor-opened live window (spec 004, ATT.6): open chamada mints a
@@ -69,7 +76,10 @@ export class LiveCodeService {
   ) {}
 
   /** POST /professor/classes/:id/live-codes — idempotent open (stories 19/24/25). */
-  async open(ctx: AuthContext & { tenantId: string }, classId: string): Promise<LiveCodeView> {
+  async open(
+    ctx: AuthContext & { tenantId: string },
+    classId: string,
+  ): Promise<LiveCodeView> {
     const now = new Date();
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const klass = await this.sessions.ownedClass(tx, classId, ctx.userId);
@@ -77,7 +87,12 @@ export class LiveCodeService {
         throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found');
       }
 
-      const session = await this.sessions.materializeToday(tx, ctx.tenantId, classId, now);
+      const session = await this.sessions.materializeToday(
+        tx,
+        ctx.tenantId,
+        classId,
+        now,
+      );
 
       // Chamada already open → benign: return the active, unexpired code.
       const active = await this.activeCodeOf(tx, session.id);
@@ -106,17 +121,28 @@ export class LiveCodeService {
         ? addMinutes(session.slot.endsAt, CODE_GRACE_MINUTES)
         : addMinutes(now, CODE_FALLBACK_TTL_MINUTES);
 
-      const minted = await this.mint(tx, ctx.tenantId, session.id, ctx.userId, expiresAt, now);
+      const minted = await this.mint(
+        tx,
+        ctx.tenantId,
+        session.id,
+        ctx.userId,
+        expiresAt,
+        now,
+      );
       return this.view(tx, minted, klass.name, session);
     });
   }
 
   /** POST /professor/live-codes/:id/close — encerrar chamada (story 23). */
-  async close(ctx: AuthContext & { tenantId: string }, liveCodeId: string): Promise<LiveCodeView> {
+  async close(
+    ctx: AuthContext & { tenantId: string },
+    liveCodeId: string,
+  ): Promise<LiveCodeView> {
     const now = new Date();
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const found = await this.ownedLiveCode(tx, liveCodeId, ctx.userId);
-      if (!found) throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
+      if (!found)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
       const { code, session, klass } = found;
 
       if (!code.revokedAt) {
@@ -145,10 +171,14 @@ export class LiveCodeService {
   }
 
   /** GET /professor/live-codes/:id/attendances — snapshot + polling fallback. */
-  async snapshot(ctx: AuthContext & { tenantId: string }, liveCodeId: string): Promise<SnapshotView> {
+  async snapshot(
+    ctx: AuthContext & { tenantId: string },
+    liveCodeId: string,
+  ): Promise<SnapshotView> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const found = await this.ownedLiveCode(tx, liveCodeId, ctx.userId);
-      if (!found) throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
+      if (!found)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
       return this.snapshotOf(tx, found.code, found.session.id);
     });
   }
@@ -160,7 +190,8 @@ export class LiveCodeService {
   ): Promise<{ liveCodeId: string; classSessionId: string }> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const found = await this.ownedLiveCode(tx, liveCodeId, ctx.userId);
-      if (!found) throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
+      if (!found)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
       return { liveCodeId, classSessionId: found.session.id };
     });
   }
@@ -169,13 +200,18 @@ export class LiveCodeService {
   async roomForTicket(tenantId: string, userId: string, liveCodeId: string) {
     return withTenant(this.appDb.db, { tenantId, userId }, async (tx) => {
       const found = await this.ownedLiveCode(tx, liveCodeId);
-      if (!found) throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
+      if (!found)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Live code not found');
       return { classSessionId: found.session.id };
     });
   }
 
   /** Live code joined to session + class; professor-scoped when given. */
-  private async ownedLiveCode(tx: DbTransaction, liveCodeId: string, professorUserId?: string) {
+  private async ownedLiveCode(
+    tx: DbTransaction,
+    liveCodeId: string,
+    professorUserId?: string,
+  ) {
     const [row] = await tx
       .select({ code: checkinCodes, session: classSessions, klass: classes })
       .from(checkinCodes)
@@ -188,11 +224,15 @@ export class LiveCodeService {
       )
       .innerJoin(
         classes,
-        and(eq(classes.tenantId, classSessions.tenantId), eq(classes.id, classSessions.classId)),
+        and(
+          eq(classes.tenantId, classSessions.tenantId),
+          eq(classes.id, classSessions.classId),
+        ),
       )
       .where(eq(checkinCodes.id, liveCodeId));
     if (!row) return null;
-    if (professorUserId && row.klass.professorUserId !== professorUserId) return null;
+    if (professorUserId && row.klass.professorUserId !== professorUserId)
+      return null;
     return row;
   }
 
@@ -200,7 +240,12 @@ export class LiveCodeService {
     const [row] = await tx
       .select()
       .from(checkinCodes)
-      .where(and(eq(checkinCodes.classSessionId, sessionId), isNull(checkinCodes.revokedAt)));
+      .where(
+        and(
+          eq(checkinCodes.classSessionId, sessionId),
+          isNull(checkinCodes.revokedAt),
+        ),
+      );
     return row ?? null;
   }
 
@@ -258,7 +303,8 @@ export class LiveCodeService {
             .returning();
           return row;
         });
-        if (!minted) throw problem(500, ErrorCodes.INTERNAL, 'Code mint returned no row');
+        if (!minted)
+          throw problem(500, ErrorCodes.INTERNAL, 'Code mint returned no row');
         return minted;
       } catch (error) {
         const conflict = SessionService.isCodeConflict(error);
@@ -271,7 +317,11 @@ export class LiveCodeService {
         throw error;
       }
     }
-    throw problem(500, ErrorCodes.INTERNAL, 'Unable to mint a unique check-in code');
+    throw problem(
+      500,
+      ErrorCodes.INTERNAL,
+      'Unable to mint a unique check-in code',
+    );
   }
 
   private async view(
@@ -314,13 +364,25 @@ export class LiveCodeService {
       .from(attendances)
       .innerJoin(
         students,
-        and(eq(students.tenantId, attendances.tenantId), eq(students.id, attendances.studentId)),
+        and(
+          eq(students.tenantId, attendances.tenantId),
+          eq(students.id, attendances.studentId),
+        ),
       )
-      .where(and(eq(attendances.classSessionId, sessionId), isNull(attendances.revokedAt)))
+      .where(
+        and(
+          eq(attendances.classSessionId, sessionId),
+          isNull(attendances.revokedAt),
+        ),
+      )
       .orderBy(asc(attendances.checkedInAt));
     return {
       presentCount: rows.length,
-      code: { id: code.id, expiresAt: code.expiresAt, revokedAt: code.revokedAt },
+      code: {
+        id: code.id,
+        expiresAt: code.expiresAt,
+        revokedAt: code.revokedAt,
+      },
       attendances: rows,
     };
   }

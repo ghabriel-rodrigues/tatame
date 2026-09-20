@@ -13,9 +13,13 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { PLATFORM_ROLES, type PlatformRole } from '../../../common/decorators.js';
+import {
+  PLATFORM_ROLES,
+  type PlatformRole,
+} from '../../../common/decorators.js';
 
-const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
+const trim = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() : value;
 const emptyToNull = ({ value }: { value: unknown }) => {
   if (typeof value !== 'string') return value;
   const trimmed = value.trim();
@@ -75,7 +79,11 @@ export class PlatformPlanWriteDto {
   @Length(2, 40)
   name!: string;
 
-  @ApiProperty({ minimum: 0, example: 19_900, description: 'Monthly price in cents' })
+  @ApiProperty({
+    minimum: 0,
+    example: 19_900,
+    description: 'Monthly price in cents',
+  })
   @IsInt()
   @Min(0)
   @Max(100_000_000)

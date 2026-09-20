@@ -4,7 +4,10 @@
  * error mapping (field_locked / field_read_only / validation.failed).
  */
 
-import { profileSaveError, PROFILE_GENERIC_ERROR } from '../../src/features/profile/copy';
+import {
+  profileSaveError,
+  PROFILE_GENERIC_ERROR,
+} from '../../src/features/profile/copy';
 import {
   formatCep,
   formatCpf,
@@ -39,7 +42,10 @@ describe('profile format (REP.10)', () => {
     expect(joinCityUf('São Paulo', null)).toBe('São Paulo');
     expect(joinCityUf(null, null)).toBe('');
 
-    expect(parseCityUf('Campinas / sp')).toEqual({ city: 'Campinas', state: 'SP' });
+    expect(parseCityUf('Campinas / sp')).toEqual({
+      city: 'Campinas',
+      state: 'SP',
+    });
     expect(parseCityUf('Campinas')).toEqual({ city: 'Campinas', state: null });
     expect(parseCityUf('  ')).toEqual({ city: null, state: null });
     // Slash inside the city name: the LAST separator wins.
@@ -56,7 +62,9 @@ describe('profile format (REP.10)', () => {
       detail: 'CPF não pode ser alterado após definido',
       errors: [{ field: 'cpf', messages: ['locked'] }],
     });
-    expect(mapped.fieldErrors['cpf']).toBe('CPF não pode ser alterado após definido.');
+    expect(mapped.fieldErrors['cpf']).toBe(
+      'CPF não pode ser alterado após definido.',
+    );
     expect(mapped.message).toBe('CPF não pode ser alterado após definido');
   });
 
@@ -69,7 +77,9 @@ describe('profile format (REP.10)', () => {
         { field: 'addressState', messages: ['UF inválida'] },
       ],
     });
-    expect(mapped.fieldErrors['addressZip']).toBe('CEP inválido — use 8 dígitos');
+    expect(mapped.fieldErrors['addressZip']).toBe(
+      'CEP inválido — use 8 dígitos',
+    );
     expect(mapped.fieldErrors['addressState']).toBe('UF inválida');
     expect(mapped.message).toBe('Revise os campos destacados.');
   });

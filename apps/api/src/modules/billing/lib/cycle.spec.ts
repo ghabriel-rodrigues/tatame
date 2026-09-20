@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { currentCycle, monthKey, monthStart, nextCycleDueDate } from './cycle.js';
+import {
+  currentCycle,
+  monthKey,
+  monthStart,
+  nextCycleDueDate,
+} from './cycle.js';
 
 describe('billing cycle windows (competência per recurrence)', () => {
   it('monthly: the calendar month with the due day inside it', () => {
@@ -22,7 +27,9 @@ describe('billing cycle windows (competência per recurrence)', () => {
       periodEnd: '2026-09-30',
       dueDate: '2026-07-15',
     });
-    expect(currentCycle('quarterly', 15, '2026-12-31').periodStart).toBe('2026-10-01');
+    expect(currentCycle('quarterly', 15, '2026-12-31').periodStart).toBe(
+      '2026-10-01',
+    );
   });
 
   it('semiannual and yearly windows', () => {

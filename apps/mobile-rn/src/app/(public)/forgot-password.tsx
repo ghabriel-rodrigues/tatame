@@ -30,7 +30,9 @@ export default function ForgotPasswordScreen() {
   async function submit(): Promise<void> {
     setSubmitting(true);
     try {
-      await apiClient.POST('/v1/auth/password/forgot', { body: { email: email.trim() } });
+      await apiClient.POST('/v1/auth/password/forgot', {
+        body: { email: email.trim() },
+      });
     } catch {
       // 202-always semantics: the acknowledgment never leaks failures.
     } finally {
@@ -60,15 +62,23 @@ export default function ForgotPasswordScreen() {
           <Text variant="display" style={{ fontSize: 26, marginTop: 20 }}>
             Esqueci minha senha
           </Text>
-          <Text variant="body" color={theme.color.fg['3']} style={{ marginTop: 6 }}>
+          <Text
+            variant="body"
+            color={theme.color.fg['3']}
+            style={{ marginTop: 6 }}
+          >
             Informe seu email e enviaremos as instruções de redefinição.
           </Text>
 
           {sent ? (
-            <Card variant="tinted" padding={theme.space['4']} style={{ marginTop: 28 }}>
+            <Card
+              variant="tinted"
+              padding={theme.space['4']}
+              style={{ marginTop: 28 }}
+            >
               <Text variant="caption">
-                Se o email estiver cadastrado, você receberá em instantes um link para
-                redefinir a senha. Confira também a caixa de spam.
+                Se o email estiver cadastrado, você receberá em instantes um
+                link para redefinir a senha. Confira também a caixa de spam.
               </Text>
             </Card>
           ) : (

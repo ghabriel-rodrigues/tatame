@@ -11,10 +11,20 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import QRCode from 'react-native-qrcode-svg';
-import { BottomSheet, TatameButton, Text, useTheme } from '@tatame/design-system/native';
+import {
+  BottomSheet,
+  TatameButton,
+  Text,
+  useTheme,
+} from '@tatame/design-system/native';
 import { formatBRL, isSimulated, providerField } from './format';
 import { CopiedNotice, PaymentSuccess } from './ui';
-import { usePendingPayment, useSimulatePayment, useSettleInvalidation, type PaymentScope } from './use-payment';
+import {
+  usePendingPayment,
+  useSimulatePayment,
+  useSettleInvalidation,
+  type PaymentScope,
+} from './use-payment';
 
 export interface PixSheetProps {
   open: boolean;
@@ -43,7 +53,11 @@ export function PixSheet({
   const theme = useTheme();
   const [copied, setCopied] = useState(false);
 
-  const { payment, pending, error } = usePendingPayment({ scope, chargeId, method: 'pix' });
+  const { payment, pending, error } = usePendingPayment({
+    scope,
+    chargeId,
+    method: 'pix',
+  });
   const invalidate = useSettleInvalidation(scope);
   const simulate = useSimulatePayment(() => {
     invalidate();
@@ -60,7 +74,13 @@ export function PixSheet({
   };
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Pagar com Pix" subtitle={subtitle} testID="pix-sheet">
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title="Pagar com Pix"
+      subtitle={subtitle}
+      testID="pix-sheet"
+    >
       {simulate.settled ? (
         <PaymentSuccess
           caption={successCaption ?? 'A mensalidade foi paga via Pix.'}
@@ -68,7 +88,9 @@ export function PixSheet({
         />
       ) : (
         <View style={{ gap: theme.space['4'], alignItems: 'stretch' }}>
-          {pending ? <Text variant="caption">Gerando cobrança Pix…</Text> : null}
+          {pending ? (
+            <Text variant="caption">Gerando cobrança Pix…</Text>
+          ) : null}
           {error ? (
             <Text variant="caption" color={theme.color.danger['500']}>
               {error}
@@ -106,7 +128,10 @@ export function PixSheet({
                 onPress={copy}
               />
               {copied ? (
-                <CopiedNotice message="Código Pix copiado." onHide={() => setCopied(false)} />
+                <CopiedNotice
+                  message="Código Pix copiado."
+                  onHide={() => setCopied(false)}
+                />
               ) : null}
               {simulate.error ? (
                 <Text variant="caption" color={theme.color.danger['500']}>

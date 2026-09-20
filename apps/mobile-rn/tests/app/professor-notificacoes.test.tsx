@@ -5,11 +5,22 @@
  * no financial access) and the perfil settings switch.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeDashboard } from '../helpers/attendance';
 import { makeCalendar } from '../helpers/agenda';
 import { makeProfessorProfile } from '../helpers/graduation';
@@ -58,7 +69,10 @@ function renderProfessor(
     if (overridden) return overridden;
     const fromNotifications = handler(request);
     if (fromNotifications) return fromNotifications;
-    if (request.method === 'GET' && request.path === '/v1/professor/dashboard') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/professor/dashboard'
+    ) {
       return json(200, makeDashboard());
     }
     return null;
@@ -75,7 +89,9 @@ function renderProfessor(
 }
 
 async function openNotificacoes(): Promise<void> {
-  await waitFor(() => expect(screen.getByTestId('notifications-bell')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('notifications-bell')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('notifications-bell'));
   });
@@ -95,11 +111,15 @@ describe('professor Notificações (NOT.9)', () => {
       pages: [makeNotificationsPage(makeProfessorFeed())],
     });
 
-    await waitFor(() => expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy(),
+    );
 
     await openNotificacoes();
 
-    await waitFor(() => expect(screen.getByText('Open mat de verão')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Open mat de verão')).toBeTruthy(),
+    );
     expect(screen.getByText('15')).toBeTruthy();
     expect(screen.getByText('Pedido pronto para retirada')).toBeTruthy();
     expect(screen.getByTestId('notification-icon-store')).toBeTruthy();
@@ -121,14 +141,18 @@ describe('professor Notificações (NOT.9)', () => {
     );
 
     await openNotificacoes();
-    await waitFor(() => expect(screen.getByText('Open mat de verão')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Open mat de verão')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Open mat de verão'));
     });
 
     await waitFor(() => expect(screen.getByText('Agosto 2026')).toBeTruthy());
-    await waitFor(() => expect(screen.getByTestId('calendar-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('calendar-card')).toBeTruthy(),
+    );
   });
 
   it('keeps wallet hints inert — the professor has no financial surface', async () => {
@@ -167,16 +191,24 @@ describe('professor Notificações (NOT.9)', () => {
       expect(screen.getByTestId('perfil-notifications-switch')).toBeTruthy(),
     );
     await waitFor(() =>
-      expect(screen.getByTestId('perfil-notifications-switch').props.value).toBe(true),
+      expect(
+        screen.getByTestId('perfil-notifications-switch').props.value,
+      ).toBe(true),
     );
 
     await act(async () => {
-      fireEvent(screen.getByTestId('perfil-notifications-switch'), 'valueChange', false);
+      fireEvent(
+        screen.getByTestId('perfil-notifications-switch'),
+        'valueChange',
+        false,
+      );
     });
 
     await waitFor(() => expect(log.settingsPuts).toEqual([{ enabled: false }]));
     await waitFor(() =>
-      expect(screen.getByTestId('perfil-notifications-switch').props.value).toBe(false),
+      expect(
+        screen.getByTestId('perfil-notifications-switch').props.value,
+      ).toBe(false),
     );
   });
 });

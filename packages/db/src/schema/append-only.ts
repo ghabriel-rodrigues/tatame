@@ -20,6 +20,10 @@
  * graduation corrections are `kind='revocation'` compensation rows (spec 005
  * GRD.3, resolved audit decision).
  */
-export const APPEND_ONLY_TABLES = ['attendances', 'audit_logs', 'student_graduations'] as const;
+export const APPEND_ONLY_TABLES = [
+  'attendances',
+  'audit_logs',
+  'student_graduations',
+] as const;
 
 export type AppendOnlyTable = (typeof APPEND_ONLY_TABLES)[number];

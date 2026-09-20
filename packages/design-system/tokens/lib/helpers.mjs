@@ -78,9 +78,16 @@ export function parseColor(str) {
       a: hex[2] ? parseInt(hex[2], 16) / 255 : 1,
     };
   }
-  const rgba = str.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/);
+  const rgba = str.match(
+    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/,
+  );
   if (rgba) {
-    return { r: +rgba[1], g: +rgba[2], b: +rgba[3], a: rgba[4] === undefined ? 1 : +rgba[4] };
+    return {
+      r: +rgba[1],
+      g: +rgba[2],
+      b: +rgba[3],
+      a: rgba[4] === undefined ? 1 : +rgba[4],
+    };
   }
   throw new Error(`token build: cannot parse color "${str}"`);
 }
@@ -135,7 +142,11 @@ export function cssPx(n) {
 export function cssShadowLayer(layer) {
   const parts = [];
   if (layer.inset) parts.push('inset');
-  parts.push(cssPx(px(layer.offsetX)), cssPx(px(layer.offsetY)), cssPx(px(layer.blur)));
+  parts.push(
+    cssPx(px(layer.offsetX)),
+    cssPx(px(layer.offsetY)),
+    cssPx(px(layer.blur)),
+  );
   if (px(layer.spread) !== 0) parts.push(cssPx(px(layer.spread)));
   parts.push(layer.color);
   return parts.join(' ');

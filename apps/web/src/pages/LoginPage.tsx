@@ -73,7 +73,11 @@ export function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const { data, error: apiError, response } = await apiClient.POST('/v1/auth/login', {
+      const {
+        data,
+        error: apiError,
+        response,
+      } = await apiClient.POST('/v1/auth/login', {
         body: { email, password, transport: 'cookie' },
       });
       if (data) {
@@ -102,9 +106,16 @@ export function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const { data, error: apiError } = await apiClient.POST('/v1/auth/login/totp', {
-        body: { challengeToken: step.challengeToken, code: totpCode, transport: 'cookie' },
-      });
+      const { data, error: apiError } = await apiClient.POST(
+        '/v1/auth/login/totp',
+        {
+          body: {
+            challengeToken: step.challengeToken,
+            code: totpCode,
+            transport: 'cookie',
+          },
+        },
+      );
       if (data) {
         await settle(data);
         return;
@@ -143,11 +154,18 @@ export function LoginPage() {
         <Box component="form" onSubmit={submitCredentials} noValidate>
           <Typography
             variant="h3"
-            sx={{ fontSize: 26, fontWeight: 700, marginTop: '20px', color: 'var(--fg-1)' }}
+            sx={{
+              fontSize: 26,
+              fontWeight: 700,
+              marginTop: '20px',
+              color: 'var(--fg-1)',
+            }}
           >
             Entrar no Tatame
           </Typography>
-          <Typography sx={{ fontSize: 14, marginTop: '6px', color: 'var(--fg-3)' }}>
+          <Typography
+            sx={{ fontSize: 14, marginTop: '6px', color: 'var(--fg-3)' }}
+          >
             Acesso restrito à administração e à equipe da plataforma.
           </Typography>
           <Stack spacing="12px" sx={{ marginTop: '28px' }}>
@@ -181,7 +199,13 @@ export function LoginPage() {
               />
             </Box>
           </Stack>
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '18px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '18px',
+            }}
+          >
             <TatameButton
               variant="ghost"
               size="sm"
@@ -196,11 +220,18 @@ export function LoginPage() {
         <Box component="form" onSubmit={submitTotp} noValidate>
           <Typography
             variant="h3"
-            sx={{ fontSize: 26, fontWeight: 700, marginTop: '20px', color: 'var(--fg-1)' }}
+            sx={{
+              fontSize: 26,
+              fontWeight: 700,
+              marginTop: '20px',
+              color: 'var(--fg-1)',
+            }}
           >
             Verificação em duas etapas
           </Typography>
-          <Typography sx={{ fontSize: 14, marginTop: '6px', color: 'var(--fg-3)' }}>
+          <Typography
+            sx={{ fontSize: 14, marginTop: '6px', color: 'var(--fg-3)' }}
+          >
             Informe o código do seu aplicativo autenticador.
           </Typography>
           <Stack spacing="12px" sx={{ marginTop: '28px' }}>
@@ -240,11 +271,18 @@ export function LoginPage() {
         <Box>
           <Typography
             variant="h3"
-            sx={{ fontSize: 26, fontWeight: 700, marginTop: '20px', color: 'var(--fg-1)' }}
+            sx={{
+              fontSize: 26,
+              fontWeight: 700,
+              marginTop: '20px',
+              color: 'var(--fg-1)',
+            }}
           >
             Escolha a academia
           </Typography>
-          <Typography sx={{ fontSize: 14, marginTop: '6px', color: 'var(--fg-3)' }}>
+          <Typography
+            sx={{ fontSize: 14, marginTop: '6px', color: 'var(--fg-3)' }}
+          >
             Sua conta administra mais de uma academia.
           </Typography>
           <Stack spacing="12px" sx={{ marginTop: '28px' }}>
@@ -257,12 +295,19 @@ export function LoginPage() {
                 disabled={submitting}
                 onPress={() => void chooseMembership(membership)}
               >
-                {membership.academyName ?? 'Plataforma'} · {ROLE_LABELS[membership.role]}
+                {membership.academyName ?? 'Plataforma'} ·{' '}
+                {ROLE_LABELS[membership.role]}
               </TatameButton>
             ))}
           </Stack>
           {error ? (
-            <Typography sx={{ fontSize: 13, marginTop: '12px', color: 'var(--danger-500)' }}>
+            <Typography
+              sx={{
+                fontSize: 13,
+                marginTop: '12px',
+                color: 'var(--danger-500)',
+              }}
+            >
               {error}
             </Typography>
           ) : null}

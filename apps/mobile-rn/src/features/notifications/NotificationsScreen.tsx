@@ -33,7 +33,11 @@ import {
 import { relativeDayPt } from './format';
 import { shellRouteFor } from './routes';
 import { NotificationChip } from './ui';
-import type { NotificationItem, NotificationPersona, NotificationsPage } from './types';
+import type {
+  NotificationItem,
+  NotificationPersona,
+  NotificationsPage,
+} from './types';
 
 /** Start loading the next page within this distance of the bottom (px). */
 const END_REACHED_THRESHOLD = 320;
@@ -49,7 +53,11 @@ function NotificationRow({
   const content = (
     <Card padding={theme.space['4']}>
       <View
-        style={{ flexDirection: 'row', alignItems: 'flex-start', gap: theme.space['3'] }}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: theme.space['3'],
+        }}
       >
         <NotificationChip category={item.category} chip={item.chip} />
         <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
@@ -72,7 +80,8 @@ function NotificationRow({
       </View>
     </Card>
   );
-  if (!onPress) return <View testID={`notification-${item.id}`}>{content}</View>;
+  if (!onPress)
+    return <View testID={`notification-${item.id}`}>{content}</View>;
   return (
     <Pressable
       accessibilityRole="button"
@@ -85,7 +94,11 @@ function NotificationRow({
   );
 }
 
-export function NotificationsScreen({ persona }: { persona: NotificationPersona }) {
+export function NotificationsScreen({
+  persona,
+}: {
+  persona: NotificationPersona;
+}) {
   const theme = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -97,7 +110,8 @@ export function NotificationsScreen({ persona }: { persona: NotificationPersona 
     {
       // openapi-fetch drops null query params — the first page goes cursorless.
       initialPageParam: null,
-      getNextPageParam: (lastPage: NotificationsPage) => lastPage.nextCursor ?? null,
+      getNextPageParam: (lastPage: NotificationsPage) =>
+        lastPage.nextCursor ?? null,
     },
   );
   const readAll = api.useMutation('post', '/v1/notifications/read-all');
@@ -120,9 +134,12 @@ export function NotificationsScreen({ persona }: { persona: NotificationPersona 
     );
   }, [readAllMutate, queryClient]);
 
-  const notifications = listQuery.data?.pages.flatMap((page) => page.notifications) ?? [];
+  const notifications =
+    listQuery.data?.pages.flatMap((page) => page.notifications) ?? [];
 
-  const onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const onScroll = ({
+    nativeEvent,
+  }: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
     const distanceFromEnd =
       contentSize.height - contentOffset.y - layoutMeasurement.height;
@@ -141,11 +158,18 @@ export function NotificationsScreen({ persona }: { persona: NotificationPersona 
         testID="notifications-scroll"
         onScroll={onScroll}
         scrollEventThrottle={80}
-        contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
       >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: theme.space['3'],
+            }}
           >
             <Pressable
               accessibilityRole="button"

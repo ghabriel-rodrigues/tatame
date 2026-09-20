@@ -16,7 +16,11 @@ import { GraduationProfileService } from './services/graduation-profile.service.
  */
 @Module({
   imports: [DbModule, GraduationCoreModule, AttendanceModule],
-  controllers: [AlunoGraduationController, ProfessorGraduationController, AdminGraduationController],
+  controllers: [
+    AlunoGraduationController,
+    ProfessorGraduationController,
+    AdminGraduationController,
+  ],
   providers: [GraduationProfileService],
 })
 export class GraduationModule {}

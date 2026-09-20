@@ -13,7 +13,12 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ProfessorStudent } from '@tatame/shared';
-import { BottomSheet, ListRow, Text, useTheme } from '@tatame/design-system/native';
+import {
+  BottomSheet,
+  ListRow,
+  Text,
+  useTheme,
+} from '@tatame/design-system/native';
 import { api } from '../../api/query';
 import { enrollmentErrorMessage } from './copy';
 import { InitialsAvatar } from './ui';
@@ -47,7 +52,10 @@ export function AddStudentSheet({
   );
   const candidates = candidatesQuery.data?.students ?? [];
 
-  const addMutation = api.useMutation('post', '/v1/professor/classes/{id}/students');
+  const addMutation = api.useMutation(
+    'post',
+    '/v1/professor/classes/{id}/students',
+  );
 
   const addStudent = (student: ProfessorStudent) => {
     setError(null);
@@ -56,15 +64,20 @@ export function AddStudentSheet({
       { params: { path: { id: classId } }, body: { studentId: student.id } },
       {
         onSuccess: () => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/professor/classes'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/professor/classes'],
+          });
           void queryClient.invalidateQueries({
             queryKey: ['get', '/v1/professor/classes/{id}'],
           });
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/professor/students'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/professor/students'],
+          });
           onAdded(student.fullName);
           onClose();
         },
-        onError: (mutationError) => setError(enrollmentErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(enrollmentErrorMessage(mutationError)),
         onSettled: () => setPendingId(null),
       },
     );
@@ -96,8 +109,8 @@ export function AddStudentSheet({
         <Text variant="caption">Carregando…</Text>
       ) : candidates.length === 0 ? (
         <Text variant="caption">
-          Nenhum aluno disponível para adicionar. O cadastro completo de alunos é gerenciado
-          pelo admin.
+          Nenhum aluno disponível para adicionar. O cadastro completo de alunos
+          é gerenciado pelo admin.
         </Text>
       ) : (
         <View>

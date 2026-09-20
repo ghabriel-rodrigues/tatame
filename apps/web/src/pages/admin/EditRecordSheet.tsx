@@ -104,7 +104,12 @@ export function EditRecordSheet({
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={title} subtitle={subtitle}>
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title={title}
+      subtitle={subtitle}
+    >
       <Stack spacing="14px">
         <FormField label="Nome" value={name} onChangeText={setName} required />
         {planSelect ? (
@@ -135,7 +140,12 @@ export function EditRecordSheet({
           </Stack>
         ) : null}
         {error ? <FormHelperText error>{error}</FormHelperText> : null}
-        <TatameButton label="Salvar" fullWidth loading={busy} onPress={() => void save()} />
+        <TatameButton
+          label="Salvar"
+          fullWidth
+          loading={busy}
+          onPress={() => void save()}
+        />
         {secondaryAction ? (
           <TatameButton
             variant="secondary"

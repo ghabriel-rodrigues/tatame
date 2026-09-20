@@ -6,7 +6,13 @@
  * and Evento entries pushing the detail.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
@@ -48,7 +54,10 @@ function renderCalendario(
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -80,7 +89,9 @@ describe('aluno month calendar (AGD.6)', () => {
     await openCalendario();
 
     expect(screen.getByText('Suas aulas e eventos da academia')).toBeTruthy();
-    await waitFor(() => expect(screen.getByTestId('calendar-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('calendar-card')).toBeTruthy(),
+    );
 
     // Class dot on every Monday, nowhere else; no event dots without events.
     for (const day of [3, 10, 17, 24, 31]) {
@@ -98,15 +109,25 @@ describe('aluno month calendar (AGD.6)', () => {
 
   it('defaults to today and lists that day sorted by time, tagged Aula', async () => {
     renderCalendario([
-      makeCalendarItem({ className: 'Competição', startTime: '20:15', endTime: '21:30' }),
-      makeCalendarItem({ className: 'Fundamentos', startTime: '19:00', endTime: '20:00' }),
+      makeCalendarItem({
+        className: 'Competição',
+        startTime: '20:15',
+        endTime: '21:30',
+      }),
+      makeCalendarItem({
+        className: 'Fundamentos',
+        startTime: '19:00',
+        endTime: '20:00',
+      }),
     ]);
     await openCalendario();
 
     await waitFor(() =>
       expect(screen.getByText('Segunda-feira, 3 de agosto')).toBeTruthy(),
     );
-    expect(screen.getByLabelText('Dia 3').props.accessibilityState.selected).toBe(true);
+    expect(
+      screen.getByLabelText('Dia 3').props.accessibilityState.selected,
+    ).toBe(true);
     expect(screen.getByText('Fundamentos')).toBeTruthy();
     expect(screen.getByText('Competição')).toBeTruthy();
     expect(screen.getAllByText('Aula').length).toBe(2);
@@ -117,7 +138,9 @@ describe('aluno month calendar (AGD.6)', () => {
     renderCalendario([makeCalendarItem()], [makeCalendarEvent()]);
     await openCalendario();
 
-    await waitFor(() => expect(screen.getByTestId('event-dot-15')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('event-dot-15')).toBeTruthy(),
+    );
     expect(screen.queryByTestId('event-dot-14')).toBeNull();
 
     await act(async () => {
@@ -125,7 +148,9 @@ describe('aluno month calendar (AGD.6)', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId(`calendar-event-${OPEN_MAT_EVENT_ID}`)).toBeTruthy(),
+      expect(
+        screen.getByTestId(`calendar-event-${OPEN_MAT_EVENT_ID}`),
+      ).toBeTruthy(),
     );
     expect(screen.getByText('Open mat de verão')).toBeTruthy();
     expect(screen.getByText('Evento')).toBeTruthy();
@@ -136,7 +161,9 @@ describe('aluno month calendar (AGD.6)', () => {
       fireEvent.press(screen.getByLabelText('Open mat de verão'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('event-info-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('event-info-card')).toBeTruthy(),
+    );
     expect(screen.getByText('Responsável: Prof. Rafael Nunes')).toBeTruthy();
   });
 
@@ -148,7 +175,9 @@ describe('aluno month calendar (AGD.6)', () => {
       fireEvent.press(screen.getByLabelText('Dia 4'));
     });
 
-    await waitFor(() => expect(screen.getByText('Terça-feira, 4 de agosto')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Terça-feira, 4 de agosto')).toBeTruthy(),
+    );
     expect(
       screen.getByText('Dia livre — o tatame espera você no próximo treino.'),
     ).toBeTruthy();

@@ -7,7 +7,9 @@ export default defineConfig({
   dbCredentials: {
     // Used by drizzle-kit push/introspect only; migrations are applied
     // programmatically (src/lib/migrate.ts). Never `push` on shared envs.
-    url: process.env['DATABASE_URL'] ?? 'postgresql://tatame:tatame_dev@localhost:5432/tatame',
+    url:
+      process.env['DATABASE_URL'] ??
+      'postgresql://tatame:tatame_dev@localhost:5432/tatame',
   },
   entities: {
     roles: {

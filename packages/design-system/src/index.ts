@@ -10,7 +10,10 @@
  * These require the optional peers (@mui/material, @emotion/*).
  */
 
-export { createTatameTheme, buildShadowPlateau } from './theme/create-tatame-theme.ts';
+export {
+  createTatameTheme,
+  buildShadowPlateau,
+} from './theme/create-tatame-theme.ts';
 export {
   glassSurface,
   glowShadow,
@@ -44,4 +47,11 @@ export {
 } from './theme/presets.ts';
 export { applyBrand, type CssVarTarget } from './theme/apply-brand.ts';
 
-export { tokens, darkTokens, webCss, cssVars, type Tokens, type DarkTokens } from '../build/web/tokens.ts';
+export {
+  tokens,
+  darkTokens,
+  webCss,
+  cssVars,
+  type Tokens,
+  type DarkTokens,
+} from '../build/web/tokens.ts';

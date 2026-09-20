@@ -74,14 +74,29 @@ export function buildShadowPlateau(): Shadows {
 /* Factory                                                             */
 /* ------------------------------------------------------------------ */
 
-export function createTatameTheme(palette: DerivedPalette, mode: Mode = 'light'): Theme {
+export function createTatameTheme(
+  palette: DerivedPalette,
+  mode: Mode = 'light',
+): Theme {
   const dark = mode === 'dark';
 
   // Static (non-derived) neutrals resolved per mode: base set + dark overlay.
-  const gray = { ...tokens.color.gray, ...(dark ? darkTokens.color.gray : undefined) };
-  const fg = { ...tokens.color.fg, ...(dark ? darkTokens.color.fg : undefined) };
-  const bg = { ...tokens.color.bg, ...(dark ? darkTokens.color.bg : undefined) };
-  const border = { ...tokens.color.border, ...(dark ? darkTokens.color.border : undefined) };
+  const gray = {
+    ...tokens.color.gray,
+    ...(dark ? darkTokens.color.gray : undefined),
+  };
+  const fg = {
+    ...tokens.color.fg,
+    ...(dark ? darkTokens.color.fg : undefined),
+  };
+  const bg = {
+    ...tokens.color.bg,
+    ...(dark ? darkTokens.color.bg : undefined),
+  };
+  const border = {
+    ...tokens.color.border,
+    ...(dark ? darkTokens.color.border : undefined),
+  };
   const tint = {
     success: dark ? darkTokens.color.success[100] : tokens.color.success[100],
     warning: dark ? darkTokens.color.warning[100] : tokens.color.warning[100],
@@ -106,10 +121,26 @@ export function createTatameTheme(palette: DerivedPalette, mode: Mode = 'light')
       dark: req(palette, 'pink-700'),
       contrastText: fg.onColor,
     },
-    success: { main: tokens.color.success[500], light: tint.success, contrastText: fg.onColor },
-    warning: { main: tokens.color.warning[500], light: tint.warning, contrastText: fg.onColor },
-    error: { main: tokens.color.danger[500], light: tint.danger, contrastText: fg.onColor },
-    info: { main: tokens.color.info[500], light: tint.info, contrastText: fg.onColor },
+    success: {
+      main: tokens.color.success[500],
+      light: tint.success,
+      contrastText: fg.onColor,
+    },
+    warning: {
+      main: tokens.color.warning[500],
+      light: tint.warning,
+      contrastText: fg.onColor,
+    },
+    error: {
+      main: tokens.color.danger[500],
+      light: tint.danger,
+      contrastText: fg.onColor,
+    },
+    info: {
+      main: tokens.color.info[500],
+      light: tint.info,
+      contrastText: fg.onColor,
+    },
     text: {
       // Light: derived purple scale (fg-1/fg-2 alias purple-950/800, so a
       // tenant brand tints its text). Dark: static dark foreground set.
@@ -231,7 +262,10 @@ export function createTatameTheme(palette: DerivedPalette, mode: Mode = 'light')
           },
           sizeSmall: { fontSize: '13px', padding: '8px 16px' },
           sizeMedium: { padding: '12px 22px' },
-          sizeLarge: { fontSize: `${tokens.text.size.base}px`, padding: '15px 28px' },
+          sizeLarge: {
+            fontSize: `${tokens.text.size.base}px`,
+            padding: '15px 28px',
+          },
         },
       },
       MuiOutlinedInput: {
@@ -243,8 +277,12 @@ export function createTatameTheme(palette: DerivedPalette, mode: Mode = 'light')
               backgroundColor: v.palette.background.paper,
               fontSize: '15px',
               transition: `box-shadow ${DUR_BASE} ${EASE_OUT}`,
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: v.palette.divider },
-              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--border-2)' },
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: v.palette.divider,
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'var(--border-2)',
+              },
               // Focus ring from the token (purple-500 @ 40%).
               '&.Mui-focused': { boxShadow: 'var(--focus-ring)' },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': {

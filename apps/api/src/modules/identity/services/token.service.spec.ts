@@ -11,7 +11,10 @@ const config = {
 } as AppConfig;
 
 function makeService(): TokenService {
-  return new TokenService(new JwtService({ secret: config.jwtAccessSecret }), config);
+  return new TokenService(
+    new JwtService({ secret: config.jwtAccessSecret }),
+    config,
+  );
 }
 
 describe('TokenService', () => {

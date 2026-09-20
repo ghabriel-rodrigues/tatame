@@ -10,11 +10,27 @@
 
 import { useState } from 'react';
 import { Switch, View } from 'react-native';
-import { BottomSheet, FormField, TatameButton, Text, useTheme } from '@tatame/design-system/native';
+import {
+  BottomSheet,
+  FormField,
+  TatameButton,
+  Text,
+  useTheme,
+} from '@tatame/design-system/native';
 import { billingErrorMessage } from './copy';
-import { cardFormValid, cardLast4, formatBRL, maskCardNumber, maskExpiry } from './format';
+import {
+  cardFormValid,
+  cardLast4,
+  formatBRL,
+  maskCardNumber,
+  maskExpiry,
+} from './format';
 import { PaymentSuccess } from './ui';
-import { useCreatePayment, useSettleInvalidation, type PaymentScope } from './use-payment';
+import {
+  useCreatePayment,
+  useSettleInvalidation,
+  type PaymentScope,
+} from './use-payment';
 
 export interface CardSheetProps {
   open: boolean;
@@ -26,7 +42,14 @@ export interface CardSheetProps {
   subtitle: string;
 }
 
-export function CardSheet({ open, onClose, scope, chargeId, amountCents, subtitle }: CardSheetProps) {
+export function CardSheet({
+  open,
+  onClose,
+  scope,
+  chargeId,
+  amountCents,
+  subtitle,
+}: CardSheetProps) {
   const theme = useTheme();
 
   const [number, setNumber] = useState('');
@@ -35,7 +58,9 @@ export function CardSheet({ open, onClose, scope, chargeId, amountCents, subtitl
   const [cvv, setCvv] = useState('');
   const [recurrence, setRecurrence] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ mandateCreated: boolean } | null>(null);
+  const [result, setResult] = useState<{ mandateCreated: boolean } | null>(
+    null,
+  );
 
   const create = useCreatePayment(scope);
   const invalidate = useSettleInvalidation(scope);
@@ -58,7 +83,8 @@ export function CardSheet({ open, onClose, scope, chargeId, amountCents, subtitl
           setResult({ mandateCreated: response.mandateCreated });
           invalidate();
         },
-        onError: (mutationError) => setError(billingErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(billingErrorMessage(mutationError)),
       },
     );
   };
@@ -111,7 +137,9 @@ export function CardSheet({ open, onClose, scope, chargeId, amountCents, subtitl
                 type="password"
                 placeholder="000"
                 value={cvv}
-                onChangeText={(raw) => setCvv(raw.replace(/\D/g, '').slice(0, 4))}
+                onChangeText={(raw) =>
+                  setCvv(raw.replace(/\D/g, '').slice(0, 4))
+                }
               />
             </View>
           </View>
@@ -132,7 +160,10 @@ export function CardSheet({ open, onClose, scope, chargeId, amountCents, subtitl
               accessibilityLabel="Usar este cartão na recorrência mensal"
               value={recurrence}
               onValueChange={setRecurrence}
-              trackColor={{ false: theme.color.border['2'], true: theme.color.brand['2'] }}
+              trackColor={{
+                false: theme.color.border['2'],
+                true: theme.color.brand['2'],
+              }}
               thumbColor={theme.color.fg.onColor}
             />
           </View>

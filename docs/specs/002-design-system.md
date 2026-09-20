@@ -82,12 +82,22 @@ Synthesis of the five resolved design-system tickets (token pipeline, MUI themin
 - The design system exports the color map and a definition contract; the DB owns the ladder. From the resolved ticket:
 
   ```ts
-  type BeltColorSlug = 'white'|'gray'|'yellow'|'orange'|'green'|'blue'|'purple'|'brown'|'black'|'red';
+  type BeltColorSlug =
+    | 'white'
+    | 'gray'
+    | 'yellow'
+    | 'orange'
+    | 'green'
+    | 'blue'
+    | 'purple'
+    | 'brown'
+    | 'black'
+    | 'red';
   const BELT_COLORS: Record<BeltColorSlug, string>; // from generated tokens
 
   type BeltDef = {
-    slug: string;              // DB identity, e.g. 'bjj-adult-blue'
-    name: string;              // display, pt-BR from DB
+    slug: string; // DB identity, e.g. 'bjj-adult-blue'
+    name: string; // display, pt-BR from DB
     colorSlug: BeltColorSlug;
     tipColorSlug?: BeltColorSlug; // default belt.tip; black belt sets 'red'
     maxDegrees: number;

@@ -66,10 +66,22 @@ export const users = pgTable(
   },
   (t) => [
     uniqueIndex('users_email_lower_uq').on(sql`lower(${t.email})`),
-    check('users_gender_ck', sql`${t.gender} IS NULL OR ${t.gender} IN ('female', 'male', 'other', 'unspecified')`),
-    check('users_cpf_format_ck', sql`${t.cpf} IS NULL OR ${t.cpf} ~ '^[0-9]{11}$'`),
-    check('users_address_zip_format_ck', sql`${t.addressZip} IS NULL OR ${t.addressZip} ~ '^[0-9]{8}$'`),
-    check('users_address_state_format_ck', sql`${t.addressState} IS NULL OR ${t.addressState} ~ '^[A-Z]{2}$'`),
+    check(
+      'users_gender_ck',
+      sql`${t.gender} IS NULL OR ${t.gender} IN ('female', 'male', 'other', 'unspecified')`,
+    ),
+    check(
+      'users_cpf_format_ck',
+      sql`${t.cpf} IS NULL OR ${t.cpf} ~ '^[0-9]{11}$'`,
+    ),
+    check(
+      'users_address_zip_format_ck',
+      sql`${t.addressZip} IS NULL OR ${t.addressZip} ~ '^[0-9]{8}$'`,
+    ),
+    check(
+      'users_address_state_format_ck',
+      sql`${t.addressState} IS NULL OR ${t.addressState} ~ '^[A-Z]{2}$'`,
+    ),
     pgPolicy('users_self_select', {
       for: 'select',
       to: appRole,
@@ -145,7 +157,9 @@ export const sessions = pgTable(
     /** Set only on impersonated sessions ("entrar como admin"). */
     impersonatorUserId: uuid('impersonator_user_id').references(() => users.id),
     /** Target tenant of an impersonated session (no membership row exists). */
-    impersonatedTenantId: uuid('impersonated_tenant_id').references(() => academies.id),
+    impersonatedTenantId: uuid('impersonated_tenant_id').references(
+      () => academies.id,
+    ),
     /**
      * Absolute session cap fixed at mint time (30 d login / 1 h impersonation).
      * Refresh rotation never extends past it. NULL = pre-migration rows.
@@ -191,8 +205,12 @@ export const refreshTokens = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     consumedAt: timestamp('consumed_at', { withTimezone: true }),
     /** Rotation chain. */
-    replacedById: uuid('replaced_by_id').references((): AnyPgColumn => refreshTokens.id),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    replacedById: uuid('replaced_by_id').references(
+      (): AnyPgColumn => refreshTokens.id,
+    ),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     index('refresh_tokens_session_id_idx').on(t.sessionId),
@@ -219,7 +237,9 @@ export const passwordResetTokens = pgTable(
     tokenHash: text('token_hash').notNull().unique(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     usedAt: timestamp('used_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     index('password_reset_tokens_user_id_idx').on(t.userId),

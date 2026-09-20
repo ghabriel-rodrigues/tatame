@@ -10,7 +10,9 @@ const path = require('path');
 
 const jestExpoDir = path.dirname(require.resolve('jest-expo/package.json'));
 const rnResolver = require(
-  require.resolve('@react-native/jest-preset/jest/resolver.js', { paths: [jestExpoDir] }),
+  require.resolve('@react-native/jest-preset/jest/resolver.js', {
+    paths: [jestExpoDir],
+  }),
 );
 
 const MOCKS_DIR = path.join(__dirname, 'tests', 'mocks');
@@ -19,7 +21,10 @@ module.exports = (request, options) => {
   // Route "expo-modules-core" to the jest wrapper (tests/mocks) that stubs
   // `requireNativeViewManager` — except when the wrapper itself asks for
   // the real module (basedir check), which would otherwise recurse.
-  if (request === 'expo-modules-core' && !options.basedir.startsWith(MOCKS_DIR)) {
+  if (
+    request === 'expo-modules-core' &&
+    !options.basedir.startsWith(MOCKS_DIR)
+  ) {
     return path.join(MOCKS_DIR, 'expo-modules-core.js');
   }
   if (

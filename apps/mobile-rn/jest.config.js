@@ -23,14 +23,20 @@ module.exports = {
   preset: 'jest-expo',
   resolver: '<rootDir>/jest.resolver.js',
   setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
-  testMatch: ['<rootDir>/tests/**/*.test.@(ts|tsx)', '<rootDir>/src/**/*.test.@(ts|tsx)'],
+  testMatch: [
+    '<rootDir>/tests/**/*.test.@(ts|tsx)',
+    '<rootDir>/src/**/*.test.@(ts|tsx)',
+  ],
   moduleNameMapper: {
     '^react$': '<rootDir>/node_modules/react',
     '^react/(.*)$': '<rootDir>/node_modules/react/$1',
-    '^react-native-reanimated$': '<rootDir>/node_modules/react-native-reanimated',
-    '^react-native-reanimated/(.*)$': '<rootDir>/node_modules/react-native-reanimated/$1',
+    '^react-native-reanimated$':
+      '<rootDir>/node_modules/react-native-reanimated',
+    '^react-native-reanimated/(.*)$':
+      '<rootDir>/node_modules/react-native-reanimated/$1',
     '^react-native-worklets$': '<rootDir>/node_modules/react-native-worklets',
-    '^react-native-worklets/(.*)$': '<rootDir>/node_modules/react-native-worklets/$1',
+    '^react-native-worklets/(.*)$':
+      '<rootDir>/node_modules/react-native-worklets/$1',
     '^react-native-svg$': '<rootDir>/node_modules/react-native-svg',
     '^lucide-react-native$': '<rootDir>/node_modules/lucide-react-native',
     '^expo-blur$': '<rootDir>/tests/mocks/expo-blur.js',
@@ -39,6 +45,7 @@ module.exports = {
     '^expo-camera$': '<rootDir>/tests/mocks/expo-camera.js',
     '^expo-clipboard$': '<rootDir>/tests/mocks/expo-clipboard.js',
     '^expo-glass-effect$': '<rootDir>/tests/mocks/expo-glass-effect.js',
-    '^@react-native-async-storage/async-storage$': '<rootDir>/tests/mocks/async-storage.js',
+    '^@react-native-async-storage/async-storage$':
+      '<rootDir>/tests/mocks/async-storage.js',
   },
 };

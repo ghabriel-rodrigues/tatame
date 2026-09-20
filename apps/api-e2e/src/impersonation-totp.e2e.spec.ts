@@ -10,7 +10,12 @@ import { hashDevPassword } from '@tatame/db/testing';
 import { and, eq, isNotNull } from 'drizzle-orm';
 import { authenticator } from 'otplib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { bearer, createTestApp, DEV_PASSWORD, type TestApp } from './support/test-app.js';
+import {
+  bearer,
+  createTestApp,
+  DEV_PASSWORD,
+  type TestApp,
+} from './support/test-app.js';
 
 describe('impersonation (entrar como admin) + platform TOTP', () => {
   let t: TestApp;
@@ -28,7 +33,9 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
         .values({ email: 'finance@tatame.dev', fullName: 'Fin Financeiro' })
         .returning({ id: users.id });
       await tx.insert(credentials).values({ userId: user!.id, secretHash });
-      await tx.insert(platformUsers).values({ userId: user!.id, role: 'finance' });
+      await tx
+        .insert(platformUsers)
+        .values({ userId: user!.id, role: 'finance' });
     });
   });
 
@@ -52,7 +59,12 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.tenantId, alphaId), eq(auditLogs.action, 'impersonation.started'))),
+        .where(
+          and(
+            eq(auditLogs.tenantId, alphaId),
+            eq(auditLogs.action, 'impersonation.started'),
+          ),
+        ),
     );
     expect(audit.length).toBeGreaterThanOrEqual(1);
     expect(audit[0]!.impersonatorUserId).toBeTruthy();
@@ -67,7 +79,10 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
     expect(ttlMs).toBeLessThanOrEqual(60 * 60 * 1000);
 
     // The impersonated session sees exactly what the admin sees.
-    const me = await t.http().get('/v1/auth/me').set(bearer(res.body.accessToken));
+    const me = await t
+      .http()
+      .get('/v1/auth/me')
+      .set(bearer(res.body.accessToken));
     expect(me.status).toBe(200);
     expect(me.body.activeRole).toBe('admin');
     expect(me.body.academy.id).toBe(alphaId);
@@ -86,14 +101,21 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(grant.body.accessToken))
-      .send({ entries: [{ role: 'professor', key: 'events.create', allowed: true }] });
+      .send({
+        entries: [{ role: 'professor', key: 'events.create', allowed: true }],
+      });
     expect(mutation.status).toBe(200);
 
     const audit = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.tenantId, alphaId), eq(auditLogs.action, 'PUT /v1/admin/permissions'))),
+        .where(
+          and(
+            eq(auditLogs.tenantId, alphaId),
+            eq(auditLogs.action, 'PUT /v1/admin/permissions'),
+          ),
+        ),
     );
     expect(audit.length).toBeGreaterThanOrEqual(1);
     expect(audit[0]!.impersonatorUserId).toBeTruthy();
@@ -108,14 +130,21 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
     const impToken = grant.body.accessToken as string;
 
     const attempts: Array<[string, string, object?]> = [
-      ['post', '/v1/auth/switch', { membershipId: '00000000-0000-7000-8000-000000000000' }],
+      [
+        'post',
+        '/v1/auth/switch',
+        { membershipId: '00000000-0000-7000-8000-000000000000' },
+      ],
       ['post', '/v1/auth/totp/setup'],
       ['post', '/v1/auth/totp/enable', { code: '123456' }],
       ['post', `/v1/platform/academies/${alphaId}/impersonate`],
       ['post', '/v1/auth/logout-all'],
     ];
     for (const [method, path, body] of attempts) {
-      const res = await (t.http() as any)[method](path).set(bearer(impToken)).send(body ?? {});
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(impToken))
+        .send(body ?? {});
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code).toBe('authz.impersonation_restricted');
     }
@@ -148,7 +177,9 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
 
     const missing = await t
       .http()
-      .post('/v1/platform/academies/00000000-0000-7000-8000-000000000000/impersonate')
+      .post(
+        '/v1/platform/academies/00000000-0000-7000-8000-000000000000/impersonate',
+      )
       .set(bearer(support.accessToken));
     expect(missing.status).toBe(404);
   });
@@ -166,7 +197,10 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
   it('platform TOTP: setup → enable → login requires the code (recovery works once)', async () => {
     const support = await t.login('suporte@tatame.dev');
 
-    const setup = await t.http().post('/v1/auth/totp/setup').set(bearer(support.accessToken));
+    const setup = await t
+      .http()
+      .post('/v1/auth/totp/setup')
+      .set(bearer(support.accessToken));
     expect(setup.status).toBe(200);
     expect(setup.body.secret).toBeTruthy();
     expect(setup.body.otpauthUri).toContain('otpauth://totp/');
@@ -190,10 +224,11 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
     const recoveryCode = enable.body.recoveryCodes[0] as string;
 
     // Login now yields a challenge instead of tokens.
-    const challenged = await t
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: 'suporte@tatame.dev', password: DEV_PASSWORD, transport: 'body' });
+    const challenged = await t.http().post('/v1/auth/login').send({
+      email: 'suporte@tatame.dev',
+      password: DEV_PASSWORD,
+      transport: 'body',
+    });
     expect(challenged.status).toBe(202);
     expect(challenged.body.mfaRequired).toBe(true);
     expect(challenged.body.accessToken).toBeUndefined();
@@ -209,35 +244,46 @@ describe('impersonation (entrar como admin) + platform TOTP', () => {
     const completed = await t
       .http()
       .post('/v1/auth/login/totp')
-      .send({ challengeToken, code: authenticator.generate(secret), transport: 'body' });
+      .send({
+        challengeToken,
+        code: authenticator.generate(secret),
+        transport: 'body',
+      });
     expect(completed.status).toBe(200);
     expect(completed.body.accessToken).toBeTruthy();
 
     // Recovery codes are single-use.
-    const challenge2 = await t
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: 'suporte@tatame.dev', password: DEV_PASSWORD, transport: 'body' });
-    const viaRecovery = await t
-      .http()
-      .post('/v1/auth/login/totp')
-      .send({ challengeToken: challenge2.body.challengeToken, code: recoveryCode, transport: 'body' });
+    const challenge2 = await t.http().post('/v1/auth/login').send({
+      email: 'suporte@tatame.dev',
+      password: DEV_PASSWORD,
+      transport: 'body',
+    });
+    const viaRecovery = await t.http().post('/v1/auth/login/totp').send({
+      challengeToken: challenge2.body.challengeToken,
+      code: recoveryCode,
+      transport: 'body',
+    });
     expect(viaRecovery.status).toBe(200);
 
-    const challenge3 = await t
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: 'suporte@tatame.dev', password: DEV_PASSWORD, transport: 'body' });
-    const replayRecovery = await t
-      .http()
-      .post('/v1/auth/login/totp')
-      .send({ challengeToken: challenge3.body.challengeToken, code: recoveryCode, transport: 'body' });
+    const challenge3 = await t.http().post('/v1/auth/login').send({
+      email: 'suporte@tatame.dev',
+      password: DEV_PASSWORD,
+      transport: 'body',
+    });
+    const replayRecovery = await t.http().post('/v1/auth/login/totp').send({
+      challengeToken: challenge3.body.challengeToken,
+      code: recoveryCode,
+      transport: 'body',
+    });
     expect(replayRecovery.status).toBe(401);
   });
 
   it('TOTP endpoints are platform-only (academy roles get 403)', async () => {
     const admin = await t.login('admin@tatame.dev');
-    const res = await t.http().post('/v1/auth/totp/setup').set(bearer(admin.accessToken));
+    const res = await t
+      .http()
+      .post('/v1/auth/totp/setup')
+      .set(bearer(admin.accessToken));
     expect(res.status).toBe(403);
     expect(res.body.code).toBe('authz.forbidden_role');
   });

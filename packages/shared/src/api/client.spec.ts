@@ -98,7 +98,9 @@ describe('createApiClient auth middleware', () => {
     ]);
 
     expect(refreshCount).toBe(1);
-    expect([a.response.status, b.response.status, c.response.status]).toEqual([200, 200, 200]);
+    expect([a.response.status, b.response.status, c.response.status]).toEqual([
+      200, 200, 200,
+    ]);
   });
 
   it('emits onAuthLost and returns the original 401 when refresh fails', async () => {
@@ -108,7 +110,8 @@ describe('createApiClient auth middleware', () => {
     const client = createApiClient({
       baseUrl: 'http://api.test',
       auth: adapter,
-      fetch: async () => jsonResponse(401, { code: 'auth.token_expired', status: 401 }),
+      fetch: async () =>
+        jsonResponse(401, { code: 'auth.token_expired', status: 401 }),
     });
 
     const { response } = await client.GET('/v1/auth/me');

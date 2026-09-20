@@ -6,11 +6,22 @@
  * kills the badge server-side (spec 010 story 9).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeDependents } from '../helpers/enrollment';
 import { makeGuardianPayments } from '../helpers/billing';
 import { makeResponsavelEvents } from '../helpers/events';
@@ -38,7 +49,10 @@ function renderResponsavel(
     if (overridden) return overridden;
     const fromNotifications = handler(request);
     if (fromNotifications) return fromNotifications;
-    if (request.method === 'GET' && request.path === '/v1/responsavel/dependents') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/responsavel/dependents'
+    ) {
       return json(200, { dependents: makeDependents() });
     }
     return null;
@@ -55,7 +69,9 @@ function renderResponsavel(
 }
 
 async function openNotificacoes(): Promise<void> {
-  await waitFor(() => expect(screen.getByTestId('notifications-bell')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('notifications-bell')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('notifications-bell'));
   });
@@ -75,7 +91,9 @@ describe('responsável Notificações (NOT.9)', () => {
       pages: [makeNotificationsPage(makeResponsavelFeed())],
     });
 
-    await waitFor(() => expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy(),
+    );
 
     await openNotificacoes();
 
@@ -84,10 +102,14 @@ describe('responsável Notificações (NOT.9)', () => {
       expect(screen.getByText('Mensalidade do Pedro em aberto')).toBeTruthy(),
     );
     expect(
-      screen.getByText('R$ 150,00 · vence em 10 de agosto · pague com Pix em 1 toque'),
+      screen.getByText(
+        'R$ 150,00 · vence em 10 de agosto · pague com Pix em 1 toque',
+      ),
     ).toBeTruthy();
     expect(screen.getByText('R$')).toBeTruthy();
-    expect(screen.getByText('Pedro recebeu o 3º grau na faixa cinza')).toBeTruthy();
+    expect(
+      screen.getByText('Pedro recebeu o 3º grau na faixa cinza'),
+    ).toBeTruthy();
     expect(screen.getByText('3º')).toBeTruthy();
     expect(screen.getByText('Festival Kids abriu inscrições')).toBeTruthy();
     expect(screen.getByText('13')).toBeTruthy();
@@ -119,14 +141,17 @@ describe('responsável Notificações (NOT.9)', () => {
       fireEvent.press(screen.getByLabelText('Mensalidade do Pedro em aberto'));
     });
 
-    await waitFor(() => expect(screen.getByText('Pedro · agosto')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro · agosto')).toBeTruthy(),
+    );
     expect(screen.getByText('Pagar com Pix')).toBeTruthy();
   });
 
   it('routes an event row onto Eventos and keeps attendance rows inert', async () => {
     const feed = makeResponsavelFeed();
     const attendanceRow = feed[3];
-    if (!attendanceRow) throw new Error('fixture drift: expected 4 guardian rows');
+    if (!attendanceRow)
+      throw new Error('fixture drift: expected 4 guardian rows');
     renderResponsavel(
       { pages: [makeNotificationsPage(feed)] },
       ({ method, path }) =>
@@ -151,7 +176,9 @@ describe('responsável Notificações (NOT.9)', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByText('Confirme a participação por dependente')).toBeTruthy(),
+      expect(
+        screen.getByText('Confirme a participação por dependente'),
+      ).toBeTruthy(),
     );
     await waitFor(() => expect(screen.getByText('Festival Kids')).toBeTruthy());
   });
@@ -159,7 +186,9 @@ describe('responsável Notificações (NOT.9)', () => {
   it('perfil switch mutes the membership and the badge dies with it (story 9)', async () => {
     const log = renderResponsavel({ count: 2 });
 
-    await waitFor(() => expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Perfil'));
@@ -169,16 +198,24 @@ describe('responsável Notificações (NOT.9)', () => {
       expect(screen.getByTestId('perfil-notifications-switch')).toBeTruthy(),
     );
     await waitFor(() =>
-      expect(screen.getByTestId('perfil-notifications-switch').props.value).toBe(true),
+      expect(
+        screen.getByTestId('perfil-notifications-switch').props.value,
+      ).toBe(true),
     );
 
     await act(async () => {
-      fireEvent(screen.getByTestId('perfil-notifications-switch'), 'valueChange', false);
+      fireEvent(
+        screen.getByTestId('perfil-notifications-switch'),
+        'valueChange',
+        false,
+      );
     });
 
     await waitFor(() => expect(log.settingsPuts).toEqual([{ enabled: false }]));
     await waitFor(() =>
-      expect(screen.getByTestId('perfil-notifications-switch').props.value).toBe(false),
+      expect(
+        screen.getByTestId('perfil-notifications-switch').props.value,
+      ).toBe(false),
     );
     // Mute zeroes the server-side count — the home bell dot follows.
     await waitFor(() =>

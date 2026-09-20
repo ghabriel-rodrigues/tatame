@@ -60,7 +60,8 @@ export class ProblemJsonFilter implements ExceptionFilter {
       detail =
         typeof body === 'string'
           ? body
-          : ((body as { message?: string | string[] }).message?.toString() ?? undefined);
+          : ((body as { message?: string | string[] }).message?.toString() ??
+            undefined);
     } else {
       this.logger.error(
         `Unhandled exception on ${request.method} ${request.url}`,

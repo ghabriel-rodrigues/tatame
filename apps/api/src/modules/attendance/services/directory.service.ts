@@ -33,7 +33,10 @@ export interface ProfessorStudentRow {
   belt: BeltView;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Read-side listings of the attendance slice: the admin turma session list
@@ -76,9 +79,17 @@ export class DirectoryService {
           ),
         )
         .where(eq(classSessions.classId, classId))
-        .groupBy(classSessions.id, classSessions.sessionDate, classSessions.startsAt, classSessions.status)
+        .groupBy(
+          classSessions.id,
+          classSessions.sessionDate,
+          classSessions.startsAt,
+          classSessions.status,
+        )
         .orderBy(desc(classSessions.sessionDate), desc(classSessions.startsAt));
-      return rows.map((row) => ({ ...row, presentCount: Number(row.presentCount) }));
+      return rows.map((row) => ({
+        ...row,
+        presentCount: Number(row.presentCount),
+      }));
     });
   }
 
@@ -92,7 +103,11 @@ export class DirectoryService {
       if (notEnrolledInClassId) {
         // The filter names one of the professor's own classes — anything else
         // (foreign professor's turma, other tenant, nonsense id) is a 404.
-        const klass = await this.sessions.ownedClass(tx, notEnrolledInClassId, ctx.userId);
+        const klass = await this.sessions.ownedClass(
+          tx,
+          notEnrolledInClassId,
+          ctx.userId,
+        );
         if (!klass) throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found');
         conditions.push(
           notExists(
@@ -126,7 +141,12 @@ export class DirectoryService {
       );
       return rows.map((row) => {
         const belt = beltByStudent.get(row.id);
-        if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Belt derivation returned no entry');
+        if (!belt)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Belt derivation returned no entry',
+          );
         return {
           id: row.id,
           fullName: row.fullName,

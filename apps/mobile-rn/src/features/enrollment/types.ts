@@ -9,4 +9,5 @@ import type { ApiSchemas } from '@tatame/shared';
 export type DependentDetail = ApiSchemas['DependentDetailDto'];
 export type DependentClass = ApiSchemas['DependentClassDto'];
 export type ClassSuggestion = ApiSchemas['ClassSuggestionDto'];
-export type RegisterDependentResponse = ApiSchemas['RegisterDependentResponseDto'];
+export type RegisterDependentResponse =
+  ApiSchemas['RegisterDependentResponseDto'];

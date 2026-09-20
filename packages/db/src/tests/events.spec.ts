@@ -18,10 +18,17 @@ import {
   students,
   users,
 } from '../schema/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
 /** Drizzle wraps pg errors; constraint names live on the cause chain. */
-async function expectDbError(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+async function expectDbError(
+  promise: Promise<unknown>,
+  pattern: RegExp,
+): Promise<void> {
   await expect(promise).rejects.toSatisfy((error: unknown) => {
     let current = error as (Error & { cause?: unknown }) | undefined;
     while (current) {
@@ -52,11 +59,21 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
     await withPlatform(platform.db, async (tx) => {
       const [a] = await tx
         .insert(academies)
-        .values({ name: 'Evt A', slug: 'evt-a', contactEmail: 'a@e.dev', status: 'active' })
+        .values({
+          name: 'Evt A',
+          slug: 'evt-a',
+          contactEmail: 'a@e.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       const [b] = await tx
         .insert(academies)
-        .values({ name: 'Evt B', slug: 'evt-b', contactEmail: 'b@e.dev', status: 'active' })
+        .values({
+          name: 'Evt B',
+          slug: 'evt-b',
+          contactEmail: 'b@e.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       tenantA = a!.id;
       tenantB = b!.id;
@@ -76,7 +93,11 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
       guardianA = g!.id;
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantA, fullName: 'Student A', birthDate: '2000-01-01' })
+        .values({
+          tenantId: tenantA,
+          fullName: 'Student A',
+          birthDate: '2000-01-01',
+        })
         .returning({ id: students.id });
       studentA = s!.id;
     });
@@ -84,7 +105,11 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
     await withTenant(app.db, tenantB, async (tx) => {
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantB, fullName: 'Student B', birthDate: '2000-01-01' })
+        .values({
+          tenantId: tenantB,
+          fullName: 'Student B',
+          birthDate: '2000-01-01',
+        })
         .returning({ id: students.id });
       studentB = s!.id;
     });
@@ -105,7 +130,9 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
       ...overrides,
     }) as typeof events.$inferInsert;
 
-  const publishedEvent = (overrides: Partial<typeof events.$inferInsert> = {}) =>
+  const publishedEvent = (
+    overrides: Partial<typeof events.$inferInsert> = {},
+  ) =>
     draftEvent({
       status: 'published',
       location: 'Tatame principal',
@@ -144,7 +171,10 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.update(events).set({ status: 'published' }).where(eq(events.id, draft!.id)),
+          tx
+            .update(events)
+            .set({ status: 'published' })
+            .where(eq(events.id, draft!.id)),
         ),
         /events_published_ck/,
       );
@@ -163,7 +193,9 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
 
     it('rejects non-positive prices; NULL stays gratuito, positive is paid (events_price_ck)', async () => {
       await expectDbError(
-        withTenant(app.db, tenantA, (tx) => tx.insert(events).values(draftEvent({ priceCents: 0 }))),
+        withTenant(app.db, tenantA, (tx) =>
+          tx.insert(events).values(draftEvent({ priceCents: 0 })),
+        ),
         /events_price_ck/,
       );
       await expectDbError(
@@ -173,7 +205,10 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
         /events_price_ck/,
       );
       const [paid] = await withTenant(app.db, tenantA, (tx) =>
-        tx.insert(events).values(publishedEvent({ priceCents: 6000 })).returning(),
+        tx
+          .insert(events)
+          .values(publishedEvent({ priceCents: 6000 }))
+          .returning(),
       );
       expect(paid!.priceCents).toBe(6000);
     });
@@ -185,7 +220,9 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
           `SELECT indexdef FROM pg_indexes WHERE indexname = 'events_tenant_status_starts_at_idx'`,
         );
         expect(res.rows).toHaveLength(1);
-        expect(res.rows[0].indexdef).toContain('(tenant_id, status, starts_at)');
+        expect(res.rows[0].indexdef).toContain(
+          '(tenant_id, status, starts_at)',
+        );
       } finally {
         client.release();
       }
@@ -205,11 +242,16 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
         status: 'confirmed' as const,
       };
       const [first] = await withTenant(app.db, tenantA, (tx) =>
-        tx.insert(eventRegistrations).values(registration).returning({ id: eventRegistrations.id }),
+        tx
+          .insert(eventRegistrations)
+          .values(registration)
+          .returning({ id: eventRegistrations.id }),
       );
       // Cancel-and-reconfirm never duplicates (story 26).
       await expectDbError(
-        withTenant(app.db, tenantA, (tx) => tx.insert(eventRegistrations).values(registration)),
+        withTenant(app.db, tenantA, (tx) =>
+          tx.insert(eventRegistrations).values(registration),
+        ),
         /event_registrations_tenant_event_student_uq/,
       );
       await withTenant(app.db, tenantA, (tx) =>
@@ -280,7 +322,10 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
         ...overrides,
       }) as typeof charges.$inferInsert;
 
-    async function createRegistration(tenantId: string, studentId: string): Promise<string> {
+    async function createRegistration(
+      tenantId: string,
+      studentId: string,
+    ): Promise<string> {
       const [event] = await withTenant(app.db, tenantId, (tx) =>
         tx
           .insert(events)
@@ -328,7 +373,9 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
 
     it('rejects the dangling uuids the BIL.2 stub used to admit', async () => {
       await expectDbError(
-        withTenant(app.db, tenantA, (tx) => tx.insert(charges).values(eventCharge(randomUUID()))),
+        withTenant(app.db, tenantA, (tx) =>
+          tx.insert(charges).values(eventCharge(randomUUID())),
+        ),
         /charges_event_registration_fk/,
       );
     });
@@ -347,13 +394,17 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
       const registrationId = await createRegistration(tenantA, studentA);
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(charges).values(eventCharge(registrationId, { orderId: randomUUID() })),
+          tx
+            .insert(charges)
+            .values(eventCharge(registrationId, { orderId: randomUUID() })),
         ),
         /charges_origin_ck/,
       );
       await expectDbError(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(charges).values(eventCharge(registrationId, { eventRegistrationId: null })),
+          tx
+            .insert(charges)
+            .values(eventCharge(registrationId, { eventRegistrationId: null })),
         ),
         /charges_origin_ck/,
       );
@@ -367,7 +418,9 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
     });
 
     it('keeps each tenant blind to the other tenant events; WITH CHECK blocks cross-tenant writes', async () => {
-      const rowsB = await withTenant(app.db, tenantB, (tx) => tx.select().from(events));
+      const rowsB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(events),
+      );
       expect(rowsB.length).toBeGreaterThanOrEqual(1);
       expect(rowsB.every((e) => e.tenantId === tenantB)).toBe(true);
 
@@ -377,7 +430,9 @@ describe('events schema (spec 008, EVT.1–EVT.2)', () => {
       expect(regsB.every((r) => r.tenantId === tenantB)).toBe(true);
 
       await expectDbError(
-        withTenant(app.db, tenantB, (tx) => tx.insert(events).values(draftEvent())),
+        withTenant(app.db, tenantB, (tx) =>
+          tx.insert(events).values(draftEvent()),
+        ),
         /row-level security/,
       );
       await expectDbError(

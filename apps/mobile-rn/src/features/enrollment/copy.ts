@@ -7,13 +7,15 @@ import { ApiErrorCodes, parseProblem } from '@tatame/shared';
 
 const MESSAGES: Record<string, string> = {
   [ApiErrorCodes.CLASS_FULL]: 'Turma lotada — o limite de alunos foi atingido.',
-  [ApiErrorCodes.ENROLLMENT_ALREADY_ENROLLED]: 'Este aluno já está matriculado nesta turma.',
+  [ApiErrorCodes.ENROLLMENT_ALREADY_ENROLLED]:
+    'Este aluno já está matriculado nesta turma.',
   [ApiErrorCodes.CLASS_ARCHIVED]: 'Esta turma foi arquivada.',
   [ApiErrorCodes.AUTHZ_PERMISSION_DISABLED]: 'Ação desabilitada pela academia.',
   [ApiErrorCodes.TENANT_READ_ONLY]:
     'Academia em modo somente leitura — alterações desabilitadas.',
   [ApiErrorCodes.NOT_FOUND]: 'Registro não encontrado.',
-  [ApiErrorCodes.VALIDATION_FAILED]: 'Dados inválidos. Revise e tente novamente.',
+  [ApiErrorCodes.VALIDATION_FAILED]:
+    'Dados inválidos. Revise e tente novamente.',
 };
 
 export const GENERIC_ERROR = 'Algo deu errado. Tente novamente.';

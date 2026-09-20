@@ -18,14 +18,22 @@ import {
   students,
   users,
 } from '../schema/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('hex');
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 const WEEK = 7 * 24 * 3600 * 1000;
 
 /** Drizzle wraps pg errors; the interesting message lives on the cause chain. */
-async function expectRejection(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+async function expectRejection(
+  promise: Promise<unknown>,
+  pattern: RegExp,
+): Promise<void> {
   await expect(promise).rejects.toSatisfy((error: unknown) => {
     let current = error as (Error & { cause?: unknown }) | undefined;
     while (current) {
@@ -53,11 +61,21 @@ describe('enrollment slice (spec 003 DB)', () => {
     await withPlatform(platform.db, async (tx) => {
       const [a] = await tx
         .insert(academies)
-        .values({ name: 'Tenant A', slug: 'tenant-a', contactEmail: 'a@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant A',
+          slug: 'tenant-a',
+          contactEmail: 'a@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       const [b] = await tx
         .insert(academies)
-        .values({ name: 'Tenant B', slug: 'tenant-b', contactEmail: 'b@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant B',
+          slug: 'tenant-b',
+          contactEmail: 'b@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       tenantA = a!.id;
       tenantB = b!.id;
@@ -80,12 +98,22 @@ describe('enrollment slice (spec 003 DB)', () => {
     tenantId: string,
     name: string,
     capacity: number,
-    extra: Partial<{ ageMin: number; ageMax: number; status: 'active' | 'archived' }> = {},
+    extra: Partial<{
+      ageMin: number;
+      ageMax: number;
+      status: 'active' | 'archived';
+    }> = {},
   ): Promise<string> {
     return withTenant(app.db, tenantId, async (tx) => {
       const [row] = await tx
         .insert(classes)
-        .values({ tenantId, name, professorUserId: professorA, capacity, ...extra })
+        .values({
+          tenantId,
+          name,
+          professorUserId: professorA,
+          capacity,
+          ...extra,
+        })
         .returning({ id: classes.id });
       return row!.id;
     });
@@ -131,7 +159,9 @@ describe('enrollment slice (spec 003 DB)', () => {
       expect(await app.db.select().from(enrollments)).toHaveLength(0);
 
       // Tenant B sees nothing of tenant A.
-      const fromB = await withTenant(app.db, tenantB, (tx) => tx.select().from(students));
+      const fromB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(students),
+      );
       expect(fromB).toHaveLength(0);
 
       // WITH CHECK blocks writing into the other tenant.
@@ -183,7 +213,11 @@ describe('enrollment slice (spec 003 DB)', () => {
       const studentId = await withTenant(app.db, tenantA, async (tx) => {
         const [s] = await tx
           .insert(students)
-          .values({ tenantId: tenantA, fullName: 'Re Ativa', birthDate: '1999-05-05' })
+          .values({
+            tenantId: tenantA,
+            fullName: 'Re Ativa',
+            birthDate: '1999-05-05',
+          })
           .returning({ id: students.id });
         return s!.id;
       });
@@ -199,7 +233,9 @@ describe('enrollment slice (spec 003 DB)', () => {
       // A second active row for the same pair is impossible.
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(enrollments).values({ tenantId: tenantA, classId, studentId }),
+          tx
+            .insert(enrollments)
+            .values({ tenantId: tenantA, classId, studentId }),
         ),
         /enrollments_tenant_class_student_uq/,
       );
@@ -216,7 +252,11 @@ describe('enrollment slice (spec 003 DB)', () => {
           .insert(enrollments)
           .values({ tenantId: tenantA, classId, studentId })
           .onConflictDoUpdate({
-            target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
+            target: [
+              enrollments.tenantId,
+              enrollments.classId,
+              enrollments.studentId,
+            ],
             set: { status: 'active', updatedAt: new Date() },
           })
           .returning({ id: enrollments.id, status: enrollments.status });
@@ -229,7 +269,12 @@ describe('enrollment slice (spec 003 DB)', () => {
         tx
           .select()
           .from(enrollments)
-          .where(and(eq(enrollments.classId, classId), eq(enrollments.studentId, studentId))),
+          .where(
+            and(
+              eq(enrollments.classId, classId),
+              eq(enrollments.studentId, studentId),
+            ),
+          ),
       );
       expect(all).toHaveLength(1);
     });
@@ -294,9 +339,15 @@ describe('enrollment slice (spec 003 DB)', () => {
       await withTenant(app.db, tenantA, async (tx) => {
         const [s] = await tx
           .insert(students)
-          .values({ tenantId: tenantA, fullName: 'Seat Taker', birthDate: '1990-01-01' })
+          .values({
+            tenantId: tenantA,
+            fullName: 'Seat Taker',
+            birthDate: '1990-01-01',
+          })
           .returning({ id: students.id });
-        await tx.insert(enrollments).values({ tenantId: tenantA, classId, studentId: s!.id });
+        await tx
+          .insert(enrollments)
+          .values({ tenantId: tenantA, classId, studentId: s!.id });
       });
       await createInvite(tenantA, 'v2-full', 'student', classId);
 
@@ -319,7 +370,12 @@ describe('enrollment slice (spec 003 DB)', () => {
         const active = await tx
           .select()
           .from(enrollments)
-          .where(and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')));
+          .where(
+            and(
+              eq(enrollments.classId, classId),
+              eq(enrollments.status, 'active'),
+            ),
+          );
         expect(active).toHaveLength(1);
       });
     });
@@ -358,7 +414,10 @@ describe('enrollment slice (spec 003 DB)', () => {
           .select()
           .from(students)
           .where(eq(students.guardianId, row['guardian_id'] as string));
-        expect(kids.map((k) => k.fullName).sort()).toEqual(['Dep One', 'Dep Two']);
+        expect(kids.map((k) => k.fullName).sort()).toEqual([
+          'Dep One',
+          'Dep Two',
+        ]);
         for (const kid of kids) {
           expect(kid.userId).toBeNull();
         }
@@ -367,9 +426,16 @@ describe('enrollment slice (spec 003 DB)', () => {
         const active = await tx
           .select()
           .from(enrollments)
-          .where(and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')));
+          .where(
+            and(
+              eq(enrollments.classId, classId),
+              eq(enrollments.status, 'active'),
+            ),
+          );
         expect(active).toHaveLength(1);
-        expect(active[0]!.studentId).toBe((row['enrolled_student_ids'] as string[])[0]);
+        expect(active[0]!.studentId).toBe(
+          (row['enrolled_student_ids'] as string[])[0],
+        );
       });
     });
 

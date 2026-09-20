@@ -227,22 +227,33 @@ function isoDate(d: Date): string {
   return `${d.getFullYear()}-${month}-${day}`;
 }
 
-const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 3600 * 1000);
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 3600 * 1000);
 
 /**
  * Requires `seedDevFixtures` (students/users/memberships) to have run first.
  */
-export async function seedStoreFixtures({ appDb, platformDb }: SeedStoreHandles): Promise<void> {
+export async function seedStoreFixtures({
+  appDb,
+  platformDb,
+}: SeedStoreHandles): Promise<void> {
   for (const slug of Object.keys(STORE_ACADEMY_ADMIN)) {
     const [academy] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      tx
+        .select({ id: academies.id })
+        .from(academies)
+        .where(eq(academies.slug, slug)),
     );
-    if (!academy) throw new Error(`Fixture academy ${slug} missing — run seedDevFixtures first`);
+    if (!academy)
+      throw new Error(
+        `Fixture academy ${slug} missing — run seedDevFixtures first`,
+      );
     const tenantId = academy.id;
 
     const adminEmail = STORE_ACADEMY_ADMIN[slug];
     const professorEmail = STORE_PROFESSOR_BUYER[slug];
-    if (!adminEmail || !professorEmail) throw new Error(`Missing store fixture cast for ${slug}`);
+    if (!adminEmail || !professorEmail)
+      throw new Error(`Missing store fixture cast for ${slug}`);
     const studentEmail = STORE_STUDENT_BUYER[slug];
 
     const userIdByEmail = new Map<string, string>();
@@ -252,24 +263,39 @@ export async function seedStoreFixtures({ appDb, platformDb }: SeedStoreHandles)
       const [user] = await withPlatform(platformDb, (tx) =>
         tx.select({ id: users.id }).from(users).where(eq(users.email, email)),
       );
-      if (!user) throw new Error(`Missing user ${email} — run seedDevFixtures first`);
+      if (!user)
+        throw new Error(`Missing user ${email} — run seedDevFixtures first`);
       userIdByEmail.set(email, user.id);
     }
     const actorUserId = userIdByEmail.get(adminEmail)!;
     const professorUserId = userIdByEmail.get(professorEmail)!;
-    const studentUserId = studentEmail ? userIdByEmail.get(studentEmail) : undefined;
+    const studentUserId = studentEmail
+      ? userIdByEmail.get(studentEmail)
+      : undefined;
 
     await withTenant(appDb, tenantId, async (tx) => {
       // The chip catalog, then the 6 prototype products.
       const categoryIdByName = new Map<string, string>();
       for (const name of DEV_CATEGORIES) {
-        categoryIdByName.set(name, await ensureCategory(tx, { tenantId, name, actorUserId }));
+        categoryIdByName.set(
+          name,
+          await ensureCategory(tx, { tenantId, name, actorUserId }),
+        );
       }
-      const productByName = new Map<string, { id: string; priceCents: number }>();
+      const productByName = new Map<
+        string,
+        { id: string; priceCents: number }
+      >();
       for (const p of DEV_PRODUCTS) {
         const categoryId = categoryIdByName.get(p.category);
-        if (!categoryId) throw new Error(`Fixture category ${p.category} missing`);
-        const id = await ensureProduct(tx, { tenantId, categoryId, actorUserId, ...p });
+        if (!categoryId)
+          throw new Error(`Fixture category ${p.category} missing`);
+        const id = await ensureProduct(tx, {
+          tenantId,
+          categoryId,
+          actorUserId,
+          ...p,
+        });
         productByName.set(p.name, { id, priceCents: p.priceCents });
       }
 
@@ -279,15 +305,22 @@ export async function seedStoreFixtures({ appDb, platformDb }: SeedStoreHandles)
         const [row] = await tx
           .select({ id: students.id })
           .from(students)
-          .where(and(eq(students.tenantId, tenantId), eq(students.userId, studentUserId)));
-        if (!row) throw new Error(`Fixture student row missing for ${studentEmail}`);
+          .where(
+            and(
+              eq(students.tenantId, tenantId),
+              eq(students.userId, studentUserId),
+            ),
+          );
+        if (!row)
+          throw new Error(`Fixture student row missing for ${studentEmail}`);
         studentBuyer = { userId: studentUserId, studentId: row.id };
       }
 
       // Mixed lifecycle orders + their order-origin charges.
       for (const o of DEV_ORDERS) {
         const product = productByName.get(o.productName);
-        if (!product) throw new Error(`Fixture product ${o.productName} missing`);
+        if (!product)
+          throw new Error(`Fixture product ${o.productName} missing`);
         // Bravo has no student login: the professor buys everything.
         const asStudent = o.buyer === 'student' && studentBuyer !== undefined;
         const buyerUserId = asStudent ? studentBuyer!.userId : professorUserId;
@@ -307,7 +340,11 @@ export async function seedStoreFixtures({ appDb, platformDb }: SeedStoreHandles)
         });
 
         const chargeStatus =
-          o.status === 'pending' ? 'open' : o.status === 'canceled' ? 'refunded' : 'paid';
+          o.status === 'pending'
+            ? 'open'
+            : o.status === 'canceled'
+              ? 'refunded'
+              : 'paid';
         const charge = await ensureOrderCharge(tx, {
           tenantId,
           orderId: order.id,
@@ -347,7 +384,12 @@ async function ensureCategory(
   const found = await tx
     .select({ id: productCategories.id })
     .from(productCategories)
-    .where(and(eq(productCategories.tenantId, c.tenantId), eq(productCategories.name, c.name)));
+    .where(
+      and(
+        eq(productCategories.tenantId, c.tenantId),
+        eq(productCategories.name, c.name),
+      ),
+    );
   if (found[0]) return found[0].id;
 
   const [inserted] = await tx
@@ -370,7 +412,11 @@ async function ensureCategory(
  */
 async function ensureProduct(
   tx: DbTransaction,
-  p: DevProductFixture & { tenantId: string; categoryId: string; actorUserId: string },
+  p: DevProductFixture & {
+    tenantId: string;
+    categoryId: string;
+    actorUserId: string;
+  },
 ): Promise<string> {
   const found = await tx
     .select({ id: products.id })
@@ -386,7 +432,9 @@ async function ensureProduct(
       description: p.description,
       priceCents: p.priceCents,
       stockQty: p.stockQty,
-      ...(p.lowStockThreshold !== undefined ? { lowStockThreshold: p.lowStockThreshold } : {}),
+      ...(p.lowStockThreshold !== undefined
+        ? { lowStockThreshold: p.lowStockThreshold }
+        : {}),
       categoryId: p.categoryId,
       tags: p.tags,
       sizes: p.sizes,
@@ -516,7 +564,9 @@ async function ensureOrderCharge(
   const found = await tx
     .select({ id: charges.id })
     .from(charges)
-    .where(and(eq(charges.tenantId, c.tenantId), eq(charges.orderId, c.orderId)));
+    .where(
+      and(eq(charges.tenantId, c.tenantId), eq(charges.orderId, c.orderId)),
+    );
   if (found[0]) return { id: found[0].id, created: false };
 
   const [inserted] = await tx
@@ -570,7 +620,12 @@ async function ensureOrderPayment(
     const existing = await tx
       .select({ id: payments.id })
       .from(payments)
-      .where(and(eq(payments.tenantId, p.tenantId), eq(payments.chargeId, p.chargeId)));
+      .where(
+        and(
+          eq(payments.tenantId, p.tenantId),
+          eq(payments.chargeId, p.chargeId),
+        ),
+      );
     if (existing.length > 0) return;
   }
 

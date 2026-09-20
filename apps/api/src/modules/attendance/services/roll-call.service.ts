@@ -53,7 +53,12 @@ export interface RollCallView {
 
 export interface MarkResult {
   status: 'checked_in' | 'already_checked_in';
-  attendance: { id: string; classSessionId: string; studentId: string; checkedInAt: Date };
+  attendance: {
+    id: string;
+    classSessionId: string;
+    studentId: string;
+    checkedInAt: Date;
+  };
   presentCount: number;
 }
 
@@ -63,7 +68,10 @@ export interface RevokeResult {
   presentCount: number;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Professor manual roll call (spec 004, ATT.8) + the audited revoke paths
@@ -83,13 +91,20 @@ export class RollCallService {
   ) {}
 
   /** POST /professor/classes/:id/roll-call — materialize + roster (stories 27/30). */
-  async open(ctx: AuthContext & { tenantId: string }, classId: string): Promise<RollCallView> {
+  async open(
+    ctx: AuthContext & { tenantId: string },
+    classId: string,
+  ): Promise<RollCallView> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const klass = await this.sessions.ownedClass(tx, classId, ctx.userId);
       if (!klass || klass.status !== 'active') {
         throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found');
       }
-      const session = await this.sessions.materializeToday(tx, ctx.tenantId, classId);
+      const session = await this.sessions.materializeToday(
+        tx,
+        ctx.tenantId,
+        classId,
+      );
       return this.assemble(tx, {
         id: session.id,
         classId,
@@ -108,73 +123,46 @@ export class RollCallService {
     studentId: string,
   ): Promise<MarkResult> {
     let event: CheckinRecordedEvent | null = null;
-    const result = await withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
-      const owned = await this.sessions.ownedSession(tx, sessionId, ctx.userId);
-      if (!owned) throw problem(404, ErrorCodes.NOT_FOUND, 'Session not found');
-
-      const [student] = await tx
-        .select({ id: students.id, fullName: students.fullName })
-        .from(students)
-        .where(and(eq(students.id, studentId), eq(students.status, 'active')));
-      if (!student) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
-
-      const [enrollment] = await tx
-        .select({ id: enrollments.id })
-        .from(enrollments)
-        .where(
-          and(
-            eq(enrollments.classId, owned.session.classId),
-            eq(enrollments.studentId, studentId),
-            eq(enrollments.status, 'active'),
-          ),
+    const result = await withTenant(
+      this.appDb.db,
+      tenantCtx(ctx),
+      async (tx) => {
+        const owned = await this.sessions.ownedSession(
+          tx,
+          sessionId,
+          ctx.userId,
         );
-      if (!enrollment) {
-        throw problem(403, ErrorCodes.CHECKIN_NOT_ENROLLED, 'Student is not enrolled in this class');
-      }
+        if (!owned)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Session not found');
 
-      const [existing] = await tx
-        .select()
-        .from(attendances)
-        .where(
-          and(
-            eq(attendances.classSessionId, sessionId),
-            eq(attendances.studentId, studentId),
-            isNull(attendances.revokedAt),
-          ),
-        );
-      if (existing) {
-        return {
-          status: 'already_checked_in' as const,
-          attendance: {
-            id: existing.id,
-            classSessionId: existing.classSessionId,
-            studentId: existing.studentId,
-            checkedInAt: existing.checkedInAt,
-          },
-          presentCount: await this.sessions.presentCount(tx, sessionId),
-        };
-      }
+        const [student] = await tx
+          .select({ id: students.id, fullName: students.fullName })
+          .from(students)
+          .where(
+            and(eq(students.id, studentId), eq(students.status, 'active')),
+          );
+        if (!student)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
 
-      const now = new Date();
-      let inserted: typeof attendances.$inferSelect | undefined;
-      try {
-        inserted = await tx.transaction(async (stx) => {
-          const [row] = await stx
-            .insert(attendances)
-            .values({
-              tenantId: ctx.tenantId,
-              classSessionId: sessionId,
-              studentId,
-              method: 'manual',
-              checkedInAt: now,
-              recordedByUserId: ctx.userId,
-            })
-            .returning();
-          return row;
-        });
-      } catch (error) {
-        if (!SessionService.isDuplicateAttendance(error)) throw error;
-        const [winner] = await tx
+        const [enrollment] = await tx
+          .select({ id: enrollments.id })
+          .from(enrollments)
+          .where(
+            and(
+              eq(enrollments.classId, owned.session.classId),
+              eq(enrollments.studentId, studentId),
+              eq(enrollments.status, 'active'),
+            ),
+          );
+        if (!enrollment) {
+          throw problem(
+            403,
+            ErrorCodes.CHECKIN_NOT_ENROLLED,
+            'Student is not enrolled in this class',
+          );
+        }
+
+        const [existing] = await tx
           .select()
           .from(attendances)
           .where(
@@ -184,23 +172,70 @@ export class RollCallService {
               isNull(attendances.revokedAt),
             ),
           );
-        if (!winner) throw error;
-        return {
-          status: 'already_checked_in' as const,
-          attendance: {
-            id: winner.id,
-            classSessionId: winner.classSessionId,
-            studentId: winner.studentId,
-            checkedInAt: winner.checkedInAt,
-          },
-          presentCount: await this.sessions.presentCount(tx, sessionId),
-        };
-      }
-      if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Attendance insert returned no row');
+        if (existing) {
+          return {
+            status: 'already_checked_in' as const,
+            attendance: {
+              id: existing.id,
+              classSessionId: existing.classSessionId,
+              studentId: existing.studentId,
+              checkedInAt: existing.checkedInAt,
+            },
+            presentCount: await this.sessions.presentCount(tx, sessionId),
+          };
+        }
 
-      // Professor-recorded manual rows ARE audited (resolved audit policy),
-      // in the same transaction, through the append-only seam.
-      await tx.execute(sql`
+        const now = new Date();
+        let inserted: typeof attendances.$inferSelect | undefined;
+        try {
+          inserted = await tx.transaction(async (stx) => {
+            const [row] = await stx
+              .insert(attendances)
+              .values({
+                tenantId: ctx.tenantId,
+                classSessionId: sessionId,
+                studentId,
+                method: 'manual',
+                checkedInAt: now,
+                recordedByUserId: ctx.userId,
+              })
+              .returning();
+            return row;
+          });
+        } catch (error) {
+          if (!SessionService.isDuplicateAttendance(error)) throw error;
+          const [winner] = await tx
+            .select()
+            .from(attendances)
+            .where(
+              and(
+                eq(attendances.classSessionId, sessionId),
+                eq(attendances.studentId, studentId),
+                isNull(attendances.revokedAt),
+              ),
+            );
+          if (!winner) throw error;
+          return {
+            status: 'already_checked_in' as const,
+            attendance: {
+              id: winner.id,
+              classSessionId: winner.classSessionId,
+              studentId: winner.studentId,
+              checkedInAt: winner.checkedInAt,
+            },
+            presentCount: await this.sessions.presentCount(tx, sessionId),
+          };
+        }
+        if (!inserted)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Attendance insert returned no row',
+          );
+
+        // Professor-recorded manual rows ARE audited (resolved audit policy),
+        // in the same transaction, through the append-only seam.
+        await tx.execute(sql`
         SELECT audit_append(
           ${ctx.tenantId}::uuid,
           ${ctx.userId}::uuid,
@@ -216,28 +251,29 @@ export class RollCallService {
         )
       `);
 
-      const presentCount = await this.sessions.presentCount(tx, sessionId);
-      event = {
-        tenantId: ctx.tenantId,
-        classSessionId: sessionId,
-        attendanceId: inserted.id,
-        studentId,
-        studentName: student.fullName,
-        method: 'manual',
-        checkedInAt: inserted.checkedInAt.toISOString(),
-        presentCount,
-      };
-      return {
-        status: 'checked_in' as const,
-        attendance: {
-          id: inserted.id,
-          classSessionId: inserted.classSessionId,
-          studentId: inserted.studentId,
-          checkedInAt: inserted.checkedInAt,
-        },
-        presentCount,
-      };
-    });
+        const presentCount = await this.sessions.presentCount(tx, sessionId);
+        event = {
+          tenantId: ctx.tenantId,
+          classSessionId: sessionId,
+          attendanceId: inserted.id,
+          studentId,
+          studentName: student.fullName,
+          method: 'manual',
+          checkedInAt: inserted.checkedInAt.toISOString(),
+          presentCount,
+        };
+        return {
+          status: 'checked_in' as const,
+          attendance: {
+            id: inserted.id,
+            classSessionId: inserted.classSessionId,
+            studentId: inserted.studentId,
+            checkedInAt: inserted.checkedInAt,
+          },
+          presentCount,
+        };
+      },
+    );
     if (event) this.events.emit(ATTENDANCE_CHECKIN_RECORDED, event);
     return result;
   }
@@ -254,33 +290,40 @@ export class RollCallService {
     reason?: string,
   ): Promise<RevokeResult> {
     let event: AttendanceRevokedEvent | null = null;
-    const result = await withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
-      const [target] = await tx
-        .select({
-          id: attendances.id,
-          classSessionId: attendances.classSessionId,
-          professorUserId: classes.professorUserId,
-        })
-        .from(attendances)
-        .innerJoin(
-          classSessions,
-          and(
-            eq(classSessions.tenantId, attendances.tenantId),
-            eq(classSessions.id, attendances.classSessionId),
-          ),
-        )
-        .innerJoin(
-          classes,
-          and(eq(classes.tenantId, classSessions.tenantId), eq(classes.id, classSessions.classId)),
-        )
-        .where(eq(attendances.id, attendanceId));
-      // Cross-tenant ids are invisible under RLS — same 404 as nonexistent.
-      if (!target) throw problem(404, ErrorCodes.NOT_FOUND, 'Attendance not found');
-      if (scope === 'professor' && target.professorUserId !== ctx.userId) {
-        throw problem(404, ErrorCodes.NOT_FOUND, 'Attendance not found');
-      }
+    const result = await withTenant(
+      this.appDb.db,
+      tenantCtx(ctx),
+      async (tx) => {
+        const [target] = await tx
+          .select({
+            id: attendances.id,
+            classSessionId: attendances.classSessionId,
+            professorUserId: classes.professorUserId,
+          })
+          .from(attendances)
+          .innerJoin(
+            classSessions,
+            and(
+              eq(classSessions.tenantId, attendances.tenantId),
+              eq(classSessions.id, attendances.classSessionId),
+            ),
+          )
+          .innerJoin(
+            classes,
+            and(
+              eq(classes.tenantId, classSessions.tenantId),
+              eq(classes.id, classSessions.classId),
+            ),
+          )
+          .where(eq(attendances.id, attendanceId));
+        // Cross-tenant ids are invisible under RLS — same 404 as nonexistent.
+        if (!target)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Attendance not found');
+        if (scope === 'professor' && target.professorUserId !== ctx.userId) {
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Attendance not found');
+        }
 
-      const revoked = await tx.execute(sql`
+        const revoked = await tx.execute(sql`
         SELECT status, attendance_id, revoke_window
         FROM attendance_revoke(
           ${ctx.tenantId}::uuid,
@@ -290,33 +333,45 @@ export class RollCallService {
           ${ctx.impersonatorUserId}::uuid
         )
       `);
-      const status = String(revoked.rows[0]?.['status']);
-      const presentCount = await this.sessions.presentCount(tx, target.classSessionId);
+        const status = String(revoked.rows[0]?.['status']);
+        const presentCount = await this.sessions.presentCount(
+          tx,
+          target.classSessionId,
+        );
 
-      switch (status) {
-        case 'revoked':
-          event = {
-            tenantId: ctx.tenantId,
-            classSessionId: target.classSessionId,
-            attendanceId,
-            presentCount,
-          };
-          return { status: 'revoked' as const, attendanceId, presentCount };
-        case 'already_revoked':
-          // Per-tap semantics: a second toggle-off is benign.
-          return { status: 'already_revoked' as const, attendanceId, presentCount };
-        case 'window_closed':
-          throw problem(
-            403,
-            ErrorCodes.ATTENDANCE_REVOKE_WINDOW_CLOSED,
-            'Past-day presences can only be revoked by an admin',
-          );
-        case 'not_allowed':
-          throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'Not allowed to revoke attendances');
-        default:
-          throw problem(404, ErrorCodes.NOT_FOUND, 'Attendance not found');
-      }
-    });
+        switch (status) {
+          case 'revoked':
+            event = {
+              tenantId: ctx.tenantId,
+              classSessionId: target.classSessionId,
+              attendanceId,
+              presentCount,
+            };
+            return { status: 'revoked' as const, attendanceId, presentCount };
+          case 'already_revoked':
+            // Per-tap semantics: a second toggle-off is benign.
+            return {
+              status: 'already_revoked' as const,
+              attendanceId,
+              presentCount,
+            };
+          case 'window_closed':
+            throw problem(
+              403,
+              ErrorCodes.ATTENDANCE_REVOKE_WINDOW_CLOSED,
+              'Past-day presences can only be revoked by an admin',
+            );
+          case 'not_allowed':
+            throw problem(
+              403,
+              ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+              'Not allowed to revoke attendances',
+            );
+          default:
+            throw problem(404, ErrorCodes.NOT_FOUND, 'Attendance not found');
+        }
+      },
+    );
     if (event) this.events.emit(ATTENDANCE_REVOKED, event);
     return result;
   }
@@ -337,7 +392,10 @@ export class RollCallService {
       .from(enrollments)
       .innerJoin(
         students,
-        and(eq(students.tenantId, enrollments.tenantId), eq(students.id, enrollments.studentId)),
+        and(
+          eq(students.tenantId, enrollments.tenantId),
+          eq(students.id, enrollments.studentId),
+        ),
       )
       .leftJoin(
         attendances,
@@ -348,7 +406,12 @@ export class RollCallService {
           isNull(attendances.revokedAt),
         ),
       )
-      .where(and(eq(enrollments.classId, session.classId), eq(enrollments.status, 'active')))
+      .where(
+        and(
+          eq(enrollments.classId, session.classId),
+          eq(enrollments.status, 'active'),
+        ),
+      )
       .orderBy(asc(students.fullName));
 
     const beltByStudent = await this.graduationQuery.currentBeltMap(

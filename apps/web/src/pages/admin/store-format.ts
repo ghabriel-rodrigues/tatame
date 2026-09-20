@@ -6,7 +6,11 @@
  * sheet descriptions and the client-side transition matrix (`paid` is never
  * set by hand — payment truth comes only from the provider-event handler).
  */
-import { ApiErrorCodes, parseProblem, type StoreOrderStatus } from '@tatame/shared';
+import {
+  ApiErrorCodes,
+  parseProblem,
+  type StoreOrderStatus,
+} from '@tatame/shared';
 
 export interface StoreGradientPreset {
   slug: string;
@@ -95,7 +99,10 @@ export const ORDER_STATUS_CHIP_TONES: Record<
 };
 
 /** The admin-05 option dot color (Lumira tokens, matching the chip tones). */
-export const ORDER_STATUS_DOTS: Record<Exclude<StoreOrderStatus, 'pending'>, string> = {
+export const ORDER_STATUS_DOTS: Record<
+  Exclude<StoreOrderStatus, 'pending'>,
+  string
+> = {
   paid: 'var(--purple-500)',
   ready: 'var(--warning-500)',
   delivered: 'var(--success-500)',
@@ -107,7 +114,10 @@ export const ORDER_STATUS_DOTS: Record<Exclude<StoreOrderStatus, 'pending'>, str
  * backward moves, delivered/canceled terminal; canceled from paid/ready runs
  * the audited refund. `paid` is never a target.
  */
-const VALID_TRANSITIONS: Record<StoreOrderStatus, ReadonlyArray<StoreOrderStatus>> = {
+const VALID_TRANSITIONS: Record<
+  StoreOrderStatus,
+  ReadonlyArray<StoreOrderStatus>
+> = {
   pending: [],
   paid: ['ready', 'canceled'],
   ready: ['delivered', 'canceled'],
@@ -115,7 +125,10 @@ const VALID_TRANSITIONS: Record<StoreOrderStatus, ReadonlyArray<StoreOrderStatus
   canceled: [],
 };
 
-export function canTransition(from: StoreOrderStatus, to: StoreOrderStatus): boolean {
+export function canTransition(
+  from: StoreOrderStatus,
+  to: StoreOrderStatus,
+): boolean {
   return VALID_TRANSITIONS[from].includes(to);
 }
 

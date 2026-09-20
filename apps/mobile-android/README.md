@@ -38,7 +38,7 @@ All dependency versions live in `gradle/libs.versions.toml`.
   client for the `/v1/auth` surface (`core/network`), DTO field names 1:1 with
   the committed contract `packages/shared/src/api/openapi.json`. The ticket-02
   committed-generated openapi-generator flow is **stubbed** (`./gradlew
-  :app:generateApiClient` prints the rationale): the current contract defeats
+:app:generateApiClient` prints the rationale): the current contract defeats
   the `kotlin/jvm-retrofit2` + `kotlinx_serialization` generator (Any-typed
   `theme` map, dual 200/202 login response, boolean-enum `mfaRequired`).
   Revisit when the wider surface lands. `POST /auth/login/totp` is deliberately

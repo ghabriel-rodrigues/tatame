@@ -36,14 +36,22 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
     alphaId = await t.academyIdBySlug('alpha-jj');
     bravoId = await t.academyIdBySlug('bravo-bjj');
 
-    const rules = await t.http().get('/v1/admin/graduation-rules').set(bearer(admin));
+    const rules = await t
+      .http()
+      .get('/v1/admin/graduation-rules')
+      .set(bearer(admin));
     for (const row of rules.body.rules) beltId[row.name] = row.beltId;
 
     const [ana] = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Ana Aluna'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Ana Aluna'),
+          ),
+        ),
     );
     anaId = ana!.id;
   });
@@ -53,17 +61,39 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
   });
 
   it('rules GET: merged ladder in régua order with seeded overrides and kids toggles', async () => {
-    const res = await t.http().get('/v1/admin/graduation-rules').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/graduation-rules')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     const names = res.body.rules.map((r: any) => r.name);
     expect(names).toEqual([
-      'Branca', 'Cinza', 'Amarela', 'Laranja', 'Verde',
-      'Azul', 'Roxa', 'Marrom', 'Preta', 'Vermelha',
+      'Branca',
+      'Cinza',
+      'Amarela',
+      'Laranja',
+      'Verde',
+      'Azul',
+      'Roxa',
+      'Marrom',
+      'Preta',
+      'Vermelha',
     ]);
-    const byName = new Map<string, any>(res.body.rules.map((r: any) => [r.name, r]));
-    expect(byName.get('Azul')).toMatchObject({ lessonsPerDegree: 45, enabled: true }); // override
-    expect(byName.get('Laranja')).toMatchObject({ lessonsPerDegree: 40, enabled: false });
-    expect(byName.get('Branca')).toMatchObject({ lessonsPerDegree: 40, enabled: true }); // default
+    const byName = new Map<string, any>(
+      res.body.rules.map((r: any) => [r.name, r]),
+    );
+    expect(byName.get('Azul')).toMatchObject({
+      lessonsPerDegree: 45,
+      enabled: true,
+    }); // override
+    expect(byName.get('Laranja')).toMatchObject({
+      lessonsPerDegree: 40,
+      enabled: false,
+    });
+    expect(byName.get('Branca')).toMatchObject({
+      lessonsPerDegree: 40,
+      enabled: true,
+    }); // default
     expect(byName.get('Preta').maxDegrees).toBe(6);
     expect(byName.get('Vermelha').maxDegrees).toBe(0);
     for (const row of res.body.rules) {
@@ -89,7 +119,11 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       .http()
       .put('/v1/admin/graduation-rules')
       .set(bearer(admin))
-      .send({ rules: [{ beltId: beltId['Marrom'], lessonsPerDegree: 40, enabled: true }] });
+      .send({
+        rules: [
+          { beltId: beltId['Marrom'], lessonsPerDegree: 40, enabled: true },
+        ],
+      });
     expect(noop.status).toBe(200);
     expect(await overrideCount()).toBe(before);
 
@@ -98,7 +132,11 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       .http()
       .put('/v1/admin/graduation-rules')
       .set(bearer(admin))
-      .send({ rules: [{ beltId: beltId['Roxa'], lessonsPerDegree: 50, enabled: true }] });
+      .send({
+        rules: [
+          { beltId: beltId['Roxa'], lessonsPerDegree: 50, enabled: true },
+        ],
+      });
     expect(changed.status).toBe(200);
     const roxa = changed.body.rules.find((r: any) => r.name === 'Roxa');
     expect(roxa.lessonsPerDegree).toBe(50);
@@ -109,15 +147,26 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       .http()
       .put('/v1/admin/graduation-rules')
       .set(bearer(admin))
-      .send({ rules: [{ beltId: beltId['Azul'], lessonsPerDegree: 60, enabled: true }] });
+      .send({
+        rules: [
+          { beltId: beltId['Azul'], lessonsPerDegree: 60, enabled: true },
+        ],
+      });
     expect(reaim.status).toBe(200);
-    const graduation = await t.http().get('/v1/aluno/graduation').set(bearer(aluno));
+    const graduation = await t
+      .http()
+      .get('/v1/aluno/graduation')
+      .set(bearer(aluno));
     expect(graduation.body.progress.target).toBe(60);
     await t
       .http()
       .put('/v1/admin/graduation-rules')
       .set(bearer(admin))
-      .send({ rules: [{ beltId: beltId['Azul'], lessonsPerDegree: 45, enabled: true }] });
+      .send({
+        rules: [
+          { beltId: beltId['Azul'], lessonsPerDegree: 45, enabled: true },
+        ],
+      });
   });
 
   it('rules PUT validations: minimum lessons, non-kids toggle, unknown belt', async () => {
@@ -125,7 +174,9 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       .http()
       .put('/v1/admin/graduation-rules')
       .set(bearer(admin))
-      .send({ rules: [{ beltId: beltId['Roxa'], lessonsPerDegree: 5, enabled: true }] });
+      .send({
+        rules: [{ beltId: beltId['Roxa'], lessonsPerDegree: 5, enabled: true }],
+      });
     expect(below.status).toBe(422);
     expect(below.body.code).toBe('graduation.lessons_below_minimum');
 
@@ -133,7 +184,11 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       .http()
       .put('/v1/admin/graduation-rules')
       .set(bearer(admin))
-      .send({ rules: [{ beltId: beltId['Roxa'], lessonsPerDegree: 40, enabled: false }] });
+      .send({
+        rules: [
+          { beltId: beltId['Roxa'], lessonsPerDegree: 40, enabled: false },
+        ],
+      });
     expect(nonKids.status).toBe(422);
     expect(nonKids.body.code).toBe('graduation.cannot_disable_non_kids_belt');
 
@@ -155,7 +210,10 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
   });
 
   it('admin history: full immutable record including the revocation pair', async () => {
-    const res = await t.http().get(`/v1/admin/students/${anaId}/graduations`).set(bearer(admin));
+    const res = await t
+      .http()
+      .get(`/v1/admin/students/${anaId}/graduations`)
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.graduations).toHaveLength(5);
     const kinds = res.body.graduations.map((g: any) => g.kind);
@@ -228,11 +286,17 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
 
   it('catalog write-protection: tenant connections cannot mutate the shared ladder', async () => {
     const [branca] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: belts.id, ladderId: belts.ladderId }).from(belts).where(eq(belts.name, 'Branca')),
+      tx
+        .select({ id: belts.id, ladderId: belts.ladderId })
+        .from(belts)
+        .where(eq(belts.name, 'Branca')),
     );
     await expect(
       withTenant(t.appDb.db, alphaId, (tx) =>
-        tx.update(belts).set({ name: 'Hacked' }).where(eq(belts.id, branca!.id)),
+        tx
+          .update(belts)
+          .set({ name: 'Hacked' })
+          .where(eq(belts.id, branca!.id)),
       ),
     ).rejects.toThrow();
     await expect(
@@ -269,7 +333,11 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
         .http()
         .put('/v1/admin/graduation-rules')
         .set(bearer(admin))
-        .send({ rules: [{ beltId: beltId['Roxa'], lessonsPerDegree: 55, enabled: true }] });
+        .send({
+          rules: [
+            { beltId: beltId['Roxa'], lessonsPerDegree: 55, enabled: true },
+          ],
+        });
       expect(rules.status).toBe(403);
       expect(rules.body.code).toBe('tenant.read_only');
 
@@ -298,7 +366,10 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
         .send({ reason: 'tentativa' });
       expect(revoke.status).toBe(403);
 
-      const read = await t.http().get('/v1/aluno/graduation').set(bearer(aluno));
+      const read = await t
+        .http()
+        .get('/v1/aluno/graduation')
+        .set(bearer(aluno));
       expect(read.status).toBe(200);
     } finally {
       await t.setAcademyStatus('alpha-jj', 'active');
@@ -318,7 +389,10 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       [responsavel, 'get', '/v1/professor/profile'],
     ];
     for (const [token, method, path] of cases) {
-      const res = await (t.http() as any)[method](path).set(bearer(token)).send({});
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(token))
+        .send({});
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code, `${method} ${path}`).toBe('authz.forbidden_role');
     }
@@ -338,7 +412,11 @@ describe('graduation: admin rules, integrity and cross-cutting guarantees', () =
       `),
     );
     const byAction = new Map(rows.rows.map((r: any) => [r.action, r.total]));
-    expect(Number(byAction.get('graduation.awarded') ?? 0)).toBeGreaterThanOrEqual(4);
-    expect(Number(byAction.get('graduation.revoked') ?? 0)).toBeGreaterThanOrEqual(1);
+    expect(
+      Number(byAction.get('graduation.awarded') ?? 0),
+    ).toBeGreaterThanOrEqual(4);
+    expect(
+      Number(byAction.get('graduation.revoked') ?? 0),
+    ).toBeGreaterThanOrEqual(1);
   });
 });

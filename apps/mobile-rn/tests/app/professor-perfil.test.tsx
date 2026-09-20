@@ -5,11 +5,22 @@
  * by GET /v1/professor/profile.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { BELT_IDS, makeProfessorProfile } from '../helpers/graduation';
 
 jest.useFakeTimers();
@@ -23,7 +34,10 @@ function renderPerfil(override?: FetchHandler): void {
     if (request.method === 'GET' && request.path === '/v1/professor/profile') {
       return json(200, makeProfessorProfile());
     }
-    if (request.method === 'GET' && request.path === '/v1/professor/dashboard') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/professor/dashboard'
+    ) {
       return json(200, {
         alunosHoje: 0,
         presencaMediaPct: 0,
@@ -63,7 +77,9 @@ describe('professor perfil (GRD.17)', () => {
     renderPerfil();
     await openPerfil();
 
-    await waitFor(() => expect(screen.getByTestId('perfil-belt-chip')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('perfil-belt-chip')).toBeTruthy(),
+    );
     expect(screen.getByText('Faixa preta · 2º dan')).toBeTruthy();
   });
 
@@ -71,8 +87,21 @@ describe('professor perfil (GRD.17)', () => {
     renderPerfil();
     await openPerfil();
 
-    await waitFor(() => expect(screen.getByText('Graduações válidas')).toBeTruthy());
-    for (const name of ['Branca', 'Cinza', 'Amarela', 'Laranja', 'Verde', 'Azul', 'Roxa', 'Marrom', 'Preta', 'Vermelha']) {
+    await waitFor(() =>
+      expect(screen.getByText('Graduações válidas')).toBeTruthy(),
+    );
+    for (const name of [
+      'Branca',
+      'Cinza',
+      'Amarela',
+      'Laranja',
+      'Verde',
+      'Azul',
+      'Roxa',
+      'Marrom',
+      'Preta',
+      'Vermelha',
+    ]) {
       expect(screen.getByText(name)).toBeTruthy();
     }
     // Laranja is disabled in the fixture → dimmed chip.
@@ -90,7 +119,9 @@ describe('professor perfil (GRD.17)', () => {
     );
     await openPerfil();
 
-    await waitFor(() => expect(screen.getByText('Graduações válidas')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Graduações válidas')).toBeTruthy(),
+    );
     expect(screen.queryByTestId('perfil-belt-chip')).toBeNull();
   });
 });

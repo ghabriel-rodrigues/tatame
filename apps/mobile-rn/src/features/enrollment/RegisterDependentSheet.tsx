@@ -56,9 +56,13 @@ export function RegisterDependentSheetHost() {
     { params: { query: { birthDate: birthDate ?? '' } } },
     { enabled: open && birthDate !== null },
   );
-  const suggestion = birthDate !== null ? (suggestionQuery.data?.suggestion ?? null) : null;
+  const suggestion =
+    birthDate !== null ? (suggestionQuery.data?.suggestion ?? null) : null;
 
-  const registerMutation = api.useMutation('post', '/v1/responsavel/dependents');
+  const registerMutation = api.useMutation(
+    'post',
+    '/v1/responsavel/dependents',
+  );
 
   // Story 36: toggle off ⇒ the surface does not exist client-side.
   if (!canRegisterDependents(session)) return null;
@@ -99,7 +103,8 @@ export function RegisterDependentSheetHost() {
           );
           close();
         },
-        onError: (mutationError) => setError(enrollmentErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(enrollmentErrorMessage(mutationError)),
       },
     );
   };
@@ -148,7 +153,8 @@ export function RegisterDependentSheetHost() {
               />
             ) : (
               <Text variant="caption">
-                Nenhuma turma com vaga para essa idade — o cadastro segue sem matrícula.
+                Nenhuma turma com vaga para essa idade — o cadastro segue sem
+                matrícula.
               </Text>
             )}
           </View>

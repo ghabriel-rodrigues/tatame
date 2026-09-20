@@ -32,7 +32,10 @@ const doc = {
   fixtures,
 };
 
-writeFileSync(join(pkgRoot, 'tokens/palette-fixtures.json'), JSON.stringify(doc, null, 2) + '\n');
+writeFileSync(
+  join(pkgRoot, 'tokens/palette-fixtures.json'),
+  JSON.stringify(doc, null, 2) + '\n',
+);
 console.log(
   `[design-system] wrote tokens/palette-fixtures.json (${Object.keys(fixtures).length} presets x 2 modes x ${
     Object.keys(fixtures.roxo.light).length

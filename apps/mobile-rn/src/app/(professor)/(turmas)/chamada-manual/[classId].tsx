@@ -42,9 +42,18 @@ export default function ManualRollCallScreen() {
   const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const openMutation = api.useMutation('post', '/v1/professor/classes/{id}/roll-call');
-  const markMutation = api.useMutation('post', '/v1/professor/sessions/{id}/attendances');
-  const revokeMutation = api.useMutation('post', '/v1/professor/attendances/{id}/revoke');
+  const openMutation = api.useMutation(
+    'post',
+    '/v1/professor/classes/{id}/roll-call',
+  );
+  const markMutation = api.useMutation(
+    'post',
+    '/v1/professor/sessions/{id}/attendances',
+  );
+  const revokeMutation = api.useMutation(
+    'post',
+    '/v1/professor/attendances/{id}/revoke',
+  );
 
   // Materialize the session + fetch the roster on mount.
   useEffect(() => {
@@ -58,10 +67,18 @@ export default function ManualRollCallScreen() {
     );
   }, [classId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateRow = (studentId: string, updater: (row: RollCallRosterRow) => RollCallRosterRow) => {
+  const updateRow = (
+    studentId: string,
+    updater: (row: RollCallRosterRow) => RollCallRosterRow,
+  ) => {
     setRollCall((prev) =>
       prev
-        ? { ...prev, roster: prev.roster.map((row) => (row.studentId === studentId ? updater(row) : row)) }
+        ? {
+            ...prev,
+            roster: prev.roster.map((row) =>
+              row.studentId === studentId ? updater(row) : row,
+            ),
+          }
         : prev,
     );
   };
@@ -105,7 +122,10 @@ export default function ManualRollCallScreen() {
       { params: { path: { id: attendance.id } }, body: {} },
       {
         onSuccess: (response) => {
-          updateRow(row.studentId, (current) => ({ ...current, attendance: null }));
+          updateRow(row.studentId, (current) => ({
+            ...current,
+            attendance: null,
+          }));
           setPresentCount(response.presentCount);
         },
         // revoke_window_closed keeps the toggle on — history stays intact.
@@ -119,10 +139,17 @@ export default function ManualRollCallScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
-            title={rollCall ? `Chamada · ${rollCall.session.className}` : 'Chamada'}
+            title={
+              rollCall ? `Chamada · ${rollCall.session.className}` : 'Chamada'
+            }
             subtitle={
               rollCall
                 ? `${rollCall.presentCount} presentes de ${roster.length}`
@@ -146,7 +173,9 @@ export default function ManualRollCallScreen() {
           {rollCall ? (
             roster.length === 0 ? (
               <Card>
-                <Text variant="caption">Nenhum aluno matriculado nesta turma.</Text>
+                <Text variant="caption">
+                  Nenhum aluno matriculado nesta turma.
+                </Text>
               </Card>
             ) : (
               <Card padding={theme.space['1']}>
@@ -173,7 +202,9 @@ export default function ManualRollCallScreen() {
                             accessibilityLabel={`Presença de ${row.fullName}`}
                             value={present}
                             disabled={pendingStudentId !== null}
-                            onValueChange={(next) => (next ? toggleOn(row) : toggleOff(row))}
+                            onValueChange={(next) =>
+                              next ? toggleOn(row) : toggleOff(row)
+                            }
                             trackColor={{
                               false: theme.color.bg.sunken,
                               true: theme.color.success['500'],
@@ -189,7 +220,11 @@ export default function ManualRollCallScreen() {
           ) : null}
 
           {rollCall ? (
-            <TatameButton fullWidth label="Salvar chamada" onPress={() => router.back()} />
+            <TatameButton
+              fullWidth
+              label="Salvar chamada"
+              onPress={() => router.back()}
+            />
           ) : null}
         </Animated.View>
       </ScrollView>

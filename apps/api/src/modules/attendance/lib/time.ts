@@ -44,14 +44,23 @@ function tzOffsetMs(timeZone: string, at: Date): number {
 }
 
 /** Local `YYYY-MM-DD` of `at` in the tenant timezone. */
-export function localDate(at: Date = new Date(), timeZone: string = TENANT_TIMEZONE): string {
+export function localDate(
+  at: Date = new Date(),
+  timeZone: string = TENANT_TIMEZONE,
+): string {
   // en-CA formats as YYYY-MM-DD.
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);
 }
 
 /** Local weekday (0 = Sunday … 6 = Saturday) of `at` in the tenant timezone. */
-export function localWeekday(at: Date = new Date(), timeZone: string = TENANT_TIMEZONE): number {
-  const name = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(at);
+export function localWeekday(
+  at: Date = new Date(),
+  timeZone: string = TENANT_TIMEZONE,
+): number {
+  const name = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    weekday: 'short',
+  }).format(at);
   const index = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(name);
   if (index === -1) throw new Error(`Unexpected weekday name: ${name}`);
   return index;

@@ -37,7 +37,8 @@ export const ApiErrorCodes = {
   GRADUATION_BELT_INVALID_TARGET: 'graduation.belt_invalid_target',
   GRADUATION_ALREADY_REVERSED: 'graduation.already_reversed',
   GRADUATION_LESSONS_BELOW_MINIMUM: 'graduation.lessons_below_minimum',
-  GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT: 'graduation.cannot_disable_non_kids_belt',
+  GRADUATION_CANNOT_DISABLE_NON_KIDS_BELT:
+    'graduation.cannot_disable_non_kids_belt',
   STREAM_TICKET_INVALID: 'stream.ticket_invalid',
   BILLING_CHARGE_NOT_PAYABLE: 'billing.charge_not_payable',
   BILLING_METHOD_MANDATE_MISMATCH: 'billing.method_mandate_mismatch',
@@ -79,8 +80,13 @@ export function parseProblem(error: unknown): ApiProblem | null {
   if (typeof error !== 'object' || error === null) return null;
   const candidate = error as Record<string, unknown>;
   if (typeof candidate['code'] !== 'string') return null;
-  const status = typeof candidate['status'] === 'number' ? candidate['status'] : 0;
-  return { ...(candidate as object), status, code: candidate['code'] } as ApiProblem;
+  const status =
+    typeof candidate['status'] === 'number' ? candidate['status'] : 0;
+  return {
+    ...(candidate as object),
+    status,
+    code: candidate['code'],
+  } as ApiProblem;
 }
 
 /** True when the error payload carries the given stable code. */

@@ -31,7 +31,10 @@ import {
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { InitialsAvatar, QueryState } from '../../../features/enrollment/ui';
-import { PROFILE_SAVED_TOAST, profileSaveError } from '../../../features/profile/copy';
+import {
+  PROFILE_SAVED_TOAST,
+  profileSaveError,
+} from '../../../features/profile/copy';
 import {
   formatCep,
   formatCpf,
@@ -79,7 +82,15 @@ function formFromProfile(profile: AlunoProfileResponse): FormState {
 }
 
 /** Dashed write-once box: "CPF · 123.456.789-00" + lock (aluno-18). */
-function LockedDocBox({ label, value, testID }: { label: string; value: string; testID: string }) {
+function LockedDocBox({
+  label,
+  value,
+  testID,
+}: {
+  label: string;
+  value: string;
+  testID: string;
+}) {
   const theme = useTheme();
   return (
     <View
@@ -101,7 +112,11 @@ function LockedDocBox({ label, value, testID }: { label: string; value: string; 
         backgroundColor: theme.color.bg.sunken,
       }}
     >
-      <Text variant="caption" color={theme.color.fg['3']} style={{ flexShrink: 1, fontSize: 13 }}>
+      <Text
+        variant="caption"
+        color={theme.color.fg['3']}
+        style={{ flexShrink: 1, fontSize: 13 }}
+      >
         {label} · {value}
       </Text>
       <Lock size={13} color={theme.color.fg['4']} />
@@ -112,7 +127,11 @@ function LockedDocBox({ label, value, testID }: { label: string; value: string; 
 function SectionLabel({ children }: { children: string }) {
   const theme = useTheme();
   return (
-    <Text variant="overline" color={theme.color.fg['4']} style={{ marginTop: theme.space['2'] }}>
+    <Text
+      variant="overline"
+      color={theme.color.fg['4']}
+      style={{ marginTop: theme.space['2'] }}
+    >
       {children}
     </Text>
   );
@@ -137,7 +156,9 @@ export default function AlunoDadosPessoaisScreen() {
 
   // Hydrate the form per loaded payload (server state is the truth) — the
   // render-time derived-state pattern, not an effect (no cascading render).
-  const [hydratedFrom, setHydratedFrom] = useState<AlunoProfileResponse | null>(null);
+  const [hydratedFrom, setHydratedFrom] = useState<AlunoProfileResponse | null>(
+    null,
+  );
   if (profile && profile !== hydratedFrom) {
     setHydratedFrom(profile);
     setForm(formFromProfile(profile));
@@ -173,9 +194,13 @@ export default function AlunoDadosPessoaisScreen() {
       { body },
       {
         onSuccess: (updated) => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/profile'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/aluno/profile'],
+          });
           // Name syncs onto the student row server-side; home/perfil re-read.
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/aluno/home'],
+          });
           setForm(formFromProfile(updated));
           setToast(PROFILE_SAVED_TOAST);
         },
@@ -190,7 +215,12 @@ export default function AlunoDadosPessoaisScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['3'] }}>
           <ScreenHeader
             title="Dados pessoais"
@@ -207,14 +237,24 @@ export default function AlunoDadosPessoaisScreen() {
             }
           />
 
-          <QueryState loading={profileQuery.isPending} error={profileQuery.isError}>
+          <QueryState
+            loading={profileQuery.isPending}
+            error={profileQuery.isError}
+          >
             {profile && form ? (
               <View style={{ gap: theme.space['3'] }}>
                 {/* Avatar + Trocar foto placeholder (upload is recorded debt). */}
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['4'] }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: theme.space['4'],
+                  }}
                 >
-                  <InitialsAvatar name={form.fullName || profile.fullName} size={64} />
+                  <InitialsAvatar
+                    name={form.fullName || profile.fullName}
+                    size={64}
+                  />
                   <TatameButton
                     size="sm"
                     variant="secondary"
@@ -225,7 +265,11 @@ export default function AlunoDadosPessoaisScreen() {
                 </View>
 
                 {screenError ? (
-                  <Text variant="caption" color={theme.color.danger['500']} testID="dados-error">
+                  <Text
+                    variant="caption"
+                    color={theme.color.danger['500']}
+                    testID="dados-error"
+                  >
                     {screenError}
                   </Text>
                 ) : null}
@@ -241,7 +285,9 @@ export default function AlunoDadosPessoaisScreen() {
                 <View style={{ flexDirection: 'row', gap: theme.space['3'] }}>
                   <FormField
                     label="Data de nascimento"
-                    value={profile.birthDate ? isoToBrDate(profile.birthDate) : '—'}
+                    value={
+                      profile.birthDate ? isoToBrDate(profile.birthDate) : '—'
+                    }
                     disabled
                     helperText="Gerenciada pela academia"
                     style={{ flex: 1, minWidth: 0 }}
@@ -269,10 +315,16 @@ export default function AlunoDadosPessoaisScreen() {
                     >
                       <Text
                         variant="body"
-                        color={form.gender ? theme.color.fg['1'] : theme.color.fg['4']}
+                        color={
+                          form.gender
+                            ? theme.color.fg['1']
+                            : theme.color.fg['4']
+                        }
                         style={{ fontSize: 15 }}
                       >
-                        {form.gender ? GENDER_LABELS[form.gender] : 'Selecionar'}
+                        {form.gender
+                          ? GENDER_LABELS[form.gender]
+                          : 'Selecionar'}
                       </Text>
                     </Pressable>
                     {fieldErrors['gender'] ? (
@@ -284,7 +336,11 @@ export default function AlunoDadosPessoaisScreen() {
                 </View>
                 <View style={{ flexDirection: 'row', gap: theme.space['3'] }}>
                   {profile.cpfLocked && profile.cpf ? (
-                    <LockedDocBox label="CPF" value={formatCpf(profile.cpf)} testID="cpf-locked" />
+                    <LockedDocBox
+                      label="CPF"
+                      value={formatCpf(profile.cpf)}
+                      testID="cpf-locked"
+                    />
                   ) : (
                     <FormField
                       label="CPF"
@@ -293,20 +349,30 @@ export default function AlunoDadosPessoaisScreen() {
                       placeholder="000.000.000-00"
                       type="number"
                       error={fieldErrors['cpf']}
-                      helperText={fieldErrors['cpf'] ? undefined : 'Definido uma única vez'}
+                      helperText={
+                        fieldErrors['cpf']
+                          ? undefined
+                          : 'Definido uma única vez'
+                      }
                       style={{ flex: 1, minWidth: 0 }}
                       testID="campo-cpf"
                     />
                   )}
                   {profile.rgLocked && profile.rg ? (
-                    <LockedDocBox label="RG" value={profile.rg} testID="rg-locked" />
+                    <LockedDocBox
+                      label="RG"
+                      value={profile.rg}
+                      testID="rg-locked"
+                    />
                   ) : (
                     <FormField
                       label="RG"
                       value={form.rg}
                       onChangeText={(rg) => set({ rg })}
                       error={fieldErrors['rg']}
-                      helperText={fieldErrors['rg'] ? undefined : 'Definido uma única vez'}
+                      helperText={
+                        fieldErrors['rg'] ? undefined : 'Definido uma única vez'
+                      }
                       style={{ flex: 1, minWidth: 0 }}
                       testID="campo-rg"
                     />
@@ -344,7 +410,9 @@ export default function AlunoDadosPessoaisScreen() {
                     value={form.cityUf}
                     onChangeText={(cityUf) => set({ cityUf })}
                     placeholder="São Paulo / SP"
-                    error={fieldErrors['addressState'] ?? fieldErrors['addressCity']}
+                    error={
+                      fieldErrors['addressState'] ?? fieldErrors['addressCity']
+                    }
                     style={{ flex: 1.4, minWidth: 0 }}
                     testID="campo-cidade-uf"
                   />

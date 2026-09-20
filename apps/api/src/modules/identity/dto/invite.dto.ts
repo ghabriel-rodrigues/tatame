@@ -67,17 +67,26 @@ export class CreateInviteDto {
   @IsIn(['student', 'guardian'])
   kind!: 'student' | 'guardian';
 
-  @ApiPropertyOptional({ format: 'uuid', description: 'Turma binding (class slice)' })
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Turma binding (class slice)',
+  })
   @IsOptional()
   @IsUUID()
   classId?: string;
 
-  @ApiPropertyOptional({ format: 'uuid', description: 'Academy plan binding (billing slice)' })
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Academy plan binding (billing slice)',
+  })
   @IsOptional()
   @IsUUID()
   academyPlanId?: string;
 
-  @ApiPropertyOptional({ minimum: 1, description: 'Absent = unlimited until expiry' })
+  @ApiPropertyOptional({
+    minimum: 1,
+    description: 'Absent = unlimited until expiry',
+  })
   @IsOptional()
   @IsInt()
   @Min(1)

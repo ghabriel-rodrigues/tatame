@@ -72,7 +72,8 @@ function cssValue(path, token, raw) {
       return String(value);
     case 'number':
       if (isTrackingPath(path)) return value === 0 ? '0' : `${value}em`;
-      if (path[0] === 'glass' && path[1] === 'saturation') return `${value * 100}%`;
+      if (path[0] === 'glass' && path[1] === 'saturation')
+        return `${value * 100}%`;
       return String(value);
     case 'shadow':
       return value.map(cssShadowLayer).join(', ');
@@ -180,12 +181,16 @@ function tsModule({ tokens, dark }, { native }) {
       : `/**\n * Lumira tokens for web. \`tokens\` mirrors tokens.json with resolved values\n * (dimensions as px numbers); \`darkTokens\` is the partial dark overlay;\n * \`webCss\` carries ready-made CSS composite strings; \`cssVars\` maps token\n * paths to the Lumira CSS custom property names.\n */`,
   );
   lines.push('');
-  lines.push(`export const tokens = ${JSON.stringify(tokens, null, 2)} as const;`);
+  lines.push(
+    `export const tokens = ${JSON.stringify(tokens, null, 2)} as const;`,
+  );
   lines.push('');
   lines.push(
     `/** Dark-mode overrides (partial mirror of \`tokens\`) — applyTema() remix + default-brand dark tints. */`,
   );
-  lines.push(`export const darkTokens = ${JSON.stringify(dark, null, 2)} as const;`);
+  lines.push(
+    `export const darkTokens = ${JSON.stringify(dark, null, 2)} as const;`,
+  );
   lines.push('');
   lines.push(`export type Tokens = typeof tokens;`);
   lines.push(`export type DarkTokens = typeof darkTokens;`);
@@ -205,13 +210,19 @@ export function formatTsWeb({ dictionary }) {
   for (const { path, token } of walkTokens(dictionary.tokens)) {
     cssVars[path.join('.')] = cssVarName(path);
     if (path[0] === 'shadow') shadowCss[camel(path[1])] = cssValue(path, token);
-    if (path[0] === 'glass' && path[1] === 'shine') glassShine = cssValue(path, token);
-    if (path[0] === 'glass' && path[1] === 'shadow') glassShadow = cssValue(path, token);
+    if (path[0] === 'glass' && path[1] === 'shine')
+      glassShine = cssValue(path, token);
+    if (path[0] === 'glass' && path[1] === 'shadow')
+      glassShadow = cssValue(path, token);
     if (path[0] === 'focus') focusRing = cssValue(path, token);
   }
   out += `\n/** Ready-made CSS composite strings (web only). */\n`;
   out += `export const webCss = ${JSON.stringify(
-    { shadow: shadowCss, glass: { shine: glassShine, shadow: glassShadow }, focusRing },
+    {
+      shadow: shadowCss,
+      glass: { shine: glassShine, shadow: glassShadow },
+      focusRing,
+    },
     null,
     2,
   )} as const;\n`;
@@ -252,33 +263,45 @@ export function formatKotlin({ dictionary }) {
   const glass = [];
   let focus = { spread: 3, alpha: 0.4, color: '#8B3DEB' };
 
-  const doc = (token) => (token.$description ? ` // ${token.$description}` : '');
+  const doc = (token) =>
+    token.$description ? ` // ${token.$description}` : '';
 
   for (const { path, token } of walkTokens(dictionary.tokens)) {
     const dv = darkValue(token);
     if (path[0] === 'color') {
       const name = kotlinName(path);
-      colors.push(`        val ${name} = ${kotlinColor(token.$value)}${doc(token)}`);
-      if (dv !== undefined) darkColors.push(`        val ${name} = ${kotlinColor(dv)}`);
+      colors.push(
+        `        val ${name} = ${kotlinColor(token.$value)}${doc(token)}`,
+      );
+      if (dv !== undefined)
+        darkColors.push(`        val ${name} = ${kotlinColor(dv)}`);
     } else if (path[0] === 'space') {
       space.push(`        val S${path[1]} = ${px(token.$value)}.dp`);
     } else if (path[0] === 'radius') {
       const name = path[1] === '2xl' ? 'Xxl' : pascal(path[1]);
       radius.push(`        val ${name} = ${px(token.$value)}.dp`);
     } else if (path[0] === 'text' && path[1] === 'size') {
-      fontSize.push(`        val Text${pascal(path[2])} = ${px(token.$value)}.sp`);
+      fontSize.push(
+        `        val Text${pascal(path[2])} = ${px(token.$value)}.sp`,
+      );
     } else if (path[0] === 'font' && path[1] === 'weight') {
-      fontWeight.push(`        val ${pascal(path[2])} = FontWeight(${token.$value})`);
+      fontWeight.push(
+        `        val ${pascal(path[2])} = FontWeight(${token.$value})`,
+      );
     } else if (path[0] === 'text' && path[1] === 'line-height') {
       lineHeight.push(`        val ${pascal(path[2])} = ${token.$value}f`);
     } else if (path[0] === 'text' && path[1] === 'tracking') {
       tracking.push(`        val ${pascal(path[2])} = ${token.$value}f // em`);
     } else if (path[0] === 'motion') {
       if (path[1] === 'duration') {
-        motion.push(`        val Dur${pascal(path[2])} = ${ms(token.$value)} // ms`);
+        motion.push(
+          `        val Dur${pascal(path[2])} = ${ms(token.$value)} // ms`,
+        );
       } else {
         const [a, b, c, d] = token.$value;
-        motion.push(`        val Ease${pascal(path[2])} = CubicBezierEasing(${a}f, ${b}f, ${c}f, ${d}f)`);
+        motion.push(
+          `        val Ease${pascal(path[2])} = CubicBezierEasing(${a}f, ${b}f, ${c}f, ${d}f)`,
+        );
       }
     } else if (path[0] === 'shadow') {
       const layer = token.$value[0];
@@ -291,7 +314,8 @@ export function formatKotlin({ dictionary }) {
       const name = pascal(path[1]);
       if (token.$type === 'color') {
         glass.push(`        val ${name} = ${kotlinColor(token.$value)}`);
-        if (dv !== undefined) darkColors.push(`        val Glass${name} = ${kotlinColor(dv)}`);
+        if (dv !== undefined)
+          darkColors.push(`        val Glass${name} = ${kotlinColor(dv)}`);
       } else if (token.$type === 'dimension') {
         glass.push(`        val ${name} = ${px(token.$value)}.dp`);
       } else if (path[1] === 'saturation') {
@@ -302,7 +326,9 @@ export function formatKotlin({ dictionary }) {
         glass.push(
           `        val ShineColors = listOf(${v.stops.map((s) => kotlinColor(s.color)).join(', ')})`,
         );
-        glass.push(`        val ShineStops = listOf(${v.stops.map((s) => `${s.position}f`).join(', ')})`);
+        glass.push(
+          `        val ShineStops = listOf(${v.stops.map((s) => `${s.position}f`).join(', ')})`,
+        );
       }
       // glass.shadow: composite assembly is platform-owned (ds-01); not exported to Compose.
     } else if (path[0] === 'focus') {
@@ -402,7 +428,13 @@ function swiftName(path) {
   return /^\d/.test(name) ? `n${name}` : name;
 }
 
-const SWIFT_WEIGHTS = { 300: '.light', 400: '.regular', 500: '.medium', 600: '.semibold', 700: '.bold' };
+const SWIFT_WEIGHTS = {
+  300: '.light',
+  400: '.regular',
+  500: '.medium',
+  600: '.semibold',
+  700: '.bold',
+};
 
 export function formatSwift({ dictionary }) {
   const colors = [];
@@ -422,23 +454,38 @@ export function formatSwift({ dictionary }) {
     const dv = darkValue(token);
     if (path[0] === 'color') {
       const name = swiftName(path);
-      colors.push(`        public static let ${name} = ${swiftColor(token.$value)}`);
-      if (dv !== undefined) darkColors.push(`        public static let ${name} = ${swiftColor(dv)}`);
+      colors.push(
+        `        public static let ${name} = ${swiftColor(token.$value)}`,
+      );
+      if (dv !== undefined)
+        darkColors.push(
+          `        public static let ${name} = ${swiftColor(dv)}`,
+        );
     } else if (path[0] === 'space') {
-      space.push(`        public static let s${path[1]}: CGFloat = ${px(token.$value)}`);
+      space.push(
+        `        public static let s${path[1]}: CGFloat = ${px(token.$value)}`,
+      );
     } else if (path[0] === 'radius') {
       const name = path[1] === '2xl' ? 'xxl' : camel(path[1]);
-      radius.push(`        public static let ${name}: CGFloat = ${px(token.$value)}`);
+      radius.push(
+        `        public static let ${name}: CGFloat = ${px(token.$value)}`,
+      );
     } else if (path[0] === 'text' && path[1] === 'size') {
-      fontSize.push(`        public static let text${pascal(path[2])}: CGFloat = ${px(token.$value)}`);
+      fontSize.push(
+        `        public static let text${pascal(path[2])}: CGFloat = ${px(token.$value)}`,
+      );
     } else if (path[0] === 'font' && path[1] === 'weight') {
       fontWeight.push(
         `        public static let ${camel(path[2])}: Font.Weight = ${SWIFT_WEIGHTS[token.$value]}`,
       );
     } else if (path[0] === 'text' && path[1] === 'line-height') {
-      lineHeight.push(`        public static let ${camel(path[2])}: CGFloat = ${token.$value}`);
+      lineHeight.push(
+        `        public static let ${camel(path[2])}: CGFloat = ${token.$value}`,
+      );
     } else if (path[0] === 'text' && path[1] === 'tracking') {
-      tracking.push(`        public static let ${camel(path[2])}: CGFloat = ${token.$value} // em`);
+      tracking.push(
+        `        public static let ${camel(path[2])}: CGFloat = ${token.$value} // em`,
+      );
     } else if (path[0] === 'motion') {
       if (path[1] === 'duration') {
         motion.push(
@@ -459,20 +506,32 @@ export function formatSwift({ dictionary }) {
             `LumiraShadow(color: ${swiftColor(l.color)}, x: ${px(l.offsetX)}, y: ${px(l.offsetY)}, blur: ${px(l.blur)}, spread: ${px(l.spread)}, inset: ${l.inset ? 'true' : 'false'})`,
         )
         .join(', ');
-      shadow.push(`        public static let ${name}: [LumiraShadow] = [${lits}]`);
+      shadow.push(
+        `        public static let ${name}: [LumiraShadow] = [${lits}]`,
+      );
     } else if (path[0] === 'glass') {
       const name = camel(path[1]);
       if (token.$type === 'color') {
-        glass.push(`        public static let ${name} = ${swiftColor(token.$value)}`);
+        glass.push(
+          `        public static let ${name} = ${swiftColor(token.$value)}`,
+        );
         if (dv !== undefined)
-          darkColors.push(`        public static let glass${pascal(path[1])} = ${swiftColor(dv)}`);
+          darkColors.push(
+            `        public static let glass${pascal(path[1])} = ${swiftColor(dv)}`,
+          );
       } else if (token.$type === 'dimension') {
-        glass.push(`        public static let ${name}: CGFloat = ${px(token.$value)}`);
+        glass.push(
+          `        public static let ${name}: CGFloat = ${px(token.$value)}`,
+        );
       } else if (path[1] === 'saturation') {
-        glass.push(`        public static let saturation: CGFloat = ${token.$value}`);
+        glass.push(
+          `        public static let saturation: CGFloat = ${token.$value}`,
+        );
       } else if (path[1] === 'shine') {
         const v = token.$value;
-        glass.push(`        public static let shineAngle: CGFloat = ${v.angle}`);
+        glass.push(
+          `        public static let shineAngle: CGFloat = ${v.angle}`,
+        );
         glass.push(
           `        public static let shineColors: [Color] = [${v.stops.map((s) => swiftColor(s.color)).join(', ')}]`,
         );
@@ -486,7 +545,9 @@ export function formatSwift({ dictionary }) {
               `LumiraShadow(color: ${swiftColor(l.color)}, x: ${px(l.offsetX)}, y: ${px(l.offsetY)}, blur: ${px(l.blur)}, spread: ${px(l.spread)}, inset: ${l.inset ? 'true' : 'false'})`,
           )
           .join(', ');
-        glass.push(`        public static let shadow: [LumiraShadow] = [${lits}]`);
+        glass.push(
+          `        public static let shadow: [LumiraShadow] = [${lits}]`,
+        );
       }
     } else if (path[0] === 'focus') {
       const v = token.$value;

@@ -1,7 +1,13 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createAppDb, createPlatformDb, withPlatform, withTenant, type DbHandle } from '../lib/client.js';
+import {
+  createAppDb,
+  createPlatformDb,
+  withPlatform,
+  withTenant,
+  type DbHandle,
+} from '../lib/client.js';
 import {
   academies,
   credentials,
@@ -13,9 +19,14 @@ import {
   sessions,
   users,
 } from '../schema/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('hex');
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 /** Drizzle wraps pg errors; the RLS message lives on the cause chain. */
 async function expectRlsViolation(promise: Promise<unknown>): Promise<void> {
@@ -48,11 +59,21 @@ describe('row-level security', () => {
     await withPlatform(platform.db, async (tx) => {
       const [a] = await tx
         .insert(academies)
-        .values({ name: 'Tenant A', slug: 'tenant-a', contactEmail: 'a@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant A',
+          slug: 'tenant-a',
+          contactEmail: 'a@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       const [b] = await tx
         .insert(academies)
-        .values({ name: 'Tenant B', slug: 'tenant-b', contactEmail: 'b@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant B',
+          slug: 'tenant-b',
+          contactEmail: 'b@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       tenantA = a!.id;
       tenantB = b!.id;
@@ -68,16 +89,25 @@ describe('row-level security', () => {
       userA = ua!.id;
       userB = ub!.id;
 
-      await tx.insert(credentials).values({ userId: userA, secretHash: 'argon2id$fake-a' });
-      await tx.insert(credentials).values({ userId: userB, secretHash: 'argon2id$fake-b' });
+      await tx
+        .insert(credentials)
+        .values({ userId: userA, secretHash: 'argon2id$fake-a' });
+      await tx
+        .insert(credentials)
+        .values({ userId: userB, secretHash: 'argon2id$fake-b' });
     });
 
     // Tenant-scoped rows through the honest (RLS WITH CHECK) path.
     await withTenant(app.db, tenantA, async (tx) => {
-      await tx.insert(memberships).values({ tenantId: tenantA, userId: userA, role: 'admin' });
       await tx
-        .insert(rolePermissions)
-        .values({ tenantId: tenantA, role: 'professor', permissionKey: 'events.create', allowed: true });
+        .insert(memberships)
+        .values({ tenantId: tenantA, userId: userA, role: 'admin' });
+      await tx.insert(rolePermissions).values({
+        tenantId: tenantA,
+        role: 'professor',
+        permissionKey: 'events.create',
+        allowed: true,
+      });
       await tx.insert(invites).values({
         tenantId: tenantA,
         tokenHash: sha256('invite-a'),
@@ -87,7 +117,9 @@ describe('row-level security', () => {
       });
     });
     await withTenant(app.db, tenantB, async (tx) => {
-      await tx.insert(memberships).values({ tenantId: tenantB, userId: userB, role: 'admin' });
+      await tx
+        .insert(memberships)
+        .values({ tenantId: tenantB, userId: userB, role: 'admin' });
     });
   });
 
@@ -114,12 +146,17 @@ describe('row-level security', () => {
 
     it('rejects writes into tenant-scoped tables', async () => {
       await expectRlsViolation(
-        app.db.insert(memberships).values({ tenantId: tenantA, userId: userA, role: 'student' }),
+        app.db
+          .insert(memberships)
+          .values({ tenantId: tenantA, userId: userA, role: 'student' }),
       );
       await expectRlsViolation(
-        app.db
-          .insert(rolePermissions)
-          .values({ tenantId: tenantA, role: 'admin', permissionKey: 'x', allowed: true }),
+        app.db.insert(rolePermissions).values({
+          tenantId: tenantA,
+          role: 'admin',
+          permissionKey: 'x',
+          allowed: true,
+        }),
       );
       await expectRlsViolation(
         app.db.insert(users).values({ email: 'evil@t.dev', fullName: 'Evil' }),
@@ -140,17 +177,23 @@ describe('row-level security', () => {
 
   describe('tenant context set', () => {
     it('sees only its own tenant rows; the other tenant is invisible', async () => {
-      const rowsA = await withTenant(app.db, tenantA, (tx) => tx.select().from(memberships));
+      const rowsA = await withTenant(app.db, tenantA, (tx) =>
+        tx.select().from(memberships),
+      );
       expect(rowsA).toHaveLength(1);
       expect(rowsA[0]!.tenantId).toBe(tenantA);
 
-      const rowsB = await withTenant(app.db, tenantB, (tx) => tx.select().from(memberships));
+      const rowsB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(memberships),
+      );
       expect(rowsB).toHaveLength(1);
       expect(rowsB[0]!.tenantId).toBe(tenantB);
     });
 
     it('reads exactly its own academy row (narrow policy)', async () => {
-      const rows = await withTenant(app.db, tenantA, (tx) => tx.select().from(academies));
+      const rows = await withTenant(app.db, tenantA, (tx) =>
+        tx.select().from(academies),
+      );
       expect(rows).toHaveLength(1);
       expect(rows[0]!.id).toBe(tenantA);
     });
@@ -158,7 +201,9 @@ describe('row-level security', () => {
     it('WITH CHECK blocks writing a row into another tenant', async () => {
       await expectRlsViolation(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(memberships).values({ tenantId: tenantB, userId: userA, role: 'student' }),
+          tx
+            .insert(memberships)
+            .values({ tenantId: tenantB, userId: userA, role: 'student' }),
         ),
       );
     });
@@ -169,7 +214,11 @@ describe('row-level security', () => {
       const updated = await withTenant(app.db, tenantA, (tx) =>
         tx
           .update(academies)
-          .set({ brandDeep: '#14213D', brandVibrant: '#3A5FA8', brandAccent: '#E63946' })
+          .set({
+            brandDeep: '#14213D',
+            brandVibrant: '#3A5FA8',
+            brandAccent: '#E63946',
+          })
           .returning({ id: academies.id }),
       );
       expect(updated.map((r) => r.id)).toEqual([tenantA]);
@@ -209,7 +258,9 @@ describe('row-level security', () => {
 
   describe('self policies (app.user_id)', () => {
     it('lets a user read only themselves and their own memberships across tenants', async () => {
-      const own = await withTenant(app.db, { userId: userA }, (tx) => tx.select().from(users));
+      const own = await withTenant(app.db, { userId: userA }, (tx) =>
+        tx.select().from(users),
+      );
       expect(own.map((u) => u.id)).toEqual([userA]);
 
       const ownMemberships = await withTenant(app.db, { userId: userA }, (tx) =>
@@ -225,14 +276,18 @@ describe('row-level security', () => {
       const direct = await app.db.select().from(credentials);
       expect(direct).toHaveLength(0);
 
-      const result = await app.db.execute(sql`SELECT * FROM auth_login_lookup(${'USER-A@t.dev'})`);
+      const result = await app.db.execute(
+        sql`SELECT * FROM auth_login_lookup(${'USER-A@t.dev'})`,
+      );
       expect(result.rows).toHaveLength(1);
       expect(result.rows[0]!['user_id']).toBe(userA);
       expect(result.rows[0]!['secret_hash']).toBe('argon2id$fake-a');
     });
 
     it('resolves a user own memberships pre-tenant-context', async () => {
-      const result = await app.db.execute(sql`SELECT * FROM auth_user_memberships(${userA}::uuid)`);
+      const result = await app.db.execute(
+        sql`SELECT * FROM auth_user_memberships(${userA}::uuid)`,
+      );
       expect(result.rows).toHaveLength(1);
       expect(result.rows[0]!['tenant_id']).toBe(tenantA);
       expect(result.rows[0]!['academy_slug']).toBe('tenant-a');
@@ -296,12 +351,17 @@ describe('row-level security', () => {
 
       // All sessions revoked.
       const open = await withTenant(app.db, { userId: userA }, (tx) =>
-        tx.select().from(sessions).where(sql`${sessions.revokedAt} IS NULL`),
+        tx
+          .select()
+          .from(sessions)
+          .where(sql`${sessions.revokedAt} IS NULL`),
       );
       expect(open).toHaveLength(0);
 
       // New hash active.
-      const lookup = await app.db.execute(sql`SELECT * FROM auth_login_lookup(${'user-a@t.dev'})`);
+      const lookup = await app.db.execute(
+        sql`SELECT * FROM auth_login_lookup(${'user-a@t.dev'})`,
+      );
       expect(lookup.rows[0]!['secret_hash']).toBe('argon2id$new-hash');
     });
 
@@ -334,8 +394,12 @@ describe('row-level security', () => {
       expect(accepted.rows[0]!['role']).toBe('student');
 
       // Membership landed in tenant A, visible through the tenant path.
-      const rows = await withTenant(app.db, tenantA, (tx) => tx.select().from(memberships));
-      expect(rows.some((m) => m.userId === accepted.rows[0]!['user_id'])).toBe(true);
+      const rows = await withTenant(app.db, tenantA, (tx) =>
+        tx.select().from(memberships),
+      );
+      expect(rows.some((m) => m.userId === accepted.rows[0]!['user_id'])).toBe(
+        true,
+      );
 
       // Duplicate email refused.
       const dup = await app.db.execute(

@@ -6,8 +6,11 @@
 # Skip (emergencies only): git push --no-verify
 set -e
 
-echo "[pre-push] nx format:check"
-pnpm nx format:check
+# --all: a plain format:check diffs against a LOCAL base and goes quiet on a
+# committed main, while CI diffs against the last green run — the whole tree
+# is the only base both sides agree on (and it costs seconds).
+echo "[pre-push] nx format:check --all"
+pnpm nx format:check --all
 
 echo "[pre-push] nx affected -t lint typecheck test build (base origin/main)"
 pnpm nx affected -t lint typecheck test build --base origin/main

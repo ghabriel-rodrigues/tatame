@@ -1,9 +1,27 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { CreateGuardianDto, UpdateNameDto } from '../dto/requests.dto.js';
-import { GuardianListResponseDto, GuardianResponseDto } from '../dto/responses.dto.js';
+import {
+  GuardianListResponseDto,
+  GuardianResponseDto,
+} from '../dto/responses.dto.js';
 import { RegistryService } from '../services/registry.service.js';
 import { requireTenantContext } from './context.js';
 
@@ -42,8 +60,13 @@ export class AdminGuardiansController {
   @Patch(':id')
   @ApiOperation({ summary: 'Name-only edit' })
   @ApiOkResponse({ type: GuardianResponseDto })
-  async rename(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateNameDto) {
+  async rename(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateNameDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
-    return { guardian: await this.registry.updateGuardianName(ctx, id, dto.fullName) };
+    return {
+      guardian: await this.registry.updateGuardianName(ctx, id, dto.fullName),
+    };
   }
 }

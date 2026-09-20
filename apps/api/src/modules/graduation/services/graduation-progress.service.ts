@@ -21,8 +21,12 @@ export class GraduationProgressService {
     studentId: string,
     state: { belt: BeltView; anchor: Date | null },
   ): Promise<ProgressView> {
-    const conditions = [eq(attendances.studentId, studentId), isNull(attendances.revokedAt)];
-    if (state.anchor) conditions.push(gt(attendances.checkedInAt, state.anchor));
+    const conditions = [
+      eq(attendances.studentId, studentId),
+      isNull(attendances.revokedAt),
+    ];
+    if (state.anchor)
+      conditions.push(gt(attendances.checkedInAt, state.anchor));
     const [row] = await tx
       .select({ total: count() })
       .from(attendances)
@@ -38,8 +42,12 @@ export class GraduationProgressService {
       // "Próximo Nº grau" below max degrees, "Próxima faixa" at max (the bar
       // never dead-ends — story 3). PT-BR label is a convenience; clients may
       // also branch on `nextMilestone`.
-      label: nextDegree === null ? 'Próxima faixa' : `Próximo ${nextDegree}º grau`,
-      nextMilestone: { kind: nextDegree === null ? 'belt' : 'degree', degree: nextDegree },
+      label:
+        nextDegree === null ? 'Próxima faixa' : `Próximo ${nextDegree}º grau`,
+      nextMilestone: {
+        kind: nextDegree === null ? 'belt' : 'degree',
+        degree: nextDegree,
+      },
     };
   }
 }

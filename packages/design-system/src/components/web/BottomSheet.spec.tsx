@@ -8,13 +8,22 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { BottomSheet } from './BottomSheet.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('BottomSheet', () => {
   it('renders title, subtitle and content when open', () => {
     const { getByText, getByRole } = renderUi(
-      <BottomSheet open onClose={() => undefined} title="Mover 2 alunos" subtitle="Escolha a turma">
+      <BottomSheet
+        open
+        onClose={() => undefined}
+        title="Mover 2 alunos"
+        subtitle="Escolha a turma"
+      >
         <p>Conteúdo</p>
       </BottomSheet>,
     );

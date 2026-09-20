@@ -73,15 +73,26 @@ export const events = pgTable(
     unique('events_tenant_id_id_uq').on(t.tenantId, t.id),
     // Every upcoming/month query: aluno home next-2, agenda "Eventos do mês",
     // professor dashboard tile, the three persona calendars.
-    index('events_tenant_status_starts_at_idx').on(t.tenantId, t.status, t.startsAt),
+    index('events_tenant_status_starts_at_idx').on(
+      t.tenantId,
+      t.status,
+      t.startsAt,
+    ),
     // Students never see an undated event: publishing requires date + local.
     check(
       'events_published_ck',
       sql`${t.status} <> 'published' OR (${t.startsAt} IS NOT NULL AND ${t.location} IS NOT NULL)`,
     ),
     // Paid means a real price; gratuito is NULL, never 0.
-    check('events_price_ck', sql`${t.priceCents} IS NULL OR ${t.priceCents} > 0`),
-    pgPolicy('events_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    check(
+      'events_price_ck',
+      sql`${t.priceCents} IS NULL OR ${t.priceCents} > 0`,
+    ),
+    pgPolicy('events_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -113,7 +124,11 @@ export const eventRegistrations = pgTable(
   (t) => [
     unique('event_registrations_tenant_id_id_uq').on(t.tenantId, t.id),
     // One row per student per event — status mutates, never a second row.
-    unique('event_registrations_tenant_event_student_uq').on(t.tenantId, t.eventId, t.studentId),
+    unique('event_registrations_tenant_event_student_uq').on(
+      t.tenantId,
+      t.eventId,
+      t.studentId,
+    ),
     // Per-student registration state lookups (home cards, dependent chips).
     index('event_registrations_tenant_student_idx').on(t.tenantId, t.studentId),
     foreignKey({

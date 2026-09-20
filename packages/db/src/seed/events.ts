@@ -126,32 +126,54 @@ function upcoming(days: number, hour: number): Date {
 /**
  * Requires `seedDevFixtures` (students/guardians/users) to have run first.
  */
-export async function seedEventFixtures({ appDb, platformDb }: SeedEventHandles): Promise<void> {
+export async function seedEventFixtures({
+  appDb,
+  platformDb,
+}: SeedEventHandles): Promise<void> {
   for (const slug of Object.keys(EVENTS_MAIN_STUDENT)) {
     const [academy] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      tx
+        .select({ id: academies.id })
+        .from(academies)
+        .where(eq(academies.slug, slug)),
     );
-    if (!academy) throw new Error(`Fixture academy ${slug} missing — run seedDevFixtures first`);
+    if (!academy)
+      throw new Error(
+        `Fixture academy ${slug} missing — run seedDevFixtures first`,
+      );
     const tenantId = academy.id;
 
     const adminEmail = EVENTS_ACADEMY_ADMIN[slug];
     const professorEmail = EVENTS_PROFESSOR[slug];
-    if (!adminEmail || !professorEmail) throw new Error(`Missing event fixture cast for ${slug}`);
+    if (!adminEmail || !professorEmail)
+      throw new Error(`Missing event fixture cast for ${slug}`);
     const [admin] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, adminEmail)),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, adminEmail)),
     );
     const [professor] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, professorEmail)),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, professorEmail)),
     );
-    if (!admin || !professor) throw new Error(`Missing fixture users for ${slug}`);
+    if (!admin || !professor)
+      throw new Error(`Missing fixture users for ${slug}`);
     const actorUserId = admin.id;
 
     await withTenant(appDb, tenantId, async (tx) => {
       // The three events (draft / published free / published paid).
-      const eventIdByName = new Map<string, { id: string; startsAt: Date | null }>();
+      const eventIdByName = new Map<
+        string,
+        { id: string; startsAt: Date | null }
+      >();
       for (const e of DEV_EVENTS) {
         const startsAt =
-          e.startsInDays === undefined ? null : upcoming(e.startsInDays, e.startHour ?? 10);
+          e.startsInDays === undefined
+            ? null
+            : upcoming(e.startsInDays, e.startHour ?? 10);
         const id = await ensureEvent(tx, {
           tenantId,
           name: e.name,
@@ -175,8 +197,11 @@ export async function seedEventFixtures({ appDb, platformDb }: SeedEventHandles)
       const [main] = await tx
         .select({ id: students.id, userId: students.userId })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.fullName, mainName)));
-      if (!main) throw new Error(`Fixture student ${mainName} missing for ${slug}`);
+        .where(
+          and(eq(students.tenantId, tenantId), eq(students.fullName, mainName)),
+        );
+      if (!main)
+        throw new Error(`Fixture student ${mainName} missing for ${slug}`);
 
       const [guardian] = await tx
         .select({ id: guardians.id, userId: guardians.userId })
@@ -194,7 +219,8 @@ export async function seedEventFixtures({ appDb, platformDb }: SeedEventHandles)
           ),
         )
         .orderBy(asc(students.fullName));
-      if (dependents.length < 2) throw new Error(`Fixture dependents missing for ${slug}`);
+      if (dependents.length < 2)
+        throw new Error(`Fixture dependents missing for ${slug}`);
       const [dep0, dep1] = dependents as [{ id: string }, { id: string }];
 
       // Free event: "gratuito = confirmar direto". The aluno confirms
@@ -468,7 +494,12 @@ async function ensureSettledPayment(
     const existing = await tx
       .select({ id: payments.id })
       .from(payments)
-      .where(and(eq(payments.tenantId, p.tenantId), eq(payments.chargeId, p.chargeId)));
+      .where(
+        and(
+          eq(payments.tenantId, p.tenantId),
+          eq(payments.chargeId, p.chargeId),
+        ),
+      );
     if (existing.length > 0) return;
   }
 

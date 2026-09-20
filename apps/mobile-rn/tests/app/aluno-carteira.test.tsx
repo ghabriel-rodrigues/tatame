@@ -7,13 +7,29 @@
  * and the no-plan empty state (story 8).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
-import { HISTORY_PAYMENT_JUL, makeReceipt, makeWallet, type WalletOptions } from '../helpers/billing';
+import {
+  HISTORY_PAYMENT_JUL,
+  makeReceipt,
+  makeWallet,
+  type WalletOptions,
+} from '../helpers/billing';
 
 jest.useFakeTimers();
 
@@ -24,7 +40,10 @@ interface WalletLog {
   mandateDeletes: number;
 }
 
-function renderCarteira(walletOptions: WalletOptions = {}, override?: FetchHandler): WalletLog {
+function renderCarteira(
+  walletOptions: WalletOptions = {},
+  override?: FetchHandler,
+): WalletLog {
   const log: WalletLog = { walletGets: 0, mandateDeletes: 0 };
   let mandateActive = walletOptions.recurrence ?? false;
   installFetchMock((request) => {
@@ -35,9 +54,15 @@ function renderCarteira(walletOptions: WalletOptions = {}, override?: FetchHandl
     }
     if (request.method === 'GET' && request.path === '/v1/aluno/wallet') {
       log.walletGets += 1;
-      return json(200, makeWallet({ ...walletOptions, recurrence: mandateActive }));
+      return json(
+        200,
+        makeWallet({ ...walletOptions, recurrence: mandateActive }),
+      );
     }
-    if (request.method === 'DELETE' && request.path === '/v1/aluno/wallet/mandate') {
+    if (
+      request.method === 'DELETE' &&
+      request.path === '/v1/aluno/wallet/mandate'
+    ) {
       log.mandateDeletes += 1;
       mandateActive = false;
       return new Response(null, { status: 204 });
@@ -50,7 +75,10 @@ function renderCarteira(walletOptions: WalletOptions = {}, override?: FetchHandl
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -63,7 +91,9 @@ async function openCarteiraTab(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Carteira'));
   });
-  await waitFor(() => expect(screen.getAllByText('Carteira').length).toBeGreaterThan(0));
+  await waitFor(() =>
+    expect(screen.getAllByText('Carteira').length).toBeGreaterThan(0),
+  );
 }
 
 describe('aluno Carteira (BIL.16)', () => {
@@ -77,9 +107,13 @@ describe('aluno Carteira (BIL.16)', () => {
     renderCarteira();
     await openCarteiraTab();
 
-    await waitFor(() => expect(screen.getByTestId('mensalidade-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('mensalidade-card')).toBeTruthy(),
+    );
     // Plan header line (story 2).
-    expect(screen.getByText('Plano mensal recorrente · R$ 180,00')).toBeTruthy();
+    expect(
+      screen.getByText('Plano mensal recorrente · R$ 180,00'),
+    ).toBeTruthy();
     // Mensalidade card (story 1).
     expect(screen.getByText('Mensalidade · agosto')).toBeTruthy();
     // Card amount (histórico rows repeat the plan value).
@@ -119,7 +153,9 @@ describe('aluno Carteira (BIL.16)', () => {
     renderCarteira({ empty: true });
     await openCarteiraTab();
 
-    await waitFor(() => expect(screen.getByTestId('wallet-empty')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('wallet-empty')).toBeTruthy(),
+    );
     expect(screen.getByText('Sem plano de mensalidade')).toBeTruthy();
     expect(screen.queryByTestId('mensalidade-card')).toBeNull();
     expect(screen.queryByText('Histórico')).toBeNull();
@@ -129,7 +165,9 @@ describe('aluno Carteira (BIL.16)', () => {
     const log = renderCarteira({ recurrence: true });
     await openCarteiraTab();
 
-    await waitFor(() => expect(screen.getByTestId('recurrence-banner')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('recurrence-banner')).toBeTruthy(),
+    );
     expect(
       screen.getByText(
         'Cobrança recorrente ativa. A próxima mensalidade chega em 1 de setembro com aviso automático.',
@@ -140,7 +178,9 @@ describe('aluno Carteira (BIL.16)', () => {
       fireEvent.press(screen.getByText('Cancelar recorrência'));
     });
 
-    await waitFor(() => expect(screen.queryByTestId('recurrence-banner')).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByTestId('recurrence-banner')).toBeNull(),
+    );
     expect(log.mandateDeletes).toBe(1);
   });
 
@@ -160,12 +200,18 @@ describe('aluno Carteira (BIL.16)', () => {
     renderCarteira();
     await openCarteiraTab();
 
-    await waitFor(() => expect(screen.getByText('Mensalidade · julho')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Mensalidade · julho')).toBeTruthy(),
+    );
     await act(async () => {
-      fireEvent.press(screen.getByLabelText('Ver comprovante · Mensalidade · julho'));
+      fireEvent.press(
+        screen.getByLabelText('Ver comprovante · Mensalidade · julho'),
+      );
     });
 
-    await waitFor(() => expect(screen.getByTestId('receipt-sheet')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('receipt-sheet')).toBeTruthy(),
+    );
     expect(screen.getByText('Comprovante')).toBeTruthy();
     await waitFor(() => expect(screen.getByText('Lucas Almeida')).toBeTruthy());
     expect(screen.getByText('Mensal')).toBeTruthy();

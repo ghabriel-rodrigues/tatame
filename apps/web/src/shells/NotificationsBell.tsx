@@ -16,11 +16,20 @@ import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router';
 import type { NotificationCategory, NotificationView } from '@tatame/shared';
 import { $api, queryClient } from '../api/api';
-import { adminRouteFor, relativeNotificationTime } from './notifications-format';
+import {
+  adminRouteFor,
+  relativeNotificationTime,
+} from './notifications-format';
 
 function BellIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"
         stroke="currentColor"
@@ -41,7 +50,13 @@ function BellIcon() {
 /** 14px fallback glyphs when a row carries no pre-rendered chip label. */
 const CATEGORY_ICONS: Record<NotificationCategory, ReactNode> = {
   payment: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M12 2v20M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
         stroke="currentColor"
@@ -51,19 +66,55 @@ const CATEGORY_ICONS: Record<NotificationCategory, ReactNode> = {
     </svg>
   ),
   event: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2.4" />
-      <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="3"
+        y="5"
+        width="18"
+        height="16"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      />
+      <path
+        d="M3 10h18M8 3v4M16 3v4"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
     </svg>
   ),
   graduation: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="9" r="6" stroke="currentColor" strokeWidth="2.4" />
-      <path d="M8.5 14 7 22l5-3 5 3-1.5-8" stroke="currentColor" strokeWidth="2.4" strokeLinejoin="round" />
+      <path
+        d="M8.5 14 7 22l5-3 5 3-1.5-8"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinejoin="round"
+      />
     </svg>
   ),
   attendance: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M4 12.5 9.5 18 20 6.5"
         stroke="currentColor"
@@ -74,7 +125,13 @@ const CATEGORY_ICONS: Record<NotificationCategory, ReactNode> = {
     </svg>
   ),
   store: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M5 8h14l-1 13H6L5 8Zm3 0a4 4 0 0 1 8 0"
         stroke="currentColor"
@@ -120,7 +177,9 @@ function NotificationCard({
         {notification.chip ?? CATEGORY_ICONS[notification.category]}
       </Box>
       <Box sx={{ minWidth: 0, textAlign: 'left' }}>
-        <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-1)' }}
+        >
           {notification.title}
         </Typography>
         {notification.body ? (
@@ -128,7 +187,9 @@ function NotificationCard({
             {notification.body}
           </Typography>
         ) : null}
-        <Typography sx={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)' }}>
+        <Typography
+          sx={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)' }}
+        >
           {relativeNotificationTime(notification.createdAt)}
         </Typography>
       </Box>
@@ -166,10 +227,17 @@ export function NotificationsBell() {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const open = anchor !== null;
 
-  const unread = $api.useQuery('get', '/v1/notifications/unread-count', undefined, {
-    refetchInterval: 60_000,
+  const unread = $api.useQuery(
+    'get',
+    '/v1/notifications/unread-count',
+    undefined,
+    {
+      refetchInterval: 60_000,
+    },
+  );
+  const feed = $api.useQuery('get', '/v1/notifications', undefined, {
+    enabled: open,
   });
-  const feed = $api.useQuery('get', '/v1/notifications', undefined, { enabled: open });
   const readAll = $api.useMutation('post', '/v1/notifications/read-all', {
     onSuccess: () => {
       // The server flipped every row; pin the badge locally, no refetch race.
@@ -228,7 +296,12 @@ export function NotificationsBell() {
         <Box
           role="region"
           aria-label="Painel de notificações"
-          sx={{ width: 360, maxHeight: 440, overflowY: 'auto', paddingBottom: '6px' }}
+          sx={{
+            width: 360,
+            maxHeight: 440,
+            overflowY: 'auto',
+            paddingBottom: '6px',
+          }}
         >
           <Typography
             sx={{
@@ -241,11 +314,23 @@ export function NotificationsBell() {
             Notificações
           </Typography>
           {feed.isPending ? (
-            <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)', padding: '4px 16px 12px' }}>
+            <Typography
+              sx={{
+                fontSize: 12.5,
+                color: 'var(--fg-3)',
+                padding: '4px 16px 12px',
+              }}
+            >
               Carregando…
             </Typography>
           ) : notifications.length === 0 ? (
-            <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)', padding: '4px 16px 12px' }}>
+            <Typography
+              sx={{
+                fontSize: 12.5,
+                color: 'var(--fg-3)',
+                padding: '4px 16px 12px',
+              }}
+            >
               Nenhuma notificação
             </Typography>
           ) : (

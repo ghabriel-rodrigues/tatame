@@ -7,11 +7,23 @@
  * and remove-with-confirm, with PT-BR problem+json mapping.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, problem, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  problem,
+  type FetchHandler,
+} from '../helpers/session';
 import {
   FUNDAMENTOS_ID,
   FUNDAMENTOS_ROSTER,
@@ -31,7 +43,10 @@ interface HandlerLog {
 }
 
 /** Happy-path professor enrollment API; overrides run first. */
-function professorHandlers(log: HandlerLog, override?: FetchHandler): FetchHandler {
+function professorHandlers(
+  log: HandlerLog,
+  override?: FetchHandler,
+): FetchHandler {
   const classes = makeProfessorClasses();
   const details = makeProfessorClassDetails();
   return (request) => {
@@ -48,9 +63,12 @@ function professorHandlers(log: HandlerLog, override?: FetchHandler): FetchHandl
     const detailMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)$/.exec(path);
     if (method === 'GET' && detailMatch) {
       const detail = details[detailMatch[1] ?? ''];
-      return detail ? json(200, { class: detail }) : problem(404, 'resource.not_found');
+      return detail
+        ? json(200, { class: detail })
+        : problem(404, 'resource.not_found');
     }
-    const rosterMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)\/students$/.exec(path);
+    const rosterMatch =
+      /^\/v1\/professor\/classes\/([0-9a-f-]+)\/students$/.exec(path);
     if (method === 'POST' && rosterMatch) {
       log.addBodies.push(body);
       return json(201, {
@@ -61,13 +79,18 @@ function professorHandlers(log: HandlerLog, override?: FetchHandler): FetchHandl
         },
       });
     }
-    const removeMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)\/students\/([0-9a-f-]+)$/.exec(
-      path,
-    );
+    const removeMatch =
+      /^\/v1\/professor\/classes\/([0-9a-f-]+)\/students\/([0-9a-f-]+)$/.exec(
+        path,
+      );
     if (method === 'DELETE' && removeMatch) {
       log.removedPaths.push(path);
       return json(200, {
-        enrollment: { classId: removeMatch[1], studentId: removeMatch[2], status: 'removed' },
+        enrollment: {
+          classId: removeMatch[1],
+          studentId: removeMatch[2],
+          status: 'removed',
+        },
       });
     }
     return null;
@@ -75,7 +98,11 @@ function professorHandlers(log: HandlerLog, override?: FetchHandler): FetchHandl
 }
 
 function renderProfessor(override?: FetchHandler): HandlerLog {
-  const log: HandlerLog = { addBodies: [], removedPaths: [], studentsSearches: [] };
+  const log: HandlerLog = {
+    addBodies: [],
+    removedPaths: [],
+    studentsSearches: [],
+  };
   installFetchMock(professorHandlers(log, override));
   sessionTestApi.seed({
     status: 'authed',
@@ -100,7 +127,9 @@ async function openFundamentosDetail(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Fundamentos'));
   });
-  await waitFor(() => expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy(),
+  );
 }
 
 describe('professor turmas (ENR.17/18)', () => {
@@ -164,15 +193,20 @@ describe('professor turmas (ENR.17/18)', () => {
     });
 
     const marina = makeProfessorStudents()[0]!;
-    await waitFor(() => expect(log.addBodies).toContainEqual({ studentId: marina.id }));
     await waitFor(() =>
-      expect(screen.getByText('Marina Costa agora faz parte da turma.')).toBeTruthy(),
+      expect(log.addBodies).toContainEqual({ studentId: marina.id }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText('Marina Costa agora faz parte da turma.'),
+      ).toBeTruthy(),
     );
   });
 
   it('maps class.full to the PT-BR error inside the picker', async () => {
     renderProfessor(({ method, path }) =>
-      method === 'POST' && path === `/v1/professor/classes/${FUNDAMENTOS_ID}/students`
+      method === 'POST' &&
+      path === `/v1/professor/classes/${FUNDAMENTOS_ID}/students`
         ? problem(409, 'class.full')
         : null,
     );
@@ -195,7 +229,8 @@ describe('professor turmas (ENR.17/18)', () => {
 
   it('maps enrollment.already_enrolled to the PT-BR error', async () => {
     renderProfessor(({ method, path }) =>
-      method === 'POST' && path === `/v1/professor/classes/${FUNDAMENTOS_ID}/students`
+      method === 'POST' &&
+      path === `/v1/professor/classes/${FUNDAMENTOS_ID}/students`
         ? problem(409, 'enrollment.already_enrolled')
         : null,
     );
@@ -210,7 +245,9 @@ describe('professor turmas (ENR.17/18)', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByText('Este aluno já está matriculado nesta turma.')).toBeTruthy(),
+      expect(
+        screen.getByText('Este aluno já está matriculado nesta turma.'),
+      ).toBeTruthy(),
     );
   });
 
@@ -222,7 +259,9 @@ describe('professor turmas (ENR.17/18)', () => {
       fireEvent.press(screen.getByLabelText('Remover Tiago Mota'));
     });
     await waitFor(() => expect(screen.getByText('Remover aluno')).toBeTruthy());
-    expect(screen.getByText('Tiago Mota sai da turma Fundamentos.')).toBeTruthy();
+    expect(
+      screen.getByText('Tiago Mota sai da turma Fundamentos.'),
+    ).toBeTruthy();
 
     await act(async () => {
       fireEvent.press(screen.getByText('Remover'));
@@ -234,6 +273,8 @@ describe('professor turmas (ENR.17/18)', () => {
         `/v1/professor/classes/${FUNDAMENTOS_ID}/students/${tiago.studentId}`,
       ),
     );
-    await waitFor(() => expect(screen.getByText('Aluno removido da turma.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Aluno removido da turma.')).toBeTruthy(),
+    );
   });
 });

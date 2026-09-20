@@ -1,5 +1,18 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { AuditService } from '../../identity/services/audit.service.js';
@@ -34,7 +47,8 @@ export class AdminBillingController {
 
   @Get('overview')
   @ApiOperation({
-    summary: 'Visão financeira: receita mês/ano, previsão, inadimplência %, série, vencimentos',
+    summary:
+      'Visão financeira: receita mês/ano, previsão, inadimplência %, série, vencimentos',
     description:
       'Runs the tenant-wide idempotent materialization pass first, so previsão reflects every ' +
       'plan — not just wallets already opened. All aggregates derived on read, tenant timezone.',
@@ -49,7 +63,8 @@ export class AdminBillingController {
   @HttpCode(200)
   @ApiOperation({
     summary: 'Materialize the current cycle tenant-wide on demand (audited)',
-    description: 'The ops lever and the test seam — same idempotent pass as the on-read entry points.',
+    description:
+      'The ops lever and the test seam — same idempotent pass as the on-read entry points.',
   })
   @ApiOkResponse({ type: MaterializationResultDto })
   async materialize() {
@@ -84,7 +99,10 @@ export class AdminBillingController {
       'emits `payment.refunded` through the normalized handler (payment + charge flip refunded).',
   })
   @ApiOkResponse({ type: RefundResponseDto })
-  async refund(@Param('id', ParseUUIDPipe) paymentId: string, @Body() dto: RefundPaymentDto) {
+  async refund(
+    @Param('id', ParseUUIDPipe) paymentId: string,
+    @Body() dto: RefundPaymentDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.paymentFlow.refund(ctx, paymentId, dto.reason);
   }

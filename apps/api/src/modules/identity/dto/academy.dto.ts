@@ -46,7 +46,8 @@ export class UpdateAcademyDto {
   @ApiProperty({
     type: BrandInputDto,
     nullable: true,
-    description: 'White-label triplet; null clears back to the default Tatame brand',
+    description:
+      'White-label triplet; null clears back to the default Tatame brand',
   })
   @ValidateIf((_object, value) => value !== null)
   @IsObject()
@@ -54,7 +55,9 @@ export class UpdateAcademyDto {
   @Type(() => BrandInputDto)
   brand!: BrandInputDto | null;
 
-  @ApiProperty({ description: 'Gates the automatic notification fan-out tenant-wide' })
+  @ApiProperty({
+    description: 'Gates the automatic notification fan-out tenant-wide',
+  })
   @IsBoolean()
   autoNotificationsEnabled!: boolean;
 }

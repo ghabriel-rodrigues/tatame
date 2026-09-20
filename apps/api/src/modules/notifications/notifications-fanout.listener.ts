@@ -217,7 +217,8 @@ export class NotificationsFanoutListener {
           );
         if (members.length === 0) return;
         const startsAt = new Date(event.startsAt);
-        const price = event.priceCents != null ? ` · ${fmtMoney(event.priceCents)}` : '';
+        const price =
+          event.priceCents != null ? ` · ${fmtMoney(event.priceCents)}` : '';
         const row = {
           category: 'event' as const,
           chip: String(startsAt.getDate()),
@@ -256,7 +257,9 @@ export class NotificationsFanoutListener {
   }
 
   @OnEvent(EVENTS_REGISTRATION_CONFIRMED)
-  async onRegistrationConfirmed(event: RegistrationConfirmedEvent): Promise<void> {
+  async onRegistrationConfirmed(
+    event: RegistrationConfirmedEvent,
+  ): Promise<void> {
     await this.safely(EVENTS_REGISTRATION_CONFIRMED, async () => {
       await withTenant(this.appDb.db, event.tenantId, async (tx) => {
         const target = await this.resolveActingAudience(tx, event);
@@ -279,7 +282,9 @@ export class NotificationsFanoutListener {
   }
 
   @OnEvent(EVENTS_REGISTRATION_CANCELED)
-  async onRegistrationCanceled(event: RegistrationCanceledEvent): Promise<void> {
+  async onRegistrationCanceled(
+    event: RegistrationCanceledEvent,
+  ): Promise<void> {
     await this.safely(EVENTS_REGISTRATION_CANCELED, async () => {
       // Self opt-out is the actor's own gesture — not news.
       if (event.via === 'self') return;
@@ -304,7 +309,9 @@ export class NotificationsFanoutListener {
   }
 
   @OnEvent(EVENTS_ANNOUNCEMENT_REQUESTED)
-  async onAnnouncementRequested(event: AnnouncementRequestedEvent): Promise<void> {
+  async onAnnouncementRequested(
+    event: AnnouncementRequestedEvent,
+  ): Promise<void> {
     await this.safely(EVENTS_ANNOUNCEMENT_REQUESTED, async () => {
       await withTenant(this.appDb.db, event.tenantId, async (tx) => {
         const userIds = await this.resolveAudience(tx, event.audience);
@@ -374,7 +381,9 @@ export class NotificationsFanoutListener {
         // Chip: the prototypes' `{n}º` grau chip; belt promotions fall back
         // to the belt's initial letter.
         const chip =
-          event.kind === 'degree' ? `${event.degree}º` : event.beltName.charAt(0).toUpperCase();
+          event.kind === 'degree'
+            ? `${event.degree}º`
+            : event.beltName.charAt(0).toUpperCase();
 
         const [student] = await tx
           .select({ userId: students.userId })
@@ -502,7 +511,12 @@ export class NotificationsFanoutListener {
         const admins = await tx
           .selectDistinct({ userId: memberships.userId })
           .from(memberships)
-          .where(and(eq(memberships.status, 'active'), eq(memberships.role, 'admin')));
+          .where(
+            and(
+              eq(memberships.status, 'active'),
+              eq(memberships.role, 'admin'),
+            ),
+          );
         await this.write(
           tx,
           event.tenantId,
@@ -528,13 +542,19 @@ export class NotificationsFanoutListener {
    * (spec 011, CFG.5): off = no rows, uncached so the admin toggle applies
    * to the very next event.
    */
-  async write(tx: DbTransaction, tenantId: string, rows: NotificationRow[]): Promise<void> {
+  async write(
+    tx: DbTransaction,
+    tenantId: string,
+    rows: NotificationRow[],
+  ): Promise<void> {
     if (rows.length === 0) return;
     const [academy] = await tx
       .select({ autoNotificationsEnabled: academies.autoNotificationsEnabled })
       .from(academies);
     if (!academy?.autoNotificationsEnabled) return;
-    await tx.insert(notifications).values(rows.map((row) => ({ tenantId, ...row })));
+    await tx
+      .insert(notifications)
+      .values(rows.map((row) => ({ tenantId, ...row })));
   }
 
   /**
@@ -542,7 +562,10 @@ export class NotificationsFanoutListener {
    * swallowed — it never reaches the emitting flow, which has already
    * committed and responded.
    */
-  private async safely(eventName: string, fn: () => Promise<void>): Promise<void> {
+  private async safely(
+    eventName: string,
+    fn: () => Promise<void>,
+  ): Promise<void> {
     try {
       await fn();
     } catch (error) {
@@ -560,7 +583,11 @@ export class NotificationsFanoutListener {
    */
   private async resolvePayer(
     tx: DbTransaction,
-    event: { audience: 'student' | 'guardian'; studentId: string | null; guardianId: string | null },
+    event: {
+      audience: 'student' | 'guardian';
+      studentId: string | null;
+      guardianId: string | null;
+    },
   ): Promise<{ userId: string; studentName: string } | null> {
     if (!event.studentId) return null;
     const [student] = await tx
@@ -598,7 +625,11 @@ export class NotificationsFanoutListener {
   /** One audience entry → its addressee (guardian variant per `audience`). */
   private async resolveActingAudience(
     tx: DbTransaction,
-    entry: { studentId: string; guardianId: string | null; audience: 'student' | 'guardian' },
+    entry: {
+      studentId: string;
+      guardianId: string | null;
+      audience: 'student' | 'guardian';
+    },
   ): Promise<{ userId: string; studentName: string } | null> {
     return this.resolvePayer(tx, entry);
   }

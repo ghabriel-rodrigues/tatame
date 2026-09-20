@@ -8,12 +8,23 @@
  * settlement with the success pop.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as Clipboard from 'expo-clipboard';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 import {
   CHARGE_ID,
@@ -28,7 +39,10 @@ import {
 jest.useFakeTimers();
 
 const secure = SecureStore as unknown as { __reset: () => void };
-const clipboard = Clipboard as unknown as { __reset: () => void; __copied: () => string[] };
+const clipboard = Clipboard as unknown as {
+  __reset: () => void;
+  __copied: () => string[];
+};
 
 interface PaymentLog {
   paymentBodies: unknown[];
@@ -36,7 +50,10 @@ interface PaymentLog {
 }
 
 function renderWallet(
-  options: { provider?: 'simulated' | 'stripe'; method?: 'pix' | 'boleto' } = {},
+  options: {
+    provider?: 'simulated' | 'stripe';
+    method?: 'pix' | 'boleto';
+  } = {},
   override?: FetchHandler,
 ): PaymentLog {
   const log: PaymentLog = { paymentBodies: [], simulated: [] };
@@ -73,22 +90,31 @@ function renderWallet(
         body.method === 'boleto'
           ? makeBoletoPayment({ provider: options.provider ?? 'simulated' })
           : makePixPayment({ provider: options.provider ?? 'simulated' });
-      return json(201, { payment, charge: makeOpenCharge(), mandateCreated: false });
+      return json(201, {
+        payment,
+        charge: makeOpenCharge(),
+        mandateCreated: false,
+      });
     }
-    const simulateMatch = /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(
-      request.path,
-    );
+    const simulateMatch =
+      /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(request.path);
     if (request.method === 'POST' && simulateMatch) {
       log.simulated.push(simulateMatch[1] ?? '');
       paid = true;
       return json(200, {
-        payment: makePixPayment({ status: 'succeeded', paidAt: '2026-08-09T10:00:00.000Z' }),
+        payment: makePixPayment({
+          status: 'succeeded',
+          paidAt: '2026-08-09T10:00:00.000Z',
+        }),
         charge: makeOpenCharge({ status: 'paid' }),
       });
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -101,10 +127,15 @@ async function openCarteiraTab(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Carteira'));
   });
-  await waitFor(() => expect(screen.getByTestId('mensalidade-card')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('mensalidade-card')).toBeTruthy(),
+  );
 }
 
-async function openSheet(buttonText: string, sheetTestId: string): Promise<void> {
+async function openSheet(
+  buttonText: string,
+  sheetTestId: string,
+): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByText(buttonText));
   });
@@ -128,14 +159,18 @@ describe('aluno payment sheets (BIL.17)', () => {
     expect(log.paymentBodies).toContainEqual({ method: 'pix' });
     // Card button + sheet title both render the copy.
     expect(screen.getAllByText('Pagar com Pix').length).toBeGreaterThan(1);
-    expect(screen.getByText('Mensalidade de agosto · Alpha Jiu-Jitsu')).toBeTruthy();
+    expect(
+      screen.getByText('Mensalidade de agosto · Alpha Jiu-Jitsu'),
+    ).toBeTruthy();
     expect(screen.getAllByText('R$ 180,00').length).toBeGreaterThan(0);
 
     await act(async () => {
       fireEvent.press(screen.getByText('Copiar código Pix'));
     });
     expect(clipboard.__copied()).toContainEqual(`TATAME-SIM-PIX-${CHARGE_ID}`);
-    await waitFor(() => expect(screen.getByText('Código Pix copiado.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Código Pix copiado.')).toBeTruthy(),
+    );
   });
 
   it('Simular pagamento settles the charge and flips the card to Paga (story 10/15)', async () => {
@@ -143,12 +178,16 @@ describe('aluno payment sheets (BIL.17)', () => {
     await openCarteiraTab();
     await openSheet('Pagar com Pix', 'pix-sheet');
 
-    await waitFor(() => expect(screen.getByText('Simular pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Simular pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Simular pagamento'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('payment-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('payment-success-pop')).toBeTruthy(),
+    );
     expect(log.simulated).toEqual([PIX_PAYMENT_ID]);
     expect(screen.getByText('Pagamento confirmado')).toBeTruthy();
 
@@ -175,7 +214,9 @@ describe('aluno payment sheets (BIL.17)', () => {
     await openCarteiraTab();
     await openSheet('Boleto', 'boleto-sheet');
 
-    await waitFor(() => expect(screen.getByTestId('boleto-barcode')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('boleto-barcode')).toBeTruthy(),
+    );
     expect(log.paymentBodies).toContainEqual({ method: 'boleto' });
     expect(screen.getByText('Boleto bancário')).toBeTruthy();
     expect(screen.getByText(LINHA_DIGITAVEL)).toBeTruthy();
@@ -184,12 +225,16 @@ describe('aluno payment sheets (BIL.17)', () => {
       fireEvent.press(screen.getByText('Copiar linha digitável'));
     });
     expect(clipboard.__copied()).toContainEqual(LINHA_DIGITAVEL);
-    await waitFor(() => expect(screen.getByText('Linha digitável copiada.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Linha digitável copiada.')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Simular compensação'));
     });
-    await waitFor(() => expect(screen.getByTestId('payment-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('payment-success-pop')).toBeTruthy(),
+    );
     expect(screen.getByText('O boleto foi compensado.')).toBeTruthy();
   });
 
@@ -198,8 +243,14 @@ describe('aluno payment sheets (BIL.17)', () => {
     await openCarteiraTab();
     await openSheet('Cartão', 'card-sheet');
 
-    fireEvent.changeText(screen.getByLabelText('Número do cartão'), '4242424242424242');
-    fireEvent.changeText(screen.getByLabelText('Nome impresso no cartão'), 'LUCAS ALMEIDA');
+    fireEvent.changeText(
+      screen.getByLabelText('Número do cartão'),
+      '4242424242424242',
+    );
+    fireEvent.changeText(
+      screen.getByLabelText('Nome impresso no cartão'),
+      'LUCAS ALMEIDA',
+    );
     fireEvent.changeText(screen.getByLabelText('Validade (MM/AA)'), '1228');
     fireEvent.changeText(screen.getByLabelText('CVV'), '123');
 
@@ -207,7 +258,9 @@ describe('aluno payment sheets (BIL.17)', () => {
       fireEvent.press(screen.getByText('Pagar R$ 180,00'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('payment-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('payment-success-pop')).toBeTruthy(),
+    );
     expect(log.paymentBodies).toEqual([
       {
         method: 'card',
@@ -224,8 +277,14 @@ describe('aluno payment sheets (BIL.17)', () => {
     await openCarteiraTab();
     await openSheet('Cartão', 'card-sheet');
 
-    fireEvent.changeText(screen.getByLabelText('Número do cartão'), '4242424242424242');
-    fireEvent.changeText(screen.getByLabelText('Nome impresso no cartão'), 'LUCAS ALMEIDA');
+    fireEvent.changeText(
+      screen.getByLabelText('Número do cartão'),
+      '4242424242424242',
+    );
+    fireEvent.changeText(
+      screen.getByLabelText('Nome impresso no cartão'),
+      'LUCAS ALMEIDA',
+    );
     fireEvent.changeText(screen.getByLabelText('Validade (MM/AA)'), '1228');
     fireEvent.changeText(screen.getByLabelText('CVV'), '123');
     fireEvent(screen.getByTestId('recurrence-toggle'), 'valueChange', true);
@@ -234,7 +293,9 @@ describe('aluno payment sheets (BIL.17)', () => {
       fireEvent.press(screen.getByText('Pagar R$ 180,00'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('payment-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('payment-success-pop')).toBeTruthy(),
+    );
     expect(log.paymentBodies).toContainEqual({
       method: 'card',
       recurrence: true,

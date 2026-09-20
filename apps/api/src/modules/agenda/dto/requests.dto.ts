@@ -6,7 +6,8 @@ export class AlunoAgendaQueryDto {
   @ApiPropertyOptional({
     minimum: 0,
     maximum: 6,
-    description: '0 = Sunday … 6 = Saturday; omitted = today in the tenant timezone',
+    description:
+      '0 = Sunday … 6 = Saturday; omitted = today in the tenant timezone',
   })
   @IsOptional()
   @Type(() => Number)

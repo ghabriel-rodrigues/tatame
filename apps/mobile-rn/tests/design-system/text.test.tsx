@@ -4,7 +4,11 @@
 
 import { StyleSheet, type TextStyle } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
-import { Text, ThemeProvider, quicksandFamily } from '@tatame/design-system/native';
+import {
+  Text,
+  ThemeProvider,
+  quicksandFamily,
+} from '@tatame/design-system/native';
 
 function flat(el: { props: { style?: unknown } }): TextStyle {
   return StyleSheet.flatten((el.props.style ?? {}) as TextStyle);

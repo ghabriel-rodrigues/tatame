@@ -47,14 +47,18 @@ export class StudentListItemDto {
   @ApiProperty({ type: [ClassRefDto], description: 'Active enrollments' })
   classes!: ClassRefDto[];
 
-  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  @ApiPropertyOptional({
+    type: BeltViewDto,
+    description: 'Derived current belt (GRD.6)',
+  })
   belt?: BeltViewDto;
 
   @ApiPropertyOptional({
     format: 'uuid',
     nullable: true,
     type: String,
-    description: 'Assigned mensalidade plan (spec 006) — what materialization charges',
+    description:
+      'Assigned mensalidade plan (spec 006) — what materialization charges',
   })
   academyPlanId?: string | null;
 }
@@ -131,17 +135,24 @@ export class RegisterProfessorResponseDto {
   @ApiProperty({ format: 'uuid' })
   membershipId!: string;
 
-  @ApiProperty({ description: 'False when an existing account was reused by email' })
+  @ApiProperty({
+    description: 'False when an existing account was reused by email',
+  })
   userCreated!: boolean;
 
   @ApiProperty({
-    description: 'True when the set-your-password email was dispatched (no credential yet)',
+    description:
+      'True when the set-your-password email was dispatched (no credential yet)',
   })
   passwordEmailSent!: boolean;
 }
 
 export class ScheduleSlotViewDto {
-  @ApiProperty({ minimum: 0, maximum: 6, description: '0 = Sunday … 6 = Saturday' })
+  @ApiProperty({
+    minimum: 0,
+    maximum: 6,
+    description: '0 = Sunday … 6 = Saturday',
+  })
   weekday!: number;
 
   @ApiProperty({ example: '19:00' })
@@ -191,7 +202,11 @@ export class ClassListItemDto {
   })
   minBelt?: BeltRefDto | null;
 
-  @ApiPropertyOptional({ type: BeltRefDto, nullable: true, description: 'Turma belt range ceiling' })
+  @ApiPropertyOptional({
+    type: BeltRefDto,
+    nullable: true,
+    description: 'Turma belt range ceiling',
+  })
   maxBelt?: BeltRefDto | null;
 
   @ApiProperty({ type: ClassProfessorDto })
@@ -219,7 +234,10 @@ export class RosterStudentDto {
   @ApiProperty({ enum: ['ativo', 'pendente'] })
   badge!: 'ativo' | 'pendente';
 
-  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  @ApiPropertyOptional({
+    type: BeltViewDto,
+    description: 'Derived current belt (GRD.6)',
+  })
   belt?: BeltViewDto;
 }
 
@@ -253,7 +271,10 @@ export class MoveStudentsResponseDto {
   @ApiProperty({ format: 'uuid' })
   destinationClassId!: string;
 
-  @ApiProperty({ type: [String], description: 'Every selected student — the move is atomic' })
+  @ApiProperty({
+    type: [String],
+    description: 'Every selected student — the move is atomic',
+  })
   movedStudentIds!: string[];
 }
 
@@ -288,19 +309,25 @@ export class DependentDetailDto {
   @ApiProperty({ enum: ['active', 'inactive'] })
   status!: 'active' | 'inactive';
 
-  @ApiProperty({ type: DependentClassDto, nullable: true, description: 'Active class if enrolled' })
+  @ApiProperty({
+    type: DependentClassDto,
+    nullable: true,
+    description: 'Active class if enrolled',
+  })
   class!: DependentClassDto | null;
 
   @ApiPropertyOptional({
     type: BeltViewDto,
-    description: 'Derived current belt (GRD.6, story 34) — the dependent-card BeltBar',
+    description:
+      'Derived current belt (GRD.6, story 34) — the dependent-card BeltBar',
   })
   belt?: BeltViewDto;
 
   @ApiPropertyOptional({
     type: MensalidadeAlertDto,
     nullable: true,
-    description: 'Dependent-card mensalidade alert fed by real charge data (spec 006); null = nothing open',
+    description:
+      'Dependent-card mensalidade alert fed by real charge data (spec 006); null = nothing open',
   })
   mensalidade!: MensalidadeAlertDto | null;
 }
@@ -320,7 +347,8 @@ export class RegisterDependentResponseDto {
   dependent!: DependentDetailDto;
 
   @ApiProperty({
-    description: 'False when no class was accepted or the accepted class was full (story 34)',
+    description:
+      'False when no class was accepted or the accepted class was full (story 34)',
   })
   enrolled!: boolean;
 }
@@ -352,7 +380,8 @@ export class ClassSuggestionResponseDto {
   @ApiPropertyOptional({
     type: ClassSuggestionDto,
     nullable: true,
-    description: 'Null when no active age-matching class with a free slot exists',
+    description:
+      'Null when no active age-matching class with a free slot exists',
   })
   suggestion!: ClassSuggestionDto | null;
 }

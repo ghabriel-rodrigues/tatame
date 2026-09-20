@@ -48,31 +48,94 @@ export const BELT_CATALOG: BeltCatalogArt[] = [
         kind: 'adult',
         name: 'Adulto',
         belts: [
-          { position: 1, name: 'Branca', colorSlug: 'belt.white', tipColorSlug: null, maxDegrees: 4 },
-          { position: 2, name: 'Azul', colorSlug: 'belt.blue', tipColorSlug: null, maxDegrees: 4 },
-          { position: 3, name: 'Roxa', colorSlug: 'belt.purple', tipColorSlug: null, maxDegrees: 4 },
-          { position: 4, name: 'Marrom', colorSlug: 'belt.brown', tipColorSlug: null, maxDegrees: 4 },
+          {
+            position: 1,
+            name: 'Branca',
+            colorSlug: 'belt.white',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
+          {
+            position: 2,
+            name: 'Azul',
+            colorSlug: 'belt.blue',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
+          {
+            position: 3,
+            name: 'Roxa',
+            colorSlug: 'belt.purple',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
+          {
+            position: 4,
+            name: 'Marrom',
+            colorSlug: 'belt.brown',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
           // Black belt: 6 dans, red ponteira with white dan stripes.
-          { position: 5, name: 'Preta', colorSlug: 'belt.black', tipColorSlug: 'belt.red', maxDegrees: 6 },
+          {
+            position: 5,
+            name: 'Preta',
+            colorSlug: 'belt.black',
+            tipColorSlug: 'belt.red',
+            maxDegrees: 6,
+          },
           // Red belt renders no degree stripes in v1.
-          { position: 6, name: 'Vermelha', colorSlug: 'belt.red', tipColorSlug: null, maxDegrees: 0 },
+          {
+            position: 6,
+            name: 'Vermelha',
+            colorSlug: 'belt.red',
+            tipColorSlug: null,
+            maxDegrees: 0,
+          },
         ],
       },
       {
         kind: 'kids',
         name: 'Kids',
         belts: [
-          { position: 1, name: 'Cinza', colorSlug: 'belt.gray', tipColorSlug: null, maxDegrees: 4 },
-          { position: 2, name: 'Amarela', colorSlug: 'belt.yellow', tipColorSlug: null, maxDegrees: 4 },
-          { position: 3, name: 'Laranja', colorSlug: 'belt.orange', tipColorSlug: null, maxDegrees: 4 },
-          { position: 4, name: 'Verde', colorSlug: 'belt.green', tipColorSlug: null, maxDegrees: 4 },
+          {
+            position: 1,
+            name: 'Cinza',
+            colorSlug: 'belt.gray',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
+          {
+            position: 2,
+            name: 'Amarela',
+            colorSlug: 'belt.yellow',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
+          {
+            position: 3,
+            name: 'Laranja',
+            colorSlug: 'belt.orange',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
+          {
+            position: 4,
+            name: 'Verde',
+            colorSlug: 'belt.green',
+            tipColorSlug: null,
+            maxDegrees: 4,
+          },
         ],
       },
     ],
   },
 ];
 
-async function upsertArt(tx: DbTransaction, art: BeltCatalogArt): Promise<string> {
+async function upsertArt(
+  tx: DbTransaction,
+  art: BeltCatalogArt,
+): Promise<string> {
   const [row] = await tx
     .insert(martialArts)
     .values({ key: art.key, name: art.name })
@@ -148,6 +211,9 @@ export async function findBeltId(
     .innerJoin(beltLadders, eq(beltLadders.id, belts.ladderId))
     .where(and(eq(beltLadders.kind, ladderKind), eq(belts.name, beltName)));
   const row = rows[0];
-  if (!row) throw new Error(`Belt ${ladderKind}/${beltName} not seeded — run seedBeltCatalog first`);
+  if (!row)
+    throw new Error(
+      `Belt ${ladderKind}/${beltName} not seeded — run seedBeltCatalog first`,
+    );
   return row.id;
 }

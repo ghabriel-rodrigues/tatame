@@ -19,7 +19,13 @@
  */
 
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../theme/ThemeProvider.tsx';
 import { shadowStyle, type ShadowLayer } from '../lib/shadows.ts';
@@ -50,7 +56,13 @@ export interface GlassTabBarProps {
   testID?: string;
 }
 
-export function GlassTabBar({ items, fab, offsetBottom = 0, style, testID }: GlassTabBarProps) {
+export function GlassTabBar({
+  items,
+  fab,
+  offsetBottom = 0,
+  style,
+  testID,
+}: GlassTabBarProps) {
   const theme = useTheme();
   const half = Math.ceil(items.length / 2);
   const left = fab ? items.slice(0, half) : items;
@@ -78,7 +90,11 @@ export function GlassTabBar({ items, fab, offsetBottom = 0, style, testID }: Gla
         size: 20,
       })}
       {item.active ? (
-        <Text weight="bold" color={theme.color.fg.onColor} style={{ fontSize: 12, lineHeight: 16 }}>
+        <Text
+          weight="bold"
+          color={theme.color.fg.onColor}
+          style={{ fontSize: 12, lineHeight: 16 }}
+        >
           {item.label}
         </Text>
       ) : null}

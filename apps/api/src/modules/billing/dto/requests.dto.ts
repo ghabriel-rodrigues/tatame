@@ -94,7 +94,9 @@ export class UpdatePlanDto {
   @Min(1)
   amountCents?: number;
 
-  @ApiPropertyOptional({ enum: ['monthly', 'quarterly', 'semiannual', 'yearly'] })
+  @ApiPropertyOptional({
+    enum: ['monthly', 'quarterly', 'semiannual', 'yearly'],
+  })
   @IsOptional()
   @IsIn(['monthly', 'quarterly', 'semiannual', 'yearly'])
   recurrence?: 'monthly' | 'quarterly' | 'semiannual' | 'yearly';
@@ -108,7 +110,9 @@ export class UpdatePlanDto {
 }
 
 export class RefundPaymentDto {
-  @ApiPropertyOptional({ description: 'Estorno reason, recorded on the payment + audit' })
+  @ApiPropertyOptional({
+    description: 'Estorno reason, recorded on the payment + audit',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(500)

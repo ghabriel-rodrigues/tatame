@@ -92,7 +92,10 @@ export function CertificateSheet({ entry, onClose }: CertificateSheetProps) {
           <Text variant="title" style={{ textAlign: 'center' }}>
             {studentName}
           </Text>
-          <Text variant="caption" style={{ textAlign: 'center', lineHeight: 20 }}>
+          <Text
+            variant="caption"
+            style={{ textAlign: 'center', lineHeight: 20 }}
+          >
             graduado à{' '}
             <Text variant="caption" weight="bold" color={beltColor}>
               faixa {beltName}
@@ -115,7 +118,11 @@ export function CertificateSheet({ entry, onClose }: CertificateSheetProps) {
             }}
           >
             <View style={{ gap: 2 }}>
-              <Text variant="overline" color={theme.color.fg['4']} style={{ fontSize: 9.5 }}>
+              <Text
+                variant="overline"
+                color={theme.color.fg['4']}
+                style={{ fontSize: 9.5 }}
+              >
                 Data
               </Text>
               <Text variant="caption" weight="bold" color={theme.color.fg['1']}>
@@ -123,7 +130,11 @@ export function CertificateSheet({ entry, onClose }: CertificateSheetProps) {
               </Text>
             </View>
             <View style={{ gap: 2, alignItems: 'flex-end' }}>
-              <Text variant="overline" color={theme.color.fg['4']} style={{ fontSize: 9.5 }}>
+              <Text
+                variant="overline"
+                color={theme.color.fg['4']}
+                style={{ fontSize: 9.5 }}
+              >
                 Professor
               </Text>
               {/* Signature line — italic per the prototype's cert sheet. */}

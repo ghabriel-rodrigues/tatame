@@ -12,9 +12,11 @@ const uuid = (counter: number) =>
   `018f0000-0000-7000-90f1-${counter.toString(16).padStart(12, '0')}`;
 
 /** Stable event id so `event/{id}` routes can be asserted against. */
-export const FIXTURE_NOTIFICATION_EVENT_ID = '018f0000-0000-7000-90f2-0000000000e7';
+export const FIXTURE_NOTIFICATION_EVENT_ID =
+  '018f0000-0000-7000-90f2-0000000000e7';
 
-const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 86_400_000).toISOString();
 
 let notificationCounter = 0;
 

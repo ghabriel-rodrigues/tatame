@@ -38,7 +38,11 @@ import {
 import { graduationErrorMessage } from '../../../../features/graduation/copy';
 import { canUpdateGraduations } from '../../../../features/graduation/permissions';
 import type { ValidGraduation } from '../../../../features/graduation/types';
-import { InitialsAvatar, QueryState, StatTile } from '../../../../features/enrollment/ui';
+import {
+  InitialsAvatar,
+  QueryState,
+  StatTile,
+} from '../../../../features/enrollment/ui';
 import { useSession } from '../../../../session/session-store';
 
 type AwardKind = 'degree' | 'belt';
@@ -79,22 +83,36 @@ export default function ProfessorAlunoPerfilScreen() {
   const [noteError, setNoteError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const awardMutation = api.useMutation('post', '/v1/professor/students/{id}/graduations');
-  const noteMutation = api.useMutation('post', '/v1/professor/students/{id}/notes');
+  const awardMutation = api.useMutation(
+    'post',
+    '/v1/professor/students/{id}/graduations',
+  );
+  const noteMutation = api.useMutation(
+    'post',
+    '/v1/professor/students/{id}/notes',
+  );
 
   const data = profileQuery.data;
   const canAward = canUpdateGraduations(session);
   const ladder = ownProfileQuery.data?.validGraduations ?? [];
-  const promotionTarget = data ? nextBeltTarget(ladder, data.belt.beltId) : null;
-  const atMaxDegrees = data ? data.belt.maxDegrees > 0 && data.belt.degrees >= data.belt.maxDegrees : false;
+  const promotionTarget = data
+    ? nextBeltTarget(ladder, data.belt.beltId)
+    : null;
+  const atMaxDegrees = data
+    ? data.belt.maxDegrees > 0 && data.belt.degrees >= data.belt.maxDegrees
+    : false;
 
   const invalidateAfterAward = () => {
     void queryClient.invalidateQueries({
       queryKey: ['get', '/v1/professor/students/{id}/profile'],
     });
     // Belt chips on rosters and pickers re-derive from the same payload.
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/professor/classes/{id}'] });
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/professor/students'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/professor/classes/{id}'],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/professor/students'],
+    });
   };
 
   const closeAwardSheet = () => {
@@ -150,15 +168,30 @@ export default function ProfessorAlunoPerfilScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
-          <QueryState loading={profileQuery.isPending} error={profileQuery.isError}>
+          <QueryState
+            loading={profileQuery.isPending}
+            error={profileQuery.isError}
+          >
             {data ? (
               <>
-                <ScreenHeader title="Perfil do aluno" onBack={() => router.back()} />
+                <ScreenHeader
+                  title="Perfil do aluno"
+                  onBack={() => router.back()}
+                />
 
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: theme.space['3'],
+                  }}
                 >
                   <InitialsAvatar name={data.student.fullName} size={44} />
                   <View style={{ flex: 1, gap: 2 }}>
@@ -186,7 +219,9 @@ export default function ProfessorAlunoPerfilScreen() {
                       </Text>
                     </View>
                     {canAward ? (
-                      <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
+                      <View
+                        style={{ flexDirection: 'row', gap: theme.space['2'] }}
+                      >
                         <TatameButton
                           size="sm"
                           label="Adicionar grau"
@@ -218,23 +253,35 @@ export default function ProfessorAlunoPerfilScreen() {
                     value={`${data.stats.monthAttendedSessions}`}
                     label="aulas no mês"
                   />
-                  <StatTile testID="tile-mensalidade" value="—" label="mensalidade" note="Em breve" />
+                  <StatTile
+                    testID="tile-mensalidade"
+                    value="—"
+                    label="mensalidade"
+                    note="Em breve"
+                  />
                 </View>
 
                 <Text variant="subtitle">Observações</Text>
                 {data.notes.length === 0 ? (
                   <Card>
-                    <Text variant="caption">Nenhuma observação registrada ainda.</Text>
+                    <Text variant="caption">
+                      Nenhuma observação registrada ainda.
+                    </Text>
                   </Card>
                 ) : (
                   data.notes.map((note) => (
-                    <Card key={note.id} padding={theme.space['4']} testID={`note-${note.id}`}>
+                    <Card
+                      key={note.id}
+                      padding={theme.space['4']}
+                      testID={`note-${note.id}`}
+                    >
                       <View style={{ gap: 4 }}>
                         <Text variant="caption" color={theme.color.fg['2']}>
                           {note.body}
                         </Text>
                         <Text variant="caption" style={{ fontSize: 11 }}>
-                          {shortDatePt(note.createdAt)} · {professorTag(note.author.fullName)}
+                          {shortDatePt(note.createdAt)} ·{' '}
+                          {professorTag(note.author.fullName)}
                         </Text>
                       </View>
                     </Card>
@@ -306,7 +353,12 @@ export default function ProfessorAlunoPerfilScreen() {
             loading={awardMutation.isPending}
             onPress={confirmAward}
           />
-          <TatameButton fullWidth variant="ghost" label="Cancelar" onPress={closeAwardSheet} />
+          <TatameButton
+            fullWidth
+            variant="ghost"
+            label="Cancelar"
+            onPress={closeAwardSheet}
+          />
         </View>
       </BottomSheet>
 

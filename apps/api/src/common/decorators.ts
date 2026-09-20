@@ -1,7 +1,12 @@
 import { SetMetadata } from '@nestjs/common';
 
 /** Academy (per-tenant) roles — English names; PT-BR labels are client copy. */
-export const ACADEMY_ROLES = ['student', 'professor', 'admin', 'guardian'] as const;
+export const ACADEMY_ROLES = [
+  'student',
+  'professor',
+  'admin',
+  'guardian',
+] as const;
 /** Platform (SaaS owner) roles — memberships with `ten: null`. */
 export const PLATFORM_ROLES = ['owner', 'support', 'finance'] as const;
 
@@ -30,7 +35,8 @@ export const Roles = (...roles: AnyRoleName[]) => SetMetadata(ROLES_KEY, roles);
 export const AnyRole = () => SetMetadata(ANY_ROLE_KEY, true);
 
 /** Toggleable-permission gate (ticket 03 registry key, e.g. `invites.create`). */
-export const RequiresPermission = (key: string) => SetMetadata(PERMISSION_KEY, key);
+export const RequiresPermission = (key: string) =>
+  SetMetadata(PERMISSION_KEY, key);
 
 /** Delinquent (read-only) academies may still hit this mutation (payments). */
 export const BypassReadOnly = () => SetMetadata(BYPASS_READ_ONLY_KEY, true);

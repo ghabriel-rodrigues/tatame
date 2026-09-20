@@ -32,7 +32,10 @@ export interface NotificationListResult {
 /** Page size of the cursor list (spec: ~30). */
 const PAGE_SIZE = 30;
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Persona-neutral read side of the feed (spec 010, NOT.5). Reads additionally
@@ -77,7 +80,9 @@ export class NotificationsService {
       return {
         notifications: page.map(toView),
         nextCursor:
-          rows.length > PAGE_SIZE && last ? encodeCursor(last.createdAt, last.id) : null,
+          rows.length > PAGE_SIZE && last
+            ? encodeCursor(last.createdAt, last.id)
+            : null,
       };
     });
   }
@@ -87,13 +92,20 @@ export class NotificationsService {
    * active membership is muted (rows keep accruing underneath — re-enabling
    * the switch restores the true arithmetic).
    */
-  async unreadCount(ctx: AuthContext & { tenantId: string }): Promise<{ count: number }> {
+  async unreadCount(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<{ count: number }> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       if (await this.isMuted(tx, ctx)) return { count: 0 };
       const [row] = await tx
         .select({ count: sql<number>`count(*)::int` })
         .from(notifications)
-        .where(and(eq(notifications.userId, ctx.userId), isNull(notifications.readAt)));
+        .where(
+          and(
+            eq(notifications.userId, ctx.userId),
+            isNull(notifications.readAt),
+          ),
+        );
       return { count: row?.count ?? 0 };
     });
   }
@@ -107,10 +119,13 @@ export class NotificationsService {
       const [row] = await tx
         .select()
         .from(notifications)
-        .where(and(eq(notifications.id, id), eq(notifications.userId, ctx.userId)));
+        .where(
+          and(eq(notifications.id, id), eq(notifications.userId, ctx.userId)),
+        );
       // Cross-tenant ids are invisible under RLS; another member's row is
       // filtered by the user scope — both are the same 404 (no leak).
-      if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Notification not found');
+      if (!row)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Notification not found');
       if (row.readAt) return { notification: toView(row) };
 
       const [updated] = await tx
@@ -123,19 +138,28 @@ export class NotificationsService {
   }
 
   /** POST /notifications/read-all — the open-screen gesture; kills the dot. */
-  async markAllRead(ctx: AuthContext & { tenantId: string }): Promise<{ updated: number }> {
+  async markAllRead(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<{ updated: number }> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const updated = await tx
         .update(notifications)
         .set({ readAt: new Date(), updatedAt: new Date() })
-        .where(and(eq(notifications.userId, ctx.userId), isNull(notifications.readAt)))
+        .where(
+          and(
+            eq(notifications.userId, ctx.userId),
+            isNull(notifications.readAt),
+          ),
+        )
         .returning({ id: notifications.id });
       return { updated: updated.length };
     });
   }
 
   /** GET /notifications/settings — the perfil switch state. */
-  async getSettings(ctx: AuthContext & { tenantId: string }): Promise<{ enabled: boolean }> {
+  async getSettings(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<{ enabled: boolean }> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const membership = await this.activeMembership(tx, ctx);
       return { enabled: membership.notificationsEnabled };
@@ -175,10 +199,19 @@ export class NotificationsService {
       throw problem(404, ErrorCodes.NOT_FOUND, 'No active academy membership');
     }
     const [row] = await tx
-      .select({ id: memberships.id, notificationsEnabled: memberships.notificationsEnabled })
+      .select({
+        id: memberships.id,
+        notificationsEnabled: memberships.notificationsEnabled,
+      })
       .from(memberships)
-      .where(and(eq(memberships.id, ctx.membershipId), eq(memberships.userId, ctx.userId)));
-    if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'No active academy membership');
+      .where(
+        and(
+          eq(memberships.id, ctx.membershipId),
+          eq(memberships.userId, ctx.userId),
+        ),
+      );
+    if (!row)
+      throw problem(404, ErrorCodes.NOT_FOUND, 'No active academy membership');
     return row;
   }
 
@@ -188,7 +221,12 @@ export class NotificationsService {
     const [row] = await tx
       .select({ enabled: memberships.notificationsEnabled })
       .from(memberships)
-      .where(and(eq(memberships.id, ctx.membershipId), eq(memberships.userId, ctx.userId)));
+      .where(
+        and(
+          eq(memberships.id, ctx.membershipId),
+          eq(memberships.userId, ctx.userId),
+        ),
+      );
     return row ? !row.enabled : false;
   }
 }
@@ -207,17 +245,23 @@ function toView(row: typeof notifications.$inferSelect): NotificationView {
 }
 
 function encodeCursor(createdAt: Date, id: string): string {
-  return Buffer.from(`${createdAt.toISOString()}|${id}`, 'utf8').toString('base64url');
+  return Buffer.from(`${createdAt.toISOString()}|${id}`, 'utf8').toString(
+    'base64url',
+  );
 }
 
 function decodeCursor(cursor: string): { createdAt: Date; id: string } {
   const decoded = Buffer.from(cursor, 'base64url').toString('utf8');
   const separator = decoded.lastIndexOf('|');
-  const createdAt = separator > 0 ? new Date(decoded.slice(0, separator)) : new Date(NaN);
+  const createdAt =
+    separator > 0 ? new Date(decoded.slice(0, separator)) : new Date(NaN);
   const id = separator > 0 ? decoded.slice(separator + 1) : '';
   if (Number.isNaN(createdAt.getTime()) || !/^[0-9a-f-]{36}$/.test(id)) {
     throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Malformed cursor', [
-      { field: 'cursor', messages: ['Must be a cursor previously returned by this endpoint'] },
+      {
+        field: 'cursor',
+        messages: ['Must be a cursor previously returned by this endpoint'],
+      },
     ]);
   }
   return { createdAt, id };

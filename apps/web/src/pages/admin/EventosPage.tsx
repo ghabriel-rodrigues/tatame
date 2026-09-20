@@ -47,8 +47,12 @@ import {
 } from './events-format';
 
 async function invalidateEvents() {
-  await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/events'] });
-  await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/calendar'] });
+  await queryClient.invalidateQueries({
+    queryKey: ['get', '/v1/admin/events'],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: ['get', '/v1/admin/calendar'],
+  });
 }
 
 interface EventSheetProps {
@@ -85,7 +89,10 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
   const publish = $api.useMutation('post', '/v1/admin/events/{id}/publish');
   const cancel = $api.useMutation('post', '/v1/admin/events/{id}/cancel');
   const busy =
-    create.isPending || update.isPending || publish.isPending || cancel.isPending;
+    create.isPending ||
+    update.isPending ||
+    publish.isPending ||
+    cancel.isPending;
 
   /** Validated form payload; null when a field error blocks the submit. */
   function buildBody() {
@@ -94,9 +101,11 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
     const priceCents = trimmedValor === '' ? null : parseBRLInput(trimmedValor);
     if (name.trim().length < 2) next['name'] = 'Informe o nome do evento.';
     if (trimmedValor !== '' && priceCents === null) {
-      next['valor'] = 'Informe um valor válido, ex.: 120,00 — ou deixe vazio (gratuito).';
+      next['valor'] =
+        'Informe um valor válido, ex.: 120,00 — ou deixe vazio (gratuito).';
     }
-    if (responsibleUserId === '') next['responsible'] = 'Selecione o responsável.';
+    if (responsibleUserId === '')
+      next['responsible'] = 'Selecione o responsável.';
     setErrors(next);
     if (Object.keys(next).length > 0) return null;
 
@@ -106,7 +115,9 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
       bannerPreset,
       location: location.trim() === '' ? null : location.trim(),
       startsAt:
-        date !== '' && time !== '' ? new Date(`${date}T${time}:00`).toISOString() : null,
+        date !== '' && time !== ''
+          ? new Date(`${date}T${time}:00`).toISOString()
+          : null,
       priceCents,
       responsibleUserId,
     };
@@ -129,7 +140,9 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
     if (!body) return;
     create.mutate(
       { body: { ...body, status } },
-      mutationOptions(status === 'draft' ? 'Rascunho salvo.' : 'Evento publicado.'),
+      mutationOptions(
+        status === 'draft' ? 'Rascunho salvo.' : 'Evento publicado.',
+      ),
     );
   }
 
@@ -174,7 +187,11 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
           error={errors['name']}
           required
         />
-        <FormField label="Descrição" value={description} onChangeText={setDescription} />
+        <FormField
+          label="Descrição"
+          value={description}
+          onChangeText={setDescription}
+        />
         <FormField
           label="Local"
           value={location}
@@ -182,8 +199,18 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
           placeholder="Tatame principal"
         />
         <Stack direction="row" spacing="10px">
-          <FormField label="Data" type="date" value={date} onChangeText={setDate} />
-          <FormField label="Hora" type="time" value={time} onChangeText={setTime} />
+          <FormField
+            label="Data"
+            type="date"
+            value={date}
+            onChangeText={setDate}
+          />
+          <FormField
+            label="Hora"
+            type="time"
+            value={time}
+            onChangeText={setTime}
+          />
         </Stack>
         <FormField
           label="Valor (R$)"
@@ -196,7 +223,11 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
 
         <Stack spacing="6px">
           <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Banner</FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {EVENT_BANNER_PRESETS.map((preset) => (
               <Box
                 key={preset.slug}
@@ -319,13 +350,16 @@ function EventSheet({ open, onClose, onSuccess, event }: EventSheetProps) {
       </Stack>
 
       {editing ? (
-        <Dialog open={confirmingCancel} onClose={() => setConfirmingCancel(false)}>
+        <Dialog
+          open={confirmingCancel}
+          onClose={() => setConfirmingCancel(false)}
+        >
           <DialogTitle>Cancelar evento</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              As cobranças em aberto deste evento serão canceladas automaticamente —
-              ninguém é cobrado por um evento cancelado. As inscrições confirmadas são
-              preservadas no histórico.
+              As cobranças em aberto deste evento serão canceladas
+              automaticamente — ninguém é cobrado por um evento cancelado. As
+              inscrições confirmadas são preservadas no histórico.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -363,7 +397,9 @@ function TotalTile({ label, value }: { label: string; value: string }) {
       <Typography sx={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-1)' }}>
         {value}
       </Typography>
-      <Typography sx={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+      <Typography
+        sx={{ fontSize: 10.5, fontWeight: 600, color: 'var(--fg-3)' }}
+      >
         {label}
       </Typography>
     </Box>
@@ -377,24 +413,39 @@ function InscritosSheet({
   event: AdminEvent;
   onClose: () => void;
 }) {
-  const registrations = $api.useQuery('get', '/v1/admin/events/{id}/registrations', {
-    params: { path: { id: event.id } },
-  });
+  const registrations = $api.useQuery(
+    'get',
+    '/v1/admin/events/{id}/registrations',
+    {
+      params: { path: { id: event.id } },
+    },
+  );
   const data = registrations.data;
 
   return (
     <BottomSheet open onClose={onClose} title="Inscritos" subtitle={event.name}>
       {registrations.isLoading ? (
-        <Typography sx={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center' }}>
+        <Typography
+          sx={{ fontSize: 13, color: 'var(--fg-3)', textAlign: 'center' }}
+        >
           Carregando inscritos…
         </Typography>
       ) : null}
       {data ? (
         <Stack spacing="14px">
           <Stack direction="row" spacing="8px">
-            <TotalTile label="Inscritos" value={String(data.totals.inscritos)} />
-            <TotalTile label="Confirmados" value={String(data.totals.confirmados)} />
-            <TotalTile label="Arrecadado" value={formatBRL(data.totals.arrecadadoCents)} />
+            <TotalTile
+              label="Inscritos"
+              value={String(data.totals.inscritos)}
+            />
+            <TotalTile
+              label="Confirmados"
+              value={String(data.totals.confirmados)}
+            />
+            <TotalTile
+              label="Arrecadado"
+              value={formatBRL(data.totals.arrecadadoCents)}
+            />
           </Stack>
           {data.registrations.length === 0 ? (
             <EmptyState
@@ -485,7 +536,9 @@ function EventCard({
         spacing="6px"
         sx={{ position: 'absolute', top: 10, right: 12 }}
       >
-        {event.status === 'draft' ? <Chip label="Rascunho" tone="warning" /> : null}
+        {event.status === 'draft' ? (
+          <Chip label="Rascunho" tone="warning" />
+        ) : null}
         {canceled ? <Chip label="Cancelado" tone="danger" /> : null}
         <Box
           component="span"
@@ -542,7 +595,11 @@ function EventCard({
     >
       {canceled ? (
         // Canceled events are frozen history — the banner is not pressable.
-        <Box data-testid={`event-banner-${event.id}`} sx={bannerSx} style={bannerStyle}>
+        <Box
+          data-testid={`event-banner-${event.id}`}
+          sx={bannerSx}
+          style={bannerStyle}
+        >
           {banner}
         </Box>
       ) : (
@@ -558,17 +615,32 @@ function EventCard({
           {banner}
         </Box>
       )}
-      <Box sx={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <Box
+        sx={{
+          padding: '12px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+        }}
+      >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 12, color: 'var(--fg-2)', fontWeight: 600 }}>
+          <Typography
+            sx={{ fontSize: 12, color: 'var(--fg-2)', fontWeight: 600 }}
+          >
             {eventDateLabel(event.date, event.time)}
           </Typography>
-          <Typography sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '2px' }}>
+          <Typography
+            sx={{ fontSize: 11, color: 'var(--fg-3)', marginTop: '2px' }}
+          >
             {inscritosLine(event)}
           </Typography>
         </Box>
         <Stack direction="row" spacing="6px" sx={{ flex: 'none' }}>
-          <PillButton label="Inscritos" ariaLabel={`Inscritos de ${event.name}`} onPress={onInscritos} />
+          <PillButton
+            label="Inscritos"
+            ariaLabel={`Inscritos de ${event.name}`}
+            onPress={onInscritos}
+          />
           {event.status === 'published' ? (
             <PillButton
               label="Comunicar"
@@ -614,12 +686,18 @@ export function EventosPage() {
           title="Eventos"
           subtitle="Crie eventos gratuitos ou pagos para a academia."
           trailing={
-            <TatameButton size="sm" label="Novo evento" onPress={() => setCreating(true)} />
+            <TatameButton
+              size="sm"
+              label="Novo evento"
+              onPress={() => setCreating(true)}
+            />
           }
         />
 
         {eventsQuery.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando eventos…
           </Typography>
         ) : null}
@@ -648,7 +726,11 @@ export function EventosPage() {
       </Stack>
 
       {creating ? (
-        <EventSheet open onClose={() => setCreating(false)} onSuccess={toast.show} />
+        <EventSheet
+          open
+          onClose={() => setCreating(false)}
+          onSuccess={toast.show}
+        />
       ) : null}
       {editing ? (
         <EventSheet
@@ -659,9 +741,15 @@ export function EventosPage() {
           event={editing}
         />
       ) : null}
-      {viewing ? <InscritosSheet event={viewing} onClose={() => setViewing(null)} /> : null}
+      {viewing ? (
+        <InscritosSheet event={viewing} onClose={() => setViewing(null)} />
+      ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

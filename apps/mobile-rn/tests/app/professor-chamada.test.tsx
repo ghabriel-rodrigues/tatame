@@ -4,12 +4,23 @@
  * (mocked) SSE machine, polling-fallback note, encerrar + reabrir.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
 import type { LiveStreamHandlers } from '../../src/features/attendance/sse';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import {
   FUNDAMENTOS_ID,
   makeProfessorClassDetails,
@@ -62,21 +73,31 @@ function installHandlers(override?: FetchHandler): Log {
   const log: Log = { openCalls: 0, closeCalls: 0 };
   const classes = makeProfessorClasses();
   const details = makeProfessorClassDetails();
-  const rows = [makeSnapshotAttendance('Lucas Almeida'), makeSnapshotAttendance('João Ferraz')];
+  const rows = [
+    makeSnapshotAttendance('Lucas Almeida'),
+    makeSnapshotAttendance('João Ferraz'),
+  ];
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
     const { method, path } = request;
-    if (method === 'GET' && path === '/v1/professor/classes') return json(200, { classes });
+    if (method === 'GET' && path === '/v1/professor/classes')
+      return json(200, { classes });
     const detailMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)$/.exec(path);
     if (method === 'GET' && detailMatch) {
       return json(200, { class: details[detailMatch[1] ?? ''] });
     }
-    if (method === 'POST' && path === `/v1/professor/classes/${FUNDAMENTOS_ID}/live-codes`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/classes/${FUNDAMENTOS_ID}/live-codes`
+    ) {
       log.openCalls += 1;
       return json(200, fundamentosLiveCode());
     }
-    if (method === 'POST' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/close`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/close`
+    ) {
       log.closeCalls += 1;
       return json(200, {
         ...fundamentosLiveCode(),
@@ -84,10 +105,16 @@ function installHandlers(override?: FetchHandler): Log {
         presentCount: 3,
       });
     }
-    if (method === 'GET' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/attendances`) {
+    if (
+      method === 'GET' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/attendances`
+    ) {
       return json(200, makeSnapshot(rows));
     }
-    if (method === 'POST' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/stream-ticket`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/stream-ticket`
+    ) {
       return json(200, { ticket: 'ticket-1', expiresInSeconds: 60 });
     }
     return null;
@@ -103,7 +130,9 @@ async function openLiveChamada(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Fundamentos'));
   });
-  await waitFor(() => expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByText('Fazer chamada de hoje'));
   });
@@ -197,7 +226,9 @@ describe('professor chamada ao vivo (ATT.17)', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Encerrar chamada'));
     });
-    await waitFor(() => expect(screen.getByText('Chamada encerrada')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Chamada encerrada')).toBeTruthy(),
+    );
     expect(log.closeCalls).toBe(1);
     expect(screen.getByText(/3 presenças registradas/)).toBeTruthy();
 

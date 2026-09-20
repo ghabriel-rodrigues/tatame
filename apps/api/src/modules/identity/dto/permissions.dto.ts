@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsIn, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { ACADEMY_ROLES, type AcademyRole } from '../../../common/decorators.js';
 
 export class PermissionEntryDto {

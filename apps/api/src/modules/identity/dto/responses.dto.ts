@@ -64,7 +64,9 @@ export class AuthSessionResponseDto {
   @ApiProperty({ description: 'Access token TTL in seconds' })
   accessExpiresIn!: number;
 
-  @ApiPropertyOptional({ description: 'Only for `body` transport; web gets the httpOnly cookie' })
+  @ApiPropertyOptional({
+    description: 'Only for `body` transport; web gets the httpOnly cookie',
+  })
   refreshToken?: string;
 }
 
@@ -72,7 +74,9 @@ export class MfaChallengeResponseDto {
   @ApiProperty({ enum: [true] })
   mfaRequired!: true;
 
-  @ApiProperty({ description: 'Short-lived token consumed by POST /auth/login/totp' })
+  @ApiProperty({
+    description: 'Short-lived token consumed by POST /auth/login/totp',
+  })
   challengeToken!: string;
 }
 
@@ -83,7 +87,9 @@ export class TokenPairResponseDto {
   @ApiProperty({ description: 'Access token TTL in seconds' })
   accessExpiresIn!: number;
 
-  @ApiPropertyOptional({ description: 'Only for `body` transport; web gets the httpOnly cookie' })
+  @ApiPropertyOptional({
+    description: 'Only for `body` transport; web gets the httpOnly cookie',
+  })
   refreshToken?: string;
 }
 
@@ -153,7 +159,8 @@ export class MeAcademyDto {
   @ApiProperty({
     nullable: true,
     type: BrandThemeDto,
-    description: 'White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand',
+    description:
+      'White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand',
   })
   theme!: BrandThemeDto | null;
 }
@@ -173,7 +180,12 @@ export class MeResponseDto {
   @ApiProperty({ type: [MembershipViewDto] })
   memberships!: MembershipViewDto[];
 
-  @ApiProperty({ format: 'uuid', nullable: true, type: String, description: 'Null during impersonation' })
+  @ApiProperty({
+    format: 'uuid',
+    nullable: true,
+    type: String,
+    description: 'Null during impersonation',
+  })
   activeMembershipId!: string | null;
 
   @ApiProperty({ enum: ALL_ROLES })
@@ -204,7 +216,11 @@ export class AdminAcademyResponseDto {
   @ApiProperty({ description: 'Immutable — invite URLs depend on it' })
   slug!: string;
 
-  @ApiProperty({ nullable: true, type: String, description: 'Always null in v1 (monogram logo)' })
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Always null in v1 (monogram logo)',
+  })
   logoUrl!: string | null;
 
   @ApiProperty({ nullable: true, type: BrandThemeDto })
@@ -232,7 +248,8 @@ export class InviteAcademyDto {
   @ApiProperty({
     nullable: true,
     type: BrandThemeDto,
-    description: 'White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand',
+    description:
+      'White-label 3-color brand (deep/vibrant/accent); null = default Tatame brand',
   })
   theme!: BrandThemeDto | null;
 }
@@ -270,7 +287,10 @@ export class InviteAcceptResponseDto {
   @ApiProperty({ description: 'Access token TTL in seconds' })
   accessExpiresIn!: number;
 
-  @ApiProperty({ description: 'Always in the body — the client stores it per its platform contract' })
+  @ApiProperty({
+    description:
+      'Always in the body — the client stores it per its platform contract',
+  })
   refreshToken!: string;
 
   @ApiPropertyOptional({
@@ -323,7 +343,10 @@ export class ImpersonationGrantResponseDto {
   @ApiProperty({ description: 'Access token TTL in seconds' })
   accessExpiresIn!: number;
 
-  @ApiProperty({ description: 'Always in the body: the platform refresh cookie stays untouched' })
+  @ApiProperty({
+    description:
+      'Always in the body: the platform refresh cookie stays untouched',
+  })
   refreshToken!: string;
 
   @ApiProperty({ format: 'date-time', description: '1-hour absolute cap' })
@@ -383,6 +406,9 @@ export class TotpSetupResponseDto {
 }
 
 export class TotpEnableResponseDto {
-  @ApiProperty({ type: [String], description: 'Single-use recovery codes — shown exactly once' })
+  @ApiProperty({
+    type: [String],
+    description: 'Single-use recovery codes — shown exactly once',
+  })
   recoveryCodes!: string[];
 }

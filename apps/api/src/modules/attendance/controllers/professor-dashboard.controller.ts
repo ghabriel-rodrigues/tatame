@@ -1,5 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
@@ -53,14 +58,19 @@ export class ProfessorDashboardController {
 
   @Get('students')
   @ApiOperation({
-    summary: 'Academy students — optional filter: not enrolled in one of my classes',
-    description: 'notEnrolledInClassId must reference a class the caller teaches (else 404).',
+    summary:
+      'Academy students — optional filter: not enrolled in one of my classes',
+    description:
+      'notEnrolledInClassId must reference a class the caller teaches (else 404).',
   })
   @ApiOkResponse({ type: ProfessorStudentsResponseDto })
   async students(@Query() query: ProfessorStudentsQueryDto) {
     const ctx = requireTenantContext(this.cls);
     return {
-      students: await this.directory.professorStudents(ctx, query.notEnrolledInClassId),
+      students: await this.directory.professorStudents(
+        ctx,
+        query.notEnrolledInClassId,
+      ),
     };
   }
 }

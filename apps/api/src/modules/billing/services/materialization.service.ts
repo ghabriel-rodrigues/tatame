@@ -95,7 +95,9 @@ export class MaterializationService {
             and(
               eq(students.status, 'active'),
               isNotNull(students.academyPlanId),
-              scope.studentIds ? inArray(students.id, scope.studentIds) : undefined,
+              scope.studentIds
+                ? inArray(students.id, scope.studentIds)
+                : undefined,
             ),
           )
           .limit(MATERIALIZATION_CAP);
@@ -157,7 +159,9 @@ export class MaterializationService {
             and(
               eq(charges.status, 'open'),
               lt(charges.dueDate, today),
-              scope.studentIds ? inArray(charges.studentId, scope.studentIds) : undefined,
+              scope.studentIds
+                ? inArray(charges.studentId, scope.studentIds)
+                : undefined,
             ),
           )
           .returning();
@@ -201,7 +205,11 @@ export class MaterializationService {
     }
 
     const autoSettled = await this.autoSettleWithMandates(actor, scope, today);
-    return { created: created.length, flippedOverdue: flipped.length, autoSettled };
+    return {
+      created: created.length,
+      flippedOverdue: flipped.length,
+      autoSettled,
+    };
   }
 
   /**
@@ -238,7 +246,9 @@ export class MaterializationService {
               eq(charges.origin, 'plan'),
               inArray(charges.status, ['open', 'overdue']),
               sql`${charges.dueDate} <= ${today}`,
-              scope.studentIds ? inArray(charges.studentId, scope.studentIds) : undefined,
+              scope.studentIds
+                ? inArray(charges.studentId, scope.studentIds)
+                : undefined,
             ),
           )
           .limit(MATERIALIZATION_CAP),

@@ -92,7 +92,10 @@ export function BottomSheet({
             {subtitle}
           </Typography>
         ) : null}
-        <div className="BottomSheet-content" style={{ marginTop: title ? 16 : 0 }}>
+        <div
+          className="BottomSheet-content"
+          style={{ marginTop: title ? 16 : 0 }}
+        >
           {children}
         </div>
       </Sheet>

@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -9,7 +18,10 @@ import {
 import { ClsService } from 'nestjs-cls';
 import { requireAuthContext } from '../../../common/auth-context.js';
 import { Roles } from '../../../common/decorators.js';
-import { APP_CONFIG, type AppConfig } from '../../../infra/config/app-config.js';
+import {
+  APP_CONFIG,
+  type AppConfig,
+} from '../../../infra/config/app-config.js';
 import { Inject } from '@nestjs/common';
 import {
   InviteTeamMemberDto,
@@ -58,7 +70,8 @@ export class PlatformConsoleController {
   @Get('overview')
   @Roles('owner', 'finance')
   @ApiOperation({
-    summary: 'Visão geral: MRR + delta, academias/alunos/inadimplência, 6-month series, atenção',
+    summary:
+      'Visão geral: MRR + delta, academias/alunos/inadimplência, 6-month series, atenção',
     description:
       'Pure read model. The series is reconstructed from subscription lifetimes against current ' +
       'plan prices — see spec 012 for the recorded limitation. Support is denied: the screen is ' +
@@ -73,7 +86,9 @@ export class PlatformConsoleController {
 
   @Get('academies')
   @Roles('owner', 'support', 'finance')
-  @ApiOperation({ summary: 'Academies with city, student count, plan and status' })
+  @ApiOperation({
+    summary: 'Academies with city, student count, plan and status',
+  })
   @ApiOkResponse({ type: PlatformAcademyListResponseDto })
   async listAcademies() {
     return this.academies.list();
@@ -101,7 +116,9 @@ export class PlatformConsoleController {
 
   @Get('academies/:id')
   @Roles('owner', 'support', 'finance')
-  @ApiOperation({ summary: 'Academy detail: stats, subscription and pending plan change' })
+  @ApiOperation({
+    summary: 'Academy detail: stats, subscription and pending plan change',
+  })
   @ApiOkResponse({ type: PlatformAcademyDetailDto })
   async academyDetail(@Param('id', ParseUUIDPipe) academyId: string) {
     return this.academies.detail(academyId);
@@ -132,21 +149,32 @@ export class PlatformConsoleController {
   @Post('academies/:id/suspend')
   @Roles('owner')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Suspend the academy — blocks access immediately (audited)' })
+  @ApiOperation({
+    summary: 'Suspend the academy — blocks access immediately (audited)',
+  })
   @ApiOkResponse({ type: PlatformAcademyDetailDto })
   async suspend(@Param('id', ParseUUIDPipe) academyId: string) {
-    return this.academies.setSuspended(requireAuthContext(this.cls), academyId, true);
+    return this.academies.setSuspended(
+      requireAuthContext(this.cls),
+      academyId,
+      true,
+    );
   }
 
   @Post('academies/:id/reactivate')
   @Roles('owner')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Reactivate the academy — restores the status its subscription justifies',
+    summary:
+      'Reactivate the academy — restores the status its subscription justifies',
   })
   @ApiOkResponse({ type: PlatformAcademyDetailDto })
   async reactivate(@Param('id', ParseUUIDPipe) academyId: string) {
-    return this.academies.setSuspended(requireAuthContext(this.cls), academyId, false);
+    return this.academies.setSuspended(
+      requireAuthContext(this.cls),
+      academyId,
+      false,
+    );
   }
 
   // ------------------------------------------------------------------- plans
@@ -154,7 +182,8 @@ export class PlatformConsoleController {
   @Get('plans')
   @Roles('owner', 'support', 'finance')
   @ApiOperation({
-    summary: 'Plan catalog with derived "mais assinado" + feature inheritance, and the registry',
+    summary:
+      'Plan catalog with derived "mais assinado" + feature inheritance, and the registry',
   })
   @ApiOkResponse({ type: PlatformPlanCatalogResponseDto })
   async planCatalog() {
@@ -164,7 +193,10 @@ export class PlatformConsoleController {
   @Post('plans')
   @Roles('owner')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Create a plan — available for new academy subscriptions immediately' })
+  @ApiOperation({
+    summary:
+      'Create a plan — available for new academy subscriptions immediately',
+  })
   @ApiCreatedResponse({ type: PlatformPlanRowDto })
   async createPlan(@Body() dto: PlatformPlanWriteDto) {
     return this.plans.create(requireAuthContext(this.cls), dto);
@@ -178,7 +210,10 @@ export class PlatformConsoleController {
     description: 'Current subscribers keep their price until the next cycle.',
   })
   @ApiOkResponse({ type: PlatformPlanRowDto })
-  async updatePlan(@Param('id', ParseUUIDPipe) planId: string, @Body() dto: PlatformPlanWriteDto) {
+  async updatePlan(
+    @Param('id', ParseUUIDPipe) planId: string,
+    @Body() dto: PlatformPlanWriteDto,
+  ) {
     return this.plans.update(requireAuthContext(this.cls), planId, dto);
   }
 
@@ -195,7 +230,9 @@ export class PlatformConsoleController {
   @Post('team')
   @Roles('owner')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Invite a team member — same set-password email as academy admins' })
+  @ApiOperation({
+    summary: 'Invite a team member — same set-password email as academy admins',
+  })
   @ApiCreatedResponse({ type: InviteTeamMemberResponseDto })
   async inviteTeamMember(@Body() dto: InviteTeamMemberDto) {
     return this.team.invite(requireAuthContext(this.cls), dto);

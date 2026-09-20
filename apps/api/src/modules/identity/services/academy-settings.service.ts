@@ -4,7 +4,11 @@ import { academies, withTenant, type DbHandle } from '@tatame/db';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
-import { normalizeHex, themeFromColumns, type BrandTheme } from '../lib/brand.js';
+import {
+  normalizeHex,
+  themeFromColumns,
+  type BrandTheme,
+} from '../lib/brand.js';
 import { AuditService } from './audit.service.js';
 
 export interface AcademySettings {
@@ -92,8 +96,11 @@ export class AcademySettingsService {
       this.appDb.db,
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx) => {
-        const [before] = await tx.select(AcademySettingsService.COLUMNS).from(academies);
-        if (!before) throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
+        const [before] = await tx
+          .select(AcademySettingsService.COLUMNS)
+          .from(academies);
+        if (!before)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
         const previous = AcademySettingsService.toSettings(before);
 
         const [after] = await tx
@@ -108,7 +115,8 @@ export class AcademySettingsService {
           })
           .where(eq(academies.id, ctx.tenantId))
           .returning(AcademySettingsService.COLUMNS);
-        if (!after) throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
+        if (!after)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
         return { previous, next: AcademySettingsService.toSettings(after) };
       },
     );
@@ -116,12 +124,24 @@ export class AcademySettingsService {
     // Audit before/after of the changed fields only (permissions precedent).
     const changes: Record<string, { before: unknown; after: unknown }> = {};
     if (updated.previous.name !== updated.next.name) {
-      changes['name'] = { before: updated.previous.name, after: updated.next.name };
+      changes['name'] = {
+        before: updated.previous.name,
+        after: updated.next.name,
+      };
     }
-    if (JSON.stringify(updated.previous.brand) !== JSON.stringify(updated.next.brand)) {
-      changes['brand'] = { before: updated.previous.brand, after: updated.next.brand };
+    if (
+      JSON.stringify(updated.previous.brand) !==
+      JSON.stringify(updated.next.brand)
+    ) {
+      changes['brand'] = {
+        before: updated.previous.brand,
+        after: updated.next.brand,
+      };
     }
-    if (updated.previous.autoNotificationsEnabled !== updated.next.autoNotificationsEnabled) {
+    if (
+      updated.previous.autoNotificationsEnabled !==
+      updated.next.autoNotificationsEnabled
+    ) {
       changes['auto_notifications_enabled'] = {
         before: updated.previous.autoNotificationsEnabled,
         after: updated.next.autoNotificationsEnabled,

@@ -1,10 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
-import { students, users, withTenant, type DbHandle, type DbTransaction } from '@tatame/db';
+import {
+  students,
+  users,
+  withTenant,
+  type DbHandle,
+  type DbTransaction,
+} from '@tatame/db';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
-import { GENDER_VALUES, type UpdateAlunoProfileDto } from '../dto/profile.dto.js';
+import {
+  GENDER_VALUES,
+  type UpdateAlunoProfileDto,
+} from '../dto/profile.dto.js';
 
 export interface AlunoProfileView {
   fullName: string;
@@ -27,8 +36,33 @@ export interface AlunoProfileView {
 
 /** The 27 federative units — the UF input validates against the real list. */
 const UF_SET = new Set([
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
-  'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
 ]);
 
 const PHONE_RE = /^[0-9()+\-\s]{8,20}$/;
@@ -50,7 +84,10 @@ export function isValidCpf(digits: string): boolean {
   return true;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Aluno Dados pessoais (spec 013, REP.6 — aluno-18). The profile lives on the
@@ -67,8 +104,12 @@ const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.u
 export class ProfileService {
   constructor(@Inject(APP_DB) private readonly appDb: DbHandle) {}
 
-  async get(ctx: AuthContext & { tenantId: string }): Promise<AlunoProfileView> {
-    return withTenant(this.appDb.db, tenantCtx(ctx), (tx) => this.read(tx, ctx));
+  async get(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<AlunoProfileView> {
+    return withTenant(this.appDb.db, tenantCtx(ctx), (tx) =>
+      this.read(tx, ctx),
+    );
   }
 
   async update(
@@ -76,7 +117,9 @@ export class ProfileService {
     dto: UpdateAlunoProfileDto,
   ): Promise<AlunoProfileView> {
     // Read-only identity facts: ignored-with-422, never silently dropped.
-    const readOnly = (['email', 'birthDate'] as const).filter((f) => dto[f] !== undefined);
+    const readOnly = (['email', 'birthDate'] as const).filter(
+      (f) => dto[f] !== undefined,
+    );
     if (readOnly.length > 0) {
       throw problem(
         422,
@@ -99,7 +142,10 @@ export class ProfileService {
       if (dto.fullName !== undefined) {
         const fullName = dto.fullName.trim();
         if (fullName.length < 2) {
-          errors.push({ field: 'fullName', messages: ['Informe o nome completo'] });
+          errors.push({
+            field: 'fullName',
+            messages: ['Informe o nome completo'],
+          });
         } else {
           patch.fullName = fullName;
         }
@@ -122,11 +168,19 @@ export class ProfileService {
       }
 
       if (dto.emergencyContactPhone !== undefined) {
-        if (dto.emergencyContactPhone !== null && !PHONE_RE.test(dto.emergencyContactPhone.trim())) {
-          errors.push({ field: 'emergencyContactPhone', messages: ['Telefone inválido'] });
+        if (
+          dto.emergencyContactPhone !== null &&
+          !PHONE_RE.test(dto.emergencyContactPhone.trim())
+        ) {
+          errors.push({
+            field: 'emergencyContactPhone',
+            messages: ['Telefone inválido'],
+          });
         } else {
           patch.emergencyContactPhone =
-            dto.emergencyContactPhone === null ? null : dto.emergencyContactPhone.trim();
+            dto.emergencyContactPhone === null
+              ? null
+              : dto.emergencyContactPhone.trim();
         }
       }
 
@@ -159,7 +213,10 @@ export class ProfileService {
         } else {
           const cep = dto.addressZip.replace(/\D/g, '');
           if (!/^[0-9]{8}$/.test(cep)) {
-            errors.push({ field: 'addressZip', messages: ['CEP inválido — use 8 dígitos'] });
+            errors.push({
+              field: 'addressZip',
+              messages: ['CEP inválido — use 8 dígitos'],
+            });
           } else {
             patch.addressZip = cep;
           }
@@ -174,9 +231,12 @@ export class ProfileService {
         } else if (current.cpf === null) {
           patch.cpf = cpf;
         } else if (current.cpf !== cpf) {
-          throw problem(422, ErrorCodes.PROFILE_FIELD_LOCKED, 'CPF não pode ser alterado após definido', [
-            { field: 'cpf', messages: ['locked'] },
-          ]);
+          throw problem(
+            422,
+            ErrorCodes.PROFILE_FIELD_LOCKED,
+            'CPF não pode ser alterado após definido',
+            [{ field: 'cpf', messages: ['locked'] }],
+          );
         }
       }
 
@@ -188,14 +248,22 @@ export class ProfileService {
         } else if (current.rg === null) {
           patch.rg = rg;
         } else if (current.rg !== rg) {
-          throw problem(422, ErrorCodes.PROFILE_FIELD_LOCKED, 'RG não pode ser alterado após definido', [
-            { field: 'rg', messages: ['locked'] },
-          ]);
+          throw problem(
+            422,
+            ErrorCodes.PROFILE_FIELD_LOCKED,
+            'RG não pode ser alterado após definido',
+            [{ field: 'rg', messages: ['locked'] }],
+          );
         }
       }
 
       if (errors.length > 0) {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Request validation failed', errors);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Request validation failed',
+          errors,
+        );
       }
 
       if (Object.keys(patch).length > 0) {
@@ -208,14 +276,19 @@ export class ProfileService {
         await tx
           .update(students)
           .set({ fullName: patch.fullName })
-          .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
+          .where(
+            and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+          );
       }
 
       return this.read(tx, ctx);
     });
   }
 
-  private async read(tx: DbTransaction, ctx: AuthContext): Promise<AlunoProfileView> {
+  private async read(
+    tx: DbTransaction,
+    ctx: AuthContext,
+  ): Promise<AlunoProfileView> {
     const [user] = await tx
       .select({
         fullName: users.fullName,
@@ -241,7 +314,9 @@ export class ProfileService {
     const [student] = await tx
       .select({ birthDate: students.birthDate })
       .from(students)
-      .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
+      .where(
+        and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+      );
 
     return {
       fullName: user.fullName,

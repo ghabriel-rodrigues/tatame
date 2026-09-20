@@ -22,10 +22,17 @@ import {
   users,
 } from '../schema/index.js';
 import { seedBeltCatalog } from '../seed/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
 /** Drizzle wraps pg errors; the interesting message lives on the cause chain. */
-async function expectRejection(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+async function expectRejection(
+  promise: Promise<unknown>,
+  pattern: RegExp,
+): Promise<void> {
   await expect(promise).rejects.toSatisfy((error: unknown) => {
     let current = error as (Error & { cause?: unknown }) | undefined;
     while (current) {
@@ -66,11 +73,21 @@ describe('graduation slice (spec 005 DB)', () => {
     await withPlatform(platform.db, async (tx) => {
       const [a] = await tx
         .insert(academies)
-        .values({ name: 'Tenant A', slug: 'tenant-a', contactEmail: 'a@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant A',
+          slug: 'tenant-a',
+          contactEmail: 'a@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       const [b] = await tx
         .insert(academies)
-        .values({ name: 'Tenant B', slug: 'tenant-b', contactEmail: 'b@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant B',
+          slug: 'tenant-b',
+          contactEmail: 'b@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       tenantA = a!.id;
       tenantB = b!.id;
@@ -93,14 +110,22 @@ describe('graduation slice (spec 005 DB)', () => {
       ]);
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantA, fullName: 'Aluno A', birthDate: '1999-01-01' })
+        .values({
+          tenantId: tenantA,
+          fullName: 'Aluno A',
+          birthDate: '1999-01-01',
+        })
         .returning({ id: students.id });
       studentA = s!.id;
     });
     await withTenant(app.db, tenantB, async (tx) => {
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantB, fullName: 'Aluno B', birthDate: '1998-01-01' })
+        .values({
+          tenantId: tenantB,
+          fullName: 'Aluno B',
+          birthDate: '1998-01-01',
+        })
         .returning({ id: students.id });
       studentB = s!.id;
     });
@@ -174,10 +199,14 @@ describe('graduation slice (spec 005 DB)', () => {
         ['Vermelha', 'belt.red', 0],
       ]);
       // Black belt dan tip is the only ponteira override.
-      expect(adult.find((b) => b.name === 'Preta')!.tipColorSlug).toBe('belt.red');
-      expect(adult.filter((b) => b.name !== 'Preta').every((b) => b.tipColorSlug === null)).toBe(
-        true,
+      expect(adult.find((b) => b.name === 'Preta')!.tipColorSlug).toBe(
+        'belt.red',
       );
+      expect(
+        adult
+          .filter((b) => b.name !== 'Preta')
+          .every((b) => b.tipColorSlug === null),
+      ).toBe(true);
 
       // Kids ladder has NO white row (Branca lives in the adult ladder).
       const kids = rows.filter((r) => r.kind === 'kids');
@@ -193,14 +222,20 @@ describe('graduation slice (spec 005 DB)', () => {
       // No context at all (pre-auth) — the catalog is still visible.
       expect(await app.db.select().from(belts)).toHaveLength(10);
       // And from both tenants identically.
-      const fromA = await withTenant(app.db, tenantA, (tx) => tx.select().from(belts));
-      const fromB = await withTenant(app.db, tenantB, (tx) => tx.select().from(belts));
+      const fromA = await withTenant(app.db, tenantA, (tx) =>
+        tx.select().from(belts),
+      );
+      const fromB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(belts),
+      );
       expect(fromA).toHaveLength(10);
       expect(fromB).toHaveLength(10);
     });
 
     it('rejects every catalog write from the app role (grant layer)', async () => {
-      const [ladder] = await app.db.select({ id: beltLadders.id }).from(beltLadders);
+      const [ladder] = await app.db
+        .select({ id: beltLadders.id })
+        .from(beltLadders);
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
           tx.insert(belts).values({
@@ -220,7 +255,9 @@ describe('graduation slice (spec 005 DB)', () => {
         /permission denied/,
       );
       await expectRejection(
-        withTenant(app.db, tenantA, (tx) => tx.delete(belts).where(eq(belts.id, azulId))),
+        withTenant(app.db, tenantA, (tx) =>
+          tx.delete(belts).where(eq(belts.id, azulId)),
+        ),
         /permission denied/,
       );
       await expectRejection(
@@ -246,16 +283,23 @@ describe('graduation slice (spec 005 DB)', () => {
         ]),
       );
       const rows = await withTenant(app.db, tenantA, (tx) =>
-        tx.select().from(graduationRules).orderBy(asc(graduationRules.lessonsPerDegree)),
+        tx
+          .select()
+          .from(graduationRules)
+          .orderBy(asc(graduationRules.lessonsPerDegree)),
       );
-      expect(rows.map((r) => [r.beltId, r.lessonsPerDegree, r.enabled])).toEqual([
+      expect(
+        rows.map((r) => [r.beltId, r.lessonsPerDegree, r.enabled]),
+      ).toEqual([
         [laranjaId, 40, false], // default 40 applied
         [azulId, 45, true], // default enabled applied
       ]);
 
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
-          tx.insert(graduationRules).values({ tenantId: tenantA, beltId: azulId }),
+          tx
+            .insert(graduationRules)
+            .values({ tenantId: tenantA, beltId: azulId }),
         ),
         /graduation_rules_tenant_belt_uq/,
       );
@@ -264,9 +308,11 @@ describe('graduation slice (spec 005 DB)', () => {
     it('refuses lessons_per_degree below 10 (CHECK)', async () => {
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
-          tx
-            .insert(graduationRules)
-            .values({ tenantId: tenantA, beltId: brancaId, lessonsPerDegree: 9 }),
+          tx.insert(graduationRules).values({
+            tenantId: tenantA,
+            beltId: brancaId,
+            lessonsPerDegree: 9,
+          }),
         ),
         /graduation_rules_lessons_min_ck/,
       );
@@ -274,11 +320,15 @@ describe('graduation slice (spec 005 DB)', () => {
 
     it('is tenant-isolated: fail-closed with no context, invisible cross-tenant', async () => {
       expect(await app.db.select().from(graduationRules)).toHaveLength(0);
-      const fromB = await withTenant(app.db, tenantB, (tx) => tx.select().from(graduationRules));
+      const fromB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(graduationRules),
+      );
       expect(fromB).toHaveLength(0);
       await expectRejection(
         withTenant(app.db, tenantB, (tx) =>
-          tx.insert(graduationRules).values({ tenantId: tenantA, beltId: brancaId }),
+          tx
+            .insert(graduationRules)
+            .values({ tenantId: tenantA, beltId: brancaId }),
         ),
         /row-level security/,
       );
@@ -292,7 +342,10 @@ describe('graduation slice (spec 005 DB)', () => {
         degree: 0,
         notes: 'Exame de faixa.',
       });
-      const degreeId = await award(tenantA, studentA, { kind: 'degree', degree: 1 });
+      const degreeId = await award(tenantA, studentA, {
+        kind: 'degree',
+        degree: 1,
+      });
       const revocationId = await award(tenantA, studentA, {
         kind: 'revocation',
         degree: 0,
@@ -308,13 +361,20 @@ describe('graduation slice (spec 005 DB)', () => {
           .where(eq(studentGraduations.studentId, studentA))
           .orderBy(asc(studentGraduations.createdAt)),
       );
-      expect(rows.map((r) => r.id)).toEqual([beltAwardId, degreeId, revocationId]);
+      expect(rows.map((r) => r.id)).toEqual([
+        beltAwardId,
+        degreeId,
+        revocationId,
+      ]);
       expect(rows[2]!.reversesGraduationId).toBe(degreeId);
       expect(rows[2]!.awardedByUserId).toBe(adminA);
     });
 
     it('CHECK: reverses_graduation_id is set exactly when kind = revocation', async () => {
-      const awardId = await award(tenantA, studentA, { kind: 'degree', degree: 2 });
+      const awardId = await award(tenantA, studentA, {
+        kind: 'degree',
+        degree: 2,
+      });
       // A revocation without a target is impossible…
       await expectRejection(
         award(tenantA, studentA, { kind: 'revocation', degree: 0 }),
@@ -322,13 +382,20 @@ describe('graduation slice (spec 005 DB)', () => {
       );
       // …and so is an award that claims to reverse something.
       await expectRejection(
-        award(tenantA, studentA, { kind: 'degree', degree: 3, reversesGraduationId: awardId }),
+        award(tenantA, studentA, {
+          kind: 'degree',
+          degree: 3,
+          reversesGraduationId: awardId,
+        }),
         /student_graduations_revocation_ck/,
       );
     });
 
     it('partial unique: an award is reversible at most once', async () => {
-      const awardId = await award(tenantA, studentA, { kind: 'degree', degree: 3 });
+      const awardId = await award(tenantA, studentA, {
+        kind: 'degree',
+        degree: 3,
+      });
       await award(tenantA, studentA, {
         kind: 'revocation',
         degree: 0,
@@ -347,7 +414,10 @@ describe('graduation slice (spec 005 DB)', () => {
     });
 
     it('composite tenant self-FK: a revocation cannot target a foreign tenant row', async () => {
-      const foreignAwardId = await award(tenantA, studentA, { kind: 'degree', degree: 4 });
+      const foreignAwardId = await award(tenantA, studentA, {
+        kind: 'degree',
+        degree: 4,
+      });
       await expectRejection(
         award(tenantB, studentB, {
           kind: 'revocation',
@@ -368,7 +438,10 @@ describe('graduation slice (spec 005 DB)', () => {
 
   describe('append-only layers on student_graduations (GRD.3)', () => {
     it('grant layer: UPDATE and DELETE denied to the app role; platform reads only', async () => {
-      const awardId = await award(tenantA, studentA, { kind: 'degree', degree: 4 });
+      const awardId = await award(tenantA, studentA, {
+        kind: 'degree',
+        degree: 4,
+      });
 
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
@@ -381,7 +454,9 @@ describe('graduation slice (spec 005 DB)', () => {
       );
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
-          tx.delete(studentGraduations).where(eq(studentGraduations.id, awardId)),
+          tx
+            .delete(studentGraduations)
+            .where(eq(studentGraduations.id, awardId)),
         ),
         /permission denied/,
       );
@@ -411,18 +486,25 @@ describe('graduation slice (spec 005 DB)', () => {
       );
       await expectRejection(
         withPlatform(platform.db, (tx) =>
-          tx.delete(studentGraduations).where(eq(studentGraduations.id, awardId)),
+          tx
+            .delete(studentGraduations)
+            .where(eq(studentGraduations.id, awardId)),
         ),
         /permission denied/,
       );
     });
 
     it('trigger layer: the owner path is refused unconditionally — no revoke-style window', async () => {
-      const res = await owner.query(`SELECT id FROM student_graduations LIMIT 1`);
+      const res = await owner.query(
+        `SELECT id FROM student_graduations LIMIT 1`,
+      );
       const rowId = res.rows[0].id;
 
       await expect(
-        owner.query(`UPDATE student_graduations SET notes = 'forged' WHERE id = $1`, [rowId]),
+        owner.query(
+          `UPDATE student_graduations SET notes = 'forged' WHERE id = $1`,
+          [rowId],
+        ),
       ).rejects.toThrow(/append-only/);
       // Unlike attendances there is NO sanctioned transition of any shape.
       await expect(
@@ -447,14 +529,18 @@ describe('graduation slice (spec 005 DB)', () => {
           body: 'Guarda evoluindo bem.',
         }),
       );
-      const rows = await withTenant(app.db, tenantA, (tx) => tx.select().from(studentNotes));
+      const rows = await withTenant(app.db, tenantA, (tx) =>
+        tx.select().from(studentNotes),
+      );
       expect(rows).toHaveLength(1);
       expect(rows[0]!.authorUserId).toBe(professorA);
 
       // Cross-tenant: invisible and unwritable against a foreign student.
-      expect(await withTenant(app.db, tenantB, (tx) => tx.select().from(studentNotes))).toHaveLength(
-        0,
-      );
+      expect(
+        await withTenant(app.db, tenantB, (tx) =>
+          tx.select().from(studentNotes),
+        ),
+      ).toHaveLength(0);
       await expectRejection(
         withTenant(app.db, tenantB, (tx) =>
           tx.insert(studentNotes).values({

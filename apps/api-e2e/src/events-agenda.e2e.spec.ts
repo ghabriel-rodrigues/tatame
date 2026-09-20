@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bearer, createTestApp, type TestApp } from './support/test-app.js';
 
 const SP = 'America/Sao_Paulo';
-const spToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: SP }).format(new Date());
+const spToday = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: SP }).format(new Date());
 const spMonth = () => spToday().slice(0, 7);
 
 /** Tenant-local month `n` months after the current one, as YYYY-MM. */
@@ -45,7 +46,11 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
       .http()
       .post('/v1/admin/events')
       .set(bearer(admin))
-      .send({ responsibleUserId: professorUserId, location: 'Tatame principal', ...body });
+      .send({
+        responsibleUserId: professorUserId,
+        location: 'Tatame principal',
+        ...body,
+      });
     expect(res.status).toBe(201);
     return res.body.id as string;
   };
@@ -56,7 +61,10 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
     aluno = (await t.login('aluno@tatame.dev')).accessToken;
     professor = (await t.login('professor@tatame.dev')).accessToken;
 
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
@@ -74,13 +82,19 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
       startsAt: `${lastDayOf(prevM)}T23:30:00-03:00`,
       status: 'published',
     });
-    draftId = await createEvent({ name: 'AGD Rascunho', startsAt: `${M}-20T10:00:00-03:00` });
+    draftId = await createEvent({
+      name: 'AGD Rascunho',
+      startsAt: `${M}-20T10:00:00-03:00`,
+    });
     canceledId = await createEvent({
       name: 'AGD Cancelado',
       startsAt: `${M}-22T10:00:00-03:00`,
       status: 'published',
     });
-    await t.http().post(`/v1/admin/events/${canceledId}/cancel`).set(bearer(admin));
+    await t
+      .http()
+      .post(`/v1/admin/events/${canceledId}/cancel`)
+      .set(bearer(admin));
   });
 
   afterAll(async () => {
@@ -88,7 +102,10 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
   });
 
   it('aluno calendar: requested-month window, tenant-timezone bucketing, published-only', async () => {
-    const res = await t.http().get(`/v1/aluno/calendar?month=${M}`).set(bearer(aluno));
+    const res = await t
+      .http()
+      .get(`/v1/aluno/calendar?month=${M}`)
+      .set(bearer(aluno));
     expect(res.status).toBe(200);
     expect(res.body.month).toBe(M);
 
@@ -109,7 +126,10 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
     });
 
     // The boundary event lands on the month the mat experiences (story 30).
-    const prev = await t.http().get(`/v1/aluno/calendar?month=${prevM}`).set(bearer(aluno));
+    const prev = await t
+      .http()
+      .get(`/v1/aluno/calendar?month=${prevM}`)
+      .set(bearer(aluno));
     const boundary = prev.body.events.find((e: any) => e.id === boundaryId);
     expect(boundary).toBeTruthy();
     expect(boundary.date).toBe(lastDayOf(prevM));
@@ -123,7 +143,10 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
       .set(bearer(aluno));
     expect(confirm.status).toBe(201);
 
-    const res = await t.http().get(`/v1/aluno/calendar?month=${prevM}`).set(bearer(aluno));
+    const res = await t
+      .http()
+      .get(`/v1/aluno/calendar?month=${prevM}`)
+      .set(bearer(aluno));
     const item = res.body.events.find((e: any) => e.id === boundaryId);
     expect(item.registration.status).toBe('confirmed');
   });
@@ -165,7 +188,10 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
   });
 
   it('professor dashboard: eventos-futuros tile count + list with confirmados', async () => {
-    const res = await t.http().get('/v1/professor/dashboard').set(bearer(professor));
+    const res = await t
+      .http()
+      .get('/v1/professor/dashboard')
+      .set(bearer(professor));
     expect(res.status).toBe(200);
     expect(res.body.upcomingEventsCount).toBe(res.body.upcomingEvents.length);
 
@@ -175,9 +201,13 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
     expect(names).not.toContain('AGD Cancelado');
 
     // Seeded confirmations feed the "N confirmados · gratuito/R$ X" line.
-    const openMat = res.body.upcomingEvents.find((e: any) => e.name === 'Open Mat de Verao');
+    const openMat = res.body.upcomingEvents.find(
+      (e: any) => e.name === 'Open Mat de Verao',
+    );
     expect(openMat).toMatchObject({ confirmedCount: 2, priceCents: null });
-    const exame = res.body.upcomingEvents.find((e: any) => e.name === 'Exame de Faixa');
+    const exame = res.body.upcomingEvents.find(
+      (e: any) => e.name === 'Exame de Faixa',
+    );
     expect(exame).toMatchObject({ confirmedCount: 1, priceCents: 6000 });
 
     // Chronological like the handoff's list.
@@ -186,7 +216,10 @@ describe('events: AGD month buckets + professor dashboard tile', () => {
   });
 
   it('month validation still holds on the shared query (422 on a broken month)', async () => {
-    const res = await t.http().get('/v1/aluno/calendar?month=2026-13').set(bearer(aluno));
+    const res = await t
+      .http()
+      .get('/v1/aluno/calendar?month=2026-13')
+      .set(bearer(aluno));
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('validation.failed');
   });

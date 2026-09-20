@@ -35,7 +35,11 @@ export class ImpersonationService {
     private readonly audit: AuditService,
   ) {}
 
-  async impersonate(ctx: AuthContext, academyId: string, meta: RequestMeta): Promise<ImpersonationGrant> {
+  async impersonate(
+    ctx: AuthContext,
+    academyId: string,
+    meta: RequestMeta,
+  ): Promise<ImpersonationGrant> {
     const rows = await withPlatform(this.platformDb.db, (tx) =>
       tx
         .select({

@@ -25,7 +25,8 @@ import { server } from '../../test/setup';
 const user = userEvent.setup();
 
 /** jsdom lib quirk (same dodge as visao-financeira.spec): read text via cast. */
-const textOf = (element: unknown) => (element as { textContent: string | null }).textContent;
+const textOf = (element: unknown) =>
+  (element as { textContent: string | null }).textContent;
 
 function renderCalendario() {
   server.use(...adminCalendarHandlers());
@@ -39,11 +40,17 @@ describe('Calendário (AGD.4)', () => {
   it('renders the Agosto 2026 grid: title, subtitle, Sunday-first offset and 31 day cells', async () => {
     renderCalendario();
 
-    expect(await screen.findByRole('heading', { name: 'Agosto 2026' })).toBeInTheDocument();
-    expect(screen.getByText('Todas as turmas e eventos da academia')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Agosto 2026' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Todas as turmas e eventos da academia'),
+    ).toBeInTheDocument();
     // 2026-08-01 is a Saturday → six leading blanks in a Sunday-first week.
     expect(screen.getAllByTestId('cal-blank')).toHaveLength(6);
-    expect(screen.getAllByRole('button', { name: /^Dia \d+$/ })).toHaveLength(31);
+    expect(screen.getAllByRole('button', { name: /^Dia \d+$/ })).toHaveLength(
+      31,
+    );
     expect(screen.getByRole('button', { name: 'Dia 1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Dia 31' })).toBeInTheDocument();
   });
@@ -78,12 +85,16 @@ describe('Calendário (AGD.4)', () => {
     expect(screen.getByText('18:45')).toBeInTheDocument();
     expect(screen.getByText('Prof. Ana Souza · 14 de 16')).toBeInTheDocument();
     expect(screen.getByText('Avançada')).toBeInTheDocument();
-    expect(screen.getByText('Prof. Rafael Nunes · 16 de 20')).toBeInTheDocument();
+    expect(
+      screen.getByText('Prof. Rafael Nunes · 16 de 20'),
+    ).toBeInTheDocument();
     expect(screen.getAllByText('Aula')).toHaveLength(2);
     // Sorted by start time: Kids (18:00) before Avançada (20:00).
     const rows = screen.getAllByText(/^(Kids|Avançada)$/).map(textOf);
     expect(rows).toEqual(['Kids', 'Avançada']);
-    expect(screen.queryByText('Nada agendado neste dia.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Nada agendado neste dia.'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the admin empty-state copy on a free selected day', async () => {
@@ -160,7 +171,10 @@ describe('Calendário (AGD.4)', () => {
       ...adminCalendarHandlers(
         makeAdminCalendar({
           events: [
-            makeCalendarEventItem({ name: 'Open mat de verão', date: '2026-08-15' }),
+            makeCalendarEventItem({
+              name: 'Open mat de verão',
+              date: '2026-08-15',
+            }),
             makeCalendarEventItem({
               name: 'Exame de faixa',
               date: '2026-08-22',
@@ -235,7 +249,10 @@ describe('Calendário (AGD.4)', () => {
               priceCents: null,
             }),
             // September event — outside the echoed month, never a dot.
-            makeCalendarEventItem({ name: 'Festival Kids', date: '2026-09-13' }),
+            makeCalendarEventItem({
+              name: 'Festival Kids',
+              date: '2026-09-13',
+            }),
           ],
         }),
       ),
@@ -256,7 +273,9 @@ describe('Calendário (AGD.4)', () => {
     expect(screen.getByText('Open mat de verão')).toBeInTheDocument();
     expect(screen.getByText('Tatame principal · Gratuito')).toBeInTheDocument();
     expect(screen.getByText('Evento')).toBeInTheDocument();
-    expect(screen.queryByText('Nada agendado neste dia.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Nada agendado neste dia.'),
+    ).not.toBeInTheDocument();
   });
 
   it('exposes the Calendário nav link in the admin console shell', async () => {
@@ -272,6 +291,8 @@ describe('Calendário (AGD.4)', () => {
     expect(link).toHaveAttribute('href', '/admin/calendario');
 
     await user.click(link);
-    expect(await screen.findByRole('heading', { name: 'Agosto 2026' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Agosto 2026' }),
+    ).toBeInTheDocument();
   });
 });

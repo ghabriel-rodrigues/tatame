@@ -10,7 +10,8 @@ export type NotificationItem = ApiSchemas['NotificationDto'];
 export type NotificationCategory = NotificationItem['category'];
 export type NotificationsPage = ApiSchemas['NotificationsListResponseDto'];
 export type UnreadCountResponse = ApiSchemas['UnreadCountResponseDto'];
-export type NotificationSettings = ApiSchemas['NotificationSettingsResponseDto'];
+export type NotificationSettings =
+  ApiSchemas['NotificationSettingsResponseDto'];
 
 /** The three RN persona shells sharing the Notificações feature. */
 export type NotificationPersona = 'aluno' | 'professor' | 'responsavel';

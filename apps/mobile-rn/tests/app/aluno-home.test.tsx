@@ -5,11 +5,22 @@
  * graduation progress bar fed by the true lesson count.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome, type AlunoHomeOptions } from '../helpers/attendance';
 import { makeMensalidadeAlert, makeWallet } from '../helpers/billing';
 
@@ -17,7 +28,10 @@ jest.useFakeTimers();
 
 const secure = SecureStore as unknown as { __reset: () => void };
 
-function renderAluno(homeOptions: AlunoHomeOptions = {}, override?: FetchHandler): void {
+function renderAluno(
+  homeOptions: AlunoHomeOptions = {},
+  override?: FetchHandler,
+): void {
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
@@ -26,7 +40,10 @@ function renderAluno(homeOptions: AlunoHomeOptions = {}, override?: FetchHandler
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -65,7 +82,9 @@ describe('aluno Início (ATT.16)', () => {
   it('flips the hero to Presença registrada after check-in', async () => {
     renderAluno({ checkedIn: true });
 
-    await waitFor(() => expect(screen.getByTestId('hero-checked-in-chip')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-checked-in-chip')).toBeTruthy(),
+    );
     expect(screen.getByText('Presença registrada')).toBeTruthy();
     expect(screen.queryByText('Fazer check-in')).toBeNull();
   });
@@ -88,7 +107,9 @@ describe('aluno Início (ATT.16)', () => {
   it('renders the real mensalidade alert from the home payload (BIL.16, story 7)', async () => {
     renderAluno({ mensalidade: makeMensalidadeAlert() });
 
-    await waitFor(() => expect(screen.getByTestId('mensalidade-alert')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('mensalidade-alert')).toBeTruthy(),
+    );
     expect(screen.getByText('Mensalidade em aberto')).toBeTruthy();
     expect(screen.getByText('R$ 180,00 · Vence em 10 de agosto')).toBeTruthy();
   });
@@ -101,15 +122,23 @@ describe('aluno Início (ATT.16)', () => {
 
   it('deep-links the alert into the Carteira (BIL.16)', async () => {
     renderAluno({ mensalidade: makeMensalidadeAlert() }, ({ method, path }) =>
-      method === 'GET' && path === '/v1/aluno/wallet' ? json(200, makeWallet()) : null,
+      method === 'GET' && path === '/v1/aluno/wallet'
+        ? json(200, makeWallet())
+        : null,
     );
 
-    await waitFor(() => expect(screen.getByTestId('mensalidade-alert')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('mensalidade-alert')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByTestId('mensalidade-alert'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('mensalidade-card')).toBeTruthy());
-    expect(screen.getByText('Plano mensal recorrente · R$ 180,00')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByTestId('mensalidade-card')).toBeTruthy(),
+    );
+    expect(
+      screen.getByText('Plano mensal recorrente · R$ 180,00'),
+    ).toBeTruthy();
   });
 });

@@ -12,7 +12,8 @@ export type GraduationEntry = ApiSchemas['GraduationEntryDto'];
 export type AlunoGraduationResponse = ApiSchemas['AlunoGraduationResponseDto'];
 export type AlunoHomeGraduation = ApiSchemas['AlunoHomeGraduationDto'];
 export type StudentProfileResponse = ApiSchemas['StudentProfileResponseDto'];
-export type ProfessorProfileResponse = ApiSchemas['ProfessorProfileResponseDto'];
+export type ProfessorProfileResponse =
+  ApiSchemas['ProfessorProfileResponseDto'];
 export type ValidGraduation = ApiSchemas['ValidGraduationDto'];
 export type StudentNote = ApiSchemas['StudentNoteDto'];
 export type AwardGraduationResponse = ApiSchemas['AwardGraduationResponseDto'];

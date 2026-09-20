@@ -9,7 +9,10 @@ import type { CssVarsTheme, Theme } from '@mui/material/styles';
 import { tokens, darkTokens, webCss } from '../../build/web/tokens.ts';
 import { derivePalette } from './derive-palette.ts';
 import { READY_MADE_PALETTES, TATAME_DEFAULT_BRAND } from './presets.ts';
-import { createTatameTheme, buildShadowPlateau } from './create-tatame-theme.ts';
+import {
+  createTatameTheme,
+  buildShadowPlateau,
+} from './create-tatame-theme.ts';
 import { glassSurface, glowShadow, hexToRgba } from './glass.ts';
 
 type VarsTheme = Theme & CssVarsTheme;
@@ -83,7 +86,9 @@ describe('createTatameTheme — CSS variables mode', () => {
     const darkTheme = createTatameTheme(darkPalette, 'dark');
     expect(darkTheme.palette.mode).toBe('dark');
     expect(darkTheme.palette.background.default).toBe(darkTokens.color.bg.app);
-    expect(darkTheme.palette.background.paper).toBe(darkTokens.color.bg.surface);
+    expect(darkTheme.palette.background.paper).toBe(
+      darkTokens.color.bg.surface,
+    );
     expect(darkTheme.palette.text.primary).toBe(darkTokens.color.fg[1]);
     expect(darkTheme.palette.divider).toBe(darkTokens.color.border[1]);
     expect(darkTheme.palette.primary.main).toBe(darkPalette['purple-700']);
@@ -160,15 +165,21 @@ describe('glassSurface mixin (ds-02 §6)', () => {
   it('consumes only the glass CSS vars so brand/dark flips are free', () => {
     const regular = glassSurface('regular');
     expect(regular['background']).toBe('var(--glass-bg)');
-    expect(regular['backdropFilter']).toBe('blur(var(--glass-blur)) saturate(var(--glass-saturation))');
+    expect(regular['backdropFilter']).toBe(
+      'blur(var(--glass-blur)) saturate(var(--glass-saturation))',
+    );
     expect(regular['border']).toBe('1px solid var(--glass-border)');
     expect(regular['boxShadow']).toBe('var(--glass-shadow)');
-    expect(regular['&::before']).toMatchObject({ background: 'var(--glass-shine)' });
+    expect(regular['&::before']).toMatchObject({
+      background: 'var(--glass-shine)',
+    });
   });
 
   it('deep variant uses the stronger blur and deeper tint', () => {
     const deep = glassSurface('deep');
     expect(deep['background']).toBe('var(--glass-bg-deep)');
-    expect(deep['backdropFilter']).toBe('blur(var(--glass-blur-strong)) saturate(var(--glass-saturation))');
+    expect(deep['backdropFilter']).toBe(
+      'blur(var(--glass-blur-strong)) saturate(var(--glass-saturation))',
+    );
   });
 });

@@ -55,16 +55,28 @@ function TimelineEntry({
             height: 10,
             borderRadius: 5,
             marginTop: 6,
-            backgroundColor: reversed ? theme.color.border['2'] : theme.color.brand['2'],
+            backgroundColor: reversed
+              ? theme.color.border['2']
+              : theme.color.brand['2'],
           }}
         />
         {!last ? (
-          <View style={{ flex: 1, width: 2, backgroundColor: theme.color.border['1'] }} />
+          <View
+            style={{
+              flex: 1,
+              width: 2,
+              backgroundColor: theme.color.border['1'],
+            }}
+          />
         ) : null}
       </View>
       <Card
         padding={theme.space['4']}
-        style={{ flex: 1, marginBottom: theme.space['3'], opacity: reversed ? 0.55 : 1 }}
+        style={{
+          flex: 1,
+          marginBottom: theme.space['3'],
+          opacity: reversed ? 0.55 : 1,
+        }}
         testID={`timeline-entry-${entry.id}`}
       >
         <View style={{ gap: 4 }}>
@@ -112,7 +124,8 @@ export default function AlunoGraduacaoScreen() {
   const router = useRouter();
   const query = api.useQuery('get', '/v1/aluno/graduation');
   const data = query.data;
-  const [certificateEntry, setCertificateEntry] = useState<GraduationEntry | null>(null);
+  const [certificateEntry, setCertificateEntry] =
+    useState<GraduationEntry | null>(null);
 
   const fraction =
     data && data.progress.target > 0
@@ -121,7 +134,12 @@ export default function AlunoGraduacaoScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader title="Graduação" onBack={() => router.back()} />
 
@@ -135,7 +153,11 @@ export default function AlunoGraduacaoScreen() {
                         variant="caption"
                         weight="bold"
                         color="rgba(255,255,255,0.7)"
-                        style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase' }}
+                        style={{
+                          fontSize: 10,
+                          letterSpacing: 1.2,
+                          textTransform: 'uppercase',
+                        }}
                       >
                         Faixa atual
                       </Text>
@@ -160,7 +182,8 @@ export default function AlunoGraduacaoScreen() {
                           weight="bold"
                           color={theme.color.fg.onColor}
                         >
-                          {data.progress.current} de {data.progress.target} aulas
+                          {data.progress.current} de {data.progress.target}{' '}
+                          aulas
                         </Text>
                       </View>
                       <View
@@ -211,7 +234,10 @@ export default function AlunoGraduacaoScreen() {
       </ScrollView>
 
       {/* REP.12: branded certificate view + OS share (spec 013). */}
-      <CertificateSheet entry={certificateEntry} onClose={() => setCertificateEntry(null)} />
+      <CertificateSheet
+        entry={certificateEntry}
+        onClose={() => setCertificateEntry(null)}
+      />
     </SafeAreaView>
   );
 }

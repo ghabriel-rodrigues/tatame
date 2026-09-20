@@ -26,7 +26,11 @@ describe('store: storefront + purchase lifecycle', () => {
   let alphaId: string;
   let anaUserId: string;
   let productIdByName: Map<string, string>;
-  const emitted: Record<string, any[]> = { paid: [], lowStock: [], canceled: [] };
+  const emitted: Record<string, any[]> = {
+    paid: [],
+    lowStock: [],
+    canceled: [],
+  };
 
   beforeAll(async () => {
     t = await createTestApp();
@@ -35,12 +39,17 @@ describe('store: storefront + purchase lifecycle', () => {
     alphaId = await t.academyIdBySlug('alpha-jj');
 
     const [ana] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, 'aluno@tatame.dev')),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, 'aluno@tatame.dev')),
     );
     anaUserId = ana!.id;
 
     const vitrine = await t.http().get('/v1/store/products').set(bearer(aluno));
-    productIdByName = new Map(vitrine.body.products.map((p: any) => [p.name, p.id]));
+    productIdByName = new Map(
+      vitrine.body.products.map((p: any) => [p.name, p.id]),
+    );
 
     const emitter = t.app.get(EventEmitter2);
     emitter.on(STORE_ORDER_PAID, (e) => emitted['paid']!.push(e));
@@ -82,7 +91,9 @@ describe('store: storefront + purchase lifecycle', () => {
       .send({ method: 'pix' });
     expect(payment.status).toBe(201);
     expect(payment.body.payment.status).toBe('pending');
-    expect(payment.body.payment.providerData.qrPayload).toBe(`TATAME-SIM-PIX-${chargeId}`);
+    expect(payment.body.payment.providerData.qrPayload).toBe(
+      `TATAME-SIM-PIX-${chargeId}`,
+    );
     const simulated = await t
       .http()
       .post(`/v1/billing/payments/${payment.body.payment.id}/simulate`)
@@ -105,7 +116,9 @@ describe('store: storefront + purchase lifecycle', () => {
       ]);
     }
     const res = await t.http().get('/v1/store/products').set(bearer(aluno));
-    const kimono = res.body.products.find((p: any) => p.name === 'Kimono Oficial');
+    const kimono = res.body.products.find(
+      (p: any) => p.name === 'Kimono Oficial',
+    );
     expect(kimono).toMatchObject({
       priceCents: 34_900,
       monogram: 'GI',
@@ -116,15 +129,25 @@ describe('store: storefront + purchase lifecycle', () => {
 
   it('vitrine search matches name AND tags; category chip filters; honest empty state', async () => {
     // "nogi" is only a tag (Rashguard Team).
-    const byTag = await t.http().get('/v1/store/products?search=nogi').set(bearer(aluno));
-    expect(byTag.body.products.map((p: any) => p.name)).toEqual(['Rashguard Team']);
+    const byTag = await t
+      .http()
+      .get('/v1/store/products?search=nogi')
+      .set(bearer(aluno));
+    expect(byTag.body.products.map((p: any) => p.name)).toEqual([
+      'Rashguard Team',
+    ]);
 
-    const byName = await t.http().get('/v1/store/products?search=mochila').set(bearer(aluno));
-    expect(byName.body.products.map((p: any) => p.name)).toEqual(['Mochila de Treino']);
+    const byName = await t
+      .http()
+      .get('/v1/store/products?search=mochila')
+      .set(bearer(aluno));
+    expect(byName.body.products.map((p: any) => p.name)).toEqual([
+      'Mochila de Treino',
+    ]);
 
-    const acessorios = (await t.http().get('/v1/store/products').set(bearer(aluno))).body.categories.find(
-      (c: any) => c.name === 'Acessorios',
-    );
+    const acessorios = (
+      await t.http().get('/v1/store/products').set(bearer(aluno))
+    ).body.categories.find((c: any) => c.name === 'Acessorios');
     const filtered = await t
       .http()
       .get(`/v1/store/products?categoryId=${acessorios.id}`)
@@ -134,7 +157,10 @@ describe('store: storefront + purchase lifecycle', () => {
       'Protetor Bucal',
     ]);
 
-    const empty = await t.http().get('/v1/store/products?search=inexistente').set(bearer(aluno));
+    const empty = await t
+      .http()
+      .get('/v1/store/products?search=inexistente')
+      .set(bearer(aluno));
     expect(empty.status).toBe(200);
     expect(empty.body.products).toEqual([]);
   });
@@ -157,7 +183,10 @@ describe('store: storefront + purchase lifecycle', () => {
     // RLS backstop: a bravo product id behaves as 404 for an alpha buyer.
     const bravoId = await t.academyIdBySlug('bravo-bjj');
     const [bravoProduct] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: products.id }).from(products).where(eq(products.tenantId, bravoId)),
+      tx
+        .select({ id: products.id })
+        .from(products)
+        .where(eq(products.tenantId, bravoId)),
     );
     const foreign = await t
       .http()
@@ -229,7 +258,10 @@ describe('store: storefront + purchase lifecycle', () => {
       .post('/v1/admin/store/products')
       .set(bearer(admin))
       .send({ name: 'Sumido', priceCents: 100, stockQty: 5 });
-    await t.http().delete(`/v1/admin/store/products/${throwaway.body.id}`).set(bearer(admin));
+    await t
+      .http()
+      .delete(`/v1/admin/store/products/${throwaway.body.id}`)
+      .set(bearer(admin));
     const archived = await t
       .http()
       .post('/v1/store/orders')
@@ -249,7 +281,11 @@ describe('store: storefront + purchase lifecycle', () => {
       .http()
       .post('/v1/store/orders')
       .set(bearer(aluno))
-      .send({ productId: productIdByName.get('Kimono Oficial'), size: 'A2', quantity: 1 });
+      .send({
+        productId: productIdByName.get('Kimono Oficial'),
+        size: 'A2',
+        quantity: 1,
+      });
     expect(created.status).toBe(201);
     expect(created.body.order).toMatchObject({
       number: 2432, // seeded max #2431 + 1
@@ -299,7 +335,9 @@ describe('store: storefront + purchase lifecycle', () => {
 
     // The aluno Carteira histórico picked the store payment up (story 29).
     const wallet = await t.http().get('/v1/aluno/wallet').set(bearer(aluno));
-    expect(wallet.body.history.map((h: any) => h.amountCents)).toContain(34_900);
+    expect(wallet.body.history.map((h: any) => h.amountCents)).toContain(
+      34_900,
+    );
   });
 
   it('CONTRACT: re-delivered payment.succeeded no-ops — never a second decrement', async () => {
@@ -316,7 +354,9 @@ describe('store: storefront + purchase lifecycle', () => {
     );
     expect(outcome.applied).toBe(false);
     expect(await stockOf('Kimono Oficial')).toBe(11);
-    expect(emitted['paid']!.filter((e) => e.orderId === giOrderId)).toHaveLength(1);
+    expect(
+      emitted['paid']!.filter((e) => e.orderId === giOrderId),
+    ).toHaveLength(1);
   });
 
   let mcOrderId: string;
@@ -327,7 +367,10 @@ describe('store: storefront + purchase lifecycle', () => {
       .http()
       .post('/v1/store/orders')
       .set(bearer(professor))
-      .send({ productId: productIdByName.get('Mochila de Treino'), quantity: 1 });
+      .send({
+        productId: productIdByName.get('Mochila de Treino'),
+        quantity: 1,
+      });
     expect(created.status).toBe(201);
     expect(created.body.order.number).toBe(2433);
     mcOrderId = created.body.order.id;
@@ -345,7 +388,9 @@ describe('store: storefront + purchase lifecycle', () => {
     const order = mine.body.orders.find((o: any) => o.id === mcOrderId);
     expect(order.status).toBe('paid');
     // 8 → 7 with threshold 5: no crossing, no low-stock emission.
-    expect(emitted['lowStock']!.filter((e) => e.name === 'Mochila de Treino')).toHaveLength(0);
+    expect(
+      emitted['lowStock']!.filter((e) => e.name === 'Mochila de Treino'),
+    ).toHaveLength(0);
   });
 
   it('low-stock event fires exactly when a paid decrement crosses the threshold', async () => {
@@ -354,12 +399,17 @@ describe('store: storefront + purchase lifecycle', () => {
       .http()
       .post('/v1/store/orders')
       .set(bearer(aluno))
-      .send({ productId: productIdByName.get('Mochila de Treino'), quantity: 3 });
+      .send({
+        productId: productIdByName.get('Mochila de Treino'),
+        quantity: 3,
+      });
     expect(created.status).toBe(201);
     await payAndSimulate(aluno, created.body.chargeId);
 
     expect(await stockOf('Mochila de Treino')).toBe(4);
-    const events = emitted['lowStock']!.filter((e) => e.name === 'Mochila de Treino');
+    const events = emitted['lowStock']!.filter(
+      (e) => e.name === 'Mochila de Treino',
+    );
     expect(events).toHaveLength(1);
     expect(events[0]).toMatchObject({ stockQty: 4, lowStockThreshold: 5 });
   });
@@ -382,7 +432,9 @@ describe('store: storefront + purchase lifecycle', () => {
 
     // Order flipped + the mochila unit came back (4 → 5).
     const mine = await t.http().get('/v1/store/orders').set(bearer(professor));
-    expect(mine.body.orders.find((o: any) => o.id === mcOrderId).status).toBe('canceled');
+    expect(mine.body.orders.find((o: any) => o.id === mcOrderId).status).toBe(
+      'canceled',
+    );
     expect(await stockOf('Mochila de Treino')).toBe(5);
     const canceled = emitted['canceled']!.find((e) => e.orderId === mcOrderId);
     expect(canceled).toMatchObject({ refunded: true, number: 2433 });
@@ -394,7 +446,9 @@ describe('store: storefront + purchase lifecycle', () => {
     });
     expect(second.applied).toBe(false);
     expect(await stockOf('Mochila de Treino')).toBe(5);
-    expect(emitted['canceled']!.filter((e) => e.orderId === mcOrderId)).toHaveLength(1);
+    expect(
+      emitted['canceled']!.filter((e) => e.orderId === mcOrderId),
+    ).toHaveLength(1);
   });
 
   it('OVERSELL: two pendings race to settlement — both paid, stock goes negative (recorded)', async () => {
@@ -419,19 +473,33 @@ describe('store: storefront + purchase lifecycle', () => {
     await payAndSimulate(professor, second.body.chargeId);
 
     expect(await stockOf('Protetor Bucal')).toBe(-2);
-    const alunoOrders = await t.http().get('/v1/store/orders').set(bearer(aluno));
-    expect(alunoOrders.body.orders.find((o: any) => o.id === first.body.order.id).status).toBe(
-      'paid',
-    );
-    const professorOrders = await t.http().get('/v1/store/orders').set(bearer(professor));
+    const alunoOrders = await t
+      .http()
+      .get('/v1/store/orders')
+      .set(bearer(aluno));
     expect(
-      professorOrders.body.orders.find((o: any) => o.id === second.body.order.id).status,
+      alunoOrders.body.orders.find((o: any) => o.id === first.body.order.id)
+        .status,
+    ).toBe('paid');
+    const professorOrders = await t
+      .http()
+      .get('/v1/store/orders')
+      .set(bearer(professor));
+    expect(
+      professorOrders.body.orders.find(
+        (o: any) => o.id === second.body.order.id,
+      ).status,
     ).toBe('paid');
 
     // The oversell surfaces on the admin tile (negative stock is still low).
     const admin = (await t.login('admin@tatame.dev')).accessToken;
-    const overview = await t.http().get('/v1/admin/store/overview').set(bearer(admin));
-    const pbTile = overview.body.lowStock.products.find((p: any) => p.name === 'Protetor Bucal');
+    const overview = await t
+      .http()
+      .get('/v1/admin/store/overview')
+      .set(bearer(admin));
+    const pbTile = overview.body.lowStock.products.find(
+      (p: any) => p.name === 'Protetor Bucal',
+    );
     expect(pbTile.stockQty).toBe(-2);
   });
 
@@ -439,7 +507,9 @@ describe('store: storefront + purchase lifecycle', () => {
     const mine = await t.http().get('/v1/store/orders').set(bearer(aluno));
     const numbers = mine.body.orders.map((o: any) => o.number);
     // Ana's seeded orders + her purchases above — never the professor's.
-    expect(numbers).toEqual(expect.arrayContaining([2427, 2428, 2430, 2431, 2432]));
+    expect(numbers).toEqual(
+      expect.arrayContaining([2427, 2428, 2430, 2431, 2432]),
+    );
     expect(numbers).not.toContain(2429);
     expect(numbers).not.toContain(2433);
 
@@ -448,7 +518,11 @@ describe('store: storefront + purchase lifecycle', () => {
       .http()
       .post('/v1/store/orders')
       .set(bearer(aluno))
-      .send({ productId: productIdByName.get('Faixa Oficial'), size: 'A2', quantity: 1 });
+      .send({
+        productId: productIdByName.get('Faixa Oficial'),
+        size: 'A2',
+        quantity: 1,
+      });
     expect(created.status).toBe(201);
     const canceled = await t
       .http()
@@ -458,7 +532,9 @@ describe('store: storefront + purchase lifecycle', () => {
     const charge = await chargeOfOrder(created.body.order.id);
     expect(charge.status).toBe('canceled');
     const after = await t.http().get('/v1/store/orders').set(bearer(aluno));
-    const row = after.body.orders.find((o: any) => o.id === created.body.order.id);
+    const row = after.body.orders.find(
+      (o: any) => o.id === created.body.order.id,
+    );
     expect(row).toMatchObject({ status: 'canceled', chargeId: null });
 
     // Cancel is pending-only: re-cancel and canceling a paid order are 409.
@@ -517,9 +593,16 @@ describe('store: storefront + purchase lifecycle', () => {
   });
 
   it('RBAC: responsável, admin and platform roles are denied the storefront', async () => {
-    for (const email of ['responsavel@tatame.dev', 'admin@tatame.dev', 'owner@tatame.dev']) {
+    for (const email of [
+      'responsavel@tatame.dev',
+      'admin@tatame.dev',
+      'owner@tatame.dev',
+    ]) {
       const session = await t.login(email);
-      const res = await t.http().get('/v1/store/products').set(bearer(session.accessToken));
+      const res = await t
+        .http()
+        .get('/v1/store/products')
+        .set(bearer(session.accessToken));
       expect(res.status, email).toBe(403);
       expect(res.body.code).toBe('authz.forbidden_role');
     }
@@ -532,7 +615,11 @@ describe('store: storefront + purchase lifecycle', () => {
       .http()
       .post('/v1/store/orders')
       .set(bearer(aluno))
-      .send({ productId: productIdByName.get('Faixa Oficial'), size: 'A2', quantity: 1 });
+      .send({
+        productId: productIdByName.get('Faixa Oficial'),
+        size: 'A2',
+        quantity: 1,
+      });
     expect(blocked.status).toBe(403);
     expect(blocked.body.code).toBe('tenant.read_only');
 
@@ -547,7 +634,9 @@ describe('store: storefront + purchase lifecycle', () => {
     await payAndSimulate(aluno, pending.chargeId);
 
     const after = await t.http().get('/v1/store/orders').set(bearer(aluno));
-    expect(after.body.orders.find((o: any) => o.number === 2431).status).toBe('paid');
+    expect(after.body.orders.find((o: any) => o.number === 2431).status).toBe(
+      'paid',
+    );
     expect(await stockOf('Faixa Oficial')).toBe(14); // 15 − the settled unit
 
     await t.setAcademyStatus('alpha-jj', 'active');

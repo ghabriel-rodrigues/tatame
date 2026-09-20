@@ -6,7 +6,13 @@
  * ENR.19 suite).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
@@ -52,7 +58,9 @@ function renderResponsavel(): void {
     const match = /^\/v1\/responsavel\/dependents\/([0-9a-f-]+)$/.exec(path);
     if (method === 'GET' && match) {
       const dependent = dependents.find((item) => item.id === match[1]);
-      return dependent ? json(200, { dependent }) : problem(404, 'resource.not_found');
+      return dependent
+        ? json(200, { dependent })
+        : problem(404, 'resource.not_found');
     }
     return null;
   });
@@ -75,11 +83,17 @@ describe('responsável dependent belts (GRD.17)', () => {
 
   it('draws each child belt on the panel card with the faixa tile', async () => {
     renderResponsavel();
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
 
     const dependents = makeBeltedDependents();
-    expect(screen.getByTestId(`dependent-belt-${dependents[0]!.id}`)).toBeTruthy();
-    expect(screen.getByTestId(`dependent-belt-${dependents[1]!.id}`)).toBeTruthy();
+    expect(
+      screen.getByTestId(`dependent-belt-${dependents[0]!.id}`),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId(`dependent-belt-${dependents[1]!.id}`),
+    ).toBeTruthy();
 
     // Faixa tiles: "Cinza / 3 graus" and "Amarela / 1 grau" (responsavel-02).
     expect(screen.getByText('Cinza')).toBeTruthy();
@@ -91,7 +105,9 @@ describe('responsável dependent belts (GRD.17)', () => {
 
   it('renders the real belt in the dependent detail Graduação card', async () => {
     renderResponsavel();
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Pedro Silveira'));
@@ -101,7 +117,9 @@ describe('responsável dependent belts (GRD.17)', () => {
     expect(screen.getByTestId('dependent-detail-belt')).toBeTruthy();
     expect(screen.getByText('Faixa cinza · 3 graus')).toBeTruthy();
     expect(
-      screen.queryByText('A evolução de faixa e graus chega na fase de graduação.'),
+      screen.queryByText(
+        'A evolução de faixa e graus chega na fase de graduação.',
+      ),
     ).toBeNull();
   });
 });

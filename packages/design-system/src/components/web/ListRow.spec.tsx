@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { ListRow } from './ListRow.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('ListRow', () => {
   it('renders title, subtitle and slots on a static row', () => {
@@ -30,7 +34,9 @@ describe('ListRow', () => {
 
   it('is a real button when pressable and fires onPress', () => {
     const onPress = vi.fn();
-    const { getByRole } = renderUi(<ListRow title="Fundamentos" chevron onPress={onPress} />);
+    const { getByRole } = renderUi(
+      <ListRow title="Fundamentos" chevron onPress={onPress} />,
+    );
     const row = getByRole('button', { name: /Fundamentos/ });
     row.click();
     expect(onPress).toHaveBeenCalledTimes(1);
@@ -40,6 +46,8 @@ describe('ListRow', () => {
     const { getByRole } = renderUi(
       <ListRow title="Marina Costa" selected onPress={() => undefined} />,
     );
-    expect(getByRole('button', { name: /Marina Costa/ }).className).toContain('ListRow-selected');
+    expect(getByRole('button', { name: /Marina Costa/ }).className).toContain(
+      'ListRow-selected',
+    );
   });
 });

@@ -85,7 +85,10 @@ export function FormField({
       : theme.color.border['1'];
 
   return (
-    <View testID={testID} style={[{ gap: 6, opacity: disabled ? 0.55 : 1 }, style]}>
+    <View
+      testID={testID}
+      style={[{ gap: 6, opacity: disabled ? 0.55 : 1 }, style]}
+    >
       <Text
         variant="label"
         color={focused && !error ? theme.color.brand['1'] : theme.color.fg['3']}
@@ -98,7 +101,9 @@ export function FormField({
         style={{
           borderRadius: theme.radius.md + ring.spread,
           borderWidth: ring.spread,
-          borderColor: focused ? hexToRgba(ring.color, ring.alpha) : 'transparent',
+          borderColor: focused
+            ? hexToRgba(ring.color, ring.alpha)
+            : 'transparent',
           margin: -ring.spread,
         }}
       >
@@ -137,7 +142,9 @@ export function FormField({
           {isPassword ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              accessibilityLabel={
+                showPassword ? 'Ocultar senha' : 'Mostrar senha'
+              }
               onPress={() => setShowPassword((s) => !s)}
               hitSlop={8}
               style={{ paddingHorizontal: theme.space['3'] }}

@@ -1,9 +1,26 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { RequiresPermission, Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
-import { AwardGraduationDto, CreateStudentNoteDto } from '../dto/requests.dto.js';
+import {
+  AwardGraduationDto,
+  CreateStudentNoteDto,
+} from '../dto/requests.dto.js';
 import {
   AwardGraduationResponseDto,
   ProfessorProfileResponseDto,
@@ -34,7 +51,9 @@ export class ProfessorGraduationController {
   ) {}
 
   @Get('profile')
-  @ApiOperation({ summary: 'Own profile: belt chip + Graduações válidas (merged régua)' })
+  @ApiOperation({
+    summary: 'Own profile: belt chip + Graduações válidas (merged régua)',
+  })
   @ApiOkResponse({ type: ProfessorProfileResponseDto })
   async profile() {
     const ctx = requireTenantContext(this.cls);
@@ -44,7 +63,8 @@ export class ProfessorGraduationController {
   @Get('students/:id/profile')
   @ApiOperation({
     summary: 'Perfil do aluno: belt, progress, Phase-4 stat tiles, observações',
-    description: 'Any student of the academy (grading day works across turmas); foreign id → 404.',
+    description:
+      'Any student of the academy (grading day works across turmas); foreign id → 404.',
   })
   @ApiOkResponse({ type: StudentProfileResponseDto })
   async studentProfile(@Param('id', ParseUUIDPipe) id: string) {
@@ -56,19 +76,25 @@ export class ProfessorGraduationController {
   @HttpCode(201)
   @RequiresPermission('graduation.update')
   @ApiOperation({
-    summary: 'Adicionar grau / Promover faixa (gated by the graduation.update toggle)',
+    summary:
+      'Adicionar grau / Promover faixa (gated by the graduation.update toggle)',
     description:
       'degree: current + 1 on the current belt, rejected at max. belt: any enabled non-current ' +
       'catalog belt, degrees reset. Audited in-transaction (graduation.awarded).',
   })
   @ApiCreatedResponse({ type: AwardGraduationResponseDto })
-  async award(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AwardGraduationDto) {
+  async award(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AwardGraduationDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.awards.award(ctx, id, dto);
   }
 
   @Get('students/:id/notes')
-  @ApiOperation({ summary: 'Observações history (staff-visible only), newest first' })
+  @ApiOperation({
+    summary: 'Observações history (staff-visible only), newest first',
+  })
   @ApiOkResponse({ type: StudentNotesResponseDto })
   async listNotes(@Param('id', ParseUUIDPipe) id: string) {
     const ctx = requireTenantContext(this.cls);
@@ -77,9 +103,14 @@ export class ProfessorGraduationController {
 
   @Post('students/:id/notes')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Persist an observação (coaching notes outlive graduations)' })
+  @ApiOperation({
+    summary: 'Persist an observação (coaching notes outlive graduations)',
+  })
   @ApiCreatedResponse({ type: StudentNoteResponseDto })
-  async createNote(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateStudentNoteDto) {
+  async createNote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateStudentNoteDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return { note: await this.notes.create(ctx, id, dto.body) };
   }

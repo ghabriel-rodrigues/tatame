@@ -18,7 +18,9 @@ const spDate = (at: Date = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(at);
 const spWeekday = (at: Date = new Date()) =>
   ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
-    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(at),
+    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(
+      at,
+    ),
   );
 const spMinutes = (at: Date = new Date()) => {
   const [h, m] = new Intl.DateTimeFormat('en-GB', {
@@ -47,7 +49,11 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
 
   /** Class with a slot open right now (start 10 min ago, 60 min long). */
   const nowSlot = () => [
-    { weekday: spWeekday(), startTime: hhmm(Math.max(0, spMinutes() - 10)), durationMinutes: 60 },
+    {
+      weekday: spWeekday(),
+      startTime: hhmm(Math.max(0, spMinutes() - 10)),
+      durationMinutes: 60,
+    },
   ];
 
   async function createClass(
@@ -86,7 +92,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     return t.http().post('/v1/aluno/checkins').set(bearer(aluno)).send(body);
   }
 
-  async function activeAttendanceCount(sessionId: string, studentId?: string): Promise<number> {
+  async function activeAttendanceCount(
+    sessionId: string,
+    studentId?: string,
+  ): Promise<number> {
     const rows = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select({ total: count() })
@@ -110,13 +119,21 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     alphaId = await t.academyIdBySlug('alpha-jj');
     bravoId = await t.academyIdBySlug('bravo-bjj');
 
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
 
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    anaStudentId = students.body.students.find((s: any) => s.fullName === 'Ana Aluna').id;
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    anaStudentId = students.body.students.find(
+      (s: any) => s.fullName === 'Ana Aluna',
+    ).id;
   });
 
   afterAll(async () => {
@@ -128,7 +145,7 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
   let chamadaClassId: string;
   let liveCode: any;
 
-  it('opening chamada materializes today\'s session and mints a 4-digit code + QR token', async () => {
+  it("opening chamada materializes today's session and mints a 4-digit code + QR token", async () => {
     chamadaClassId = await createClass('E2E Chamada');
     await enroll(chamadaClassId, anaStudentId);
 
@@ -153,7 +170,9 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       tx
         .select({ id: classes.id })
         .from(classes)
-        .where(and(eq(classes.tenantId, bravoId), eq(classes.name, 'Adulto Gi'))),
+        .where(
+          and(eq(classes.tenantId, bravoId), eq(classes.name, 'Adulto Gi')),
+        ),
     );
     const res = await t
       .http()
@@ -179,7 +198,9 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     const first = await checkin({ method: 'code', code: liveCode.code });
     expect(first.status).toBe(200);
     expect(first.body.status).toBe('already_checked_in');
-    expect(await activeAttendanceCount(liveCode.session.id, anaStudentId)).toBe(1);
+    expect(await activeAttendanceCount(liveCode.session.id, anaStudentId)).toBe(
+      1,
+    );
   });
 
   it('wrong code and foreign-academy code behave as nonexistent', async () => {
@@ -190,7 +211,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
 
     // A live code in Bravo — invisible from Alpha even with the exact digits.
     const [multiUser] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, 'multi@tatame.dev')),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, 'multi@tatame.dev')),
     );
     const [bravoClass] = await withPlatform(t.platformDb.db, (tx) =>
       tx
@@ -201,9 +225,17 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     await withTenant(t.appDb.db, bravoId, async (tx) => {
       const [session] = await tx
         .insert(classSessions)
-        .values({ tenantId: bravoId, classId: bravoClass!.id, sessionDate: spDate() })
+        .values({
+          tenantId: bravoId,
+          classId: bravoClass!.id,
+          sessionDate: spDate(),
+        })
         .onConflictDoNothing({
-          target: [classSessions.tenantId, classSessions.classId, classSessions.sessionDate],
+          target: [
+            classSessions.tenantId,
+            classSessions.classId,
+            classSessions.sessionDate,
+          ],
         })
         .returning({ id: classSessions.id });
       const sessionId =
@@ -213,7 +245,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
             .select({ id: classSessions.id })
             .from(classSessions)
             .where(
-              and(eq(classSessions.classId, bravoClass!.id), eq(classSessions.sessionDate, spDate())),
+              and(
+                eq(classSessions.classId, bravoClass!.id),
+                eq(classSessions.sessionDate, spDate()),
+              ),
             )
         )[0]!.id;
       await tx.insert(checkinCodes).values({
@@ -229,7 +264,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     const foreignCode = await checkin({ method: 'code', code: '7777' });
     expect(foreignCode.status).toBe(404);
     expect(foreignCode.body.code).toBe('checkin.code_invalid');
-    const foreignQr = await checkin({ method: 'qr', qrToken: 'bravo-e2e-qr-token' });
+    const foreignQr = await checkin({
+      method: 'qr',
+      qrToken: 'bravo-e2e-qr-token',
+    });
     expect(foreignQr.status).toBe(404);
     expect(foreignQr.body.code).toBe('checkin.code_invalid');
   });
@@ -242,7 +280,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     expect(viaCode.status).toBe(403);
     expect(viaCode.body.code).toBe('checkin.not_enrolled');
 
-    const viaManual = await checkin({ method: 'manual', classId: otherClassId });
+    const viaManual = await checkin({
+      method: 'manual',
+      classId: otherClassId,
+    });
     expect(viaManual.status).toBe(403);
     expect(viaManual.body.code).toBe('checkin.not_enrolled');
   });
@@ -257,15 +298,25 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       },
     ];
     const outsideClassId = await createClass('E2E Fora', farSlot);
-    const outside = await checkin({ method: 'manual', classId: outsideClassId });
+    const outside = await checkin({
+      method: 'manual',
+      classId: outsideClassId,
+    });
     expect(outside.status).toBe(422);
     expect(outside.body.code).toBe('checkin.outside_window');
 
     const otherDay = [
-      { weekday: (spWeekday() + 3) % 7, startTime: '10:00', durationMinutes: 60 },
+      {
+        weekday: (spWeekday() + 3) % 7,
+        startTime: '10:00',
+        durationMinutes: 60,
+      },
     ];
     const noTodayClassId = await createClass('E2E SemHoje', otherDay);
-    const noSession = await checkin({ method: 'manual', classId: noTodayClassId });
+    const noSession = await checkin({
+      method: 'manual',
+      classId: noTodayClassId,
+    });
     expect(noSession.status).toBe(422);
     expect(noSession.body.code).toBe('checkin.no_session_today');
   });
@@ -276,7 +327,9 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       .http()
       .post(`/v1/professor/classes/${chamadaClassId}/roll-call`)
       .set(bearer(professor));
-    const anaRow = rollCall.body.roster.find((r: any) => r.studentId === anaStudentId);
+    const anaRow = rollCall.body.roster.find(
+      (r: any) => r.studentId === anaStudentId,
+    );
     const revoke = await t
       .http()
       .post(`/v1/admin/attendances/${anaRow.attendance.id}/revoke`)
@@ -284,7 +337,9 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       .send({ reason: 'e2e: reset for race test' });
     expect(revoke.status).toBe(200);
     expect(revoke.body.status).toBe('revoked');
-    expect(await activeAttendanceCount(liveCode.session.id, anaStudentId)).toBe(0);
+    expect(await activeAttendanceCount(liveCode.session.id, anaStudentId)).toBe(
+      0,
+    );
 
     // The sanctioned correction pattern: the partial unique admits a new row.
     const [a, b] = await Promise.all([
@@ -293,15 +348,23 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
     ]);
     expect(a.status).toBe(200);
     expect(b.status).toBe(200);
-    expect([a.body.status, b.body.status].sort()).toEqual(['already_checked_in', 'checked_in']);
-    expect(await activeAttendanceCount(liveCode.session.id, anaStudentId)).toBe(1);
+    expect([a.body.status, b.body.status].sort()).toEqual([
+      'already_checked_in',
+      'checked_in',
+    ]);
+    expect(await activeAttendanceCount(liveCode.session.id, anaStudentId)).toBe(
+      1,
+    );
   });
 
   it('session materialization is idempotent under concurrent open-chamada + manual check-in', async () => {
     const raceClassId = await createClass('E2E Corrida');
     await enroll(raceClassId, anaStudentId);
     const [opened, manual] = await Promise.all([
-      t.http().post(`/v1/professor/classes/${raceClassId}/live-codes`).set(bearer(professor)),
+      t
+        .http()
+        .post(`/v1/professor/classes/${raceClassId}/live-codes`)
+        .set(bearer(professor)),
       checkin({ method: 'manual', classId: raceClassId }),
     ]);
     expect(opened.status).toBe(201);
@@ -313,7 +376,12 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       tx
         .select({ total: count() })
         .from(classSessions)
-        .where(and(eq(classSessions.classId, raceClassId), eq(classSessions.sessionDate, spDate()))),
+        .where(
+          and(
+            eq(classSessions.classId, raceClassId),
+            eq(classSessions.sessionDate, spDate()),
+          ),
+        ),
     );
     expect(Number(rows[0]?.total)).toBe(1);
   });
@@ -410,10 +478,14 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       .post(`/v1/professor/classes/${chamadaClassId}/roll-call`)
       .set(bearer(professor));
     expect(rollCall.status).toBe(200);
-    const ana = rollCall.body.roster.find((r: any) => r.studentId === anaStudentId);
+    const ana = rollCall.body.roster.find(
+      (r: any) => r.studentId === anaStudentId,
+    );
     expect(ana.attendance).not.toBeNull(); // QR self check-in appears toggled on
     expect(ana.attendance.recordedByUserId).toBeNull();
-    const marcos = rollCall.body.roster.find((r: any) => r.studentId === manualStudentId);
+    const marcos = rollCall.body.roster.find(
+      (r: any) => r.studentId === manualStudentId,
+    );
     expect(marcos.attendance).toBeNull();
     expect(rollCall.body.presentCount).toBe(1);
 
@@ -468,7 +540,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
         .select()
         .from(auditLogs)
         .where(
-          and(eq(auditLogs.action, 'attendance.revoked'), eq(auditLogs.targetId, manualAttendanceId)),
+          and(
+            eq(auditLogs.action, 'attendance.revoked'),
+            eq(auditLogs.targetId, manualAttendanceId),
+          ),
         ),
     );
     expect(audits).toHaveLength(1);
@@ -498,12 +573,16 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
   let pastAttendanceId: string;
   let pastSessionId: string;
 
-  it('professor cannot revoke after the session\'s day; the admin can, audited as admin_late', async () => {
+  it("professor cannot revoke after the session's day; the admin can, audited as admin_late", async () => {
     const yesterday = spDate(new Date(Date.now() - 86_400_000));
     await withTenant(t.appDb.db, alphaId, async (tx) => {
       const [session] = await tx
         .insert(classSessions)
-        .values({ tenantId: alphaId, classId: chamadaClassId, sessionDate: yesterday })
+        .values({
+          tenantId: alphaId,
+          classId: chamadaClassId,
+          sessionDate: yesterday,
+        })
         .returning({ id: classSessions.id });
       pastSessionId = session!.id;
       const [attendance] = await tx
@@ -541,7 +620,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
         .select()
         .from(auditLogs)
         .where(
-          and(eq(auditLogs.action, 'attendance.revoked'), eq(auditLogs.targetId, pastAttendanceId)),
+          and(
+            eq(auditLogs.action, 'attendance.revoked'),
+            eq(auditLogs.targetId, pastAttendanceId),
+          ),
         ),
     );
     expect(audits).toHaveLength(1);
@@ -553,7 +635,9 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       tx
         .select({ id: attendances.id })
         .from(attendances)
-        .where(and(eq(attendances.tenantId, bravoId), isNull(attendances.revokedAt)))
+        .where(
+          and(eq(attendances.tenantId, bravoId), isNull(attendances.revokedAt)),
+        )
         .limit(1),
     );
     expect(bravoAttendance).toBeTruthy();
@@ -604,8 +688,12 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       .get(`/v1/admin/classes/${chamadaClassId}/sessions`)
       .set(bearer(admin));
     expect(res.status).toBe(200);
-    const today = res.body.sessions.find((s: any) => s.id === liveCode.session.id);
-    expect(today.presentCount).toBe(await activeAttendanceCount(liveCode.session.id));
+    const today = res.body.sessions.find(
+      (s: any) => s.id === liveCode.session.id,
+    );
+    expect(today.presentCount).toBe(
+      await activeAttendanceCount(liveCode.session.id),
+    );
     const past = res.body.sessions.find((s: any) => s.id === pastSessionId);
     expect(past.presentCount).toBe(0); // its only attendance was revoked
     const dates = res.body.sessions.map((s: any) => s.sessionDate);
@@ -619,7 +707,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
   });
 
   it('GET /professor/students filters students not enrolled in an owned class', async () => {
-    const all = await t.http().get('/v1/professor/students').set(bearer(professor));
+    const all = await t
+      .http()
+      .get('/v1/professor/students')
+      .set(bearer(professor));
     expect(all.status).toBe(200);
     const allIds = all.body.students.map((s: any) => s.id);
     expect(allIds).toContain(anaStudentId);
@@ -662,7 +753,10 @@ describe('attendance: chamada lifecycle, check-in, roll call, revoke windows (AT
       [admin, 'post', '/v1/aluno/checkins'],
     ];
     for (const [token, method, path] of cases) {
-      const res = await (t.http() as any)[method](path).set(bearer(token)).send({});
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(token))
+        .send({});
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code, `${method} ${path}`).toBe('authz.forbidden_role');
     }

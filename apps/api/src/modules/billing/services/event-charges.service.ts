@@ -62,13 +62,25 @@ export class EventChargesService {
         status: 'open',
       })
       .returning();
-    if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Event charge insert returned no row');
+    if (!inserted)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Event charge insert returned no row',
+      );
 
-    await this.audit(tx, input.tenantId, actor, 'billing.charge.created', inserted.id, {
-      origin: 'event',
-      event_registration_id: input.eventRegistrationId,
-      amount_cents: input.amountCents,
-    });
+    await this.audit(
+      tx,
+      input.tenantId,
+      actor,
+      'billing.charge.created',
+      inserted.id,
+      {
+        origin: 'event',
+        event_registration_id: input.eventRegistrationId,
+        amount_cents: input.amountCents,
+      },
+    );
     return inserted;
   }
 
@@ -87,7 +99,11 @@ export class EventChargesService {
     if (eventRegistrationIds.length === 0) return [];
     const canceled = await tx
       .update(charges)
-      .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(charges.origin, 'event'),

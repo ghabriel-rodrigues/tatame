@@ -1,9 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MensalidadeAlertDto } from '../../billing/dto/responses.dto.js';
 import { ScheduleSlotViewDto } from '../../enrollment/dto/responses.dto.js';
-import { AlunoEventItemDto, ProfessorUpcomingEventDto } from '../../events/dto/responses.dto.js';
+import {
+  AlunoEventItemDto,
+  ProfessorUpcomingEventDto,
+} from '../../events/dto/responses.dto.js';
 import { ProductCardDto } from '../../store/dto/responses.dto.js';
-import { BeltViewDto, GraduationProgressDto } from '../../graduation/dto/belt.dto.js';
+import {
+  BeltViewDto,
+  GraduationProgressDto,
+} from '../../graduation/dto/belt.dto.js';
 
 /**
  * Response DTOs — OpenAPI documentation classes only (web-03 pipeline).
@@ -18,17 +24,22 @@ export class AlunoStatsDto {
   @ApiProperty()
   monthAttendedSessions!: number;
 
-  @ApiProperty({ description: 'Materialized sessions of enrolled classes, month-to-date' })
+  @ApiProperty({
+    description: 'Materialized sessions of enrolled classes, month-to-date',
+  })
   monthTotalSessions!: number;
 
   @ApiProperty({
     nullable: true,
     type: Number,
-    description: 'Aulas seguidas — null when the academy disabled gamification.streak',
+    description:
+      'Aulas seguidas — null when the academy disabled gamification.streak',
   })
   streak!: number | null;
 
-  @ApiProperty({ description: 'Lifetime active attendances (graduation progress numerator)' })
+  @ApiProperty({
+    description: 'Lifetime active attendances (graduation progress numerator)',
+  })
   totalLessons!: number;
 }
 
@@ -63,7 +74,8 @@ export class CheckinSessionRefDto {
 export class CheckinResponseDto {
   @ApiProperty({
     enum: ['checked_in', 'already_checked_in'],
-    description: 'Stable duplicate state — clients render "Presença registrada", never an error',
+    description:
+      'Stable duplicate state — clients render "Presença registrada", never an error',
   })
   status!: 'checked_in' | 'already_checked_in';
 
@@ -73,7 +85,10 @@ export class CheckinResponseDto {
   @ApiProperty({ type: CheckinSessionRefDto })
   session!: CheckinSessionRefDto;
 
-  @ApiProperty({ type: AlunoStatsDto, description: 'Fresh stats — one round trip updates the pop and the tiles' })
+  @ApiProperty({
+    type: AlunoStatsDto,
+    description: 'Fresh stats — one round trip updates the pop and the tiles',
+  })
   stats!: AlunoStatsDto;
 }
 
@@ -174,10 +189,15 @@ export class LiveCodeResponseDto {
   @ApiProperty({ example: '4821', description: 'The 4-digit human code' })
   code!: string;
 
-  @ApiProperty({ description: 'Opaque token the QR encodes — never the digits' })
+  @ApiProperty({
+    description: 'Opaque token the QR encodes — never the digits',
+  })
   qrToken!: string;
 
-  @ApiProperty({ format: 'date-time', description: 'Slot end + 15 min grace (fallback: +60 min)' })
+  @ApiProperty({
+    format: 'date-time',
+    description: 'Slot end + 15 min grace (fallback: +60 min)',
+  })
   expiresAt!: Date;
 
   @ApiProperty({ format: 'date-time', nullable: true, type: String })
@@ -225,12 +245,18 @@ export class LiveSnapshotResponseDto {
   @ApiProperty({ type: SnapshotCodeDto })
   code!: SnapshotCodeDto;
 
-  @ApiProperty({ type: [SnapshotAttendanceDto], description: 'Active rows only, oldest first' })
+  @ApiProperty({
+    type: [SnapshotAttendanceDto],
+    description: 'Active rows only, oldest first',
+  })
   attendances!: SnapshotAttendanceDto[];
 }
 
 export class StreamTicketResponseDto {
-  @ApiProperty({ description: 'HMAC-signed single-purpose ticket — pass as ?ticket= on the stream route only' })
+  @ApiProperty({
+    description:
+      'HMAC-signed single-purpose ticket — pass as ?ticket= on the stream route only',
+  })
   ticket!: string;
 
   @ApiProperty({ example: 60 })
@@ -297,7 +323,10 @@ export class RosterRowDto {
   @ApiProperty()
   fullName!: string;
 
-  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  @ApiPropertyOptional({
+    type: BeltViewDto,
+    description: 'Derived current belt (GRD.6)',
+  })
   belt?: BeltViewDto;
 
   @ApiPropertyOptional({ type: RosterAttendanceDto, nullable: true })
@@ -311,7 +340,10 @@ export class RollCallResponseDto {
   @ApiProperty({ description: '"N presentes de M" numerator' })
   presentCount!: number;
 
-  @ApiProperty({ type: [RosterRowDto], description: 'Self check-ins appear pre-toggled' })
+  @ApiProperty({
+    type: [RosterRowDto],
+    description: 'Self check-ins appear pre-toggled',
+  })
   roster!: RosterRowDto[];
 }
 
@@ -341,7 +373,10 @@ export class MarkAttendanceResponseDto {
 }
 
 export class RevokeAttendanceResponseDto {
-  @ApiProperty({ enum: ['revoked', 'already_revoked'], description: 'A second toggle-off is benign' })
+  @ApiProperty({
+    enum: ['revoked', 'already_revoked'],
+    description: 'A second toggle-off is benign',
+  })
   status!: 'revoked' | 'already_revoked';
 
   @ApiProperty({ format: 'uuid' })
@@ -361,7 +396,9 @@ export class ProfessorNextClassDto {
   @ApiProperty({ type: ScheduleSlotViewDto })
   slot!: ScheduleSlotViewDto;
 
-  @ApiProperty({ description: "Today's session check-in count when one exists, else 0" })
+  @ApiProperty({
+    description: "Today's session check-in count when one exists, else 0",
+  })
   checkedInCount!: number;
 }
 
@@ -371,7 +408,10 @@ export class ProfessorTodayClassDto extends ProfessorNextClassDto {
 }
 
 export class ProfessorDashboardResponseDto {
-  @ApiProperty({ description: "Distinct students with an active check-in today across own classes" })
+  @ApiProperty({
+    description:
+      'Distinct students with an active check-in today across own classes',
+  })
   alunosHoje!: number;
 
   @ApiProperty({ minimum: 0, maximum: 100 })
@@ -388,7 +428,8 @@ export class ProfessorDashboardResponseDto {
 
   @ApiProperty({
     type: [ProfessorUpcomingEventDto],
-    description: '"Eventos futuros" list — read-only academy-wide data (spec 008)',
+    description:
+      '"Eventos futuros" list — read-only academy-wide data (spec 008)',
   })
   upcomingEvents!: ProfessorUpcomingEventDto[];
 }
@@ -406,7 +447,10 @@ export class ProfessorStudentDto {
   @ApiProperty({ enum: ['ativo', 'pendente'] })
   badge!: 'ativo' | 'pendente';
 
-  @ApiPropertyOptional({ type: BeltViewDto, description: 'Derived current belt (GRD.6)' })
+  @ApiPropertyOptional({
+    type: BeltViewDto,
+    description: 'Derived current belt (GRD.6)',
+  })
   belt?: BeltViewDto;
 }
 

@@ -36,8 +36,12 @@ describe('Visão geral (PLT.10)', () => {
     server.use(...platformConsoleHandlers());
     renderPlatform('/plataforma');
 
-    expect(await screen.findByRole('heading', { name: 'Visão geral' })).toBeInTheDocument();
-    expect(await screen.findByText(formatBRLWhole(1_924_000))).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Visão geral' }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText(formatBRLWhole(1_924_000)),
+    ).toBeInTheDocument();
     expect(screen.getByText('+12% vs. julho')).toBeInTheDocument();
 
     expect(screen.getByText('97')).toBeInTheDocument();
@@ -59,7 +63,9 @@ describe('Visão geral (PLT.10)', () => {
 
     expect(await screen.findByText('Precisam de atenção')).toBeInTheDocument();
     expect(screen.getByText('Trial termina em 9 dias')).toBeInTheDocument();
-    expect(screen.getByText('Assinatura vencida há 12 dias')).toBeInTheDocument();
+    expect(
+      screen.getByText('Assinatura vencida há 12 dias'),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Bravo BJJ Team/ }));
     expect(router.state.location.pathname).toBe(
@@ -71,7 +77,9 @@ describe('Visão geral (PLT.10)', () => {
     server.use(...platformConsoleHandlers());
     const { router } = renderPlatform('/plataforma', 'support');
 
-    expect(await screen.findByRole('heading', { name: 'Academias' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Academias' }),
+    ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/plataforma/academias');
   });
 
@@ -100,7 +108,9 @@ describe('Academias (PLT.11)', () => {
     server.use(...platformConsoleHandlers());
     renderPlatform('/plataforma/academias');
 
-    expect(await screen.findByRole('heading', { name: 'Academias' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Academias' }),
+    ).toBeInTheDocument();
     expect(
       await screen.findByText('4 escolas, academias e equipes na plataforma.'),
     ).toBeInTheDocument();
@@ -121,7 +131,10 @@ describe('Academias (PLT.11)', () => {
       http.post('/v1/platform/academies', async ({ request, response }) => {
         body = (await request.json()) as Record<string, unknown>;
         return response(201).json({
-          academy: makePlatformAcademyDetail({ name: 'Horizonte BJJ', status: 'trial' }),
+          academy: makePlatformAcademyDetail({
+            name: 'Horizonte BJJ',
+            status: 'trial',
+          }),
           adminUserId: '018f0000-0000-7000-8000-0000000ad001',
           adminUserCreated: true,
           passwordEmailSent: true,
@@ -131,16 +144,26 @@ describe('Academias (PLT.11)', () => {
     const user = userEvent.setup();
     renderPlatform('/plataforma/academias');
 
-    await user.click(await screen.findByRole('button', { name: 'Registrar academia' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Registrar academia' }),
+    );
     const sheet = await screen.findByRole('dialog');
-    await user.type(within(sheet).getByLabelText(/Nome da academia/), 'Horizonte BJJ');
-    await user.type(within(sheet).getByLabelText(/Cidade \/ UF/), 'São Paulo / SP');
+    await user.type(
+      within(sheet).getByLabelText(/Nome da academia/),
+      'Horizonte BJJ',
+    );
+    await user.type(
+      within(sheet).getByLabelText(/Cidade \/ UF/),
+      'São Paulo / SP',
+    );
     await user.type(
       within(sheet).getByLabelText(/Email do administrador/),
       'admin@horizontebjj.com.br',
     );
     await user.click(within(sheet).getByRole('button', { name: /^Pro/ }));
-    await user.click(within(sheet).getByRole('button', { name: 'Registrar e convidar admin' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Registrar e convidar admin' }),
+    );
 
     expect(await screen.findByText('Academia registrada')).toBeInTheDocument();
     expect(
@@ -160,7 +183,9 @@ describe('Academias (PLT.11)', () => {
     renderPlatform('/plataforma/academias', 'finance');
 
     await screen.findByRole('heading', { name: 'Academias' });
-    expect(screen.queryByRole('button', { name: 'Registrar academia' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Registrar academia' }),
+    ).toBeNull();
   });
 });
 
@@ -169,29 +194,44 @@ describe('Academia detalhe (PLT.12)', () => {
     server.use(...platformConsoleHandlers());
     renderPlatform(`/plataforma/academias/${ALPHA.id}`);
 
-    expect(await screen.findByRole('heading', { name: 'Alpha Jiu-Jitsu' })).toBeInTheDocument();
-    expect(screen.getByText('São Paulo / SP · desde fev 2024')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Alpha Jiu-Jitsu' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('São Paulo / SP · desde fev 2024'),
+    ).toBeInTheDocument();
     expect(screen.getByText('214')).toBeInTheDocument();
     expect(screen.getByText('alunos')).toBeInTheDocument();
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(screen.getByText('professores')).toBeInTheDocument();
-    expect(screen.getByText('A mudança vale a partir do próximo ciclo.')).toBeInTheDocument();
+    expect(
+      screen.getByText('A mudança vale a partir do próximo ciclo.'),
+    ).toBeInTheDocument();
   });
 
   it('schedules a plan change and shows the pending banner', async () => {
     const black = makePlatformPlanCatalog().plans[2]!;
     let body: Record<string, unknown> | null = null;
     const pending = makePlatformAcademyDetail({
-      pendingPlan: { id: black.id, name: black.name, priceCents: black.priceCents },
+      pendingPlan: {
+        id: black.id,
+        name: black.name,
+        priceCents: black.priceCents,
+      },
     });
     server.use(...platformConsoleHandlers());
     server.use(
-      http.put('/v1/platform/academies/{id}/plan', async ({ request, response }) => {
-        body = (await request.json()) as Record<string, unknown>;
-        return response(200).json(pending);
-      }),
+      http.put(
+        '/v1/platform/academies/{id}/plan',
+        async ({ request, response }) => {
+          body = (await request.json()) as Record<string, unknown>;
+          return response(200).json(pending);
+        },
+      ),
       // The screen refetches after the write — the detail must agree.
-      http.get('/v1/platform/academies/{id}', ({ response }) => response(200).json(pending)),
+      http.get('/v1/platform/academies/{id}', ({ response }) =>
+        response(200).json(pending),
+      ),
     );
     const user = userEvent.setup();
     renderPlatform(`/plataforma/academias/${ALPHA.id}`);
@@ -211,7 +251,9 @@ describe('Academia detalhe (PLT.12)', () => {
     server.use(
       http.post('/v1/platform/academies/{id}/suspend', ({ response }) => {
         suspended = true;
-        return response(200).json(makePlatformAcademyDetail({ status: 'suspended' }));
+        return response(200).json(
+          makePlatformAcademyDetail({ status: 'suspended' }),
+        );
       }),
       http.get('/v1/platform/academies/{id}', ({ response }) =>
         response(200).json(
@@ -222,8 +264,12 @@ describe('Academia detalhe (PLT.12)', () => {
     const user = userEvent.setup();
     renderPlatform(`/plataforma/academias/${ALPHA.id}`);
 
-    await user.click(await screen.findByRole('button', { name: 'Suspender academia' }));
-    expect(await screen.findByRole('button', { name: 'Reativar academia' })).toBeInTheDocument();
+    await user.click(
+      await screen.findByRole('button', { name: 'Suspender academia' }),
+    );
+    expect(
+      await screen.findByRole('button', { name: 'Reativar academia' }),
+    ).toBeInTheDocument();
   });
 
   it('hides "Entrar como admin" from finance, which the API refuses anyway', async () => {
@@ -231,8 +277,12 @@ describe('Academia detalhe (PLT.12)', () => {
     renderPlatform(`/plataforma/academias/${ALPHA.id}`, 'finance');
 
     await screen.findByRole('heading', { name: 'Alpha Jiu-Jitsu' });
-    expect(screen.queryByRole('button', { name: 'Entrar como admin da academia' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Suspender academia' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Entrar como admin da academia' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Suspender academia' }),
+    ).toBeNull();
   });
 });
 
@@ -241,13 +291,19 @@ describe('Planos (PLT.13)', () => {
     server.use(...platformConsoleHandlers());
     renderPlatform('/plataforma/planos');
 
-    expect(await screen.findByRole('heading', { name: 'Planos' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Planos' }),
+    ).toBeInTheDocument();
     expect(await screen.findByText('Mais assinado')).toBeInTheDocument();
     expect(screen.getByText('Tudo do Essencial')).toBeInTheDocument();
     expect(screen.getByText('Tudo do Pro')).toBeInTheDocument();
 
-    expect(screen.getByText('Até 80 alunos · 31 academias')).toBeInTheDocument();
-    expect(screen.getByText('Alunos ilimitados · 14 academias')).toBeInTheDocument();
+    expect(
+      screen.getByText('Até 80 alunos · 31 academias'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Alunos ilimitados · 14 academias'),
+    ).toBeInTheDocument();
     // The cheapest plan inherits nothing, so it shows its own chips.
     expect(screen.getByText('Presença e turmas')).toBeInTheDocument();
   });
@@ -270,7 +326,9 @@ describe('Planos (PLT.13)', () => {
     await user.type(within(sheet).getByLabelText(/Preço mensal/), '499,00');
     await user.click(within(sheet).getByRole('button', { name: 'Ilimitado' }));
     await user.click(within(sheet).getByLabelText('Loja da academia'));
-    await user.click(within(sheet).getByRole('button', { name: 'Criar plano' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar plano' }),
+    );
 
     expect(body).toEqual({
       name: 'Master',
@@ -280,7 +338,9 @@ describe('Planos (PLT.13)', () => {
     });
     expect(await screen.findByText('Plano criado')).toBeInTheDocument();
     expect(
-      screen.getByText('O plano já aparece para novas assinaturas de academias.'),
+      screen.getByText(
+        'O plano já aparece para novas assinaturas de academias.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -291,7 +351,9 @@ describe('Planos (PLT.13)', () => {
 
     await screen.findByText('Mais assinado');
     // Pro's card shows 4 added chips; its stored set also holds Essencial's 3.
-    await user.click(screen.getAllByRole('button', { name: 'Editar plano' })[1]!);
+    await user.click(
+      screen.getAllByRole('button', { name: 'Editar plano' })[1]!,
+    );
     const sheet = await screen.findByRole('dialog');
     expect(within(sheet).getByLabelText('Presença e turmas')).toBeChecked();
     expect(within(sheet).getByLabelText('Loja da academia')).toBeChecked();
@@ -316,7 +378,9 @@ describe('Conta, Equipe e Integrações (PLT.14)', () => {
     server.use(...platformConsoleHandlers());
     renderPlatform('/plataforma/conta');
 
-    expect(await screen.findByRole('heading', { name: 'Conta' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Conta' }),
+    ).toBeInTheDocument();
     const main = within(screen.getByRole('main'));
     expect(main.getByText('Equipe da plataforma')).toBeInTheDocument();
     expect(main.getByText('Faturamento e repasses')).toBeInTheDocument();
@@ -334,7 +398,9 @@ describe('Conta, Equipe e Integrações (PLT.14)', () => {
     expect(await screen.findByText('marcos@tatame.app')).toBeInTheDocument();
     // The shell header carries its own role pill, and the footer explains
     // each role by name — assert on the roster chips specifically.
-    const roster = within(screen.getByText('marcos@tatame.app').closest('div')!.parentElement!);
+    const roster = within(
+      screen.getByText('marcos@tatame.app').closest('div')!.parentElement!,
+    );
     expect(roster.getByText('Owner')).toBeInTheDocument();
     const main = within(screen.getByRole('main'));
     expect(main.getAllByText('Suporte').length).toBeGreaterThanOrEqual(2);
@@ -370,7 +436,9 @@ describe('Conta, Equipe e Integrações (PLT.14)', () => {
     await user.type(within(sheet).getByLabelText(/Nome/), 'Nova Pessoa');
     await user.type(within(sheet).getByLabelText(/Email/), 'nova@tatame.app');
     await user.click(within(sheet).getByRole('button', { name: 'Financeiro' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Enviar convite' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Enviar convite' }),
+    );
 
     expect(body).toEqual({
       fullName: 'Nova Pessoa',
@@ -378,7 +446,9 @@ describe('Conta, Equipe e Integrações (PLT.14)', () => {
       role: 'finance',
     });
     expect(
-      await screen.findByText('Convite enviado por email com papel Financeiro.'),
+      await screen.findByText(
+        'Convite enviado por email com papel Financeiro.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -394,10 +464,18 @@ describe('Conta, Equipe e Integrações (PLT.14)', () => {
     server.use(...platformConsoleHandlers());
     renderPlatform('/plataforma/integracoes');
 
-    expect(await screen.findByRole('heading', { name: 'Integrações' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Integrações' }),
+    ).toBeInTheDocument();
     expect(await screen.findByText('Pix · PSP TatamePay')).toBeInTheDocument();
-    expect(screen.getByText('Liquidação instantânea · taxa 0,9%')).toBeInTheDocument();
-    for (const name of ['Pix · PSP TatamePay', 'Boleto · registradora', 'Cartão · adquirente']) {
+    expect(
+      screen.getByText('Liquidação instantânea · taxa 0,9%'),
+    ).toBeInTheDocument();
+    for (const name of [
+      'Pix · PSP TatamePay',
+      'Boleto · registradora',
+      'Cartão · adquirente',
+    ]) {
       expect(screen.getByLabelText(name)).toBeDisabled();
     }
   });

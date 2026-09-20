@@ -1,4 +1,9 @@
-import { Inject, Injectable, Module, type OnApplicationShutdown } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Module,
+  type OnApplicationShutdown,
+} from '@nestjs/common';
 import { createAppDb, createPlatformDb, type DbHandle } from '@tatame/db';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 
@@ -44,7 +49,8 @@ class DbLifecycle implements OnApplicationShutdown {
     {
       provide: PLATFORM_DB,
       inject: [APP_CONFIG],
-      useFactory: (config: AppConfig): DbHandle => createPlatformDb(config.databaseUrl, { max: 5 }),
+      useFactory: (config: AppConfig): DbHandle =>
+        createPlatformDb(config.databaseUrl, { max: 5 }),
     },
     DbLifecycle,
   ],

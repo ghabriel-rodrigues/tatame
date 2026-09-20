@@ -9,7 +9,12 @@ import {
   type DbTransaction,
 } from '@tatame/db';
 import { ErrorCodes, problem } from '../../../common/problem.js';
-import type { BeltRef, BeltView, CatalogBelt, GraduationEntry } from '../graduation.types.js';
+import type {
+  BeltRef,
+  BeltView,
+  CatalogBelt,
+  GraduationEntry,
+} from '../graduation.types.js';
 
 /** v1 ships jiu-jitsu only; other arts are future catalog rows (charter). */
 const MARTIAL_ART_KEY = 'bjj';
@@ -62,9 +67,15 @@ export class GraduationQueryService {
   /** The presentation default: Branca (adult ladder, position 1), 0 degrees. */
   async defaultBelt(tx: DbTransaction): Promise<CatalogBelt> {
     const catalog = await this.mergedCatalog(tx);
-    const branca = catalog.find((b) => b.ladderKind === 'adult' && b.position === 1);
+    const branca = catalog.find(
+      (b) => b.ladderKind === 'adult' && b.position === 1,
+    );
     if (!branca) {
-      throw problem(500, ErrorCodes.INTERNAL, 'Belt catalog not seeded (no adult position-1 belt)');
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Belt catalog not seeded (no adult position-1 belt)',
+      );
     }
     return branca;
   }
@@ -74,10 +85,16 @@ export class GraduationQueryService {
    * dependents): one graduations query + the catalog, resolved in memory —
    * every requested student gets an entry (white default when historyless).
    */
-  async currentBeltMap(tx: DbTransaction, studentIds: string[]): Promise<Map<string, BeltView>> {
+  async currentBeltMap(
+    tx: DbTransaction,
+    studentIds: string[],
+  ): Promise<Map<string, BeltView>> {
     const map = new Map<string, BeltView>();
     if (studentIds.length === 0) return map;
-    const [catalog, fallback] = [await this.catalogById(tx), await this.defaultBelt(tx)];
+    const [catalog, fallback] = [
+      await this.catalogById(tx),
+      await this.defaultBelt(tx),
+    ];
 
     const rows =
       studentIds.length === 0
@@ -95,11 +112,16 @@ export class GraduationQueryService {
             })
             .from(studentGraduations)
             .where(inArray(studentGraduations.studentId, studentIds))
-            .orderBy(asc(studentGraduations.awardedAt), asc(studentGraduations.createdAt));
+            .orderBy(
+              asc(studentGraduations.awardedAt),
+              asc(studentGraduations.createdAt),
+            );
 
     const latestByStudent = new Map<string, (typeof rows)[number]>();
     const reversed = new Set(
-      rows.filter((r) => r.reversesGraduationId != null).map((r) => r.reversesGraduationId),
+      rows
+        .filter((r) => r.reversesGraduationId != null)
+        .map((r) => r.reversesGraduationId),
     );
     for (const row of rows) {
       if (row.kind === 'revocation' || reversed.has(row.id)) continue;
@@ -126,7 +148,12 @@ export class GraduationQueryService {
   async currentBelt(tx: DbTransaction, studentId: string): Promise<BeltView> {
     const map = await this.currentBeltMap(tx, [studentId]);
     const belt = map.get(studentId);
-    if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Belt derivation returned no entry');
+    if (!belt)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Belt derivation returned no entry',
+      );
     return belt;
   }
 
@@ -151,11 +178,18 @@ export class GraduationQueryService {
       })
       .from(studentGraduations)
       .where(eq(studentGraduations.studentId, studentId))
-      .orderBy(asc(studentGraduations.awardedAt), asc(studentGraduations.createdAt));
+      .orderBy(
+        asc(studentGraduations.awardedAt),
+        asc(studentGraduations.createdAt),
+      );
     const reversed = new Set(
-      rows.filter((r) => r.reversesGraduationId != null).map((r) => r.reversesGraduationId),
+      rows
+        .filter((r) => r.reversesGraduationId != null)
+        .map((r) => r.reversesGraduationId),
     );
-    const awards = rows.filter((r) => r.kind !== 'revocation' && !reversed.has(r.id));
+    const awards = rows.filter(
+      (r) => r.kind !== 'revocation' && !reversed.has(r.id),
+    );
     const latest = awards[awards.length - 1];
     if (!latest) {
       const fallback = await this.defaultBelt(tx);
@@ -163,8 +197,16 @@ export class GraduationQueryService {
     }
     const catalog = await this.catalogById(tx);
     const belt = catalog.get(latest.beltId);
-    if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Awarded belt missing from catalog');
-    return { belt: { ...this.toRef(belt), degrees: latest.degree }, anchor: latest.awardedAt };
+    if (!belt)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Awarded belt missing from catalog',
+      );
+    return {
+      belt: { ...this.toRef(belt), degrees: latest.degree },
+      anchor: latest.awardedAt,
+    };
   }
 
   /**
@@ -176,7 +218,10 @@ export class GraduationQueryService {
    * reversed entries stay false. No certificate endpoint exists — the view
    * renders from timeline data plus the session's academy name and brand.
    */
-  async timeline(tx: DbTransaction, studentId: string): Promise<GraduationEntry[]> {
+  async timeline(
+    tx: DbTransaction,
+    studentId: string,
+  ): Promise<GraduationEntry[]> {
     const rows = await tx
       .select({
         id: studentGraduations.id,
@@ -192,14 +237,24 @@ export class GraduationQueryService {
       .from(studentGraduations)
       .innerJoin(users, eq(users.id, studentGraduations.awardedByUserId))
       .where(eq(studentGraduations.studentId, studentId))
-      .orderBy(desc(studentGraduations.awardedAt), desc(studentGraduations.createdAt));
+      .orderBy(
+        desc(studentGraduations.awardedAt),
+        desc(studentGraduations.createdAt),
+      );
     const catalog = await this.catalogById(tx);
     const reversed = new Set(
-      rows.filter((r) => r.reversesGraduationId != null).map((r) => r.reversesGraduationId),
+      rows
+        .filter((r) => r.reversesGraduationId != null)
+        .map((r) => r.reversesGraduationId),
     );
     return rows.map((row) => {
       const belt = catalog.get(row.beltId);
-      if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Awarded belt missing from catalog');
+      if (!belt)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Awarded belt missing from catalog',
+        );
       return {
         id: row.id,
         kind: row.kind,

@@ -128,13 +128,20 @@ export const products = pgTable(
     // negative — the recorded oversell behavior).
     check('products_low_stock_threshold_ck', sql`${t.lowStockThreshold} >= 0`),
     // The tile monogram is 1–3 letters, exactly like the prototypes.
-    check('products_monogram_ck', sql`char_length(${t.monogram}) BETWEEN 1 AND 3`),
+    check(
+      'products_monogram_ck',
+      sql`char_length(${t.monogram}) BETWEEN 1 AND 3`,
+    ),
     foreignKey({
       name: 'products_category_fk',
       columns: [t.tenantId, t.categoryId],
       foreignColumns: [productCategories.tenantId, productCategories.id],
     }),
-    pgPolicy('products_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('products_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -177,10 +184,18 @@ export const orders = pgTable(
     // The `#NNNN` number is per-tenant truth — max+1 races resolve here.
     unique('orders_tenant_number_uq').on(t.tenantId, t.number),
     // Admin pedidos board (paid/ready/delivered/canceled, newest first).
-    index('orders_tenant_status_created_at_idx').on(t.tenantId, t.status, t.createdAt),
+    index('orders_tenant_status_created_at_idx').on(
+      t.tenantId,
+      t.status,
+      t.createdAt,
+    ),
     // Meus pedidos — the buyer's own orders.
     index('orders_tenant_buyer_idx').on(t.tenantId, t.buyerUserId),
-    pgPolicy('orders_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('orders_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -225,6 +240,10 @@ export const orderItems = pgTable(
       columns: [t.tenantId, t.productId],
       foreignColumns: [products.tenantId, products.id],
     }),
-    pgPolicy('order_items_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('order_items_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );

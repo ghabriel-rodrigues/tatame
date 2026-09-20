@@ -52,24 +52,39 @@ interface PlanSheetProps {
 
 function PlanSheet({ open, onClose, onSuccess, plan }: PlanSheetProps) {
   const editing = plan !== undefined;
-  const presetDay = plan === undefined || (DUE_DAY_CHIPS as readonly number[]).includes(plan.dueDay);
+  const presetDay =
+    plan === undefined ||
+    (DUE_DAY_CHIPS as readonly number[]).includes(plan.dueDay);
   const [name, setName] = useState(plan?.name ?? '');
-  const [amountText, setAmountText] = useState(plan ? centsToInput(plan.amountCents) : '');
-  const [recurrence, setRecurrence] = useState<BillingRecurrence>(plan?.recurrence ?? 'monthly');
-  const [dueDay, setDueDay] = useState<number>(presetDay ? (plan?.dueDay ?? 5) : 0);
-  const [customDay, setCustomDay] = useState(presetDay ? '' : String(plan?.dueDay ?? ''));
+  const [amountText, setAmountText] = useState(
+    plan ? centsToInput(plan.amountCents) : '',
+  );
+  const [recurrence, setRecurrence] = useState<BillingRecurrence>(
+    plan?.recurrence ?? 'monthly',
+  );
+  const [dueDay, setDueDay] = useState<number>(
+    presetDay ? (plan?.dueDay ?? 5) : 0,
+  );
+  const [customDay, setCustomDay] = useState(
+    presetDay ? '' : String(plan?.dueDay ?? ''),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [confirmingArchive, setConfirmingArchive] = useState(false);
 
   const create = $api.useMutation('post', '/v1/admin/billing/plans');
   const update = $api.useMutation('patch', '/v1/admin/billing/plans/{id}');
-  const archive = $api.useMutation('post', '/v1/admin/billing/plans/{id}/archive');
+  const archive = $api.useMutation(
+    'post',
+    '/v1/admin/billing/plans/{id}/archive',
+  );
   const busy = create.isPending || update.isPending || archive.isPending;
   const customSelected = dueDay === 0;
 
   async function invalidatePlans() {
-    await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/billing/plans'] });
+    await queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/admin/billing/plans'],
+    });
   }
 
   function submit() {
@@ -77,7 +92,8 @@ function PlanSheet({ open, onClose, onSuccess, plan }: PlanSheetProps) {
     const amountCents = parseBRLInput(amountText);
     const resolvedDay = customSelected ? Number(customDay) : dueDay;
     if (name.trim().length < 2) next['name'] = 'Informe o nome do plano.';
-    if (amountCents === null) next['amount'] = 'Informe um valor válido, ex.: 180,00.';
+    if (amountCents === null)
+      next['amount'] = 'Informe um valor válido, ex.: 180,00.';
     if (
       customSelected &&
       (!/^\d+$/.test(customDay) || resolvedDay < 1 || resolvedDay > 28)
@@ -152,8 +168,14 @@ function PlanSheet({ open, onClose, onSuccess, plan }: PlanSheetProps) {
         />
 
         <Stack spacing="6px">
-          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Recorrência</FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>
+            Recorrência
+          </FormLabel>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {RECURRENCES.map((value) => (
               <Chip
                 key={value}
@@ -168,8 +190,14 @@ function PlanSheet({ open, onClose, onSuccess, plan }: PlanSheetProps) {
         </Stack>
 
         <Stack spacing="6px">
-          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Vencimento</FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>
+            Vencimento
+          </FormLabel>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {DUE_DAY_CHIPS.map((day) => (
               <Chip
                 key={day}
@@ -219,16 +247,21 @@ function PlanSheet({ open, onClose, onSuccess, plan }: PlanSheetProps) {
       </Stack>
 
       {editing ? (
-        <Dialog open={confirmingArchive} onClose={() => setConfirmingArchive(false)}>
+        <Dialog
+          open={confirmingArchive}
+          onClose={() => setConfirmingArchive(false)}
+        >
           <DialogTitle>Arquivar plano</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Novos alunos não poderão assinar este plano. As cobranças e o histórico
-              existentes são preservados.
+              Novos alunos não poderão assinar este plano. As cobranças e o
+              histórico existentes são preservados.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setConfirmingArchive(false)}>Cancelar</Button>
+            <Button onClick={() => setConfirmingArchive(false)}>
+              Cancelar
+            </Button>
             <Button color="error" onClick={confirmArchive}>
               Arquivar
             </Button>
@@ -258,12 +291,18 @@ export function PlansPage() {
           title="Planos de mensalidade"
           subtitle="O que seus alunos assinam nesta academia."
           trailing={
-            <TatameButton size="sm" label="Novo plano" onPress={() => setCreating(true)} />
+            <TatameButton
+              size="sm"
+              label="Novo plano"
+              onPress={() => setCreating(true)}
+            />
           }
         />
 
         {plansQuery.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando planos…
           </Typography>
         ) : null}
@@ -281,8 +320,15 @@ export function PlansPage() {
                 title={plan.name}
                 subtitle={planSubtitle(plan)}
                 trailing={
-                  <Stack direction="row" spacing="6px" sx={{ alignItems: 'center' }}>
-                    <Chip label={RECURRENCE_LABELS[plan.recurrence]} tone="brand" />
+                  <Stack
+                    direction="row"
+                    spacing="6px"
+                    sx={{ alignItems: 'center' }}
+                  >
+                    <Chip
+                      label={RECURRENCE_LABELS[plan.recurrence]}
+                      tone="brand"
+                    />
                     {!plan.isActive ? <Chip label="Arquivado" /> : null}
                   </Stack>
                 }
@@ -311,7 +357,11 @@ export function PlansPage() {
         />
       ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

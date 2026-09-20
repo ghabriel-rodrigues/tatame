@@ -46,7 +46,13 @@ const Description = styled('p')({
   maxWidth: 360,
 });
 
-export function EmptyState({ title, description, icon, action, className }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  description,
+  icon,
+  action,
+  className,
+}: EmptyStateProps) {
   const classes = ['EmptyState-root', className].filter(Boolean).join(' ');
   return (
     <Root className={classes}>
@@ -57,7 +63,9 @@ export function EmptyState({ title, description, icon, action, className }: Empt
       ) : null}
       <Title className="EmptyState-title">{title}</Title>
       {description ? (
-        <Description className="EmptyState-description">{description}</Description>
+        <Description className="EmptyState-description">
+          {description}
+        </Description>
       ) : null}
       {action ? <span className="EmptyState-action">{action}</span> : null}
     </Root>

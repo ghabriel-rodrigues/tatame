@@ -43,10 +43,28 @@ const BILLING_ACADEMY_PLANS: Array<{
   dueDay: number;
   isActive: boolean;
 }> = [
-  { name: 'Mensal', amountCents: 18_000, recurrence: 'monthly', dueDay: 5, isActive: true },
-  { name: 'Kids Mensal', amountCents: 15_000, recurrence: 'monthly', dueDay: 10, isActive: true },
+  {
+    name: 'Mensal',
+    amountCents: 18_000,
+    recurrence: 'monthly',
+    dueDay: 5,
+    isActive: true,
+  },
+  {
+    name: 'Kids Mensal',
+    amountCents: 15_000,
+    recurrence: 'monthly',
+    dueDay: 10,
+    isActive: true,
+  },
   // Archived plan — exercises the soft-archive path (never hard-delete).
-  { name: 'Trimestral', amountCents: 48_000, recurrence: 'quarterly', dueDay: 15, isActive: false },
+  {
+    name: 'Trimestral',
+    amountCents: 48_000,
+    recurrence: 'quarterly',
+    dueDay: 15,
+    isActive: false,
+  },
 ];
 
 /** The delinquent-academy fixture: subscription past_due ⇒ repasse Retido. */
@@ -96,14 +114,22 @@ function cycle(offset: number, dueDay: number) {
   const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
   const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
   const due = new Date(now.getFullYear(), now.getMonth() + offset, dueDay);
-  return { periodStart: isoDate(start), periodEnd: isoDate(end), dueDate: isoDate(due), due };
+  return {
+    periodStart: isoDate(start),
+    periodEnd: isoDate(end),
+    dueDate: isoDate(due),
+    due,
+  };
 }
 
 /**
  * Requires `seedDevFixtures` (students/guardians) and `seedPlatformPlans`
  * (fee_bps) to have run first.
  */
-export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHandles): Promise<void> {
+export async function seedBillingFixtures({
+  appDb,
+  platformDb,
+}: SeedBillingHandles): Promise<void> {
   // Platform side: the delinquent academy with a past_due subscription.
   await withPlatform(platformDb, async (tx) => {
     const [academy] = await tx
@@ -120,13 +146,17 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
         set: { status: 'delinquent', updatedAt: new Date() },
       })
       .returning({ id: academies.id });
-    if (!academy) throw new Error(`Failed to upsert academy ${DELINQUENT_ACADEMY.slug}`);
+    if (!academy)
+      throw new Error(`Failed to upsert academy ${DELINQUENT_ACADEMY.slug}`);
 
     const [plan] = await tx
       .select({ id: platformPlans.id })
       .from(platformPlans)
       .where(eq(platformPlans.name, DELINQUENT_ACADEMY.plan));
-    if (!plan) throw new Error('Platform plans not seeded — run seedPlatformPlans first');
+    if (!plan)
+      throw new Error(
+        'Platform plans not seeded — run seedPlatformPlans first',
+      );
 
     const existing = await tx
       .select({ id: academySubscriptions.id })
@@ -146,17 +176,27 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
   // Tenant side, per fixture academy.
   for (const slug of Object.keys(BILLING_MAIN_STUDENT)) {
     const [academy] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      tx
+        .select({ id: academies.id })
+        .from(academies)
+        .where(eq(academies.slug, slug)),
     );
-    if (!academy) throw new Error(`Fixture academy ${slug} missing — run seedDevFixtures first`);
+    if (!academy)
+      throw new Error(
+        `Fixture academy ${slug} missing — run seedDevFixtures first`,
+      );
     const tenantId = academy.id;
 
     const adminEmail = BILLING_ACADEMY_ADMIN[slug];
     if (!adminEmail) throw new Error(`Missing billing admin for ${slug}`);
     const [admin] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, adminEmail)),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, adminEmail)),
     );
-    if (!admin) throw new Error(`Missing user ${adminEmail} — run seedDevFixtures first`);
+    if (!admin)
+      throw new Error(`Missing user ${adminEmail} — run seedDevFixtures first`);
     const actorUserId = admin.id;
 
     await withTenant(appDb, tenantId, async (tx) => {
@@ -166,7 +206,12 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
         const found = await tx
           .select({ id: academyPlans.id })
           .from(academyPlans)
-          .where(and(eq(academyPlans.tenantId, tenantId), eq(academyPlans.name, p.name)));
+          .where(
+            and(
+              eq(academyPlans.tenantId, tenantId),
+              eq(academyPlans.name, p.name),
+            ),
+          );
         if (found[0]) {
           planIdByName.set(p.name, found[0].id);
           continue;
@@ -190,12 +235,20 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
       const [main] = await tx
         .select({ id: students.id, userId: students.userId })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.fullName, mainName)));
+        .where(
+          and(eq(students.tenantId, tenantId), eq(students.fullName, mainName)),
+        );
       const [late] = await tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.fullName, overdueName)));
-      if (!main || !late) throw new Error(`Fixture students missing for ${slug}`);
+        .where(
+          and(
+            eq(students.tenantId, tenantId),
+            eq(students.fullName, overdueName),
+          ),
+        );
+      if (!main || !late)
+        throw new Error(`Fixture students missing for ${slug}`);
 
       const [guardian] = await tx
         .select({ id: guardians.id, userId: guardians.userId })
@@ -213,7 +266,8 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
           ),
         )
         .orderBy(asc(students.fullName));
-      if (dependents.length < 2) throw new Error(`Fixture dependents missing for ${slug}`);
+      if (dependents.length < 2)
+        throw new Error(`Fixture dependents missing for ${slug}`);
       const [dep0, dep1] = dependents as [{ id: string }, { id: string }];
 
       // Plan assignment — what materialization will charge (BIL.4 closure).
@@ -228,7 +282,9 @@ export async function seedBillingFixtures({ appDb, platformDb }: SeedBillingHand
         await tx
           .update(students)
           .set({ academyPlanId: planId })
-          .where(and(eq(students.tenantId, tenantId), eq(students.id, studentId)));
+          .where(
+            and(eq(students.tenantId, tenantId), eq(students.id, studentId)),
+          );
       }
 
       const prev = (dueDay: number) => cycle(-1, dueDay);
@@ -444,7 +500,12 @@ async function ensureSettledPayment(
     const existing = await tx
       .select({ id: payments.id })
       .from(payments)
-      .where(and(eq(payments.tenantId, p.tenantId), eq(payments.chargeId, p.chargeId)));
+      .where(
+        and(
+          eq(payments.tenantId, p.tenantId),
+          eq(payments.chargeId, p.chargeId),
+        ),
+      );
     if (existing.length > 0) return;
   }
 
@@ -491,7 +552,12 @@ async function ensureSettledPayment(
 /** Active card mandate under the single-active partial unique; audited. */
 async function ensureActiveMandate(
   tx: DbTransaction,
-  m: { tenantId: string; studentId: string; payerUserId: string; actorUserId: string },
+  m: {
+    tenantId: string;
+    studentId: string;
+    payerUserId: string;
+    actorUserId: string;
+  },
 ): Promise<void> {
   const active = await tx
     .select({ id: paymentMandates.id })

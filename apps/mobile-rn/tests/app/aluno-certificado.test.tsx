@@ -7,7 +7,13 @@
  */
 
 import { Share } from 'react-native';
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
@@ -29,7 +35,10 @@ function renderAluno(): void {
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -37,7 +46,9 @@ function renderAluno(): void {
 }
 
 async function openGraduacao(): Promise<void> {
-  await waitFor(() => expect(screen.getByLabelText('Sua graduação')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByLabelText('Sua graduação')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Sua graduação'));
   });
@@ -69,7 +80,9 @@ describe('aluno certificado (REP.12)', () => {
       fireEvent.press(screen.getByText('Ver certificado'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('certificate-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('certificate-card')).toBeTruthy(),
+    );
     expect(screen.getByText('Certificado de graduação')).toBeTruthy();
     expect(screen.getByText('Lucas Almeida')).toBeTruthy();
     // Belt line + academy name from the session (branded composition).
@@ -93,13 +106,18 @@ describe('aluno certificado (REP.12)', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Ver certificado'));
     });
-    await waitFor(() => expect(screen.getByTestId('certificate-share')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('certificate-share')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByTestId('certificate-share'));
     });
 
     expect(shareSpy).toHaveBeenCalledTimes(1);
-    const payload = shareSpy.mock.calls[0]?.[0] as { title?: string; message?: string };
+    const payload = shareSpy.mock.calls[0]?.[0] as {
+      title?: string;
+      message?: string;
+    };
     expect(payload.title).toBe('Certificado de graduação');
     expect(payload.message).toContain('Lucas Almeida');
     expect(payload.message).toContain('faixa azul');

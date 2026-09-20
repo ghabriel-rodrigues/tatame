@@ -17,7 +17,8 @@ import {
 import { renderRoute } from '../../test/render-route';
 import { server } from '../../test/setup';
 
-const session = () => makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+const session = () =>
+  makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
 
 describe('Permissões por perfil (CFG.11)', () => {
   it('renders the role groups with member counts and registry-driven rows', async () => {
@@ -39,7 +40,9 @@ describe('Permissões por perfil (CFG.11)', () => {
     // Rows come straight from the matrix (registry as the single source).
     expect(screen.getByLabelText('Registrar presença')).toBeChecked();
     expect(screen.getByLabelText('Atualizar graduações')).toBeChecked();
-    expect(screen.getByLabelText('Ver pagamentos das turmas')).not.toBeChecked();
+    expect(
+      screen.getByLabelText('Ver pagamentos das turmas'),
+    ).not.toBeChecked();
     expect(screen.getByLabelText('Gerar convite')).toBeChecked();
     expect(screen.getByLabelText('Criar eventos')).not.toBeChecked();
     expect(screen.getByLabelText('Comprar na loja')).toBeChecked();
@@ -104,7 +107,9 @@ describe('Permissões por perfil (CFG.11)', () => {
     await user.click(await screen.findByLabelText('Registrar presença'));
 
     expect(
-      await screen.findByText('Não foi possível salvar a permissão. Tente novamente.'),
+      await screen.findByText(
+        'Não foi possível salvar a permissão. Tente novamente.',
+      ),
     ).toBeInTheDocument();
     // Rollback: the switch reverts to the server truth.
     expect(screen.getByLabelText('Registrar presença')).toBeChecked();

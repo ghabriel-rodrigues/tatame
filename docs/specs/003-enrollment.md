@@ -134,19 +134,19 @@ Finally, the invite flow is completed: `invites.class_id` becomes a real composi
 
 ### Endpoint surface (versioned prefix, generated into the OpenAPI spec)
 
-| Endpoint | Role | Purpose |
-|---|---|---|
-| `GET/POST /admin/students`, `PATCH /admin/students/:id` (name), `POST /admin/students/:id/archive` | admin | student registry |
-| `GET/POST /admin/guardians`, `PATCH .../:id`, `POST .../:id/archive` | admin | guardian registry |
-| `GET/POST /admin/professors` | admin | professor registry (user + membership + set-password email) |
-| `GET/POST /admin/classes`, `GET /admin/classes/:id`, `PATCH /admin/classes/:id` (name), `POST /admin/classes/:id/archive` | admin | turmas with schedules + occupancy |
-| `POST /admin/classes/:id/students`, `DELETE /admin/classes/:id/students/:studentId` | admin | roster add/remove |
-| `POST /admin/students/move` | admin | atomic bulk move to destination class |
-| `GET /professor/classes`, `GET /professor/classes/:id` | professor | own classes, detail + roster |
-| `POST /professor/classes/:id/students`, `DELETE /professor/classes/:id/students/:studentId` | professor | roster add/remove (own classes only) |
-| `GET /responsavel/dependents`, `GET /responsavel/dependents/:id` | guardian | own children + detail with class schedule |
-| `POST /responsavel/dependents` | guardian (toggle) | cadastrar filho + auto link + suggested enrollment |
-| `GET /responsavel/class-suggestion?birthDate=` | guardian | age-suggested class |
+| Endpoint                                                                                                                  | Role              | Purpose                                                     |
+| ------------------------------------------------------------------------------------------------------------------------- | ----------------- | ----------------------------------------------------------- |
+| `GET/POST /admin/students`, `PATCH /admin/students/:id` (name), `POST /admin/students/:id/archive`                        | admin             | student registry                                            |
+| `GET/POST /admin/guardians`, `PATCH .../:id`, `POST .../:id/archive`                                                      | admin             | guardian registry                                           |
+| `GET/POST /admin/professors`                                                                                              | admin             | professor registry (user + membership + set-password email) |
+| `GET/POST /admin/classes`, `GET /admin/classes/:id`, `PATCH /admin/classes/:id` (name), `POST /admin/classes/:id/archive` | admin             | turmas with schedules + occupancy                           |
+| `POST /admin/classes/:id/students`, `DELETE /admin/classes/:id/students/:studentId`                                       | admin             | roster add/remove                                           |
+| `POST /admin/students/move`                                                                                               | admin             | atomic bulk move to destination class                       |
+| `GET /professor/classes`, `GET /professor/classes/:id`                                                                    | professor         | own classes, detail + roster                                |
+| `POST /professor/classes/:id/students`, `DELETE /professor/classes/:id/students/:studentId`                               | professor         | roster add/remove (own classes only)                        |
+| `GET /responsavel/dependents`, `GET /responsavel/dependents/:id`                                                          | guardian          | own children + detail with class schedule                   |
+| `POST /responsavel/dependents`                                                                                            | guardian (toggle) | cadastrar filho + auto link + suggested enrollment          |
+| `GET /responsavel/class-suggestion?birthDate=`                                                                            | guardian          | age-suggested class                                         |
 
 New problem+json codes in the shared registry: class full, already enrolled, class archived, guardian required for minor, move capacity exceeded (reusing class-full), permission disabled and minor-requires-guardian reused from Phase 2.
 

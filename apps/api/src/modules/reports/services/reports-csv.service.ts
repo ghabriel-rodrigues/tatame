@@ -27,7 +27,15 @@ export class ReportsCsvService {
         return {
           filename: `financeiro-${view.month}.csv`,
           lines: [
-            csvLine(['aluno', 'origem', 'competencia', 'vencimento', 'status', 'valor', 'pago_em']),
+            csvLine([
+              'aluno',
+              'origem',
+              'competencia',
+              'vencimento',
+              'status',
+              'valor',
+              'pago_em',
+            ]),
             ...view.rows.map((r) =>
               csvLine([
                 r.studentName,
@@ -48,7 +56,13 @@ export class ReportsCsvService {
             csvLine(['turma', 'aluno', 'presencas', 'faltas', 'percentual']),
             ...view.classes.flatMap((klass) =>
               klass.students.map((s) =>
-                csvLine([klass.className, s.studentName, s.presencas, s.faltas, s.presencePct]),
+                csvLine([
+                  klass.className,
+                  s.studentName,
+                  s.presencas,
+                  s.faltas,
+                  s.presencePct,
+                ]),
               ),
             ),
           ],
@@ -99,7 +113,16 @@ export class ReportsCsvService {
         return {
           filename: `loja-${view.month}.csv`,
           lines: [
-            csvLine(['pedido', 'data', 'comprador', 'produto', 'tamanho', 'quantidade', 'valor', 'status']),
+            csvLine([
+              'pedido',
+              'data',
+              'comprador',
+              'produto',
+              'tamanho',
+              'quantidade',
+              'valor',
+              'status',
+            ]),
             ...view.rows.map((r) =>
               csvLine([
                 `#${r.number}`,

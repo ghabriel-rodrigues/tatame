@@ -29,7 +29,11 @@ import {
 import type { AdminAcademyResponse, BrandTheme } from '@tatame/shared';
 import { $api, queryClient } from '../../api/api';
 import { patchSessionAcademy } from '../../auth/auth-store';
-import { setBrandPreview, setThemeMode, useThemeState } from '../../app/theme-store';
+import {
+  setBrandPreview,
+  setThemeMode,
+  useThemeState,
+} from '../../app/theme-store';
 import { useToastState } from './common';
 import { initials } from './format';
 
@@ -79,7 +83,9 @@ function PaletteSwatch({
         borderRadius: '14px',
         cursor: 'pointer',
         background: 'var(--bg-surface)',
-        border: selected ? '2px solid var(--brand-1)' : '1px solid var(--border-1)',
+        border: selected
+          ? '2px solid var(--brand-1)'
+          : '1px solid var(--border-1)',
         fontFamily: 'inherit',
       }}
     >
@@ -133,7 +139,9 @@ function ToggleRow({
         '&:not(:last-of-type)': { borderBottom: '1px solid var(--border-1)' },
       }}
     >
-      <Typography sx={{ fontSize: 13.5, fontWeight: 650, color: 'var(--fg-1)' }}>
+      <Typography
+        sx={{ fontSize: 13.5, fontWeight: 650, color: 'var(--fg-1)' }}
+      >
         {label}
       </Typography>
       <Switch
@@ -171,7 +179,9 @@ export function ConfiguracoesPage() {
 
   if (academyQuery.isLoading || !loaded) {
     return (
-      <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+      <Typography
+        sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+      >
         Carregando configurações…
       </Typography>
     );
@@ -221,7 +231,9 @@ export function ConfiguracoesPage() {
           setNameDraft(null);
           setPresetDraft(null);
           setBrandPreview(null);
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/academy'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/academy'],
+          });
           toast.show('Identidade salva.');
         },
         onError: () => setError('Não foi possível salvar. Tente novamente.'),
@@ -242,7 +254,9 @@ export function ConfiguracoesPage() {
       },
       {
         onSuccess: () => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/academy'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/academy'],
+          });
         },
         onError: () => {
           setNotifDraft(null); // Roll the switch back to the saved value.
@@ -262,7 +276,9 @@ export function ConfiguracoesPage() {
 
         <Card padding={16}>
           <Stack spacing="14px">
-            <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+            <Typography
+              sx={{ fontSize: 13.5, fontWeight: 700, color: 'var(--fg-1)' }}
+            >
               Identidade visual
             </Typography>
             <Stack direction="row" spacing="12px" sx={{ alignItems: 'center' }}>
@@ -272,7 +288,8 @@ export function ConfiguracoesPage() {
                   width: 44,
                   height: 44,
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, var(--brand-1), var(--brand-2))',
+                  background:
+                    'linear-gradient(135deg, var(--brand-1), var(--brand-2))',
                   color: 'var(--white, #FFFFFF)',
                   display: 'flex',
                   alignItems: 'center',
@@ -292,7 +309,12 @@ export function ConfiguracoesPage() {
                 />
               </Box>
               {/* Logo upload is recorded debt — the monogram is the v1 logo. */}
-              <TatameButton variant="secondary" size="sm" label="Logo" disabled />
+              <TatameButton
+                variant="secondary"
+                size="sm"
+                label="Logo"
+                disabled
+              />
             </Stack>
 
             <Box>
@@ -318,7 +340,11 @@ export function ConfiguracoesPage() {
               </Stack>
             </Box>
 
-            <Stack direction="row" spacing="8px" sx={{ justifyContent: 'flex-end' }}>
+            <Stack
+              direction="row"
+              spacing="8px"
+              sx={{ justifyContent: 'flex-end' }}
+            >
               <TatameButton
                 variant="ghost"
                 size="sm"
@@ -351,7 +377,11 @@ export function ConfiguracoesPage() {
             onChange={toggleNotifications}
           />
           {/* Roadmap stub (handoff design backlog) — visible, honestly disabled. */}
-          <ToggleRow label="Check-in por geolocalização" checked={false} disabled />
+          <ToggleRow
+            label="Check-in por geolocalização"
+            checked={false}
+            disabled
+          />
         </Card>
 
         <Card padding={0}>
@@ -387,7 +417,11 @@ export function ConfiguracoesPage() {
         ) : null}
       </Stack>
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

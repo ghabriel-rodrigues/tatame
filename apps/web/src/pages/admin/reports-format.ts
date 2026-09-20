@@ -22,7 +22,8 @@ export const REPORT_ROWS: ReportRowSpec[] = [
   {
     slug: 'financeiro',
     title: 'Financeiro mensal',
-    subtitle: (month) => `Receita, inadimplência e previsto · ${monthName(month)}`,
+    subtitle: (month) =>
+      `Receita, inadimplência e previsto · ${monthName(month)}`,
   },
   {
     slug: 'frequencia',
@@ -46,9 +47,13 @@ export const REPORT_ROWS: ReportRowSpec[] = [
   },
 ];
 
-const SLUGS: ReadonlyArray<AdminReportSlug> = REPORT_ROWS.map((row) => row.slug);
+const SLUGS: ReadonlyArray<AdminReportSlug> = REPORT_ROWS.map(
+  (row) => row.slug,
+);
 
-export function isReportSlug(value: string | undefined): value is AdminReportSlug {
+export function isReportSlug(
+  value: string | undefined,
+): value is AdminReportSlug {
   return SLUGS.includes(value as AdminReportSlug);
 }
 
@@ -66,7 +71,8 @@ export function currentPeriod(today: Date = new Date()): string {
 export function previousPeriod(period: string): string {
   const year = Number(period.slice(0, 4));
   const month = Number(period.slice(5, 7));
-  const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+  const prev =
+    month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
   return `${prev.year}-${String(prev.month).padStart(2, '0')}`;
 }
 
@@ -131,11 +137,15 @@ export async function downloadReportCsv(
   report: AdminReportSlug,
   month: string,
 ): Promise<string> {
-  const { data, error, response } = await client.GET('/v1/admin/reports/{report}/csv', {
-    params: { path: { report }, query: { month } },
-    parseAs: 'blob',
-  });
-  if (error !== undefined || !data) throw new Error(`csv export failed for ${report}`);
+  const { data, error, response } = await client.GET(
+    '/v1/admin/reports/{report}/csv',
+    {
+      params: { path: { report }, query: { month } },
+      parseAs: 'blob',
+    },
+  );
+  if (error !== undefined || !data)
+    throw new Error(`csv export failed for ${report}`);
   const filename = contentDispositionFilename(
     response.headers.get('Content-Disposition'),
     `${report}-${month}.csv`,

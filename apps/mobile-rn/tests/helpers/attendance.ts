@@ -27,7 +27,9 @@ export const SESSION_ID = uuid('9003', 1);
 export const LIVE_CODE_ID = uuid('9004', 1);
 export const ATTENDANCE_ID = uuid('9005', 1);
 
-export function makeAlunoStats(overrides: Partial<AlunoStats> = {}): AlunoStats {
+export function makeAlunoStats(
+  overrides: Partial<AlunoStats> = {},
+): AlunoStats {
   return {
     monthPresencePct: 86,
     monthAttendedSessions: 12,
@@ -54,7 +56,9 @@ export interface AlunoHomeOptions {
 }
 
 /** aluno-03/09: Open mat today at 10:00; faixa azul 2 graus, 26 de 40. */
-export function makeAlunoHome(options: AlunoHomeOptions = {}): AlunoHomeResponse {
+export function makeAlunoHome(
+  options: AlunoHomeOptions = {},
+): AlunoHomeResponse {
   return {
     student: { id: STUDENT_ID, fullName: 'Lucas Almeida' },
     todayClass:
@@ -94,13 +98,20 @@ export function makeCheckinResponse(
       className: 'Open mat',
       sessionDate: '2026-08-03',
     },
-    stats: makeAlunoStats({ monthPresencePct: 88, streak: 7, totalLessons: 27, ...stats }),
+    stats: makeAlunoStats({
+      monthPresencePct: 88,
+      streak: 7,
+      totalLessons: 27,
+      ...stats,
+    }),
     ...overrides,
   };
 }
 
 /** professor-03: code 4729, expiring, 5 presents already. */
-export function makeLiveCode(overrides: Partial<LiveCodeResponse> = {}): LiveCodeResponse {
+export function makeLiveCode(
+  overrides: Partial<LiveCodeResponse> = {},
+): LiveCodeResponse {
   return {
     id: LIVE_CODE_ID,
     code: '4729',
@@ -193,7 +204,11 @@ export function makeRollCall(): RollCallResponse {
           recordedByUserId: uuid('8004', 1),
         },
       },
-      { studentId: ROLL_CALL_STUDENTS.tiago, fullName: 'Tiago Mota', attendance: null },
+      {
+        studentId: ROLL_CALL_STUDENTS.tiago,
+        fullName: 'Tiago Mota',
+        attendance: null,
+      },
     ],
   };
 }
@@ -221,8 +236,23 @@ export function makeDashboard(
 /** professor-09 picker candidates, now served by GET /professor/students. */
 export function makeProfessorStudents(): ProfessorStudent[] {
   return [
-    { id: uuid('9001', 21), fullName: 'Marina Costa', birthDate: '2004-02-11', badge: 'ativo' },
-    { id: uuid('9001', 22), fullName: 'Pedro Silveira', birthDate: '2016-08-02', badge: 'ativo' },
-    { id: uuid('9001', 23), fullName: 'Bia Andrade', birthDate: '2001-12-30', badge: 'pendente' },
+    {
+      id: uuid('9001', 21),
+      fullName: 'Marina Costa',
+      birthDate: '2004-02-11',
+      badge: 'ativo',
+    },
+    {
+      id: uuid('9001', 22),
+      fullName: 'Pedro Silveira',
+      birthDate: '2016-08-02',
+      badge: 'ativo',
+    },
+    {
+      id: uuid('9001', 23),
+      fullName: 'Bia Andrade',
+      birthDate: '2001-12-30',
+      badge: 'pendente',
+    },
   ];
 }

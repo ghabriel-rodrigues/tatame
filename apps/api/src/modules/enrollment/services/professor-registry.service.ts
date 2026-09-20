@@ -46,21 +46,30 @@ export class ProfessorRegistryService {
   ) {}
 
   async list(ctx: AuthContext): Promise<ProfessorListItem[]> {
-    return withTenant(this.appDb.db, { tenantId: ctx.tenantId, userId: ctx.userId }, async (tx) => {
-      const rows = await tx
-        .select({
-          membershipId: memberships.id,
-          userId: users.id,
-          fullName: users.fullName,
-          email: users.email,
-          status: memberships.status,
-        })
-        .from(memberships)
-        .innerJoin(users, eq(users.id, memberships.userId))
-        .where(and(eq(memberships.role, 'professor'), eq(memberships.status, 'active')))
-        .orderBy(asc(users.fullName));
-      return rows;
-    });
+    return withTenant(
+      this.appDb.db,
+      { tenantId: ctx.tenantId, userId: ctx.userId },
+      async (tx) => {
+        const rows = await tx
+          .select({
+            membershipId: memberships.id,
+            userId: users.id,
+            fullName: users.fullName,
+            email: users.email,
+            status: memberships.status,
+          })
+          .from(memberships)
+          .innerJoin(users, eq(users.id, memberships.userId))
+          .where(
+            and(
+              eq(memberships.role, 'professor'),
+              eq(memberships.status, 'active'),
+            ),
+          )
+          .orderBy(asc(users.fullName));
+        return rows;
+      },
+    );
   }
 
   async register(
@@ -88,7 +97,11 @@ export class ProfessorRegistryService {
           'This email already holds a professor membership in this academy',
         );
       default:
-        throw problem(500, ErrorCodes.INTERNAL, 'Professor registration seam refused the call');
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Professor registration seam refused the call',
+        );
     }
 
     // Set-your-password email only when the account has no credential yet —

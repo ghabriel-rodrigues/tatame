@@ -5,13 +5,22 @@
  * preference renders the home already dark (hero, cards, glass tab bar).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import { StatusBar } from 'expo-status-bar';
 import * as SecureStore from 'expo-secure-store';
 import * as AsyncStorageModule from '@react-native-async-storage/async-storage';
 import { darkTokens, tokens } from '@tatame/design-system/native';
 import { queryClient } from '../../src/session/api';
-import { sessionTestApi, type SessionState } from '../../src/session/session-store';
+import {
+  sessionTestApi,
+  type SessionState,
+} from '../../src/session/session-store';
 import { THEME_MODE_KEY, themeTestApi } from '../../src/theme/theme-store';
 import { installFetchMock, json, makeMe } from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
@@ -43,8 +52,7 @@ function statusBarStyle(): string {
 /** Flattened backgroundColor of a style prop (array or object). */
 function backgroundOf(testID: string): string | undefined {
   const style = screen.getByTestId(testID).props.style as
-    | Array<Record<string, unknown>>
-    | Record<string, unknown>;
+    Array<Record<string, unknown>> | Record<string, unknown>;
   const flat = Array.isArray(style)
     ? Object.assign({}, ...style.filter(Boolean))
     : (style ?? {});
@@ -59,7 +67,9 @@ describe('aluno tema escuro', () => {
     sessionTestApi.reset();
     queryClient.clear();
     installFetchMock(({ method, path }) =>
-      method === 'GET' && path === '/v1/aluno/home' ? json(200, makeAlunoHome()) : null,
+      method === 'GET' && path === '/v1/aluno/home'
+        ? json(200, makeAlunoHome())
+        : null,
     );
   });
 
@@ -75,29 +85,45 @@ describe('aluno tema escuro', () => {
     expect(statusBarStyle()).toBe('dark'); // light mode after the splash
 
     await act(async () => {
-      fireEvent(screen.getByTestId('perfil-dark-theme-switch'), 'valueChange', true);
+      fireEvent(
+        screen.getByTestId('perfil-dark-theme-switch'),
+        'valueChange',
+        true,
+      );
     });
 
     // Mode persisted per device (survives relaunch via hydrateTheme).
-    await waitFor(() => expect(storage.__store.get(THEME_MODE_KEY)).toBe('dark'));
+    await waitFor(() =>
+      expect(storage.__store.get(THEME_MODE_KEY)).toBe('dark'),
+    );
     // The whole shell re-renders on the dark token set...
     expect(statusBarStyle()).toBe('light');
-    expect(screen.getByTestId('perfil-dark-theme-switch').props.value).toBe(true);
+    expect(screen.getByTestId('perfil-dark-theme-switch').props.value).toBe(
+      true,
+    );
 
     // ...including the home surfaces when navigating back.
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Início'));
     });
-    await waitFor(() => expect(backgroundOf('graduation-card')).toBe(DARK_SURFACE));
+    await waitFor(() =>
+      expect(backgroundOf('graduation-card')).toBe(DARK_SURFACE),
+    );
 
     // Flipping back restores light + persists it.
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Perfil'));
     });
     await act(async () => {
-      fireEvent(screen.getByTestId('perfil-dark-theme-switch'), 'valueChange', false);
+      fireEvent(
+        screen.getByTestId('perfil-dark-theme-switch'),
+        'valueChange',
+        false,
+      );
     });
-    await waitFor(() => expect(storage.__store.get(THEME_MODE_KEY)).toBe('light'));
+    await waitFor(() =>
+      expect(storage.__store.get(THEME_MODE_KEY)).toBe('light'),
+    );
     expect(statusBarStyle()).toBe('dark');
   });
 

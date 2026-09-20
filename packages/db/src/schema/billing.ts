@@ -101,7 +101,11 @@ export const charges = pgTable(
   (t) => [
     unique('charges_tenant_id_id_uq').on(t.tenantId, t.id),
     // Admin financial overview + previsão de recebimentos (ticket 03 index).
-    index('charges_tenant_status_due_date_idx').on(t.tenantId, t.status, t.dueDate),
+    index('charges_tenant_status_due_date_idx').on(
+      t.tenantId,
+      t.status,
+      t.dueDate,
+    ),
     // Wallet/histórico lookups per student.
     index('charges_tenant_student_idx').on(t.tenantId, t.studentId),
     // Exactly the column matching `origin` is non-null.
@@ -113,7 +117,10 @@ export const charges = pgTable(
     ),
     // Plan charges always carry their competência — the idempotency key below
     // would silently admit duplicates on NULL period_start otherwise.
-    check('charges_plan_period_ck', sql`${t.origin} <> 'plan' OR ${t.periodStart} IS NOT NULL`),
+    check(
+      'charges_plan_period_ck',
+      sql`${t.origin} <> 'plan' OR ${t.periodStart} IS NOT NULL`,
+    ),
     // student_id is optional only for order-origin charges (professor buyers
     // have no student row); plan and event charges are always about a student.
     check(
@@ -150,7 +157,11 @@ export const charges = pgTable(
       columns: [t.tenantId, t.orderId],
       foreignColumns: [orders.tenantId, orders.id],
     }),
-    pgPolicy('charges_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('charges_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -197,7 +208,11 @@ export const payments = pgTable(
       columns: [t.tenantId, t.chargeId],
       foreignColumns: [charges.tenantId, charges.id],
     }),
-    pgPolicy('payments_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('payments_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -270,7 +285,11 @@ export const billingCustomers = pgTable(
   },
   (t) => [
     unique('billing_customers_tenant_id_id_uq').on(t.tenantId, t.id),
-    unique('billing_customers_tenant_user_provider_uq').on(t.tenantId, t.userId, t.provider),
+    unique('billing_customers_tenant_user_provider_uq').on(
+      t.tenantId,
+      t.userId,
+      t.provider,
+    ),
     pgPolicy('billing_customers_tenant_all', {
       for: 'all',
       to: appRole,

@@ -40,12 +40,21 @@ export interface MaterializedSession {
 @Injectable()
 export class SessionService {
   /** Earliest schedule slot of the class on today's tenant-local weekday. */
-  async todaySlot(tx: DbTransaction, classId: string, now: Date = new Date()): Promise<TodaySlot | null> {
+  async todaySlot(
+    tx: DbTransaction,
+    classId: string,
+    now: Date = new Date(),
+  ): Promise<TodaySlot | null> {
     const weekday = localWeekday(now);
     const rows = await tx
       .select()
       .from(classSchedules)
-      .where(and(eq(classSchedules.classId, classId), eq(classSchedules.weekday, weekday)))
+      .where(
+        and(
+          eq(classSchedules.classId, classId),
+          eq(classSchedules.weekday, weekday),
+        ),
+      )
       .orderBy(asc(classSchedules.startTime));
     const slot = rows[0];
     if (!slot) return null;
@@ -70,14 +79,28 @@ export class SessionService {
     const slot = await this.todaySlot(tx, classId, now);
     await tx
       .insert(classSessions)
-      .values({ tenantId, classId, sessionDate, startsAt: slot?.startsAt ?? null })
+      .values({
+        tenantId,
+        classId,
+        sessionDate,
+        startsAt: slot?.startsAt ?? null,
+      })
       .onConflictDoNothing({
-        target: [classSessions.tenantId, classSessions.classId, classSessions.sessionDate],
+        target: [
+          classSessions.tenantId,
+          classSessions.classId,
+          classSessions.sessionDate,
+        ],
       });
     const [session] = await tx
       .select()
       .from(classSessions)
-      .where(and(eq(classSessions.classId, classId), eq(classSessions.sessionDate, sessionDate)));
+      .where(
+        and(
+          eq(classSessions.classId, classId),
+          eq(classSessions.sessionDate, sessionDate),
+        ),
+      );
     if (!session) throw new Error('Session materialization returned no row');
     return {
       id: session.id,
@@ -98,16 +121,29 @@ export class SessionService {
     const [session] = await tx
       .select({ id: classSessions.id, status: classSessions.status })
       .from(classSessions)
-      .where(and(eq(classSessions.classId, classId), eq(classSessions.sessionDate, localDate(now))));
+      .where(
+        and(
+          eq(classSessions.classId, classId),
+          eq(classSessions.sessionDate, localDate(now)),
+        ),
+      );
     return session ?? null;
   }
 
   /** Active (non-revoked) attendance count of a session. */
-  async presentCount(tx: DbTransaction, classSessionId: string): Promise<number> {
+  async presentCount(
+    tx: DbTransaction,
+    classSessionId: string,
+  ): Promise<number> {
     const [row] = await tx
       .select({ total: count() })
       .from(attendances)
-      .where(and(eq(attendances.classSessionId, classSessionId), isNull(attendances.revokedAt)));
+      .where(
+        and(
+          eq(attendances.classSessionId, classSessionId),
+          isNull(attendances.revokedAt),
+        ),
+      );
     return Number(row?.total ?? 0);
   }
 
@@ -120,7 +156,10 @@ export class SessionService {
     classId: string,
     professorUserId?: string,
   ): Promise<typeof classes.$inferSelect | null> {
-    const [row] = await tx.select().from(classes).where(eq(classes.id, classId));
+    const [row] = await tx
+      .select()
+      .from(classes)
+      .where(eq(classes.id, classId));
     if (!row) return null;
     if (professorUserId && row.professorUserId !== professorUserId) return null;
     return row;
@@ -131,20 +170,24 @@ export class SessionService {
     tx: DbTransaction,
     sessionId: string,
     professorUserId?: string,
-  ): Promise<
-    | { session: typeof classSessions.$inferSelect; class: typeof classes.$inferSelect }
-    | null
-  > {
+  ): Promise<{
+    session: typeof classSessions.$inferSelect;
+    class: typeof classes.$inferSelect;
+  } | null> {
     const [row] = await tx
       .select({ session: classSessions, class: classes })
       .from(classSessions)
       .innerJoin(
         classes,
-        and(eq(classes.tenantId, classSessions.tenantId), eq(classes.id, classSessions.classId)),
+        and(
+          eq(classes.tenantId, classSessions.tenantId),
+          eq(classes.id, classSessions.classId),
+        ),
       )
       .where(eq(classSessions.id, sessionId));
     if (!row) return null;
-    if (professorUserId && row.class.professorUserId !== professorUserId) return null;
+    if (professorUserId && row.class.professorUserId !== professorUserId)
+      return null;
     return row;
   }
 
@@ -152,7 +195,10 @@ export class SessionService {
   static isDuplicateAttendance(error: unknown): boolean {
     const cause = (error as { cause?: unknown })?.cause ?? error;
     const pg = cause as { code?: string; constraint?: string };
-    return pg?.code === '23505' && pg?.constraint === 'attendances_active_session_student_uq';
+    return (
+      pg?.code === '23505' &&
+      pg?.constraint === 'attendances_active_session_student_uq'
+    );
   }
 
   /** `true` when the pg error is a checkin_codes partial-unique conflict. */
@@ -160,8 +206,10 @@ export class SessionService {
     const cause = (error as { cause?: unknown })?.cause ?? error;
     const pg = cause as { code?: string; constraint?: string };
     if (pg?.code !== '23505') return null;
-    if (pg.constraint === 'checkin_codes_one_active_per_session_uq') return 'session';
-    if (pg.constraint === 'checkin_codes_tenant_code_active_uq') return 'digits';
+    if (pg.constraint === 'checkin_codes_one_active_per_session_uq')
+      return 'session';
+    if (pg.constraint === 'checkin_codes_tenant_code_active_uq')
+      return 'digits';
     return null;
   }
 }

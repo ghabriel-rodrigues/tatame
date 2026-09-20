@@ -6,12 +6,27 @@
  * registers without a class.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
-import { KIDS_ID, makeDependents, makeKidsSuggestion } from '../helpers/enrollment';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
+import {
+  KIDS_ID,
+  makeDependents,
+  makeKidsSuggestion,
+} from '../helpers/enrollment';
 
 jest.useFakeTimers();
 jest.setSystemTime(new Date(2026, 7, 1, 12, 0, 0));
@@ -35,12 +50,17 @@ function cadastrarHandlers(
     if (method === 'GET' && path === '/v1/responsavel/class-suggestion') {
       log.suggestionSearches.push(search);
       return json(200, {
-        suggestion: 'suggestion' in options ? options.suggestion : makeKidsSuggestion(),
+        suggestion:
+          'suggestion' in options ? options.suggestion : makeKidsSuggestion(),
       });
     }
     if (method === 'POST' && path === '/v1/responsavel/dependents') {
       log.registerBodies.push(body);
-      const dto = body as { fullName: string; birthDate: string; classId?: string };
+      const dto = body as {
+        fullName: string;
+        birthDate: string;
+        classId?: string;
+      };
       return json(201, {
         dependent: {
           id: '018f0000-0000-7000-8006-00000000000f',
@@ -56,7 +76,9 @@ function cadastrarHandlers(
   };
 }
 
-function renderCadastrar(options: { suggestion?: unknown; enrolled?: boolean } = {}): HandlerLog {
+function renderCadastrar(
+  options: { suggestion?: unknown; enrolled?: boolean } = {},
+): HandlerLog {
   const log: HandlerLog = { suggestionSearches: [], registerBodies: [] };
   installFetchMock(cadastrarHandlers(log, options));
   sessionTestApi.seed({
@@ -71,11 +93,15 @@ function renderCadastrar(options: { suggestion?: unknown; enrolled?: boolean } =
 }
 
 async function openSheet(): Promise<void> {
-  await waitFor(() => expect(screen.getByLabelText('Cadastrar aluno')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByLabelText('Cadastrar aluno')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Cadastrar aluno'));
   });
-  await waitFor(() => expect(screen.getByTestId('register-dependent-sheet')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('register-dependent-sheet')).toBeTruthy(),
+  );
 }
 
 describe('responsável cadastrar aluno (ENR.20)', () => {
@@ -89,20 +115,29 @@ describe('responsável cadastrar aluno (ENR.20)', () => {
     const log = renderCadastrar();
     await openSheet();
 
-    expect(screen.getByText('O cadastro nasce vinculado a você e à academia.')).toBeTruthy();
+    expect(
+      screen.getByText('O cadastro nasce vinculado a você e à academia.'),
+    ).toBeTruthy();
     expect(screen.getByText('Turma sugerida pela idade')).toBeTruthy();
     // No pre-filled chip while the form is empty (prototype mock artifact).
     expect(
-      screen.getByText('Informe a data de nascimento para ver a turma sugerida.'),
+      screen.getByText(
+        'Informe a data de nascimento para ver a turma sugerida.',
+      ),
     ).toBeTruthy();
     expect(screen.queryByText('Kids · Ter e Qui 18:00')).toBeNull();
     expect(log.suggestionSearches).toHaveLength(0);
 
     await act(async () => {
-      fireEvent.changeText(screen.getByPlaceholderText('DD/MM/AAAA'), '02/08/2016');
+      fireEvent.changeText(
+        screen.getByPlaceholderText('DD/MM/AAAA'),
+        '02/08/2016',
+      );
     });
 
-    await waitFor(() => expect(screen.getByText('Kids · Ter e Qui 18:00')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Kids · Ter e Qui 18:00')).toBeTruthy(),
+    );
     expect(log.suggestionSearches).toContain('?birthDate=2016-08-02');
   });
 
@@ -110,11 +145,19 @@ describe('responsável cadastrar aluno (ENR.20)', () => {
     const log = renderCadastrar({ enrolled: true });
     await openSheet();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Nome completo'), 'Caio Silveira');
+    fireEvent.changeText(
+      screen.getByPlaceholderText('Nome completo'),
+      'Caio Silveira',
+    );
     await act(async () => {
-      fireEvent.changeText(screen.getByPlaceholderText('DD/MM/AAAA'), '02/08/2016');
+      fireEvent.changeText(
+        screen.getByPlaceholderText('DD/MM/AAAA'),
+        '02/08/2016',
+      );
     });
-    await waitFor(() => expect(screen.getByText('Kids · Ter e Qui 18:00')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Kids · Ter e Qui 18:00')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Cadastrar'));
@@ -129,7 +172,9 @@ describe('responsável cadastrar aluno (ENR.20)', () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByText('Caio Silveira cadastrado e matriculado na turma Kids.'),
+        screen.getByText(
+          'Caio Silveira cadastrado e matriculado na turma Kids.',
+        ),
       ).toBeTruthy(),
     );
     // Sheet closes after a successful registration.
@@ -140,9 +185,15 @@ describe('responsável cadastrar aluno (ENR.20)', () => {
     const log = renderCadastrar({ suggestion: null, enrolled: false });
     await openSheet();
 
-    fireEvent.changeText(screen.getByPlaceholderText('Nome completo'), 'Marcos Silveira');
+    fireEvent.changeText(
+      screen.getByPlaceholderText('Nome completo'),
+      'Marcos Silveira',
+    );
     await act(async () => {
-      fireEvent.changeText(screen.getByPlaceholderText('DD/MM/AAAA'), '10/05/1990');
+      fireEvent.changeText(
+        screen.getByPlaceholderText('DD/MM/AAAA'),
+        '10/05/1990',
+      );
     });
     await waitFor(() =>
       expect(
@@ -173,10 +224,14 @@ describe('responsável cadastrar aluno (ENR.20)', () => {
 
   it('opens the sheet from the shell FAB when the toggle is on', async () => {
     renderCadastrar();
-    await waitFor(() => expect(screen.getByLabelText('Cadastrar filho')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText('Cadastrar filho')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Cadastrar filho'));
     });
-    await waitFor(() => expect(screen.getByTestId('register-dependent-sheet')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('register-dependent-sheet')).toBeTruthy(),
+    );
   });
 });

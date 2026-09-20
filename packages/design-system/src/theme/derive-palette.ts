@@ -44,7 +44,13 @@ function linearChannelToSrgb(c: number): number {
 
 export function hexToOklab(hex: string): Oklab {
   const n = hex.replace('#', '');
-  const full = n.length === 3 ? n.split('').map((ch) => ch + ch).join('') : n;
+  const full =
+    n.length === 3
+      ? n
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : n;
   const int = Number.parseInt(full, 16);
   if (full.length !== 6 || Number.isNaN(int)) {
     throw new Error(`derivePalette: invalid hex color "${hex}"`);
@@ -73,7 +79,7 @@ export function oklabToHex(lab: Oklab): string {
   const channels = [
     4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ].map((lin) => {
     const srgb = linearChannelToSrgb(lin);
     const clamped = Math.min(1, Math.max(0, srgb));
@@ -111,15 +117,17 @@ export function mixOklab(c1: string, pct: number, c2: string): string {
 function normalizeHex(hex: string): string {
   // Normalize any valid input to uppercase #RRGGBB via a round trip-free path.
   const n = hex.replace('#', '');
-  const full = n.length === 3 ? n.split('').map((ch) => ch + ch).join('') : n;
+  const full =
+    n.length === 3
+      ? n
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : n;
   return '#' + full.toUpperCase();
 }
 
-function resolveAnchor(
-  anchor: string,
-  input: BrandInput,
-  mode: Mode,
-): string {
+function resolveAnchor(anchor: string, input: BrandInput, mode: Mode): string {
   if (anchor === 'W') return PALETTE_RECIPE.anchors.W[mode];
   if (anchor === 'deep' || anchor === 'vibrant' || anchor === 'accent') {
     return input[anchor];

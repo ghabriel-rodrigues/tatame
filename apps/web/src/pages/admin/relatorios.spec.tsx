@@ -34,18 +34,21 @@ function renderRelatorios(path = '/admin/relatorios') {
 function captureCsvRequests(): string[] {
   const calls: string[] = [];
   server.use(
-    rawHttp.get('http://localhost/v1/admin/reports/:report/csv', ({ request, params }) => {
-      calls.push(request.url);
-      const month = new URL(request.url).searchParams.get('month') ?? '';
-      const slug = params.report as AdminReportSlug;
-      return new HttpResponse(makeReportCsvBody(slug), {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/csv; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${slug}-${month}.csv"`,
-        },
-      });
-    }),
+    rawHttp.get(
+      'http://localhost/v1/admin/reports/:report/csv',
+      ({ request, params }) => {
+        calls.push(request.url);
+        const month = new URL(request.url).searchParams.get('month') ?? '';
+        const slug = params.report as AdminReportSlug;
+        return new HttpResponse(makeReportCsvBody(slug), {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${slug}-${month}.csv"`,
+          },
+        });
+      },
+    ),
   );
   return calls;
 }
@@ -65,12 +68,16 @@ describe('Relatórios (REP.9)', () => {
     renderRelatorios();
     const month = currentPeriod();
 
-    expect(await screen.findByRole('heading', { name: 'Relatórios' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Relatórios' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Exporte em CSV ou PDF')).toBeInTheDocument();
 
     expect(screen.getByText('Financeiro mensal')).toBeInTheDocument();
     expect(
-      screen.getByText(`Receita, inadimplência e previsto · ${monthName(month)}`),
+      screen.getByText(
+        `Receita, inadimplência e previsto · ${monthName(month)}`,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Frequência por turma')).toBeInTheDocument();
     expect(
@@ -85,7 +92,9 @@ describe('Relatórios (REP.9)', () => {
       screen.getByText('Promoções e graus registrados no semestre'),
     ).toBeInTheDocument();
     expect(screen.getByText('Vendas da loja')).toBeInTheDocument();
-    expect(screen.getByText('Pedidos, itens e vendas do mês')).toBeInTheDocument();
+    expect(
+      screen.getByText('Pedidos, itens e vendas do mês'),
+    ).toBeInTheDocument();
 
     expect(screen.getAllByRole('button', { name: 'CSV' })).toHaveLength(5);
     expect(screen.getAllByRole('button', { name: 'PDF' })).toHaveLength(5);
@@ -103,7 +112,9 @@ describe('Relatórios (REP.9)', () => {
     await screen.findByRole('heading', { name: 'Visão financeira' });
     await user.click(screen.getByRole('button', { name: 'Relatórios' }));
 
-    expect(await screen.findByRole('heading', { name: 'Relatórios' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Relatórios' }),
+    ).toBeInTheDocument();
   });
 
   it('month picker drives the subtitles and the CSV export query', async () => {
@@ -116,7 +127,9 @@ describe('Relatórios (REP.9)', () => {
     await user.click(screen.getByRole('option', { name: periodLabel(prev) }));
 
     expect(
-      screen.getByText(`Receita, inadimplência e previsto · ${monthName(prev)}`),
+      screen.getByText(
+        `Receita, inadimplência e previsto · ${monthName(prev)}`,
+      ),
     ).toBeInTheDocument();
 
     const row = screen.getByRole('region', { name: 'Financeiro mensal' });
@@ -213,7 +226,9 @@ describe('Report print view (REP.9)', () => {
     expect(screen.getByText('Flavia Fila')).toBeInTheDocument();
     expect(screen.getByText('Vencida')).toBeInTheDocument();
     // The window.print affordance.
-    expect(screen.getByRole('button', { name: 'Imprimir' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Imprimir' }),
+    ).toBeInTheDocument();
   });
 
   it('renders the empty state when the report window has no rows', async () => {
@@ -224,6 +239,8 @@ describe('Report print view (REP.9)', () => {
     );
     renderRelatorios('/admin/relatorios/financeiro/imprimir?month=2026-07');
 
-    expect(await screen.findByText('Sem registros no período.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Sem registros no período.'),
+    ).toBeInTheDocument();
   });
 });

@@ -74,7 +74,9 @@ export function Toast({
       className={classes}
       role="status"
       aria-live="polite"
-      style={{ bottom: `calc(${offsetBottom}px + env(safe-area-inset-bottom, 0px))` }}
+      style={{
+        bottom: `calc(${offsetBottom}px + env(safe-area-inset-bottom, 0px))`,
+      }}
     >
       {message}
     </Root>

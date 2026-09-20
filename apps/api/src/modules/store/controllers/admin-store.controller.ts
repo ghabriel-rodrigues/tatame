@@ -73,7 +73,9 @@ export class AdminStoreController {
   // ── categorias ────────────────────────────────────────────────────────────
 
   @Get('categories')
-  @ApiOperation({ summary: '"Categorias da loja" — one chip per category with its count' })
+  @ApiOperation({
+    summary: '"Categorias da loja" — one chip per category with its count',
+  })
   @ApiOkResponse({ type: StoreCategoriesResponseDto })
   async listCategories() {
     return this.storeAdmin.listCategories(requireTenantContext(this.cls));
@@ -81,24 +83,37 @@ export class AdminStoreController {
 
   @Post('categories')
   @HttpCode(201)
-  @ApiOperation({ summary: '"+ Nova categoria" (name unique per academy — 409 on duplicate)' })
+  @ApiOperation({
+    summary: '"+ Nova categoria" (name unique per academy — 409 on duplicate)',
+  })
   @ApiCreatedResponse({ type: StoreCategoryDto })
   async createCategory(@Body() dto: CreateCategoryDto) {
-    return this.storeAdmin.createCategory(requireTenantContext(this.cls), dto.name);
+    return this.storeAdmin.createCategory(
+      requireTenantContext(this.cls),
+      dto.name,
+    );
   }
 
   @Patch('categories/:id')
   @ApiOperation({ summary: 'Rename a category (audited)' })
   @ApiOkResponse({ type: StoreCategoryDto })
-  async renameCategory(@Param('id', ParseUUIDPipe) id: string, @Body() dto: RenameCategoryDto) {
-    return this.storeAdmin.renameCategory(requireTenantContext(this.cls), id, dto.name);
+  async renameCategory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RenameCategoryDto,
+  ) {
+    return this.storeAdmin.renameCategory(
+      requireTenantContext(this.cls),
+      id,
+      dto.name,
+    );
   }
 
   @Delete('categories/:id')
   @HttpCode(204)
   @ApiOperation({
     summary: 'Delete a category — only while no product references it',
-    description: 'Referenced (archived products included) → 409 `category.in_use`.',
+    description:
+      'Referenced (archived products included) → 409 `category.in_use`.',
   })
   async deleteCategory(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.storeAdmin.deleteCategory(requireTenantContext(this.cls), id);
@@ -108,8 +123,10 @@ export class AdminStoreController {
 
   @Get('products')
   @ApiOperation({
-    summary: 'Produto rows per admin-03: tile, price, "N em estoque · N vendidos"',
-    description: 'Vendidos is derived from real paid+ orders — truth, not a counter (story 8).',
+    summary:
+      'Produto rows per admin-03: tile, price, "N em estoque · N vendidos"',
+    description:
+      'Vendidos is derived from real paid+ orders — truth, not a counter (story 8).',
   })
   @ApiOkResponse({ type: AdminProductsResponseDto })
   async listProducts() {
@@ -131,17 +148,27 @@ export class AdminStoreController {
   }
 
   @Patch('products/:id')
-  @ApiOperation({ summary: '"Editar produto" (archived products are frozen — 409)' })
+  @ApiOperation({
+    summary: '"Editar produto" (archived products are frozen — 409)',
+  })
   @ApiOkResponse({ type: AdminProductDto })
-  async updateProduct(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto) {
-    return this.storeAdmin.updateProduct(requireTenantContext(this.cls), id, dto);
+  async updateProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateProductDto,
+  ) {
+    return this.storeAdmin.updateProduct(
+      requireTenantContext(this.cls),
+      id,
+      dto,
+    );
   }
 
   @Delete('products/:id')
   @HttpCode(200)
   @ApiOperation({
     summary: '"Remover da loja" — archives, never hard-deletes (story 6)',
-    description: 'Order history referencing the product stays intact; the vitrine stops showing it.',
+    description:
+      'Order history referencing the product stays intact; the vitrine stops showing it.',
   })
   @ApiOkResponse({ type: AdminProductDto })
   async archiveProduct(@Param('id', ParseUUIDPipe) id: string) {
@@ -153,7 +180,8 @@ export class AdminStoreController {
   @Get('orders')
   @ApiOperation({
     summary: 'Pedidos board per admin-04 — pending excluded, newest first',
-    description: 'Only sales that actually happened reach the board (story 13).',
+    description:
+      'Only sales that actually happened reach the board (story 13).',
   })
   @ApiOkResponse({ type: AdminOrdersResponseDto })
   async board() {
@@ -163,7 +191,8 @@ export class AdminStoreController {
   @Post('orders/:id/status')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Status sheet per admin-05: paid → ready → delivered; canceled refunds',
+    summary:
+      'Status sheet per admin-05: paid → ready → delivered; canceled refunds',
     description:
       'No skips, no backward moves, delivered is terminal (409 `store.order_invalid_transition` ' +
       'otherwise). Cancelado runs the audited full Pix refund; the order flip + stock restore ' +
@@ -171,7 +200,14 @@ export class AdminStoreController {
       '`paid` is never set by hand — payment truth comes only from the handler.',
   })
   @ApiOkResponse({ type: AdminOrderDto })
-  async transition(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OrderStatusTransitionDto) {
-    return this.storeOrders.adminTransition(requireTenantContext(this.cls), id, dto.status);
+  async transition(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: OrderStatusTransitionDto,
+  ) {
+    return this.storeOrders.adminTransition(
+      requireTenantContext(this.cls),
+      id,
+      dto.status,
+    );
   }
 }

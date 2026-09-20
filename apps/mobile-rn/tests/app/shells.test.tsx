@@ -4,17 +4,29 @@
  * the persona FAB, and the perfil logout flow back to login.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
-import { sessionTestApi, type SessionState } from '../../src/session/session-store';
+import {
+  sessionTestApi,
+  type SessionState,
+} from '../../src/session/session-store';
 import { setRefreshToken } from '../../src/session/token-store';
 import { installFetchMock, json, makeMe } from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 
 jest.useFakeTimers();
 
-const secure = SecureStore as unknown as { __store: Map<string, string>; __reset: () => void };
+const secure = SecureStore as unknown as {
+  __store: Map<string, string>;
+  __reset: () => void;
+};
 
 function renderApp(state: SessionState) {
   sessionTestApi.seed(state);
@@ -31,7 +43,9 @@ describe('authenticated shells', () => {
     sessionTestApi.reset();
     queryClient.clear();
     installFetchMock(({ method, path }) =>
-      method === 'GET' && path === '/v1/aluno/home' ? json(200, makeAlunoHome()) : null,
+      method === 'GET' && path === '/v1/aluno/home'
+        ? json(200, makeAlunoHome())
+        : null,
     );
   });
 
@@ -80,7 +94,9 @@ describe('authenticated shells', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Sair'));
     });
-    await waitFor(() => expect(screen.getByText('Bem-vindo de volta')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Bem-vindo de volta')).toBeTruthy(),
+    );
     expect(revoked).toBe(true);
     expect(secure.__store.size).toBe(0);
   });
@@ -88,7 +104,9 @@ describe('authenticated shells', () => {
   it('suspended screen still allows logout', async () => {
     await setRefreshToken('rt-1');
     installFetchMock(({ method, path }) =>
-      method === 'POST' && path === '/v1/auth/logout' ? json(200, { ok: true }) : null,
+      method === 'POST' && path === '/v1/auth/logout'
+        ? json(200, { ok: true })
+        : null,
     );
     renderApp({
       status: 'authed',
@@ -98,7 +116,9 @@ describe('authenticated shells', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Sair'));
     });
-    await waitFor(() => expect(screen.getByText('Bem-vindo de volta')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Bem-vindo de volta')).toBeTruthy(),
+    );
     expect(secure.__store.size).toBe(0);
   });
 });

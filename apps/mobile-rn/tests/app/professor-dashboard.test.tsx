@@ -6,11 +6,22 @@
  * read-only "Eventos futuros" list.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import {
   OPEN_MAT_CLASS_ID,
   makeDashboard,
@@ -40,13 +51,22 @@ function renderProfessor(override?: FetchHandler): void {
     if (method === 'GET' && path === '/v1/professor/dashboard') {
       return json(200, makeDashboard());
     }
-    if (method === 'POST' && path === `/v1/professor/classes/${OPEN_MAT_CLASS_ID}/live-codes`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/classes/${OPEN_MAT_CLASS_ID}/live-codes`
+    ) {
       return json(200, makeLiveCode());
     }
-    if (method === 'GET' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/attendances`) {
+    if (
+      method === 'GET' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/attendances`
+    ) {
       return json(200, makeSnapshot([]));
     }
-    if (method === 'POST' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/stream-ticket`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/stream-ticket`
+    ) {
       return json(200, { ticket: 'ticket-1', expiresInSeconds: 60 });
     }
     return null;
@@ -113,8 +133,12 @@ describe('professor dashboard (ATT.18)', () => {
     expect(screen.getByText('eventos futuros')).toBeTruthy();
 
     // The list: date square, name, "N confirmados · gratuito/R$ X".
-    await waitFor(() => expect(screen.getByText('Eventos futuros')).toBeTruthy());
-    expect(screen.getByTestId(`professor-event-${OPEN_MAT_EVENT_ID}`)).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText('Eventos futuros')).toBeTruthy(),
+    );
+    expect(
+      screen.getByTestId(`professor-event-${OPEN_MAT_EVENT_ID}`),
+    ).toBeTruthy();
     expect(screen.getByText('Open mat de verão')).toBeTruthy();
     expect(screen.getByText('Sábado, 15 de agosto · 10:00')).toBeTruthy();
     expect(screen.getByText('32 confirmados · gratuito')).toBeTruthy();
@@ -131,14 +155,18 @@ describe('professor dashboard (ATT.18)', () => {
         : null,
     );
 
-    await waitFor(() => expect(screen.getByText('Sem próxima aula hoje')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Sem próxima aula hoje')).toBeTruthy(),
+    );
     expect(screen.queryByText('Iniciar chamada')).toBeNull();
   });
 
   it('Iniciar chamada opens the live chamada for the next class', async () => {
     renderProfessor();
 
-    await waitFor(() => expect(screen.getByText('Iniciar chamada')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Iniciar chamada')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Iniciar chamada'));
     });

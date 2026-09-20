@@ -10,7 +10,13 @@
 
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BeltChip, Card, ListRow, Text, useTheme } from '@tatame/design-system/native';
+import {
+  BeltChip,
+  Card,
+  ListRow,
+  Text,
+  useTheme,
+} from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { ProfileScreen } from '../../../components/ProfileScreen';
 import { beltChipLabel } from '../../../features/graduation/format';
@@ -29,7 +35,11 @@ export default function ProfessorPerfilScreen() {
       identityExtra={
         belt ? (
           <View style={{ flexDirection: 'row', marginTop: theme.space['2'] }}>
-            <BeltChip belt={belt} label={beltChipLabel(belt)} testID="perfil-belt-chip" />
+            <BeltChip
+              belt={belt}
+              label={beltChipLabel(belt)}
+              testID="perfil-belt-chip"
+            />
           </View>
         ) : null
       }
@@ -51,10 +61,16 @@ export default function ProfessorPerfilScreen() {
           <View style={{ gap: theme.space['3'] }}>
             <Text variant="subtitle">Graduações válidas</Text>
             <Text variant="caption">
-              Definição conjunta com o admin, para toda a academia. Faixas infantis
-              desativadas aparecem esmaecidas.
+              Definição conjunta com o admin, para toda a academia. Faixas
+              infantis desativadas aparecem esmaecidas.
             </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space['2'] }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: theme.space['2'],
+              }}
+            >
               {profile.validGraduations.map((item) => (
                 <BeltChip
                   key={item.beltId}

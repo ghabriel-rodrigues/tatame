@@ -30,6 +30,8 @@ describe('BrandLogo', () => {
 
     render(<BrandLogo boxed={false} label="Academia X" testID="bare" />);
     expect(screen.getByLabelText('Academia X')).toBeTruthy();
-    expect(JSON.stringify(screen.getByTestId('bare').props.style)).not.toContain('"width":56');
+    expect(
+      JSON.stringify(screen.getByTestId('bare').props.style),
+    ).not.toContain('"width":56');
   });
 });

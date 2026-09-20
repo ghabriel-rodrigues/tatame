@@ -6,11 +6,23 @@
  * stable graduation.* problem codes, and the persistent observações.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, problem, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  problem,
+  type FetchHandler,
+} from '../helpers/session';
 import {
   FUNDAMENTOS_ID,
   FUNDAMENTOS_ROSTER,
@@ -35,7 +47,10 @@ interface HandlerLog {
   noteBodies: unknown[];
 }
 
-function graduationHandlers(log: HandlerLog, override?: FetchHandler): FetchHandler {
+function graduationHandlers(
+  log: HandlerLog,
+  override?: FetchHandler,
+): FetchHandler {
   return (request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
@@ -46,15 +61,23 @@ function graduationHandlers(log: HandlerLog, override?: FetchHandler): FetchHand
     const detailMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)$/.exec(path);
     if (method === 'GET' && detailMatch) {
       const detail = makeProfessorClassDetails()[detailMatch[1] ?? ''];
-      return detail ? json(200, { class: detail }) : problem(404, 'resource.not_found');
+      return detail
+        ? json(200, { class: detail })
+        : problem(404, 'resource.not_found');
     }
     if (method === 'GET' && path === '/v1/professor/profile') {
       return json(200, makeProfessorProfile());
     }
-    if (method === 'GET' && path === `/v1/professor/students/${LUCAS_ID}/profile`) {
+    if (
+      method === 'GET' &&
+      path === `/v1/professor/students/${LUCAS_ID}/profile`
+    ) {
       return json(200, makeStudentProfile());
     }
-    if (method === 'POST' && path === `/v1/professor/students/${LUCAS_ID}/graduations`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/students/${LUCAS_ID}/graduations`
+    ) {
       log.awardBodies.push(body);
       return json(201, {
         graduation: {
@@ -69,7 +92,10 @@ function graduationHandlers(log: HandlerLog, override?: FetchHandler): FetchHand
           },
           degree: 3,
           awardedAt: '2026-08-09T18:00:00.000Z',
-          awardedBy: { userId: '018f0000-0000-7000-8004-000000000001', fullName: 'Rafa Mendes' },
+          awardedBy: {
+            userId: '018f0000-0000-7000-8004-000000000001',
+            fullName: 'Rafa Mendes',
+          },
           notes: null,
           reversed: false,
           reversesGraduationId: null,
@@ -85,9 +111,14 @@ function graduationHandlers(log: HandlerLog, override?: FetchHandler): FetchHand
         },
       });
     }
-    if (method === 'POST' && path === `/v1/professor/students/${LUCAS_ID}/notes`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/students/${LUCAS_ID}/notes`
+    ) {
       log.noteBodies.push(body);
-      return json(201, { note: makeStudentNote((body as { body: string }).body) });
+      return json(201, {
+        note: makeStudentNote((body as { body: string }).body),
+      });
     }
     return null;
   };
@@ -122,7 +153,9 @@ async function openLucasProfile(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Fundamentos'));
   });
-  await waitFor(() => expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Lucas Almeida'));
   });
@@ -140,8 +173,12 @@ describe('professor perfil do aluno (GRD.17)', () => {
     renderProfessor();
     await openLucasProfile();
 
-    await waitFor(() => expect(screen.getByTestId('profile-belt')).toBeTruthy());
-    expect(screen.getAllByText('Faixa azul · 2 graus').length).toBeGreaterThanOrEqual(1);
+    await waitFor(() =>
+      expect(screen.getByTestId('profile-belt')).toBeTruthy(),
+    );
+    expect(
+      screen.getAllByText('Faixa azul · 2 graus').length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('38 de 40 aulas · Próximo 3º grau')).toBeTruthy();
 
     // Phase-4 tiles + honest mensalidade placeholder.
@@ -155,16 +192,22 @@ describe('professor perfil do aluno (GRD.17)', () => {
     // Observações, newest first, with author tag.
     expect(screen.getByText('Observações')).toBeTruthy();
     expect(
-      screen.getByText('Boa evolução na guarda fechada, precisa soltar mais o jogo de passagem.'),
+      screen.getByText(
+        'Boa evolução na guarda fechada, precisa soltar mais o jogo de passagem.',
+      ),
     ).toBeTruthy();
-    expect(screen.getByText('Pediu foco em raspagens para o exame.')).toBeTruthy();
+    expect(
+      screen.getByText('Pediu foco em raspagens para o exame.'),
+    ).toBeTruthy();
     expect(screen.getByText('12 jul · Prof. Rafael')).toBeTruthy();
   });
 
   it('adds a degree through the confirmation sheet with an observação', async () => {
     const log = renderProfessor();
     await openLucasProfile();
-    await waitFor(() => expect(screen.getByText('Adicionar grau')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Adicionar grau')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Adicionar grau'));
@@ -184,15 +227,22 @@ describe('professor perfil do aluno (GRD.17)', () => {
     });
 
     await waitFor(() =>
-      expect(log.awardBodies).toContainEqual({ kind: 'degree', notes: 'Constância exemplar.' }),
+      expect(log.awardBodies).toContainEqual({
+        kind: 'degree',
+        notes: 'Constância exemplar.',
+      }),
     );
-    await waitFor(() => expect(screen.getByText('Grau adicionado.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Grau adicionado.')).toBeTruthy(),
+    );
   });
 
   it('promotes the belt to the next enabled belt of the régua', async () => {
     const log = renderProfessor();
     await openLucasProfile();
-    await waitFor(() => expect(screen.getByText('Promover faixa')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Promover faixa')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Promover faixa'));
@@ -200,7 +250,9 @@ describe('professor perfil do aluno (GRD.17)', () => {
     // Azul → Roxa (kids belts and the disabled Laranja are skipped).
     await waitFor(() =>
       expect(
-        screen.getByText('Lucas Almeida é promovido para a faixa roxa. Os graus voltam a zero.'),
+        screen.getByText(
+          'Lucas Almeida é promovido para a faixa roxa. Os graus voltam a zero.',
+        ),
       ).toBeTruthy(),
     );
 
@@ -209,15 +261,22 @@ describe('professor perfil do aluno (GRD.17)', () => {
     });
 
     await waitFor(() =>
-      expect(log.awardBodies).toContainEqual({ kind: 'belt', beltId: BELT_IDS.roxa }),
+      expect(log.awardBodies).toContainEqual({
+        kind: 'belt',
+        beltId: BELT_IDS.roxa,
+      }),
     );
-    await waitFor(() => expect(screen.getByText('Faixa promovida.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Faixa promovida.')).toBeTruthy(),
+    );
   });
 
   it('hides both award actions when graduation.update is off', async () => {
     renderProfessor({ permissions: { 'graduation.update': false } });
     await openLucasProfile();
-    await waitFor(() => expect(screen.getByTestId('profile-belt')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('profile-belt')).toBeTruthy(),
+    );
 
     expect(screen.queryByText('Adicionar grau')).toBeNull();
     expect(screen.queryByText('Promover faixa')).toBeNull();
@@ -225,12 +284,15 @@ describe('professor perfil do aluno (GRD.17)', () => {
 
   it('maps graduation.degree_at_max to the PT-BR message', async () => {
     renderProfessor({}, ({ method, path }) =>
-      method === 'POST' && path === `/v1/professor/students/${LUCAS_ID}/graduations`
+      method === 'POST' &&
+      path === `/v1/professor/students/${LUCAS_ID}/graduations`
         ? problem(422, 'graduation.degree_at_max')
         : null,
     );
     await openLucasProfile();
-    await waitFor(() => expect(screen.getByText('Adicionar grau')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Adicionar grau')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Adicionar grau'));
@@ -241,19 +303,24 @@ describe('professor perfil do aluno (GRD.17)', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText('Este aluno já está no número máximo de graus da faixa atual.'),
+        screen.getByText(
+          'Este aluno já está no número máximo de graus da faixa atual.',
+        ),
       ).toBeTruthy(),
     );
   });
 
   it('maps graduation.belt_invalid_target to the PT-BR message', async () => {
     renderProfessor({}, ({ method, path }) =>
-      method === 'POST' && path === `/v1/professor/students/${LUCAS_ID}/graduations`
+      method === 'POST' &&
+      path === `/v1/professor/students/${LUCAS_ID}/graduations`
         ? problem(422, 'graduation.belt_invalid_target')
         : null,
     );
     await openLucasProfile();
-    await waitFor(() => expect(screen.getByText('Promover faixa')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Promover faixa')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Promover faixa'));
@@ -264,7 +331,9 @@ describe('professor perfil do aluno (GRD.17)', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText('Faixa de destino inválida — verifique as graduações válidas da academia.'),
+        screen.getByText(
+          'Faixa de destino inválida — verifique as graduações válidas da academia.',
+        ),
       ).toBeTruthy(),
     );
   });
@@ -283,8 +352,12 @@ describe('professor perfil do aluno (GRD.17)', () => {
     });
 
     await waitFor(() =>
-      expect(log.noteBodies).toContainEqual({ body: 'Treinou defesa de queda hoje.' }),
+      expect(log.noteBodies).toContainEqual({
+        body: 'Treinou defesa de queda hoje.',
+      }),
     );
-    await waitFor(() => expect(screen.getByText('Observação salva.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Observação salva.')).toBeTruthy(),
+    );
   });
 });

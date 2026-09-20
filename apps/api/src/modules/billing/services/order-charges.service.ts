@@ -63,13 +63,25 @@ export class OrderChargesService {
         status: 'open',
       })
       .returning();
-    if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Order charge insert returned no row');
+    if (!inserted)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Order charge insert returned no row',
+      );
 
-    await this.audit(tx, input.tenantId, actor, 'billing.charge.created', inserted.id, {
-      origin: 'order',
-      order_id: input.orderId,
-      amount_cents: input.amountCents,
-    });
+    await this.audit(
+      tx,
+      input.tenantId,
+      actor,
+      'billing.charge.created',
+      inserted.id,
+      {
+        origin: 'order',
+        order_id: input.orderId,
+        amount_cents: input.amountCents,
+      },
+    );
     return inserted;
   }
 
@@ -86,7 +98,11 @@ export class OrderChargesService {
   ): Promise<Array<typeof charges.$inferSelect>> {
     const canceled = await tx
       .update(charges)
-      .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(charges.origin, 'order'),

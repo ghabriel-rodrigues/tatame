@@ -1,5 +1,20 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { AddRosterStudentDto } from '../dto/requests.dto.js';
@@ -34,23 +49,36 @@ export class ProfessorClassesController {
   async list() {
     const ctx = requireTenantContext(this.cls);
     return {
-      classes: await this.classService.list(ctx, 'active', { professorUserId: ctx.userId }),
+      classes: await this.classService.list(ctx, 'active', {
+        professorUserId: ctx.userId,
+      }),
     };
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Own turma detail with roster (foreign class → 404)' })
+  @ApiOperation({
+    summary: 'Own turma detail with roster (foreign class → 404)',
+  })
   @ApiOkResponse({ type: ClassDetailResponseDto })
   async detail(@Param('id', ParseUUIDPipe) id: string) {
     const ctx = requireTenantContext(this.cls);
-    return { class: await this.classService.detail(ctx, id, { professorUserId: ctx.userId }) };
+    return {
+      class: await this.classService.detail(ctx, id, {
+        professorUserId: ctx.userId,
+      }),
+    };
   }
 
   @Post(':id/students')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Adicionar aluno — same capacity rule that binds the admin' })
+  @ApiOperation({
+    summary: 'Adicionar aluno — same capacity rule that binds the admin',
+  })
   @ApiCreatedResponse({ type: EnrollmentResultResponseDto })
-  async addStudent(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AddRosterStudentDto) {
+  async addStudent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AddRosterStudentDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return {
       enrollment: await this.enrollment.addStudent(ctx, id, dto.studentId, {

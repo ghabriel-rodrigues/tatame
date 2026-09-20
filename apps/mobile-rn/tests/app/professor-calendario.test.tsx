@@ -6,7 +6,13 @@
  * entries (read-only — no aluno-style detail push for the professor).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
@@ -24,11 +30,17 @@ const secure = SecureStore as unknown as { __reset: () => void };
 
 function renderProfessorCalendario(events: CalendarEventItem[] = []): void {
   installFetchMock((request) => {
-    if (request.method === 'GET' && request.path === '/v1/professor/dashboard') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/professor/dashboard'
+    ) {
       return json(200, makeDashboard());
     }
     if (request.method === 'GET' && request.path === '/v1/professor/calendar') {
-      return json(200, makeCalendar({ 1: [makeCalendarItem()] }, '2026-08', events));
+      return json(
+        200,
+        makeCalendar({ 1: [makeCalendarItem()] }, '2026-08', events),
+      );
     }
     return null;
   });
@@ -62,8 +74,12 @@ describe('professor month calendar (AGD.6)', () => {
     renderProfessorCalendario();
     await openCalendario();
 
-    expect(screen.getByText('Aulas recorrentes e eventos da academia')).toBeTruthy();
-    await waitFor(() => expect(screen.getByTestId('calendar-card')).toBeTruthy());
+    expect(
+      screen.getByText('Aulas recorrentes e eventos da academia'),
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByTestId('calendar-card')).toBeTruthy(),
+    );
     for (const day of [3, 10, 17, 24, 31]) {
       expect(screen.getByTestId(`class-dot-${day}`)).toBeTruthy();
     }
@@ -89,7 +105,9 @@ describe('professor month calendar (AGD.6)', () => {
     renderProfessorCalendario([makeCalendarEvent()]);
     await openCalendario();
 
-    await waitFor(() => expect(screen.getByTestId('event-dot-15')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('event-dot-15')).toBeTruthy(),
+    );
     expect(screen.queryByTestId('event-dot-14')).toBeNull();
 
     await act(async () => {
@@ -97,7 +115,9 @@ describe('professor month calendar (AGD.6)', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByTestId(`calendar-event-${OPEN_MAT_EVENT_ID}`)).toBeTruthy(),
+      expect(
+        screen.getByTestId(`calendar-event-${OPEN_MAT_EVENT_ID}`),
+      ).toBeTruthy(),
     );
     expect(screen.getByText('Open mat de verão')).toBeTruthy();
     expect(screen.getByText('Evento')).toBeTruthy();
@@ -111,7 +131,9 @@ describe('professor month calendar (AGD.6)', () => {
       fireEvent.press(screen.getByLabelText('Dia 6'));
     });
 
-    await waitFor(() => expect(screen.getByText('Quinta-feira, 6 de agosto')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Quinta-feira, 6 de agosto')).toBeTruthy(),
+    );
     expect(screen.getByText('Dia livre — bom descanso.')).toBeTruthy();
     expect(screen.queryByText('Fundamentos')).toBeNull();
   });

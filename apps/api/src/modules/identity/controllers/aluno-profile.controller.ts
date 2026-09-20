@@ -1,9 +1,17 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
-import { AlunoProfileResponseDto, UpdateAlunoProfileDto } from '../dto/profile.dto.js';
+import {
+  AlunoProfileResponseDto,
+  UpdateAlunoProfileDto,
+} from '../dto/profile.dto.js';
 import { ProfileService } from '../services/profile.service.js';
 
 /**
@@ -25,7 +33,8 @@ export class AlunoProfileController {
 
   @Get()
   @ApiOperation({
-    summary: 'Dados pessoais: identificação (CPF/RG lock state), contato, endereço, emergência',
+    summary:
+      'Dados pessoais: identificação (CPF/RG lock state), contato, endereço, emergência',
     description:
       'Email and birth date are read-only (birth date served from the linked student row — the ' +
       'age-rule authority). cpfLocked/rgLocked drive the aluno-18 dashed lock boxes.',

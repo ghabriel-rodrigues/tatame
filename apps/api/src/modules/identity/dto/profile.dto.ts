@@ -1,8 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /** The small fixed gender set (users_gender_ck) — clients render PT-BR labels. */
-export const GENDER_VALUES = ['female', 'male', 'other', 'unspecified'] as const;
+export const GENDER_VALUES = [
+  'female',
+  'male',
+  'other',
+  'unspecified',
+] as const;
 export type Gender = (typeof GENDER_VALUES)[number];
 
 /**
@@ -14,7 +25,9 @@ export type Gender = (typeof GENDER_VALUES)[number];
  * settable while NULL, 422 `profile.field_locked` on any change after.
  */
 export class UpdateAlunoProfileDto {
-  @ApiPropertyOptional({ description: 'Syncs onto the linked student row in the same transaction' })
+  @ApiPropertyOptional({
+    description: 'Syncs onto the linked student row in the same transaction',
+  })
   @IsOptional()
   @IsString()
   @MinLength(2)
@@ -26,19 +39,27 @@ export class UpdateAlunoProfileDto {
   @IsIn(GENDER_VALUES)
   gender?: Gender | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Digits, spaces, +, -, parentheses' })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Digits, spaces, +, -, parentheses',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(20)
   phone?: string | null;
 
-  @ApiPropertyOptional({ description: 'Write-once. Masked or bare digits — normalized and checksum-validated' })
+  @ApiPropertyOptional({
+    description:
+      'Write-once. Masked or bare digits — normalized and checksum-validated',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(18)
   cpf?: string;
 
-  @ApiPropertyOptional({ description: 'Write-once. Free format (state formats vary), trimmed' })
+  @ApiPropertyOptional({
+    description: 'Write-once. Free format (state formats vary), trimmed',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(20)
@@ -56,13 +77,19 @@ export class UpdateAlunoProfileDto {
   @MaxLength(120)
   addressCity?: string | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'UF — validated against the 27 federative units' })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'UF — validated against the 27 federative units',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2)
   addressState?: string | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'CEP — masked or bare digits, normalized to 8' })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'CEP — masked or bare digits, normalized to 8',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(10)
@@ -81,12 +108,16 @@ export class UpdateAlunoProfileDto {
   emergencyContactPhone?: string | null;
 
   /** Read-only — present only so the pipe cannot silently drop it (422). */
-  @ApiPropertyOptional({ description: 'Read-only — sending it is a 422 profile.field_read_only' })
+  @ApiPropertyOptional({
+    description: 'Read-only — sending it is a 422 profile.field_read_only',
+  })
   @IsOptional()
   email?: unknown;
 
   /** Read-only — present only so the pipe cannot silently drop it (422). */
-  @ApiPropertyOptional({ description: 'Read-only — sending it is a 422 profile.field_read_only' })
+  @ApiPropertyOptional({
+    description: 'Read-only — sending it is a 422 profile.field_read_only',
+  })
   @IsOptional()
   birthDate?: unknown;
 }
@@ -102,7 +133,8 @@ export class AlunoProfileResponseDto {
     nullable: true,
     type: String,
     example: '2000-03-15',
-    description: 'Read-only — served from the linked student row (the age-rule authority)',
+    description:
+      'Read-only — served from the linked student row (the age-rule authority)',
   })
   birthDate!: string | null;
 
@@ -112,16 +144,24 @@ export class AlunoProfileResponseDto {
   @ApiProperty({ enum: GENDER_VALUES, nullable: true, type: String })
   gender!: string | null;
 
-  @ApiProperty({ nullable: true, type: String, description: '11 normalized digits — clients render the mask' })
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: '11 normalized digits — clients render the mask',
+  })
   cpf!: string | null;
 
-  @ApiProperty({ description: 'True once set — the aluno-18 dashed lock state' })
+  @ApiProperty({
+    description: 'True once set — the aluno-18 dashed lock state',
+  })
   cpfLocked!: boolean;
 
   @ApiProperty({ nullable: true, type: String })
   rg!: string | null;
 
-  @ApiProperty({ description: 'True once set — the aluno-18 dashed lock state' })
+  @ApiProperty({
+    description: 'True once set — the aluno-18 dashed lock state',
+  })
   rgLocked!: boolean;
 
   @ApiProperty({ nullable: true, type: String })
@@ -130,10 +170,18 @@ export class AlunoProfileResponseDto {
   @ApiProperty({ nullable: true, type: String })
   addressCity!: string | null;
 
-  @ApiProperty({ nullable: true, type: String, description: 'UF, 2 uppercase letters' })
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'UF, 2 uppercase letters',
+  })
   addressState!: string | null;
 
-  @ApiProperty({ nullable: true, type: String, description: 'CEP, 8 normalized digits' })
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'CEP, 8 normalized digits',
+  })
   addressZip!: string | null;
 
   @ApiProperty({ nullable: true, type: String })
@@ -142,6 +190,10 @@ export class AlunoProfileResponseDto {
   @ApiProperty({ nullable: true, type: String })
   emergencyContactPhone!: string | null;
 
-  @ApiProperty({ nullable: true, type: String, description: 'Avatars stay initials in v1 (Trocar foto is a placeholder)' })
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Avatars stay initials in v1 (Trocar foto is a placeholder)',
+  })
   avatarUrl!: string | null;
 }

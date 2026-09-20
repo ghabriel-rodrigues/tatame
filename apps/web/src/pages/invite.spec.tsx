@@ -29,47 +29,67 @@ describe('convite flow', () => {
     renderRoute(`/convite/${TOKEN}`);
 
     expect(
-      await screen.findByText(/Você foi convidado para treinar na Alpha Jiu-Jitsu/),
+      await screen.findByText(
+        /Você foi convidado para treinar na Alpha Jiu-Jitsu/,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Turma vinculada')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Aceitar convite' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Aceitar convite' }),
+    ).toBeInTheDocument();
   });
 
   it('shows the friendly error state for an expired or used-up link', async () => {
     server.use(
       http.get('/v1/public/invites/{token}', ({ response }) =>
-        response.untyped(problemResponse(410, 'invite.invalid_or_expired', 'Invite is expired')),
+        response.untyped(
+          problemResponse(
+            410,
+            'invite.invalid_or_expired',
+            'Invite is expired',
+          ),
+        ),
       ),
     );
 
     renderRoute(`/convite/${TOKEN}`);
 
     expect(await screen.findByText('Convite indisponível')).toBeInTheDocument();
-    expect(screen.getByText(/Este convite expirou ou já foi utilizado/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Este convite expirou ou já foi utilizado/),
+    ).toBeInTheDocument();
   });
 
   it('shows the not-found error state for an unknown link', async () => {
     server.use(
       http.get('/v1/public/invites/{token}', ({ response }) =>
-        response.untyped(problemResponse(404, 'invite.invalid_or_expired', 'Invite not found')),
+        response.untyped(
+          problemResponse(404, 'invite.invalid_or_expired', 'Invite not found'),
+        ),
       ),
     );
 
     renderRoute(`/convite/${TOKEN}`);
 
     expect(await screen.findByText('Convite indisponível')).toBeInTheDocument();
-    expect(screen.getByText(/Não encontramos este convite/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Não encontramos este convite/),
+    ).toBeInTheDocument();
   });
 
   async function fillSignup() {
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Aceitar convite' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Aceitar convite' }),
+    );
     await user.type(screen.getByLabelText('Nome completo'), 'Novo Aluno');
     await user.type(screen.getByLabelText('Email'), 'novo@tatame.dev');
     await user.type(screen.getByLabelText('Criar senha'), 'SenhaForte!123');
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
     expect(await screen.findByText('Resumo do vínculo')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Criar conta e entrar' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Criar conta e entrar' }),
+    );
     return user;
   }
 
@@ -103,7 +123,9 @@ describe('convite flow', () => {
 
     expect(await screen.findByText('Bem-vindo ao tatame')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
-    await waitFor(() => expect(router.state.location.pathname).toBe('/baixe-o-app'));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/baixe-o-app'),
+    );
   });
 
   it('409 email-exists routes through the login prompt path', async () => {
@@ -120,7 +142,9 @@ describe('convite flow', () => {
     const user = await fillSignup();
 
     expect(await screen.findByText('Você já tem conta')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Entrar e aceitar convite' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Entrar e aceitar convite' }),
+    );
     await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
     expect(router.state.location.search).toBe(
       `?next=${encodeURIComponent(`/convite/${TOKEN}`)}`,
@@ -148,7 +172,9 @@ describe('convite flow', () => {
     const user = userEvent.setup();
 
     await user.click(
-      await screen.findByRole('button', { name: `Aceitar como ${session.user.fullName}` }),
+      await screen.findByRole('button', {
+        name: `Aceitar como ${session.user.fullName}`,
+      }),
     );
 
     expect(await screen.findByText('Bem-vindo ao tatame')).toBeInTheDocument();

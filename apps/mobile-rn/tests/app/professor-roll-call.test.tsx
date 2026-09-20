@@ -5,11 +5,23 @@
  * revoke_window_closed error path.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, problem, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  problem,
+  type FetchHandler,
+} from '../helpers/session';
 import {
   FUNDAMENTOS_ID,
   makeProfessorClassDetails,
@@ -39,15 +51,22 @@ function installHandlers(override?: FetchHandler): Log {
     const overridden = override?.(request);
     if (overridden) return overridden;
     const { method, path, body } = request;
-    if (method === 'GET' && path === '/v1/professor/classes') return json(200, { classes });
+    if (method === 'GET' && path === '/v1/professor/classes')
+      return json(200, { classes });
     const detailMatch = /^\/v1\/professor\/classes\/([0-9a-f-]+)$/.exec(path);
     if (method === 'GET' && detailMatch) {
       return json(200, { class: details[detailMatch[1] ?? ''] });
     }
-    if (method === 'POST' && path === `/v1/professor/classes/${FUNDAMENTOS_ID}/roll-call`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/classes/${FUNDAMENTOS_ID}/roll-call`
+    ) {
       return json(200, makeRollCall());
     }
-    if (method === 'POST' && path === `/v1/professor/sessions/${SESSION_ID}/attendances`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/sessions/${SESSION_ID}/attendances`
+    ) {
       log.markBodies.push(body);
       return json(200, {
         status: 'checked_in',
@@ -60,7 +79,8 @@ function installHandlers(override?: FetchHandler): Log {
         presentCount: 3,
       });
     }
-    const revokeMatch = /^\/v1\/professor\/attendances\/([0-9a-z-]+)\/revoke$/.exec(path);
+    const revokeMatch =
+      /^\/v1\/professor\/attendances\/([0-9a-z-]+)\/revoke$/.exec(path);
     if (method === 'POST' && revokeMatch) {
       log.revokedIds.push(revokeMatch[1] ?? '');
       return json(200, {
@@ -99,7 +119,9 @@ async function openRollCall(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByText('Chamada manual'));
   });
-  await waitFor(() => expect(screen.getByText('Chamada · Fundamentos')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByText('Chamada · Fundamentos')).toBeTruthy(),
+  );
 }
 
 describe('professor chamada manual (ATT.18)', () => {
@@ -131,8 +153,12 @@ describe('professor chamada manual (ATT.18)', () => {
       fireEvent(screen.getByTestId('toggle-Tiago Mota'), 'valueChange', true);
     });
 
-    await waitFor(() => expect(screen.getByText('3 presentes de 3')).toBeTruthy());
-    expect(log.markBodies).toContainEqual({ studentId: ROLL_CALL_STUDENTS.tiago });
+    await waitFor(() =>
+      expect(screen.getByText('3 presentes de 3')).toBeTruthy(),
+    );
+    expect(log.markBodies).toContainEqual({
+      studentId: ROLL_CALL_STUDENTS.tiago,
+    });
     expect(screen.getByTestId('toggle-Tiago Mota').props.value).toBe(true);
   });
 
@@ -141,24 +167,35 @@ describe('professor chamada manual (ATT.18)', () => {
     await openRollCall();
 
     await act(async () => {
-      fireEvent(screen.getByTestId('toggle-Lucas Almeida'), 'valueChange', false);
+      fireEvent(
+        screen.getByTestId('toggle-Lucas Almeida'),
+        'valueChange',
+        false,
+      );
     });
 
-    await waitFor(() => expect(screen.getByText('1 presentes de 3')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('1 presentes de 3')).toBeTruthy(),
+    );
     expect(log.revokedIds).toContain(LUCAS_ATTENDANCE_ID);
     expect(screen.getByTestId('toggle-Lucas Almeida').props.value).toBe(false);
   });
 
   it('keeps the toggle on and explains when the revoke window closed', async () => {
     renderProfessor(({ method, path }) =>
-      method === 'POST' && path === `/v1/professor/attendances/${LUCAS_ATTENDANCE_ID}/revoke`
+      method === 'POST' &&
+      path === `/v1/professor/attendances/${LUCAS_ATTENDANCE_ID}/revoke`
         ? problem(403, 'attendance.revoke_window_closed')
         : null,
     );
     await openRollCall();
 
     await act(async () => {
-      fireEvent(screen.getByTestId('toggle-Lucas Almeida'), 'valueChange', false);
+      fireEvent(
+        screen.getByTestId('toggle-Lucas Almeida'),
+        'valueChange',
+        false,
+      );
     });
 
     await waitFor(() =>
@@ -176,6 +213,8 @@ describe('professor chamada manual (ATT.18)', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Salvar chamada'));
     });
-    await waitFor(() => expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Fazer chamada de hoje')).toBeTruthy(),
+    );
   });
 });

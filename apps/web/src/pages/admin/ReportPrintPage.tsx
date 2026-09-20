@@ -95,16 +95,29 @@ function SummaryBlock({ children }: { children: ReactNode }) {
 }
 
 function EmptyCopy() {
-  return <Typography sx={{ fontSize: 13, color: 'var(--fg-3)' }}>{EMPTY_COPY}</Typography>;
+  return (
+    <Typography sx={{ fontSize: 13, color: 'var(--fg-3)' }}>
+      {EMPTY_COPY}
+    </Typography>
+  );
 }
 
 function FinanceiroBody({ data }: { data: FinanceiroReport }) {
   return (
     <>
       <SummaryBlock>
-        <SummaryStat label="Receita" value={formatBRL(data.summary.receitaCents)} />
-        <SummaryStat label="Previsto" value={formatBRL(data.summary.previstoCents)} />
-        <SummaryStat label="Inadimplência" value={formatPct(data.summary.inadimplenciaPct)} />
+        <SummaryStat
+          label="Receita"
+          value={formatBRL(data.summary.receitaCents)}
+        />
+        <SummaryStat
+          label="Previsto"
+          value={formatBRL(data.summary.previstoCents)}
+        />
+        <SummaryStat
+          label="Inadimplência"
+          value={formatPct(data.summary.inadimplenciaPct)}
+        />
       </SummaryBlock>
       {data.rows.length === 0 ? (
         <EmptyCopy />
@@ -126,11 +139,15 @@ function FinanceiroBody({ data }: { data: FinanceiroReport }) {
               <tr key={row.chargeId}>
                 <td>{row.studentName ?? '—'}</td>
                 <td>{ORIGIN_LABELS[row.origin]}</td>
-                <td>{row.periodStart ? shortDateLabel(row.periodStart) : '—'}</td>
+                <td>
+                  {row.periodStart ? shortDateLabel(row.periodStart) : '—'}
+                </td>
                 <td>{shortDateLabel(row.dueDate)}</td>
                 <td>{chargeStatusLabel(row.status)}</td>
                 <td>{formatBRL(row.amountCents)}</td>
-                <td>{row.paidAt ? shortDateLabel(row.paidAt.slice(0, 10)) : '—'}</td>
+                <td>
+                  {row.paidAt ? shortDateLabel(row.paidAt.slice(0, 10)) : '—'}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -146,9 +163,14 @@ function FrequenciaBody({ data }: { data: FrequenciaReport }) {
     <>
       {data.classes.map((turma) => (
         <Box key={turma.classId}>
-          <Typography sx={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             {turma.className}
-            <Box component="span" sx={{ fontWeight: 600, color: 'var(--fg-3)', fontSize: 12 }}>
+            <Box
+              component="span"
+              sx={{ fontWeight: 600, color: 'var(--fg-3)', fontSize: 12 }}
+            >
               {` · ${turma.sessionsCount} ${turma.sessionsCount === 1 ? 'aula' : 'aulas'} no mês`}
             </Box>
           </Typography>
@@ -186,8 +208,14 @@ function InadimplenciaBody({ data }: { data: InadimplenciaReport }) {
   return (
     <>
       <SummaryBlock>
-        <SummaryStat label="Cobranças vencidas" value={String(data.totals.count)} />
-        <SummaryStat label="Total em aberto" value={formatBRL(data.totals.totalCents)} />
+        <SummaryStat
+          label="Cobranças vencidas"
+          value={String(data.totals.count)}
+        />
+        <SummaryStat
+          label="Total em aberto"
+          value={formatBRL(data.totals.totalCents)}
+        />
       </SummaryBlock>
       {data.rows.length === 0 ? (
         <EmptyCopy />
@@ -257,7 +285,10 @@ function LojaBody({ data }: { data: LojaReport }) {
       <SummaryBlock>
         <SummaryStat label="Pedidos" value={String(data.totals.pedidos)} />
         <SummaryStat label="Itens" value={String(data.totals.itens)} />
-        <SummaryStat label="Vendas" value={formatBRL(data.totals.vendasCents)} />
+        <SummaryStat
+          label="Vendas"
+          value={formatBRL(data.totals.vendasCents)}
+        />
       </SummaryBlock>
       {data.rows.length === 0 ? (
         <EmptyCopy />
@@ -338,7 +369,10 @@ export function ReportPrintPage() {
 
   if (!slug) {
     return (
-      <Typography role="alert" sx={{ padding: '32px', color: 'var(--danger-500)' }}>
+      <Typography
+        role="alert"
+        sx={{ padding: '32px', color: 'var(--danger-500)' }}
+      >
         Relatório desconhecido.
       </Typography>
     );
@@ -348,19 +382,31 @@ export function ReportPrintPage() {
     <Box sx={{ minHeight: '100vh', background: 'var(--bg-surface)' }}>
       <Box sx={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px' }}>
         <Stack spacing="18px">
-          <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Stack
+            direction="row"
+            sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}
+          >
             <Box>
-              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-3)' }}>
+              <Typography
+                sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-3)' }}
+              >
                 {session?.academy?.name ?? ''}
               </Typography>
               <Typography
                 component="h1"
-                sx={{ fontSize: 24, fontWeight: 800, color: 'var(--fg-1)', letterSpacing: '-0.02em' }}
+                sx={{
+                  fontSize: 24,
+                  fontWeight: 800,
+                  color: 'var(--fg-1)',
+                  letterSpacing: '-0.02em',
+                }}
               >
                 {reportTitle(slug)}
               </Typography>
               {query.data ? (
-                <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-2)' }}>
+                <Typography
+                  sx={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-2)' }}
+                >
                   {periodLine(query.data)}
                 </Typography>
               ) : null}

@@ -40,9 +40,15 @@ describe('Regras de graduação (GRD.13)', () => {
       expect(screen.getByText(belt.name)).toBeInTheDocument();
     }
     // Ladder-specific notes: adult default, black-belt dans, red-belt no degrees.
-    expect(screen.getAllByText('máx. 4 graus · 40 aulas por grau').length).toBeGreaterThan(0);
-    expect(screen.getByText('máx. 6 graus · 40 aulas por grau')).toBeInTheDocument();
-    expect(screen.getByText('sem graus · 40 aulas por grau')).toBeInTheDocument();
+    expect(
+      screen.getAllByText('máx. 4 graus · 40 aulas por grau').length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText('máx. 6 graus · 40 aulas por grau'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('sem graus · 40 aulas por grau'),
+    ).toBeInTheDocument();
     // Toggles exist on the 4 kids belts only — the core ladder is untouchable.
     expect(screen.getAllByRole('switch')).toHaveLength(4);
     expect(
@@ -54,7 +60,9 @@ describe('Regras de graduação (GRD.13)', () => {
     ).not.toBeChecked();
     expect(screen.getByText('Desativada nesta academia')).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Aumentar aulas por grau da faixa Laranja' }),
+      screen.queryByRole('button', {
+        name: 'Aumentar aulas por grau da faixa Laranja',
+      }),
     ).not.toBeInTheDocument();
   });
 
@@ -70,19 +78,29 @@ describe('Regras de graduação (GRD.13)', () => {
 
     // ±5 around the 40 default.
     await user.click(
-      screen.getByRole('button', { name: 'Aumentar aulas por grau da faixa Branca' }),
+      screen.getByRole('button', {
+        name: 'Aumentar aulas por grau da faixa Branca',
+      }),
     );
-    expect(screen.getByLabelText('Aulas por grau da faixa Branca')).toHaveTextContent('45');
+    expect(
+      screen.getByLabelText('Aulas por grau da faixa Branca'),
+    ).toHaveTextContent('45');
     await user.click(
-      screen.getByRole('button', { name: 'Diminuir aulas por grau da faixa Branca' }),
+      screen.getByRole('button', {
+        name: 'Diminuir aulas por grau da faixa Branca',
+      }),
     );
-    expect(screen.getByLabelText('Aulas por grau da faixa Branca')).toHaveTextContent('40');
+    expect(
+      screen.getByLabelText('Aulas por grau da faixa Branca'),
+    ).toHaveTextContent('40');
     // Floor: 15 → 10, then the decrement refuses to go lower.
     const decrement = screen.getByRole('button', {
       name: 'Diminuir aulas por grau da faixa Cinza',
     });
     await user.click(decrement);
-    expect(screen.getByLabelText('Aulas por grau da faixa Cinza')).toHaveTextContent('10');
+    expect(
+      screen.getByLabelText('Aulas por grau da faixa Cinza'),
+    ).toHaveTextContent('10');
     expect(decrement).toBeDisabled();
   });
 
@@ -91,7 +109,9 @@ describe('Regras de graduação (GRD.13)', () => {
     let body: { rules: Array<Record<string, unknown>> } | null = null;
     server.use(
       http.put('/v1/admin/graduation-rules', async ({ request, response }) => {
-        body = (await request.json()) as { rules: Array<Record<string, unknown>> };
+        body = (await request.json()) as {
+          rules: Array<Record<string, unknown>>;
+        };
         return response(200).json({ rules: makeGraduationRules() });
       }),
     );
@@ -100,12 +120,18 @@ describe('Regras de graduação (GRD.13)', () => {
     await screen.findByText('Branca');
 
     await user.click(
-      screen.getByRole('button', { name: 'Aumentar aulas por grau da faixa Branca' }),
+      screen.getByRole('button', {
+        name: 'Aumentar aulas por grau da faixa Branca',
+      }),
     );
-    await user.click(screen.getByRole('switch', { name: 'Habilitar faixa Cinza' }));
+    await user.click(
+      screen.getByRole('switch', { name: 'Habilitar faixa Cinza' }),
+    );
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
 
-    expect(await screen.findByText('Regras de graduação salvas.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Regras de graduação salvas.'),
+    ).toBeInTheDocument();
     expect(body!.rules).toHaveLength(BELT_CATALOG.length);
     expect(body!.rules).toContainEqual({
       beltId: catalogBelt('Branca').beltId,
@@ -130,7 +156,11 @@ describe('Regras de graduação (GRD.13)', () => {
     server.use(
       http.put('/v1/admin/graduation-rules', ({ response }) =>
         response.untyped(
-          problemResponse(422, 'graduation.lessons_below_minimum', 'below minimum'),
+          problemResponse(
+            422,
+            'graduation.lessons_below_minimum',
+            'below minimum',
+          ),
         ),
       ),
     );
@@ -140,6 +170,8 @@ describe('Regras de graduação (GRD.13)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Salvar' }));
     const alert = await screen.findByRole('alert');
-    expect(within(alert).getByText('Aulas por grau deve ser de no mínimo 10.')).toBeTruthy();
+    expect(
+      within(alert).getByText('Aulas por grau deve ser de no mínimo 10.'),
+    ).toBeTruthy();
   });
 });

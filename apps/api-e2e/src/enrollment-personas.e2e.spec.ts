@@ -38,7 +38,10 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
   });
 
   it('professor sees only own classes with occupancy; detail carries the roster', async () => {
-    const list = await t.http().get('/v1/professor/classes').set(bearer(professor));
+    const list = await t
+      .http()
+      .get('/v1/professor/classes')
+      .set(bearer(professor));
     expect(list.status).toBe(200);
     expect(list.body.classes.map((c: any) => c.name).sort()).toEqual([
       'Adulto Gi',
@@ -46,7 +49,10 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       'Lotada',
     ]);
 
-    const detail = await t.http().get(`/v1/professor/classes/${kidsId}`).set(bearer(professor));
+    const detail = await t
+      .http()
+      .get(`/v1/professor/classes/${kidsId}`)
+      .set(bearer(professor));
     expect(detail.status).toBe(200);
     expect(detail.body.class.roster).toHaveLength(2);
     expect(detail.body.class.occupancy).toBe(2);
@@ -54,7 +60,10 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
 
   it('a class the professor does not teach behaves as a 404 — same and cross tenant', async () => {
     // Same tenant, another professor (multi@ holds an alpha professor membership).
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     const multiUserId = professors.body.professors.find(
       (p: any) => p.email === 'multi@tatame.dev',
     ).userId;
@@ -75,7 +84,8 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       ['get', `/v1/professor/classes/${foreignId}`],
       ['post', `/v1/professor/classes/${foreignId}/students`],
     ] as const) {
-      const res = await (t.http() as any)[method](path)
+      const res = await (t.http() as any)
+        [method](path)
         .set(bearer(professor))
         .send({ studentId: '018f0000-0000-7000-8000-000000000001' });
       expect(res.status, `${method} ${path}`).toBe(404);
@@ -91,9 +101,12 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .set(bearer(professor));
     expect(crossTenant.status).toBe(404);
 
-    expect(list404(await t.http().get('/v1/professor/classes').set(bearer(professor)), foreignId)).toBe(
-      true,
-    );
+    expect(
+      list404(
+        await t.http().get('/v1/professor/classes').set(bearer(professor)),
+        foreignId,
+      ),
+    ).toBe(true);
 
     function list404(res: any, id: string): boolean {
       return !res.body.classes.some((c: any) => c.id === id);
@@ -131,13 +144,18 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
   });
 
   it('responsável lists own dependents with class + next slot; foreign ids are 404 (001 debt closed)', async () => {
-    const list = await t.http().get('/v1/responsavel/dependents').set(bearer(responsavel));
+    const list = await t
+      .http()
+      .get('/v1/responsavel/dependents')
+      .set(bearer(responsavel));
     expect(list.status).toBe(200);
     expect(list.body.dependents.map((d: any) => d.fullName).sort()).toEqual([
       'Kiko Kids',
       'Lara Kids',
     ]);
-    const kiko = list.body.dependents.find((d: any) => d.fullName === 'Kiko Kids');
+    const kiko = list.body.dependents.find(
+      (d: any) => d.fullName === 'Kiko Kids',
+    );
     expect(kiko.class.name).toBe('Kids');
     expect(kiko.class.nextSlot).toBeTruthy();
     expect(kiko.class.schedules).toHaveLength(2);
@@ -149,8 +167,13 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
     expect(detail.status).toBe(200);
 
     // Same-tenant student that is NOT theirs: existence never leaks.
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    const fabio = students.body.students.find((s: any) => s.fullName === 'Fabio Fila');
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    const fabio = students.body.students.find(
+      (s: any) => s.fullName === 'Fabio Fila',
+    );
     const sameTenant = await t
       .http()
       .get(`/v1/responsavel/dependents/${fabio.id}`)
@@ -160,8 +183,13 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
 
     // Cross-tenant dependent id: invisible through RLS, same 404.
     const bravoAdmin = (await t.login('admin.bravo@tatame.dev')).accessToken;
-    const bravoStudents = await t.http().get('/v1/admin/students').set(bearer(bravoAdmin));
-    const bento = bravoStudents.body.students.find((s: any) => s.fullName === 'Bento Bravo Jr');
+    const bravoStudents = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(bravoAdmin));
+    const bento = bravoStudents.body.students.find(
+      (s: any) => s.fullName === 'Bento Bravo Jr',
+    );
     const crossTenant = await t
       .http()
       .get(`/v1/responsavel/dependents/${bento.id}`)
@@ -185,7 +213,10 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
     expect(adult.body.suggestion).toBeNull();
 
     // Lower occupancy wins the tie-break…
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     const profId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
@@ -213,7 +244,11 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .http()
       .post('/v1/admin/students')
       .set(bearer(admin))
-      .send({ fullName: 'Kid Ocupante', birthDate: eightYearsOld, ...(await guardianIdPatch()) });
+      .send({
+        fullName: 'Kid Ocupante',
+        birthDate: eightYearsOld,
+        ...(await guardianIdPatch()),
+      });
     expect(filler.status).toBe(201);
     await t
       .http()
@@ -227,10 +262,14 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
     expect(refilled.body.suggestion.name).toBe('Kids');
 
     async function guardianIdPatch(): Promise<{ guardianId: string }> {
-      const guardians = await t.http().get('/v1/admin/guardians').set(bearer(admin));
+      const guardians = await t
+        .http()
+        .get('/v1/admin/guardians')
+        .set(bearer(admin));
       return {
-        guardianId: guardians.body.guardians.find((g: any) => g.fullName === 'Renata Responsavel')
-          .id,
+        guardianId: guardians.body.guardians.find(
+          (g: any) => g.fullName === 'Renata Responsavel',
+        ).id,
       };
     }
   });
@@ -240,14 +279,23 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .http()
       .post('/v1/responsavel/dependents')
       .set(bearer(responsavel))
-      .send({ fullName: 'Nino Novo', birthDate: isoYearsAgo(7), classId: kidsId });
+      .send({
+        fullName: 'Nino Novo',
+        birthDate: isoYearsAgo(7),
+        classId: kidsId,
+      });
     expect(registered.status).toBe(201);
     expect(registered.body.enrolled).toBe(true);
     expect(registered.body.dependent.class.name).toBe('Kids');
 
     // Auto-linked: the admin registry shows the child under the guardian.
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    const nino = students.body.students.find((s: any) => s.fullName === 'Nino Novo');
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    const nino = students.body.students.find(
+      (s: any) => s.fullName === 'Nino Novo',
+    );
     expect(nino.guardianId).toBeTruthy();
     expect(nino.badge).toBe('pendente');
 
@@ -259,7 +307,11 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .http()
       .post('/v1/responsavel/dependents')
       .set(bearer(responsavel))
-      .send({ fullName: 'Nina Nova', birthDate: isoYearsAgo(6), classId: kidsBId });
+      .send({
+        fullName: 'Nina Nova',
+        birthDate: isoYearsAgo(6),
+        classId: kidsBId,
+      });
     expect(fullClass.status).toBe(201);
     expect(fullClass.body.enrolled).toBe(false);
     expect(fullClass.body.dependent.class).toBeNull();
@@ -269,7 +321,11 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .http()
       .post('/v1/responsavel/dependents')
       .set(bearer(responsavel))
-      .send({ fullName: 'Nome Qualquer', birthDate: isoYearsAgo(7), classId: adultoId });
+      .send({
+        fullName: 'Nome Qualquer',
+        birthDate: isoYearsAgo(7),
+        classId: adultoId,
+      });
     expect(unranged.status).toBe(422);
   });
 
@@ -278,7 +334,11 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin))
-      .send({ entries: [{ role: 'guardian', key: 'dependents.register', allowed: false }] });
+      .send({
+        entries: [
+          { role: 'guardian', key: 'dependents.register', allowed: false },
+        ],
+      });
     try {
       const denied = await t
         .http()
@@ -289,14 +349,21 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       expect(denied.body.code).toBe('authz.permission_disabled');
 
       // Reads stay open — only the toggleable mutation is gated.
-      const list = await t.http().get('/v1/responsavel/dependents').set(bearer(responsavel));
+      const list = await t
+        .http()
+        .get('/v1/responsavel/dependents')
+        .set(bearer(responsavel));
       expect(list.status).toBe(200);
     } finally {
       await t
         .http()
         .put('/v1/admin/permissions')
         .set(bearer(admin))
-        .send({ entries: [{ role: 'guardian', key: 'dependents.register', allowed: true }] });
+        .send({
+          entries: [
+            { role: 'guardian', key: 'dependents.register', allowed: true },
+          ],
+        });
     }
   });
 
@@ -308,17 +375,25 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .send({ kind: 'student', classId: adultoId });
     expect(invite.status).toBe(201);
 
-    const accepted = await t.http().post(`/v1/public/invites/${invite.body.token}/accept`).send({
-      email: 'convidado.turma@example.com',
-      password: 'SenhaForte!123',
-      fullName: 'Convidado Da Turma',
-      birthDate: '1998-08-08',
-    });
+    const accepted = await t
+      .http()
+      .post(`/v1/public/invites/${invite.body.token}/accept`)
+      .send({
+        email: 'convidado.turma@example.com',
+        password: 'SenhaForte!123',
+        fullName: 'Convidado Da Turma',
+        birthDate: '1998-08-08',
+      });
     expect(accepted.status).toBe(201);
     expect(accepted.body.enrollmentSkipped).toBe(false);
 
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    const row = students.body.students.find((s: any) => s.fullName === 'Convidado Da Turma');
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    const row = students.body.students.find(
+      (s: any) => s.fullName === 'Convidado Da Turma',
+    );
     expect(row.badge).toBe('ativo'); // claimed by its own signup
     expect(row.classes.map((c: any) => c.name)).toContain('Adulto Gi');
   });
@@ -345,12 +420,20 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
     expect(accepted.status).toBe(201);
     expect(accepted.body.enrollmentSkipped).toBe(false);
 
-    const guardians = await t.http().get('/v1/admin/guardians').set(bearer(admin));
-    const mae = guardians.body.guardians.find((g: any) => g.fullName === 'Mãe Convidada');
+    const guardians = await t
+      .http()
+      .get('/v1/admin/guardians')
+      .set(bearer(admin));
+    const mae = guardians.body.guardians.find(
+      (g: any) => g.fullName === 'Mãe Convidada',
+    );
     expect(mae.badge).toBe('ativo');
     expect(mae.dependentCount).toBe(2);
 
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
     for (const name of ['Gêmea Um', 'Gêmea Dois']) {
       const row = students.body.students.find((s: any) => s.fullName === name);
       expect(row.guardianId).toBe(mae.id);
@@ -373,27 +456,34 @@ describe('enrollment: professor + responsável surfaces and invite completion (E
       .post('/v1/invites')
       .set(bearer(admin))
       .send({ kind: 'student', classId: lotadaId });
-    const accepted = await t.http().post(`/v1/public/invites/${invite.body.token}/accept`).send({
-      email: 'sem.vaga@example.com',
-      password: 'SenhaForte!123',
-      fullName: 'Sem Vaga Mas Dentro',
-      birthDate: '1997-09-09',
-    });
+    const accepted = await t
+      .http()
+      .post(`/v1/public/invites/${invite.body.token}/accept`)
+      .send({
+        email: 'sem.vaga@example.com',
+        password: 'SenhaForte!123',
+        fullName: 'Sem Vaga Mas Dentro',
+        birthDate: '1997-09-09',
+      });
     expect(accepted.status).toBe(201);
     expect(accepted.body.enrollmentSkipped).toBe(true);
 
     // Unassigned in the registry — the admin's Pendente/unassigned state.
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    const row = students.body.students.find((s: any) => s.fullName === 'Sem Vaga Mas Dentro');
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    const row = students.body.students.find(
+      (s: any) => s.fullName === 'Sem Vaga Mas Dentro',
+    );
     expect(row.classes).toEqual([]);
   });
 
   it('invite creation validates the class binding against the academy', async () => {
-    const unknown = await t
-      .http()
-      .post('/v1/invites')
-      .set(bearer(admin))
-      .send({ kind: 'student', classId: '018f0000-0000-7000-8000-000000000bad' });
+    const unknown = await t.http().post('/v1/invites').set(bearer(admin)).send({
+      kind: 'student',
+      classId: '018f0000-0000-7000-8000-000000000bad',
+    });
     expect(unknown.status).toBe(404);
     expect(unknown.body.code).toBe('resource.not_found');
 

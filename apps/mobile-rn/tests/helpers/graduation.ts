@@ -31,7 +31,10 @@ export const BELT_IDS = {
   vermelha: uuid('a001', 10),
 };
 
-export const PROFESSOR_ACTOR = { userId: uuid('8004', 1), fullName: 'Rafael Nunes' };
+export const PROFESSOR_ACTOR = {
+  userId: uuid('8004', 1),
+  fullName: 'Rafael Nunes',
+};
 
 /** aluno-09 hero: Azul with 2 graus. */
 export function makeBeltView(overrides: Partial<BeltView> = {}): BeltView {
@@ -46,7 +49,9 @@ export function makeBeltView(overrides: Partial<BeltView> = {}): BeltView {
   };
 }
 
-export function makeProgress(overrides: Partial<GraduationProgress> = {}): GraduationProgress {
+export function makeProgress(
+  overrides: Partial<GraduationProgress> = {},
+): GraduationProgress {
   return {
     current: 26,
     target: 40,

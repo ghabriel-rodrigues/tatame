@@ -56,8 +56,16 @@ export function GlassSurface({
   const theme = useTheme();
   const glass = theme.glass;
   const r = radius ?? theme.radius.lg;
-  const shineColors = glass.shine.stops.map((s) => s.color) as [string, string, ...string[]];
-  const shineLocations = glass.shine.stops.map((s) => s.position) as [number, number, ...number[]];
+  const shineColors = glass.shine.stops.map((s) => s.color) as [
+    string,
+    string,
+    ...string[],
+  ];
+  const shineLocations = glass.shine.stops.map((s) => s.position) as [
+    number,
+    number,
+    ...number[],
+  ];
 
   return (
     <View
@@ -75,7 +83,9 @@ export function GlassSurface({
       <View style={{ borderRadius: r - 1, overflow: 'hidden' }}>
         <BlurView
           testID="glass-blur"
-          intensity={blurToIntensity(variant === 'deep' ? glass.blurStrong : glass.blur)}
+          intensity={blurToIntensity(
+            variant === 'deep' ? glass.blurStrong : glass.blur,
+          )}
           tint={theme.mode === 'dark' ? 'dark' : 'light'}
           experimentalBlurMethod="dimezisBlurView"
           style={[

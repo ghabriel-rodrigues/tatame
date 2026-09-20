@@ -1,4 +1,8 @@
-import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  type CanActivate,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
@@ -30,14 +34,22 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const [scheme, token] = request.headers.authorization?.split(' ') ?? [];
     if (scheme !== 'Bearer' || !token) {
-      throw problem(401, ErrorCodes.AUTH_UNAUTHENTICATED, 'Missing bearer token');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_UNAUTHENTICATED,
+        'Missing bearer token',
+      );
     }
 
     let claims;
     try {
       claims = this.tokens.verifyAccessToken(token);
     } catch {
-      throw problem(401, ErrorCodes.AUTH_TOKEN_EXPIRED, 'Invalid or expired access token');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_TOKEN_EXPIRED,
+        'Invalid or expired access token',
+      );
     }
 
     const ctx: AuthContext = {
@@ -50,10 +62,10 @@ export class JwtAuthGuard implements CanActivate {
       isImpersonated: claims.imp === true,
     };
 
-    const denyImpersonated = this.reflector.getAllAndOverride<boolean>(DENY_IMPERSONATED_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const denyImpersonated = this.reflector.getAllAndOverride<boolean>(
+      DENY_IMPERSONATED_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (denyImpersonated && ctx.isImpersonated) {
       throw problem(
         403,

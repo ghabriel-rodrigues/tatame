@@ -42,7 +42,13 @@ export function StatusBadge({ badge }: { badge: 'ativo' | 'pendente' }) {
 }
 
 /** Floating "+" action button (admin-07 bottom bar FAB). */
-export function Fab({ label, onPress }: { label: string; onPress: () => void }) {
+export function Fab({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <Box
       component="button"

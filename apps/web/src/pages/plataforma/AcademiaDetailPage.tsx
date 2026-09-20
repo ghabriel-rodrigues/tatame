@@ -12,7 +12,13 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useNavigate, useParams } from 'react-router';
-import { Card, Chip, ScreenHeader, TatameButton, Toast } from '@tatame/design-system';
+import {
+  Card,
+  Chip,
+  ScreenHeader,
+  TatameButton,
+  Toast,
+} from '@tatame/design-system';
 import type { PlatformPlanRow } from '@tatame/shared';
 import { $api, queryClient } from '../../api/api';
 import { adoptSession, useAuth } from '../../auth/auth-store';
@@ -30,12 +36,22 @@ function StatTile({ value, caption }: { value: string; caption: string }) {
     <Box sx={{ flex: 1, minWidth: 0 }}>
       <Card padding={14}>
         <Typography
-          sx={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-1)', textAlign: 'center' }}
+          sx={{
+            fontSize: 17,
+            fontWeight: 800,
+            color: 'var(--fg-1)',
+            textAlign: 'center',
+          }}
         >
           {value}
         </Typography>
         <Typography
-          sx={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)', textAlign: 'center' }}
+          sx={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: 'var(--fg-3)',
+            textAlign: 'center',
+          }}
         >
           {caption}
         </Typography>
@@ -76,7 +92,9 @@ function PlanOption({
         border: `1px solid ${highlighted ? 'var(--brand-2)' : 'var(--border-1)'}`,
       }}
     >
-      <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+      <Typography
+        sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-1)' }}
+      >
         {plan.name}
       </Typography>
       <Typography sx={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)' }}>
@@ -102,19 +120,38 @@ export function AcademiaDetailPage() {
   const catalog = $api.useQuery('get', '/v1/platform/plans');
   const plans = (catalog.data?.plans ?? []).filter((plan) => plan.isActive);
 
-  const changePlan = $api.useMutation('put', '/v1/platform/academies/{id}/plan');
-  const suspend = $api.useMutation('post', '/v1/platform/academies/{id}/suspend');
-  const reactivate = $api.useMutation('post', '/v1/platform/academies/{id}/reactivate');
-  const impersonate = $api.useMutation('post', '/v1/platform/academies/{id}/impersonate');
+  const changePlan = $api.useMutation(
+    'put',
+    '/v1/platform/academies/{id}/plan',
+  );
+  const suspend = $api.useMutation(
+    'post',
+    '/v1/platform/academies/{id}/suspend',
+  );
+  const reactivate = $api.useMutation(
+    'post',
+    '/v1/platform/academies/{id}/reactivate',
+  );
+  const impersonate = $api.useMutation(
+    'post',
+    '/v1/platform/academies/{id}/impersonate',
+  );
   const busy =
-    changePlan.isPending || suspend.isPending || reactivate.isPending || impersonate.isPending;
+    changePlan.isPending ||
+    suspend.isPending ||
+    reactivate.isPending ||
+    impersonate.isPending;
 
   const academy = detail.data;
   const suspended = academy?.status === 'suspended';
 
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: ['get', '/v1/platform/academies'] });
-    await queryClient.invalidateQueries({ queryKey: ['get', '/v1/platform/overview'] });
+    await queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/platform/academies'],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/platform/overview'],
+    });
     await detail.refetch();
   }
 
@@ -159,7 +196,9 @@ export function AcademiaDetailPage() {
         onSuccess: async () => {
           await refresh();
           toast.show(
-            suspended ? 'Academia reativada.' : 'Academia suspensa — acesso bloqueado.',
+            suspended
+              ? 'Academia reativada.'
+              : 'Academia suspensa — acesso bloqueado.',
           );
         },
         onError: (error: unknown) => setApiError(platformErrorMessage(error)),
@@ -193,7 +232,9 @@ export function AcademiaDetailPage() {
         />
 
         {detail.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando academia…
           </Typography>
         ) : null}
@@ -211,7 +252,9 @@ export function AcademiaDetailPage() {
             <Stack direction="row" spacing="12px" sx={{ alignItems: 'center' }}>
               <InitialsAvatar name={academy.name} />
               <Box>
-                <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+                <Typography
+                  sx={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)' }}
+                >
                   {academy.city ?? '—'} · {sinceLabel(academy.createdAt)}
                 </Typography>
                 <Box sx={{ marginTop: '4px' }}>
@@ -227,19 +270,31 @@ export function AcademiaDetailPage() {
               <StatTile value={String(academy.studentCount)} caption="alunos" />
               <StatTile
                 value={
-                  academy.planPriceCents === null ? '—' : formatBRLWhole(academy.planPriceCents)
+                  academy.planPriceCents === null
+                    ? '—'
+                    : formatBRLWhole(academy.planPriceCents)
                 }
                 caption="assinatura/mês"
               />
-              <StatTile value={String(academy.professorCount)} caption="professores" />
+              <StatTile
+                value={String(academy.professorCount)}
+                caption="professores"
+              />
             </Stack>
 
             <Card padding={16}>
-              <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+              <Typography
+                sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}
+              >
                 Plano da plataforma
               </Typography>
               <Typography
-                sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)', marginBottom: '10px' }}
+                sx={{
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  color: 'var(--fg-3)',
+                  marginBottom: '10px',
+                }}
               >
                 A mudança vale a partir do próximo ciclo.
               </Typography>
@@ -259,9 +314,15 @@ export function AcademiaDetailPage() {
                 <Stack
                   direction="row"
                   spacing="10px"
-                  sx={{ alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}
+                  sx={{
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginTop: '12px',
+                  }}
                 >
-                  <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)' }}>
+                  <Typography
+                    sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-2)' }}
+                  >
                     Muda para {academy.pendingPlan.name} no próximo ciclo.
                   </Typography>
                   {isOwner ? (
@@ -277,7 +338,9 @@ export function AcademiaDetailPage() {
               ) : null}
             </Card>
 
-            {apiError ? <FormHelperText error>{apiError}</FormHelperText> : null}
+            {apiError ? (
+              <FormHelperText error>{apiError}</FormHelperText>
+            ) : null}
 
             {canImpersonate ? (
               <TatameButton
@@ -301,7 +364,11 @@ export function AcademiaDetailPage() {
         ) : null}
       </Stack>
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

@@ -16,7 +16,9 @@ import { server } from '../../test/setup';
 
 function renderCadastros(path = '/admin/cadastros') {
   const admin = makeMembership({ role: 'admin' });
-  return renderRoute(path, { session: makeMeResponse({ memberships: [admin] }) });
+  return renderRoute(path, {
+    session: makeMeResponse({ memberships: [admin] }),
+  });
 }
 
 describe('Cadastros — segments (ENR.13)', () => {
@@ -51,7 +53,9 @@ describe('Cadastros — segments (ENR.13)', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Turmas' }));
     expect(await screen.findByText('Fundamentos')).toBeInTheDocument();
-    expect(screen.getByText(/Seg · Qua · Sex 19:00 · Prof\. Rafael Nunes · 24\/24/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Seg · Qua · Sex 19:00 · Prof\. Rafael Nunes · 24\/24/),
+    ).toBeInTheDocument();
     expect(screen.getByText('Lotada')).toBeInTheDocument();
   });
 
@@ -82,14 +86,19 @@ describe('Cadastros — FAB creation forms (ENR.13)', () => {
     await screen.findByText('Lucas Almeida');
 
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
-    await user.type(await screen.findByLabelText(/Nome completo/), 'Caio Menor');
+    await user.type(
+      await screen.findByLabelText(/Nome completo/),
+      'Caio Menor',
+    );
     fireEvent.change(screen.getByLabelText(/Data de nascimento/), {
       target: { value: '2015-06-10' },
     });
     await user.click(screen.getByRole('button', { name: 'Cadastrar aluno' }));
 
     expect(
-      await screen.findByText('Aluno menor de idade precisa de um responsável vinculado.'),
+      await screen.findByText(
+        'Aluno menor de idade precisa de um responsável vinculado.',
+      ),
     ).toBeInTheDocument();
     expect(posted).toBe(false);
   });
@@ -121,13 +130,20 @@ describe('Cadastros — FAB creation forms (ENR.13)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
     const sheet = await screen.findByRole('dialog');
-    await user.type(within(sheet).getByLabelText(/Nome completo/), 'Caio Menor');
+    await user.type(
+      within(sheet).getByLabelText(/Nome completo/),
+      'Caio Menor',
+    );
     fireEvent.change(within(sheet).getByLabelText(/Data de nascimento/), {
       target: { value: '2015-06-10' },
     });
     await user.click(within(sheet).getAllByRole('combobox')[0]!);
-    await user.click(await screen.findByRole('option', { name: 'Fernanda Silveira' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Cadastrar aluno' }));
+    await user.click(
+      await screen.findByRole('option', { name: 'Fernanda Silveira' }),
+    );
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Cadastrar aluno' }),
+    );
 
     expect(await screen.findByText('Aluno cadastrado.')).toBeInTheDocument();
     expect(body).toMatchObject({
@@ -158,12 +174,19 @@ describe('Cadastros — FAB creation forms (ENR.13)', () => {
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
 
     const sheet = await screen.findByRole('dialog');
-    await user.type(within(sheet).getByLabelText(/Nome completo/), 'Carla Prof');
+    await user.type(
+      within(sheet).getByLabelText(/Nome completo/),
+      'Carla Prof',
+    );
     await user.type(within(sheet).getByLabelText(/Email/), 'carla@tatame.dev');
-    await user.click(within(sheet).getByRole('button', { name: 'Cadastrar professor' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Cadastrar professor' }),
+    );
 
     expect(
-      await screen.findByText('Professor cadastrado. Enviamos um email para definir a senha.'),
+      await screen.findByText(
+        'Professor cadastrado. Enviamos um email para definir a senha.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -196,9 +219,13 @@ describe('Cadastros — FAB creation forms (ENR.13)', () => {
 
     const sheet = await screen.findByRole('dialog');
     await user.type(within(sheet).getByLabelText(/Nome completo/), 'Paula Mãe');
-    await user.click(within(sheet).getByRole('button', { name: 'Cadastrar responsável' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Cadastrar responsável' }),
+    );
 
-    expect(await screen.findByText('Responsável cadastrado.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Responsável cadastrado.'),
+    ).toBeInTheDocument();
     await waitFor(() => expect(body).toMatchObject({ fullName: 'Paula Mãe' }));
   });
 });

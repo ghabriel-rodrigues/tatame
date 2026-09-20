@@ -63,7 +63,10 @@ const chipStyles = ({ theme }: { theme: Theme }) => {
         TONE_STYLES[tone],
       ]),
     ),
-    '&.Chip-pressable': { cursor: 'pointer', border: '1px solid var(--border-1)' },
+    '&.Chip-pressable': {
+      cursor: 'pointer',
+      border: '1px solid var(--border-1)',
+    },
     '&.Chip-selected': {
       background: v.palette.primary.main,
       color: v.palette.primary.contrastText,

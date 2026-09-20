@@ -47,7 +47,12 @@ export default function DependentDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <QueryState loading={query.isPending} error={query.isError}>
             {dependent ? (
@@ -69,7 +74,10 @@ export default function DependentDetailScreen() {
                     >
                       <Text variant="subtitle">Turma</Text>
                       {turma?.nextSlot ? (
-                        <Chip label={`Próxima aula · ${slotLabel(turma.nextSlot)}`} tone="brand" />
+                        <Chip
+                          label={`Próxima aula · ${slotLabel(turma.nextSlot)}`}
+                          tone="brand"
+                        />
                       ) : null}
                     </View>
                     {turma ? (
@@ -86,7 +94,8 @@ export default function DependentDetailScreen() {
                       </View>
                     ) : (
                       <Text variant="caption">
-                        Sem turma no momento — a matrícula acontece quando houver vaga.
+                        Sem turma no momento — a matrícula acontece quando
+                        houver vaga.
                       </Text>
                     )}
                   </View>
@@ -102,7 +111,9 @@ export default function DependentDetailScreen() {
                           size="md"
                           testID="dependent-detail-belt"
                         />
-                        <Text variant="caption">{beltChipLabel(dependent.belt)}</Text>
+                        <Text variant="caption">
+                          {beltChipLabel(dependent.belt)}
+                        </Text>
                       </>
                     ) : (
                       <Text variant="caption">

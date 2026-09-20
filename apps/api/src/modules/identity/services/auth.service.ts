@@ -7,7 +7,10 @@ import type { AuthContext } from '../../../common/auth-context.js';
 import type { AnyRoleName } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { themeFromColumns, type BrandTheme } from '../lib/brand.js';
-import { MembershipService, type MembershipView } from './membership.service.js';
+import {
+  MembershipService,
+  type MembershipView,
+} from './membership.service.js';
 import { PasswordService } from './password.service.js';
 import { PermissionsService } from './permissions.service.js';
 import { SessionService } from './session.service.js';
@@ -102,29 +105,52 @@ export class AuthService {
       ? (memberships.find((m) => m.id === preferredMembershipId) ?? null)
       : await this.memberships.resolveActive(user.id, memberships);
     if (!active) {
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'Account has no active membership');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'Account has no active membership',
+      );
     }
     const tokens = await this.issueForMembership(user.id, active, meta);
     return { user, memberships, activeMembershipId: active.id, tokens };
   }
 
-  async login(email: string, password: string, meta: RequestMeta): Promise<LoginResult> {
-    const result = await this.appDb.db.execute(sql`SELECT * FROM auth_login_lookup(${email})`);
+  async login(
+    email: string,
+    password: string,
+    meta: RequestMeta,
+  ): Promise<LoginResult> {
+    const result = await this.appDb.db.execute(
+      sql`SELECT * FROM auth_login_lookup(${email})`,
+    );
     const row = result.rows[0] as unknown as LoginLookupRow | undefined;
 
     if (!row) {
       // Same-shaped work whether or not the email exists (no enumeration).
       await this.passwords.verifyDummy(password);
-      throw problem(401, ErrorCodes.AUTH_INVALID_CREDENTIALS, 'Invalid email or password');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_INVALID_CREDENTIALS,
+        'Invalid email or password',
+      );
     }
     const valid = await this.passwords.verify(row.secret_hash, password);
     if (!valid || row.user_status !== 'active') {
-      throw problem(401, ErrorCodes.AUTH_INVALID_CREDENTIALS, 'Invalid email or password');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_INVALID_CREDENTIALS,
+        'Invalid email or password',
+      );
     }
 
-    const platformProfile = await this.memberships.getPlatformProfile(row.user_id);
+    const platformProfile = await this.memberships.getPlatformProfile(
+      row.user_id,
+    );
     if (platformProfile?.totpEnabled) {
-      return { kind: 'mfa_required', challengeToken: this.tokens.signChallengeToken(row.user_id) };
+      return {
+        kind: 'mfa_required',
+        challengeToken: this.tokens.signChallengeToken(row.user_id),
+      };
     }
 
     const payload = await this.establishSession(
@@ -141,11 +167,19 @@ export class AuthService {
   ): Promise<AuthenticatedPayload> {
     const userId = this.tokens.verifyChallengeToken(challengeToken);
     if (!userId) {
-      throw problem(401, ErrorCodes.AUTH_MFA_REQUIRED, 'Invalid or expired challenge token');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_MFA_REQUIRED,
+        'Invalid or expired challenge token',
+      );
     }
     const profile = await this.memberships.getPlatformProfile(userId);
     if (!profile?.totpEnabled) {
-      throw problem(401, ErrorCodes.AUTH_MFA_REQUIRED, 'No TOTP challenge pending for this account');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_MFA_REQUIRED,
+        'No TOTP challenge pending for this account',
+      );
     }
     const ok = await this.totp.verifyLoginCode(userId, profile, code);
     if (!ok) {
@@ -159,7 +193,12 @@ export class AuthService {
         .where(eq(users.id, userId)),
     );
     const user = userRows[0];
-    if (!user) throw problem(401, ErrorCodes.AUTH_INVALID_CREDENTIALS, 'Account not found');
+    if (!user)
+      throw problem(
+        401,
+        ErrorCodes.AUTH_INVALID_CREDENTIALS,
+        'Account not found',
+      );
     return this.establishSession(user, meta);
   }
 
@@ -173,21 +212,49 @@ export class AuthService {
         'Refresh token reuse detected — session revoked',
       );
     }
-    if (rotation.status !== 'rotated' || !rotation.userId || !rotation.sessionId) {
-      throw problem(401, ErrorCodes.AUTH_TOKEN_EXPIRED, 'Refresh token is no longer valid');
+    if (
+      rotation.status !== 'rotated' ||
+      !rotation.userId ||
+      !rotation.sessionId
+    ) {
+      throw problem(
+        401,
+        ErrorCodes.AUTH_TOKEN_EXPIRED,
+        'Refresh token is no longer valid',
+      );
     }
 
-    let claims: { membershipId: string | null; tenantId: string | null; role: AnyRoleName };
+    let claims: {
+      membershipId: string | null;
+      tenantId: string | null;
+      role: AnyRoleName;
+    };
     if (rotation.impersonatedTenantId) {
-      claims = { membershipId: null, tenantId: rotation.impersonatedTenantId, role: 'admin' };
+      claims = {
+        membershipId: null,
+        tenantId: rotation.impersonatedTenantId,
+        role: 'admin',
+      };
     } else {
       const memberships = await this.memberships.listAll(rotation.userId);
       const active = memberships.find((m) => m.id === rotation.membershipId);
       if (!active) {
-        await this.sessions.revoke(rotation.userId, rotation.sessionId, 'membership_gone');
-        throw problem(401, ErrorCodes.AUTH_TOKEN_EXPIRED, 'Active membership no longer exists');
+        await this.sessions.revoke(
+          rotation.userId,
+          rotation.sessionId,
+          'membership_gone',
+        );
+        throw problem(
+          401,
+          ErrorCodes.AUTH_TOKEN_EXPIRED,
+          'Active membership no longer exists',
+        );
       }
-      claims = { membershipId: active.id, tenantId: active.tenantId, role: active.role };
+      claims = {
+        membershipId: active.id,
+        tenantId: active.tenantId,
+        role: active.role,
+      };
     }
 
     const accessToken = this.tokens.signAccessToken({
@@ -202,7 +269,9 @@ export class AuthService {
       accessToken,
       accessExpiresIn: Math.floor(this.tokens.accessTtlMs / 1000),
       refreshToken: rotation.refreshToken as string,
-      refreshExpiresAt: rotation.sessionExpiresAt ?? new Date(Date.now() + this.tokens.refreshTtlMs),
+      refreshExpiresAt:
+        rotation.sessionExpiresAt ??
+        new Date(Date.now() + this.tokens.refreshTtlMs),
     };
   }
 
@@ -210,13 +279,25 @@ export class AuthService {
   async switchMembership(
     ctx: AuthContext,
     membershipId: string,
-  ): Promise<{ accessToken: string; accessExpiresIn: number; activeMembershipId: string }> {
+  ): Promise<{
+    accessToken: string;
+    accessExpiresIn: number;
+    activeMembershipId: string;
+  }> {
     const memberships = await this.memberships.listAll(ctx.userId);
     const target = memberships.find((m) => m.id === membershipId);
     if (!target) {
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'Membership does not belong to this account');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'Membership does not belong to this account',
+      );
     }
-    await this.memberships.switchSessionMembership(ctx.userId, ctx.sessionId, target.id);
+    await this.memberships.switchSessionMembership(
+      ctx.userId,
+      ctx.sessionId,
+      target.id,
+    );
     const accessToken = this.tokens.signAccessToken({
       userId: ctx.userId,
       sessionId: ctx.sessionId,
@@ -241,21 +322,29 @@ export class AuthService {
 
   /** Session bootstrap: clients render from this, never decode the JWT. */
   async me(ctx: AuthContext) {
-    const userRows = await withTenant(this.appDb.db, { userId: ctx.userId }, (tx) =>
-      tx
-        .select({
-          id: users.id,
-          email: users.email,
-          fullName: users.fullName,
-          phone: users.phone,
-          avatarUrl: users.avatarUrl,
-          locale: users.locale,
-        })
-        .from(users)
-        .where(eq(users.id, ctx.userId)),
+    const userRows = await withTenant(
+      this.appDb.db,
+      { userId: ctx.userId },
+      (tx) =>
+        tx
+          .select({
+            id: users.id,
+            email: users.email,
+            fullName: users.fullName,
+            phone: users.phone,
+            avatarUrl: users.avatarUrl,
+            locale: users.locale,
+          })
+          .from(users)
+          .where(eq(users.id, ctx.userId)),
     );
     const user = userRows[0];
-    if (!user) throw problem(401, ErrorCodes.AUTH_TOKEN_EXPIRED, 'Account no longer exists');
+    if (!user)
+      throw problem(
+        401,
+        ErrorCodes.AUTH_TOKEN_EXPIRED,
+        'Account no longer exists',
+      );
 
     const memberships = await this.memberships.listAll(ctx.userId);
 
@@ -292,7 +381,11 @@ export class AuthService {
             slug: row.slug,
             status: row.status,
             logoUrl: row.logoUrl,
-            theme: themeFromColumns(row.brandDeep, row.brandVibrant, row.brandAccent),
+            theme: themeFromColumns(
+              row.brandDeep,
+              row.brandVibrant,
+              row.brandAccent,
+            ),
           }
         : null;
     }
@@ -312,7 +405,10 @@ export class AuthService {
       academy,
       permissions,
       impersonation: ctx.isImpersonated
-        ? { isImpersonated: true as const, impersonatorUserId: ctx.impersonatorUserId }
+        ? {
+            isImpersonated: true as const,
+            impersonatorUserId: ctx.impersonatorUserId,
+          }
         : { isImpersonated: false as const },
     };
   }

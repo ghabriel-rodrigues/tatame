@@ -4,7 +4,10 @@
  * selos footnote (professor-06 copy bug fixed).
  */
 
-import { homeRankingLine, seloFootnote } from '../../src/features/rankings/copy';
+import {
+  homeRankingLine,
+  seloFootnote,
+} from '../../src/features/rankings/copy';
 import {
   barFraction,
   countLabel,
@@ -46,7 +49,9 @@ describe('rankings format (REP.11)', () => {
     expect(rankingSubtitle('lessons', LESSONS_WINDOW, 'Alpha Jiu-Jitsu')).toBe(
       'Agosto · Alpha Jiu-Jitsu',
     );
-    expect(rankingSubtitle('lessons', LESSONS_WINDOW, null)).toBe('Agosto · sua academia');
+    expect(rankingSubtitle('lessons', LESSONS_WINDOW, null)).toBe(
+      'Agosto · sua academia',
+    );
     expect(rankingSubtitle('events', EVENTS_WINDOW, 'Alpha Jiu-Jitsu')).toBe(
       'Participações em eventos no semestre',
     );
@@ -66,6 +71,8 @@ describe('rankings format (REP.11)', () => {
   });
 
   it('composes the home entry-card line', () => {
-    expect(homeRankingLine('2º')).toBe('Você está em 2º em presença — continue assim');
+    expect(homeRankingLine('2º')).toBe(
+      'Você está em 2º em presença — continue assim',
+    );
   });
 });

@@ -21,7 +21,8 @@ export function BootSplash() {
         alignItems: 'center',
         justifyContent: 'center',
         gap: '20px',
-        background: 'linear-gradient(180deg, var(--purple-50) 0%, var(--bg-app) 40%)',
+        background:
+          'linear-gradient(180deg, var(--purple-50) 0%, var(--bg-app) 40%)',
       }}
       data-testid="boot-splash"
     >
@@ -36,7 +37,9 @@ function hasPlatformMembership(session: MeResponse): boolean {
 }
 
 function hasAdminMembership(session: MeResponse): boolean {
-  return session.memberships.some((m) => m.type === 'academy' && m.role === 'admin');
+  return session.memberships.some(
+    (m) => m.type === 'academy' && m.role === 'admin',
+  );
 }
 
 /** The surface this session belongs on (guards + root redirect target). */
@@ -68,7 +71,8 @@ export function RequireSurface({ surface }: RequireSurfaceProps) {
   if (surface === 'plataforma') {
     // Impersonation does NOT grant plataforma — "Encerrar" returns there.
     if (impersonated) return <Navigate to="/admin" replace />;
-    if (!hasPlatformMembership(session)) return <Navigate to={homeSurface(session)} replace />;
+    if (!hasPlatformMembership(session))
+      return <Navigate to={homeSurface(session)} replace />;
   }
   return <Outlet />;
 }

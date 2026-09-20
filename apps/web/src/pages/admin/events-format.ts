@@ -74,7 +74,9 @@ export function inscritosLine(event: AdminEvent): string {
       ? `${totals.confirmados} confirmados`
       : `${totals.inscritos} inscritos`;
   const arrecadado =
-    totals.arrecadadoCents > 0 ? ` · ${formatBRLWhole(totals.arrecadadoCents)}` : '';
+    totals.arrecadadoCents > 0
+      ? ` · ${formatBRLWhole(totals.arrecadadoCents)}`
+      : '';
   return `${counts}${arrecadado} · Prof. ${event.responsible.fullName}`;
 }
 

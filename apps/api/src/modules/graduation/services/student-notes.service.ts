@@ -13,7 +13,10 @@ import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { StudentNoteView } from '../graduation.types.js';
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Persistent staff observações (GRD.10, stories 18-19): create + list only in
@@ -24,7 +27,10 @@ const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.u
 export class StudentNotesService {
   constructor(@Inject(APP_DB) private readonly appDb: DbHandle) {}
 
-  async list(ctx: AuthContext & { tenantId: string }, studentId: string): Promise<StudentNoteView[]> {
+  async list(
+    ctx: AuthContext & { tenantId: string },
+    studentId: string,
+  ): Promise<StudentNoteView[]> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       await this.requireStudent(tx, studentId);
       return this.listInTx(tx, studentId);
@@ -40,9 +46,15 @@ export class StudentNotesService {
       await this.requireStudent(tx, studentId);
       const [row] = await tx
         .insert(studentNotes)
-        .values({ tenantId: ctx.tenantId, studentId, authorUserId: ctx.userId, body })
+        .values({
+          tenantId: ctx.tenantId,
+          studentId,
+          authorUserId: ctx.userId,
+          body,
+        })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Note insert returned no row');
+      if (!row)
+        throw problem(500, ErrorCodes.INTERNAL, 'Note insert returned no row');
       const [author] = await tx
         .select({ fullName: users.fullName })
         .from(users)
@@ -57,7 +69,10 @@ export class StudentNotesService {
   }
 
   /** Newest-first note history with author — reused by the student profile. */
-  async listInTx(tx: DbTransaction, studentId: string): Promise<StudentNoteView[]> {
+  async listInTx(
+    tx: DbTransaction,
+    studentId: string,
+  ): Promise<StudentNoteView[]> {
     const rows = await tx
       .select({
         id: studentNotes.id,
@@ -78,7 +93,10 @@ export class StudentNotesService {
     }));
   }
 
-  private async requireStudent(tx: DbTransaction, studentId: string): Promise<void> {
+  private async requireStudent(
+    tx: DbTransaction,
+    studentId: string,
+  ): Promise<void> {
     const [student] = await tx
       .select({ id: students.id })
       .from(students)

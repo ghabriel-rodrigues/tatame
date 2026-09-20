@@ -3,7 +3,11 @@
  * the API's contract — every aggregate arrives server-derived, nothing here
  * recomputes truth.
  */
-import { ApiErrorCodes, parseProblem, type PlatformAcademyStatus } from '@tatame/shared';
+import {
+  ApiErrorCodes,
+  parseProblem,
+  type PlatformAcademyStatus,
+} from '@tatame/shared';
 
 export const ACADEMY_STATUS_LABELS: Record<PlatformAcademyStatus, string> = {
   trial: 'Trial',
@@ -52,7 +56,10 @@ export function sinceLabel(iso: string): string {
 }
 
 /** "+12% vs. julho" / "-4% vs. julho" — the hero delta pill. */
-export function deltaLabel(pct: number | null, previousMonth: string | undefined): string | null {
+export function deltaLabel(
+  pct: number | null,
+  previousMonth: string | undefined,
+): string | null {
   if (pct === null || previousMonth === undefined) return null;
   const monthName = FULL_MONTHS[Number(previousMonth.slice(5, 7)) - 1] ?? '';
   const sign = pct > 0 ? '+' : '';

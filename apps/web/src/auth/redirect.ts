@@ -37,12 +37,17 @@ function adminMembershipsOf(memberships: MembershipView[]): MembershipView[] {
   return memberships.filter((m) => m.type === 'academy' && m.role === 'admin');
 }
 
-function platformMembershipOf(memberships: MembershipView[]): MembershipView | undefined {
+function platformMembershipOf(
+  memberships: MembershipView[],
+): MembershipView | undefined {
   return memberships.find((m) => m.type === 'platform');
 }
 
 /** `?next=` must be a same-app path under a surface the user may enter. */
-export function isValidNextPath(next: string, memberships: MembershipView[]): boolean {
+export function isValidNextPath(
+  next: string,
+  memberships: MembershipView[],
+): boolean {
   if (!next.startsWith('/') || next.startsWith('//')) return false;
   if (next.startsWith('/convite/')) return true;
   if (next === '/admin' || next.startsWith('/admin/')) {
@@ -77,7 +82,9 @@ function resolvePlatformEntry(
   return { kind: 'navigate', to, switchToMembershipId: platform.id };
 }
 
-export function resolvePostLogin(context: RedirectContext): PostLoginResolution {
+export function resolvePostLogin(
+  context: RedirectContext,
+): PostLoginResolution {
   const { memberships, activeMembershipId } = context;
   const admins = adminMembershipsOf(memberships);
   const platform = platformMembershipOf(memberships);
@@ -110,9 +117,11 @@ export function resolvePostLogin(context: RedirectContext): PostLoginResolution 
 
   // 4. Plataforma priority (BOSS: platform staff reach academies via audited
   //    impersonation, never un-audited direct admin entry).
-  if (platform) return resolvePlatformEntry('/plataforma', platform, activeMembershipId);
+  if (platform)
+    return resolvePlatformEntry('/plataforma', platform, activeMembershipId);
 
-  if (admins.length > 0) return resolveAdminEntry('/admin', admins, activeMembershipId);
+  if (admins.length > 0)
+    return resolveAdminEntry('/admin', admins, activeMembershipId);
 
   // 5. Mobile-only personas: valid credentials, no web surface.
   return { kind: 'navigate', to: '/baixe-o-app' };

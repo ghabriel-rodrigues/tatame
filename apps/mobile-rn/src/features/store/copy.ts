@@ -20,7 +20,8 @@ export const SOLD_OUT_LABEL = 'Esgotado';
 export const PAID_SUCCESS = 'Pedido pago — retire na recepção da academia.';
 export const MY_ORDERS_TITLE = 'Meus pedidos';
 export const EMPTY_ORDERS = 'Nenhum pedido ainda';
-export const EMPTY_ORDERS_CAPTION = 'Suas compras na loja da academia aparecem aqui.';
+export const EMPTY_ORDERS_CAPTION =
+  'Suas compras na loja da academia aparecem aqui.';
 export const RESUME_PAYMENT_LABEL = 'Pagar';
 export const CANCEL_ORDER_LABEL = 'Cancelar pedido';
 
@@ -38,9 +39,12 @@ const MESSAGES: Record<string, string> = {
   'store.insufficient_stock': 'Estoque insuficiente para essa quantidade.',
   'store.size_required': 'Escolha um tamanho para continuar.',
   'store.size_invalid': 'Tamanho indisponível para este produto.',
-  'store.product_not_purchasable': 'Este produto não está mais disponível na loja.',
-  'store.order_not_cancelable': 'Pedido pago só pode ser cancelado pela academia.',
-  'billing.charge_not_payable': 'Esta cobrança não está mais em aberto — atualize seus pedidos.',
+  'store.product_not_purchasable':
+    'Este produto não está mais disponível na loja.',
+  'store.order_not_cancelable':
+    'Pedido pago só pode ser cancelado pela academia.',
+  'billing.charge_not_payable':
+    'Esta cobrança não está mais em aberto — atualize seus pedidos.',
   'tenant.read_only':
     'A academia está em modo somente leitura — novas compras estão desabilitadas.',
   'resource.not_found': 'Produto não encontrado.',

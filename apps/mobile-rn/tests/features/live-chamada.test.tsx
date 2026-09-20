@@ -15,7 +15,11 @@ import {
 } from '../../src/features/attendance/use-live-chamada';
 import type { LiveStreamHandlers } from '../../src/features/attendance/sse';
 import { installFetchMock, json, type FetchHandler } from '../helpers/session';
-import { LIVE_CODE_ID, makeSnapshot, makeSnapshotAttendance } from '../helpers/attendance';
+import {
+  LIVE_CODE_ID,
+  makeSnapshot,
+  makeSnapshotAttendance,
+} from '../helpers/attendance';
 
 interface MockConnection {
   url: string;
@@ -48,18 +52,30 @@ interface Log {
 
 function installLiveHandlers(override?: FetchHandler): Log {
   const log: Log = { snapshotCalls: 0, ticketCalls: 0 };
-  const rows = [makeSnapshotAttendance('Lucas Almeida'), makeSnapshotAttendance('João Ferraz')];
+  const rows = [
+    makeSnapshotAttendance('Lucas Almeida'),
+    makeSnapshotAttendance('João Ferraz'),
+  ];
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
     const { method, path } = request;
-    if (method === 'GET' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/attendances`) {
+    if (
+      method === 'GET' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/attendances`
+    ) {
       log.snapshotCalls += 1;
       return json(200, makeSnapshot(rows));
     }
-    if (method === 'POST' && path === `/v1/professor/live-codes/${LIVE_CODE_ID}/stream-ticket`) {
+    if (
+      method === 'POST' &&
+      path === `/v1/professor/live-codes/${LIVE_CODE_ID}/stream-ticket`
+    ) {
       log.ticketCalls += 1;
-      return json(200, { ticket: `ticket-${log.ticketCalls}`, expiresInSeconds: 60 });
+      return json(200, {
+        ticket: `ticket-${log.ticketCalls}`,
+        expiresInSeconds: 60,
+      });
     }
     return null;
   });
@@ -85,7 +101,9 @@ describe('useLiveChamada (ATT.17)', () => {
 
     expect(log.snapshotCalls).toBe(1);
     expect(log.ticketCalls).toBe(1);
-    expect(lastConnection().url).toContain(`/v1/professor/live-codes/${LIVE_CODE_ID}/stream`);
+    expect(lastConnection().url).toContain(
+      `/v1/professor/live-codes/${LIVE_CODE_ID}/stream`,
+    );
     expect(lastConnection().url).toContain('ticket=ticket-1');
 
     act(() => lastConnection().handlers.onOpen());
@@ -116,15 +134,20 @@ describe('useLiveChamada (ATT.17)', () => {
       }),
     );
     expect(result.current.presentCount).toBe(3);
-    expect(result.current.attendances.map((row) => row.studentName)).toContain('Tiago Mota');
-
-    act(() =>
-      lastConnection().handlers.onRevoke({ attendanceId: 'att-new', presentCount: 2 }),
-    );
-    expect(result.current.presentCount).toBe(2);
-    expect(result.current.attendances.map((row) => row.studentName)).not.toContain(
+    expect(result.current.attendances.map((row) => row.studentName)).toContain(
       'Tiago Mota',
     );
+
+    act(() =>
+      lastConnection().handlers.onRevoke({
+        attendanceId: 'att-new',
+        presentCount: 2,
+      }),
+    );
+    expect(result.current.presentCount).toBe(2);
+    expect(
+      result.current.attendances.map((row) => row.studentName),
+    ).not.toContain('Tiago Mota');
   });
 
   it('re-mints the ticket and re-attaches after a single drop', async () => {

@@ -20,8 +20,14 @@ export type PaymentScope = 'aluno' | 'responsavel' | 'store';
 
 /** Create-payment mutation for the scope's endpoint (same body/response). */
 export function useCreatePayment(scope: PaymentScope) {
-  const aluno = api.useMutation('post', '/v1/aluno/wallet/charges/{id}/payments');
-  const responsavel = api.useMutation('post', '/v1/responsavel/payments/charges/{id}/payments');
+  const aluno = api.useMutation(
+    'post',
+    '/v1/aluno/wallet/charges/{id}/payments',
+  );
+  const responsavel = api.useMutation(
+    'post',
+    '/v1/responsavel/payments/charges/{id}/payments',
+  );
   const store = api.useMutation('post', '/v1/store/charges/{id}/payments');
   if (scope === 'store') {
     // The store contract accepts pix only (spec 009 — single CTA); widening
@@ -51,15 +57,23 @@ export function usePendingPayment(options: {
     if (requested.current) return;
     requested.current = true;
     create.mutate(
-      { params: { path: { id: options.chargeId } }, body: { method: options.method } },
+      {
+        params: { path: { id: options.chargeId } },
+        body: { method: options.method },
+      },
       {
         onSuccess: setCreated,
-        onError: (mutationError) => setError(billingErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(billingErrorMessage(mutationError)),
       },
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only: one attempt per sheet mount
 
-  return { payment: created?.payment ?? null, pending: create.isPending, error };
+  return {
+    payment: created?.payment ?? null,
+    pending: create.isPending,
+    error,
+  };
 }
 
 /**
@@ -73,7 +87,10 @@ export function useSimulatePayment(onSettled: () => void): {
   pending: boolean;
   error: string | null;
 } {
-  const simulate = api.useMutation('post', '/v1/billing/payments/{id}/simulate');
+  const simulate = api.useMutation(
+    'post',
+    '/v1/billing/payments/{id}/simulate',
+  );
   const [settled, setSettled] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,7 +104,8 @@ export function useSimulatePayment(onSettled: () => void): {
           setSettled(true);
           onSettled();
         },
-        onError: (mutationError) => setError(billingErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(billingErrorMessage(mutationError)),
       },
     );
   };
@@ -100,20 +118,38 @@ export function useSettleInvalidation(scope: PaymentScope): () => void {
   const queryClient = useQueryClient();
   return () => {
     if (scope === 'aluno') {
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/wallet'] });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/aluno/wallet'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/aluno/home'],
+      });
     } else if (scope === 'store') {
       // Settlement flips the order to paid and decrements stock server-side
       // (spec 009): orders list, vitrine/detail stock, home strip, and the
       // aluno Carteira histórico (order payments are wallet history rows).
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/orders'] });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products'] });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products/{id}'] });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/wallet'] });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/store/orders'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/store/products'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/store/products/{id}'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/aluno/home'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/aluno/wallet'],
+      });
     } else {
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/responsavel/payments'] });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/v1/responsavel/dependents'] });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/responsavel/payments'],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['get', '/v1/responsavel/dependents'],
+      });
     }
   };
 }

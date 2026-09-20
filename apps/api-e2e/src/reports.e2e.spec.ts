@@ -32,21 +32,39 @@ const spMonth = () => spDate().slice(0, 7);
 function monthWindow(month: string): { start: string; endExclusive: string } {
   const year = Number(month.slice(0, 4));
   const m = Number(month.slice(5, 7));
-  const next = m === 12 ? `${year + 1}-01` : `${year}-${String(m + 1).padStart(2, '0')}`;
+  const next =
+    m === 12 ? `${year + 1}-01` : `${year}-${String(m + 1).padStart(2, '0')}`;
   return { start: `${month}-01`, endExclusive: `${next}-01` };
 }
 
 function prevMonth(): string {
-  const [year, m] = [Number(spMonth().slice(0, 4)), Number(spMonth().slice(5, 7))];
-  return m === 1 ? `${year - 1}-12` : `${year}-${String(m - 1).padStart(2, '0')}`;
+  const [year, m] = [
+    Number(spMonth().slice(0, 4)),
+    Number(spMonth().slice(5, 7)),
+  ];
+  return m === 1
+    ? `${year - 1}-12`
+    : `${year}-${String(m - 1).padStart(2, '0')}`;
 }
 
-function semesterWindowOfToday(): { label: string; start: string; endExclusive: string } {
+function semesterWindowOfToday(): {
+  label: string;
+  start: string;
+  endExclusive: string;
+} {
   const year = spMonth().slice(0, 4);
   const first = Number(spMonth().slice(5, 7)) <= 6;
   return first
-    ? { label: `${year}-S1`, start: `${year}-01-01`, endExclusive: `${year}-07-01` }
-    : { label: `${year}-S2`, start: `${year}-07-01`, endExclusive: `${Number(year) + 1}-01-01` };
+    ? {
+        label: `${year}-S1`,
+        start: `${year}-01-01`,
+        endExclusive: `${year}-07-01`,
+      }
+    : {
+        label: `${year}-S2`,
+        start: `${year}-07-01`,
+        endExclusive: `${Number(year) + 1}-01-01`,
+      };
 }
 
 describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)', () => {
@@ -75,10 +93,16 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
   // ── financeiro ───────────────────────────────────────────────────────────
 
   it('financeiro matches the shipped overview for the current month and runs the materialization pass', async () => {
-    const overview = await t.http().get('/v1/admin/billing/overview').set(bearer(admin));
+    const overview = await t
+      .http()
+      .get('/v1/admin/billing/overview')
+      .set(bearer(admin));
     expect(overview.status).toBe(200);
 
-    const res = await t.http().get('/v1/admin/reports/financeiro').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/reports/financeiro')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.report).toBe('financeiro');
     expect(res.body.month).toBe(spMonth());
@@ -90,12 +114,16 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
 
     // Same formulas, same month, same snapshot ⇒ same numbers.
     expect(res.body.summary.receitaCents).toBe(overview.body.receitaMesCents);
-    expect(res.body.summary.inadimplenciaPct).toBe(overview.body.inadimplenciaPct);
+    expect(res.body.summary.inadimplenciaPct).toBe(
+      overview.body.inadimplenciaPct,
+    );
 
     const { start, endExclusive } = monthWindow(spMonth());
     const [previsto] = await truth((tx) =>
       tx
-        .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+        })
         .from(charges)
         .where(
           and(
@@ -113,8 +141,11 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     for (const row of res.body.rows) {
       const touches =
         (row.dueDate >= start && row.dueDate < endExclusive) ||
-        (row.periodStart !== null && row.periodStart >= start && row.periodStart < endExclusive) ||
-        (row.paidAt !== null && spDate(new Date(row.paidAt)).slice(0, 7) === spMonth());
+        (row.periodStart !== null &&
+          row.periodStart >= start &&
+          row.periodStart < endExclusive) ||
+        (row.paidAt !== null &&
+          spDate(new Date(row.paidAt)).slice(0, 7) === spMonth());
       expect(touches, `row ${row.chargeId}`).toBe(true);
     }
   });
@@ -122,33 +153,47 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
   it('financeiro windows to any past month in the tenant timezone', async () => {
     const month = prevMonth();
     const { start, endExclusive } = monthWindow(month);
-    const res = await t.http().get(`/v1/admin/reports/financeiro?month=${month}`).set(bearer(admin));
+    const res = await t
+      .http()
+      .get(`/v1/admin/reports/financeiro?month=${month}`)
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.month).toBe(month);
 
     const [receita] = await truth((tx) =>
-      tx.execute(sql`
+      tx
+        .execute(
+          sql`
         SELECT COALESCE(SUM(p.amount_cents), 0) AS total FROM payments p
         WHERE p.tenant_id = ${tenantId} AND p.status = 'succeeded'
           AND (p.paid_at AT TIME ZONE ${TZ})::date >= ${start}::date
           AND (p.paid_at AT TIME ZONE ${TZ})::date < ${endExclusive}::date
-      `).then((r: any) => r.rows),
+      `,
+        )
+        .then((r: any) => r.rows),
     );
     expect(res.body.summary.receitaCents).toBe(Number(receita.total));
     // The seeded previous-cycle mensalidade (paid) is due inside that month.
     const planRow = res.body.rows.find(
-      (r: any) => r.origin === 'plan' && r.status === 'paid' && r.periodStart === start,
+      (r: any) =>
+        r.origin === 'plan' && r.status === 'paid' && r.periodStart === start,
     );
     expect(planRow).toBeTruthy();
     expect(planRow.paidAt).not.toBeNull();
   });
 
   it('rejects a malformed month and an unknown report slug', async () => {
-    const bad = await t.http().get('/v1/admin/reports/financeiro?month=2026-8').set(bearer(admin));
+    const bad = await t
+      .http()
+      .get('/v1/admin/reports/financeiro?month=2026-8')
+      .set(bearer(admin));
     expect(bad.status).toBe(422);
     expect(bad.body.code).toBe('validation.failed');
 
-    const unknown = await t.http().get('/v1/admin/reports/estoque').set(bearer(admin));
+    const unknown = await t
+      .http()
+      .get('/v1/admin/reports/estoque')
+      .set(bearer(admin));
     expect(unknown.status).toBe(404);
     expect(unknown.body.code).toBe('resource.not_found');
   });
@@ -156,7 +201,10 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
   // ── frequencia ───────────────────────────────────────────────────────────
 
   it('frequencia: honest denominators per class; revoked attendances never count', async () => {
-    const res = await t.http().get('/v1/admin/reports/frequencia').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/reports/frequencia')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.report).toBe('frequencia');
     const { start, endExclusive } = monthWindow(spMonth());
@@ -175,14 +223,19 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
             ),
           ),
       );
-      expect(klass.sessionsCount, klass.className).toBe(Number(sessions!.total));
+      expect(klass.sessionsCount, klass.className).toBe(
+        Number(sessions!.total),
+      );
 
       for (const student of klass.students) {
         const [active] = await truth((tx) =>
           tx
             .select({ total: sql<string>`COUNT(*)` })
             .from(attendances)
-            .innerJoin(classSessions, eq(classSessions.id, attendances.classSessionId))
+            .innerJoin(
+              classSessions,
+              eq(classSessions.id, attendances.classSessionId),
+            )
             .where(
               and(
                 eq(attendances.tenantId, tenantId),
@@ -194,10 +247,13 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
               ),
             ),
         );
-        expect(student.presencas, `${klass.className}/${student.studentName}`).toBe(
-          Number(active!.total),
+        expect(
+          student.presencas,
+          `${klass.className}/${student.studentName}`,
+        ).toBe(Number(active!.total));
+        expect(student.faltas).toBe(
+          Math.max(klass.sessionsCount - student.presencas, 0),
         );
-        expect(student.faltas).toBe(Math.max(klass.sessionsCount - student.presencas, 0));
         expect(student.presencePct).toBe(
           klass.sessionsCount === 0
             ? 0
@@ -226,8 +282,12 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     expect(Number(revoked!.total)).toBeGreaterThanOrEqual(1);
 
     // Ranking fixtures are unenrolled — they never inflate the turma report.
-    const adulto = res.body.classes.find((c: any) => c.className === 'Adulto Gi');
-    expect(adulto.students.some((s: any) => s.studentName.endsWith('Ranking'))).toBe(false);
+    const adulto = res.body.classes.find(
+      (c: any) => c.className === 'Adulto Gi',
+    );
+    expect(
+      adulto.students.some((s: any) => s.studentName.endsWith('Ranking')),
+    ).toBe(false);
   });
 
   // ── inadimplencia ────────────────────────────────────────────────────────
@@ -240,7 +300,12 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
       const [kiko] = await tx
         .select({ id: students.id, guardianId: students.guardianId })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.fullName, 'Kiko Kids')));
+        .where(
+          and(
+            eq(students.tenantId, tenantId),
+            eq(students.fullName, 'Kiko Kids'),
+          ),
+        );
       const [renata] = await tx
         .select({ id: users.id })
         .from(users)
@@ -248,7 +313,12 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
       const [kidsPlan] = await tx
         .select({ id: academyPlans.id })
         .from(academyPlans)
-        .where(and(eq(academyPlans.tenantId, tenantId), eq(academyPlans.name, 'Kids Mensal')));
+        .where(
+          and(
+            eq(academyPlans.tenantId, tenantId),
+            eq(academyPlans.name, 'Kids Mensal'),
+          ),
+        );
       // Competência two months back — clear of the seeded cycle keys.
       const base = new Date();
       base.setMonth(base.getMonth() - 2, 1);
@@ -266,28 +336,50 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
         status: 'open',
       });
       await tx.insert(notifications).values([
-        { tenantId, userId: renata!.id, category: 'payment', title: 'Mensalidade em atraso' },
-        { tenantId, userId: renata!.id, category: 'payment', title: 'Lembrete de pagamento' },
+        {
+          tenantId,
+          userId: renata!.id,
+          category: 'payment',
+          title: 'Mensalidade em atraso',
+        },
+        {
+          tenantId,
+          userId: renata!.id,
+          category: 'payment',
+          title: 'Lembrete de pagamento',
+        },
         // Different category — never counted.
-        { tenantId, userId: renata!.id, category: 'event', title: 'Evento novo' },
+        {
+          tenantId,
+          userId: renata!.id,
+          category: 'event',
+          title: 'Evento novo',
+        },
         // Before the due date — never counted.
         {
           tenantId,
           userId: renata!.id,
           category: 'payment',
           title: 'Aviso antigo',
-          createdAt: new Date(Date.parse(`${dueDate}T00:00:00-03:00`) - 5 * 24 * 3600 * 1000),
+          createdAt: new Date(
+            Date.parse(`${dueDate}T00:00:00-03:00`) - 5 * 24 * 3600 * 1000,
+          ),
         },
       ]);
     });
 
-    const res = await t.http().get('/v1/admin/reports/inadimplencia').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/reports/inadimplencia')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.report).toBe('inadimplencia');
     expect(res.body.asOf).toBe(spDate());
 
     // The seeded overdue student (no login anywhere) — honest zero.
-    const flavia = res.body.rows.find((r: any) => r.studentName === 'Flavia Fila');
+    const flavia = res.body.rows.find(
+      (r: any) => r.studentName === 'Flavia Fila',
+    );
     expect(flavia).toBeTruthy();
     expect(flavia.daysOverdue).toBeGreaterThan(0);
     expect(flavia.notificationsSent).toBe(0);
@@ -303,7 +395,9 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     expect(kiko.guardianName).toBe('Renata Responsavel');
     expect(kiko.daysOverdue).toBe(15);
     const [renataCounts] = await truth((tx) =>
-      tx.execute(sql`
+      tx
+        .execute(
+          sql`
         SELECT
           COUNT(*) FILTER (
             WHERE n.category = 'payment'
@@ -313,11 +407,15 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
         FROM notifications n
         JOIN users u ON u.id = n.user_id
         WHERE n.tenant_id = ${tenantId} AND lower(u.email) = 'responsavel@tatame.dev'
-      `).then((r: any) => r.rows),
+      `,
+        )
+        .then((r: any) => r.rows),
     );
     expect(kiko.notificationsSent).toBe(Number(renataCounts.since_due));
     // The backdated payment row exists and stays out of the count.
-    expect(Number(renataCounts.all_payment)).toBeGreaterThan(Number(renataCounts.since_due));
+    expect(Number(renataCounts.all_payment)).toBeGreaterThan(
+      Number(renataCounts.since_due),
+    );
 
     // Totals reconcile with the returned rows.
     expect(res.body.totals.count).toBe(res.body.rows.length);
@@ -334,20 +432,32 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
   // ── graduacoes ───────────────────────────────────────────────────────────
 
   it('graduacoes: semester window, reversed awards and revocation rows excluded', async () => {
-    const res = await t.http().get('/v1/admin/reports/graduacoes').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/reports/graduacoes')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.report).toBe('graduacoes');
     const semester = semesterWindowOfToday();
     expect(res.body.semester.label).toBe(semester.label);
 
     // The seeded in-semester belt award (REP.2) keeps the report non-empty.
-    const rita = res.body.rows.find((r: any) => r.studentName === 'Rita Ranking');
-    expect(rita).toMatchObject({ kind: 'belt', beltName: 'Azul', awardedByName: 'Paulo Professor' });
+    const rita = res.body.rows.find(
+      (r: any) => r.studentName === 'Rita Ranking',
+    );
+    expect(rita).toMatchObject({
+      kind: 'belt',
+      beltName: 'Azul',
+      awardedByName: 'Paulo Professor',
+    });
 
     // Reversed award + its revocation row never appear, whatever the window.
     const excluded = await truth((tx) =>
       tx
-        .select({ id: studentGraduations.id, reverses: studentGraduations.reversesGraduationId })
+        .select({
+          id: studentGraduations.id,
+          reverses: studentGraduations.reversesGraduationId,
+        })
         .from(studentGraduations)
         .where(
           and(
@@ -362,7 +472,9 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
       expect(bannedIds.has(row.graduationId)).toBe(false);
       expect(['degree', 'belt']).toContain(row.kind);
       const awardedDay = spDate(new Date(row.awardedAt));
-      expect(awardedDay >= semester.start && awardedDay < semester.endExclusive).toBe(true);
+      expect(
+        awardedDay >= semester.start && awardedDay < semester.endExclusive,
+      ).toBe(true);
     }
 
     // A month in another (empty) semester maps to that half and returns [].
@@ -385,7 +497,12 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     const { start, endExclusive } = monthWindow(spMonth());
     const monthOrders = await truth((tx) =>
       tx
-        .select({ id: orders.id, status: orders.status, totalCents: orders.totalCents, number: orders.number })
+        .select({
+          id: orders.id,
+          status: orders.status,
+          totalCents: orders.totalCents,
+          number: orders.number,
+        })
         .from(orders)
         .where(
           and(
@@ -395,9 +512,13 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
           ),
         ),
     );
-    const sold = monthOrders.filter((o: any) => ['paid', 'ready', 'delivered'].includes(o.status));
+    const sold = monthOrders.filter((o: any) =>
+      ['paid', 'ready', 'delivered'].includes(o.status),
+    );
     expect(res.body.totals.pedidos).toBe(sold.length);
-    expect(res.body.totals.vendasCents).toBe(sold.reduce((sum: number, o: any) => sum + o.totalCents, 0));
+    expect(res.body.totals.vendasCents).toBe(
+      sold.reduce((sum: number, o: any) => sum + o.totalCents, 0),
+    );
 
     const canceled = res.body.rows.find((r: any) => r.status === 'canceled');
     expect(canceled).toBeTruthy(); // listed…
@@ -405,14 +526,19 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     expect(pending).toBeTruthy(); // …and pending listed with status too
     // …but neither is in the totals (asserted structurally above).
     expect(res.body.rows.map((r: any) => r.number)).toEqual(
-      [...res.body.rows.map((r: any) => r.number)].sort((a: number, b: number) => a - b),
+      [...res.body.rows.map((r: any) => r.number)].sort(
+        (a: number, b: number) => a - b,
+      ),
     );
   });
 
   // ── CSV (REP.4) ──────────────────────────────────────────────────────────
 
   it('CSV: BOM + semicolon + pt-BR money + ISO dates + Content-Disposition filename', async () => {
-    const res = await t.http().get('/v1/admin/reports/financeiro/csv').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/reports/financeiro/csv')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/csv/);
     expect(res.headers['content-disposition']).toBe(
@@ -421,7 +547,9 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     const text = res.text as string;
     expect(text.startsWith('\ufeff')).toBe(true);
     const lines = text.slice(1).split('\r\n');
-    expect(lines[0]).toBe('aluno;origem;competencia;vencimento;status;valor;pago_em');
+    expect(lines[0]).toBe(
+      'aluno;origem;competencia;vencimento;status;valor;pago_em',
+    );
     // The seeded R$ 180,00 mensalidade renders decimal-comma.
     expect(text).toContain(';180,00;');
     // ISO dates, never localized ones.
@@ -430,13 +558,26 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
 
   it('CSV: every report serializes from the same read model, month in the filename', async () => {
     const month = '2020-01';
-    const loja = await t.http().get(`/v1/admin/reports/loja/csv?month=${month}`).set(bearer(admin));
+    const loja = await t
+      .http()
+      .get(`/v1/admin/reports/loja/csv?month=${month}`)
+      .set(bearer(admin));
     expect(loja.status).toBe(200);
-    expect(loja.headers['content-disposition']).toBe(`attachment; filename="loja-${month}.csv"`);
-    const lojaLines = (loja.text as string).slice(1).split('\r\n').filter(Boolean);
-    expect(lojaLines).toEqual(['pedido;data;comprador;produto;tamanho;quantidade;valor;status']);
+    expect(loja.headers['content-disposition']).toBe(
+      `attachment; filename="loja-${month}.csv"`,
+    );
+    const lojaLines = (loja.text as string)
+      .slice(1)
+      .split('\r\n')
+      .filter(Boolean);
+    expect(lojaLines).toEqual([
+      'pedido;data;comprador;produto;tamanho;quantidade;valor;status',
+    ]);
 
-    const freq = await t.http().get('/v1/admin/reports/frequencia/csv').set(bearer(admin));
+    const freq = await t
+      .http()
+      .get('/v1/admin/reports/frequencia/csv')
+      .set(bearer(admin));
     expect(freq.status).toBe(200);
     expect((freq.text as string).slice(1).split('\r\n')[0]).toBe(
       'turma;aluno;presencas;faltas;percentual',
@@ -459,15 +600,27 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
     const { start, endExclusive } = monthWindow(spMonth());
     const active = await truth((tx) =>
       tx
-        .select({ id: students.id, name: students.fullName, userId: students.userId })
+        .select({
+          id: students.id,
+          name: students.fullName,
+          userId: students.userId,
+        })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.status, 'active'))),
+        .where(
+          and(eq(students.tenantId, tenantId), eq(students.status, 'active')),
+        ),
     );
     const counts = await truth((tx) =>
       tx
-        .select({ studentId: attendances.studentId, total: sql<string>`COUNT(*)` })
+        .select({
+          studentId: attendances.studentId,
+          total: sql<string>`COUNT(*)`,
+        })
         .from(attendances)
-        .innerJoin(classSessions, eq(classSessions.id, attendances.classSessionId))
+        .innerJoin(
+          classSessions,
+          eq(classSessions.id, attendances.classSessionId),
+        )
         .where(
           and(
             eq(attendances.tenantId, tenantId),
@@ -478,16 +631,24 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
         )
         .groupBy(attendances.studentId),
     );
-    const byId = new Map(counts.map((c: any) => [c.studentId, Number(c.total)]));
+    const byId = new Map(
+      counts.map((c: any) => [c.studentId, Number(c.total)]),
+    );
     return active
       .map((s: any) => ({ ...s, count: byId.get(s.id) ?? 0 }))
-      .sort((a: any, b: any) => b.count - a.count || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+      .sort(
+        (a: any, b: any) =>
+          b.count - a.count || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0),
+      )
       .map((row: any, i: number) => ({ ...row, position: i + 1 }));
   }
 
   it('rankings by=lessons: month window, count-desc + name-asc ties, top 10, me for the aluno', async () => {
     const expected = await expectedLessonsRanking();
-    const res = await t.http().get('/v1/rankings?by=lessons').set(bearer(aluno));
+    const res = await t
+      .http()
+      .get('/v1/rankings?by=lessons')
+      .set(bearer(aluno));
     expect(res.status).toBe(200);
     expect(res.body.by).toBe('lessons');
     expect(res.body.window.label).toBe(spMonth());
@@ -527,7 +688,12 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
       const [ana] = await tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.fullName, 'Ana Aluna')));
+        .where(
+          and(
+            eq(students.tenantId, tenantId),
+            eq(students.fullName, 'Ana Aluna'),
+          ),
+        );
       const [professorUser] = await tx
         .select({ id: users.id })
         .from(users)
@@ -553,17 +719,26 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
         status: 'confirmed',
       });
     });
-    const after = await t.http().get('/v1/rankings?by=events').set(bearer(aluno));
+    const after = await t
+      .http()
+      .get('/v1/rankings?by=events')
+      .set(bearer(aluno));
     expect(after.body.top[0].count).toBe(before);
   });
 
   it('rankings: professor sees the same list with me always null', async () => {
-    const res = await t.http().get('/v1/rankings?by=lessons').set(bearer(professor));
+    const res = await t
+      .http()
+      .get('/v1/rankings?by=lessons')
+      .set(bearer(professor));
     expect(res.status).toBe(200);
     expect(res.body.me).toBeNull();
     expect(res.body.top.every((r: any) => r.isMe === false)).toBe(true);
 
-    const eventsRes = await t.http().get('/v1/rankings?by=events').set(bearer(professor));
+    const eventsRes = await t
+      .http()
+      .get('/v1/rankings?by=events')
+      .set(bearer(professor));
     expect(eventsRes.body.me).toBeNull();
   });
 
@@ -602,7 +777,10 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
       }
     });
 
-    const res = await t.http().get('/v1/rankings?by=lessons').set(bearer(aluno));
+    const res = await t
+      .http()
+      .get('/v1/rankings?by=lessons')
+      .set(bearer(aluno));
     expect(res.status).toBe(200);
     expect(res.body.top).toHaveLength(10);
     expect(res.body.top.every((r: any) => r.isMe === false)).toBe(true);
@@ -619,14 +797,20 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
   it('reports are admin-only; rankings exclude guardians and platform roles', async () => {
     const responsavel = (await t.login('responsavel@tatame.dev')).accessToken;
     for (const token of [professor, aluno, responsavel]) {
-      for (const path of ['/v1/admin/reports/financeiro', '/v1/admin/reports/loja/csv']) {
+      for (const path of [
+        '/v1/admin/reports/financeiro',
+        '/v1/admin/reports/loja/csv',
+      ]) {
         const res = await t.http().get(path).set(bearer(token));
         expect(res.status, path).toBe(403);
         expect(res.body.code).toBe('authz.forbidden_role');
       }
     }
 
-    const guardianRanking = await t.http().get('/v1/rankings').set(bearer(responsavel));
+    const guardianRanking = await t
+      .http()
+      .get('/v1/rankings')
+      .set(bearer(responsavel));
     expect(guardianRanking.status).toBe(403);
     expect(guardianRanking.body.code).toBe('authz.forbidden_role');
 
@@ -638,11 +822,20 @@ describe('reports & rankings: read models, CSV shape, windows, RBAC (spec 013)',
   it('read-only (delinquent) academies still read reports and rankings', async () => {
     await t.setAcademyStatus('alpha-jj', 'delinquent');
     try {
-      const report = await t.http().get('/v1/admin/reports/frequencia').set(bearer(admin));
+      const report = await t
+        .http()
+        .get('/v1/admin/reports/frequencia')
+        .set(bearer(admin));
       expect(report.status).toBe(200);
-      const csv = await t.http().get('/v1/admin/reports/graduacoes/csv').set(bearer(admin));
+      const csv = await t
+        .http()
+        .get('/v1/admin/reports/graduacoes/csv')
+        .set(bearer(admin));
       expect(csv.status).toBe(200);
-      const ranking = await t.http().get('/v1/rankings?by=events').set(bearer(aluno));
+      const ranking = await t
+        .http()
+        .get('/v1/rankings?by=events')
+        .set(bearer(aluno));
       expect(ranking.status).toBe(200);
     } finally {
       await t.setAcademyStatus('alpha-jj', 'active');

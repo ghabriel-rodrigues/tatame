@@ -65,14 +65,22 @@ export const classSessions = pgTable(
   (t) => [
     unique('class_sessions_tenant_id_id_uq').on(t.tenantId, t.id),
     // One occurrence per turma per day — the idempotent-materialization key.
-    unique('class_sessions_tenant_class_date_uq').on(t.tenantId, t.classId, t.sessionDate),
+    unique('class_sessions_tenant_class_date_uq').on(
+      t.tenantId,
+      t.classId,
+      t.sessionDate,
+    ),
     index('class_sessions_tenant_date_idx').on(t.tenantId, t.sessionDate),
     foreignKey({
       name: 'class_sessions_class_fk',
       columns: [t.tenantId, t.classId],
       foreignColumns: [classes.tenantId, classes.id],
     }),
-    pgPolicy('class_sessions_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('class_sessions_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -122,7 +130,11 @@ export const checkinCodes = pgTable(
       columns: [t.tenantId, t.classSessionId],
       foreignColumns: [classSessions.tenantId, classSessions.id],
     }),
-    pgPolicy('checkin_codes_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('checkin_codes_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -144,7 +156,9 @@ export const attendances = pgTable(
     classSessionId: uuid('class_session_id').notNull(),
     studentId: uuid('student_id').notNull(),
     method: checkinMethod('method').notNull(),
-    checkedInAt: timestamp('checked_in_at', { withTimezone: true }).notNull().defaultNow(),
+    checkedInAt: timestamp('checked_in_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     /** NULL = self check-in; the professor on manual roll call. */
     recordedByUserId: uuid('recorded_by_user_id').references(() => users.id),
     /** Void annotation — set once via the `attendance_revoke` seam only. */

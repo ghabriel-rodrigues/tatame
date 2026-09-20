@@ -30,12 +30,16 @@ export const FIXTURE_RESPONSIBLE_ANA: EventResponsible = {
   fullName: 'Ana Souza',
 };
 
-export function makeEventTotals(overrides: Partial<EventTotals> = {}): EventTotals {
+export function makeEventTotals(
+  overrides: Partial<EventTotals> = {},
+): EventTotals {
   return { inscritos: 0, confirmados: 0, arrecadadoCents: 0, ...overrides };
 }
 
 let eventCounter = 0;
-export function makeAdminEvent(overrides: Partial<AdminEvent> = {}): AdminEvent {
+export function makeAdminEvent(
+  overrides: Partial<AdminEvent> = {},
+): AdminEvent {
   eventCounter += 1;
   return {
     id: uuid('8040', eventCounter),
@@ -55,7 +59,9 @@ export function makeAdminEvent(overrides: Partial<AdminEvent> = {}): AdminEvent 
 }
 
 /** "Rascunho · Data a definir" card — no date, no local. */
-export function makeDraftEvent(overrides: Partial<AdminEvent> = {}): AdminEvent {
+export function makeDraftEvent(
+  overrides: Partial<AdminEvent> = {},
+): AdminEvent {
   return makeAdminEvent({
     name: 'Seminário de guarda',
     location: null,
@@ -103,7 +109,11 @@ export function makeAdminEventList(): AdminEvent[] {
       startsAt: '2026-09-13T12:30:00.000Z',
       priceCents: 6_000,
       responsible: FIXTURE_RESPONSIBLE_ANA,
-      totals: makeEventTotals({ inscritos: 9, confirmados: 4, arrecadadoCents: 24_000 }),
+      totals: makeEventTotals({
+        inscritos: 9,
+        confirmados: 4,
+        arrecadadoCents: 24_000,
+      }),
     }),
   ];
 }
@@ -136,7 +146,11 @@ export function makeAdminEventRegistrations(
   const event = makeAdminEvent({
     name: 'Exame de faixa',
     priceCents: 12_000,
-    totals: makeEventTotals({ inscritos: 3, confirmados: 2, arrecadadoCents: 24_000 }),
+    totals: makeEventTotals({
+      inscritos: 3,
+      confirmados: 2,
+      arrecadadoCents: 24_000,
+    }),
   });
   return {
     event,
@@ -150,7 +164,10 @@ export function makeAdminEventRegistrations(
       makeAdminRegistrationRow({
         student: { id: uuid('8042', 902), fullName: 'Pedro Silveira' },
         status: 'confirmed',
-        confirmedBy: { userId: uuid('8043', 902), fullName: 'Fernanda Silveira' },
+        confirmedBy: {
+          userId: uuid('8043', 902),
+          fullName: 'Fernanda Silveira',
+        },
         paidAmountCents: 12_000,
       }),
       makeAdminRegistrationRow({

@@ -11,7 +11,11 @@ describe('ScreenHeader', () => {
   it('renders eyebrow, title and subtitle', () => {
     render(
       <ThemeProvider>
-        <ScreenHeader eyebrow="sábado, 1 de agosto" title="Olá, Lucas" subtitle="Bom treino!" />
+        <ScreenHeader
+          eyebrow="sábado, 1 de agosto"
+          title="Olá, Lucas"
+          subtitle="Bom treino!"
+        />
       </ThemeProvider>,
     );
     expect(screen.getByText('sábado, 1 de agosto')).toBeTruthy();

@@ -22,7 +22,9 @@ describe('billing: responsável payments', () => {
     guardian = await t.login('responsavel@tatame.dev');
     alphaId = await t.academyIdBySlug('alpha-jj');
     paidEvents = [];
-    t.app.get(EventEmitter2).on(BILLING_CHARGE_PAID, (event) => paidEvents.push(event));
+    t.app
+      .get(EventEmitter2)
+      .on(BILLING_CHARGE_PAID, (event) => paidEvents.push(event));
 
     // Determinism: cancel the seeded alpha mandates so no materialization
     // pass auto-settles a current charge mid-test — the auto-settle path has
@@ -32,7 +34,12 @@ describe('billing: responsável payments', () => {
       tx
         .update(paymentMandates)
         .set({ status: 'canceled', canceledAt: new Date() })
-        .where(and(eq(paymentMandates.tenantId, alphaId), eq(paymentMandates.status, 'active'))),
+        .where(
+          and(
+            eq(paymentMandates.tenantId, alphaId),
+            eq(paymentMandates.status, 'active'),
+          ),
+        ),
     );
   });
 
@@ -44,13 +51,23 @@ describe('billing: responsável payments', () => {
   let lara: any;
 
   it('lists one card per dependent with plan subtitle and open charge', async () => {
-    const res = await t.http().get('/v1/responsavel/payments').set(bearer(guardian.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/responsavel/payments')
+      .set(bearer(guardian.accessToken));
     expect(res.status).toBe(200);
-    expect(res.body.dependents.map((d: any) => d.fullName)).toEqual(['Kiko Kids', 'Lara Kids']);
+    expect(res.body.dependents.map((d: any) => d.fullName)).toEqual([
+      'Kiko Kids',
+      'Lara Kids',
+    ]);
     [kiko, lara] = res.body.dependents;
 
     for (const dependent of [kiko, lara]) {
-      expect(dependent.plan).toMatchObject({ name: 'Kids Mensal', amountCents: 15000, dueDay: 10 });
+      expect(dependent.plan).toMatchObject({
+        name: 'Kids Mensal',
+        amountCents: 15000,
+        dueDay: 10,
+      });
       expect(dependent.currentCharge).toBeTruthy();
       expect(['open', 'overdue']).toContain(dependent.currentCharge.status);
       // Guardian bill-to denormalized at issuance — the payer of record.
@@ -60,14 +77,22 @@ describe('billing: responsável payments', () => {
 
     // Consolidated histórico: Kiko's Pix + Lara's card recurrence settlement.
     expect(res.body.history.length).toBe(2);
-    expect(res.body.history.map((h: any) => h.method).sort()).toEqual(['card', 'pix']);
-    const laraEntry = res.body.history.find((h: any) => h.studentName === 'Lara Kids');
+    expect(res.body.history.map((h: any) => h.method).sort()).toEqual([
+      'card',
+      'pix',
+    ]);
+    const laraEntry = res.body.history.find(
+      (h: any) => h.studentName === 'Lara Kids',
+    );
     expect(laraEntry.method).toBe('card');
     expect(laraEntry.receiptUrl).toContain('/receipt');
   });
 
   it('dependent cards on the Filhos panel carry the mensalidade alert', async () => {
-    const res = await t.http().get('/v1/responsavel/dependents').set(bearer(guardian.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/responsavel/dependents')
+      .set(bearer(guardian.accessToken));
     expect(res.status).toBe(200);
     for (const dependent of res.body.dependents) {
       expect(dependent.mensalidade).toMatchObject({ amountCents: 15000 });
@@ -77,7 +102,9 @@ describe('billing: responsável payments', () => {
   it('boleto attempt + Pix attempt coexist; boleto compensação settles the charge', async () => {
     const boleto = await t
       .http()
-      .post(`/v1/responsavel/payments/charges/${kiko.currentCharge.id}/payments`)
+      .post(
+        `/v1/responsavel/payments/charges/${kiko.currentCharge.id}/payments`,
+      )
       .set(bearer(guardian.accessToken))
       .send({ method: 'boleto' });
     expect(boleto.status).toBe(201);
@@ -88,7 +115,9 @@ describe('billing: responsável payments', () => {
 
     const pix = await t
       .http()
-      .post(`/v1/responsavel/payments/charges/${kiko.currentCharge.id}/payments`)
+      .post(
+        `/v1/responsavel/payments/charges/${kiko.currentCharge.id}/payments`,
+      )
       .set(bearer(guardian.accessToken))
       .send({ method: 'pix' });
     expect(pix.status).toBe(201);
@@ -123,9 +152,15 @@ describe('billing: responsável payments', () => {
   it('cartão + recurrence toggle settles inline and creates the mandate', async () => {
     const pay = await t
       .http()
-      .post(`/v1/responsavel/payments/charges/${lara.currentCharge.id}/payments`)
+      .post(
+        `/v1/responsavel/payments/charges/${lara.currentCharge.id}/payments`,
+      )
       .set(bearer(guardian.accessToken))
-      .send({ method: 'card', recurrence: true, card: { holderName: 'RENATA R', last4: '4242' } });
+      .send({
+        method: 'card',
+        recurrence: true,
+        card: { holderName: 'RENATA R', last4: '4242' },
+      });
     expect(pay.status).toBe(201);
     expect(pay.body.mandateCreated).toBe(true);
     // Card settles inline — through the SAME normalized handler.
@@ -138,8 +173,13 @@ describe('billing: responsável payments', () => {
     expect(event.method).toBe('card');
 
     // The dependent card now shows recurrence active + Paga.
-    const res = await t.http().get('/v1/responsavel/payments').set(bearer(guardian.accessToken));
-    const laraCard = res.body.dependents.find((d: any) => d.fullName === 'Lara Kids');
+    const res = await t
+      .http()
+      .get('/v1/responsavel/payments')
+      .set(bearer(guardian.accessToken));
+    const laraCard = res.body.dependents.find(
+      (d: any) => d.fullName === 'Lara Kids',
+    );
     expect(laraCard.recurrenceActive).toBe(true);
     expect(laraCard.currentCharge.status).toBe('paid');
     // Consolidated histórico grew with the two settlements above.
@@ -151,9 +191,18 @@ describe('billing: responsável payments', () => {
     // seeds never created (insert via the BYPASSRLS pool, like an ops fix).
     const [laraRow] = await withPlatform(t.platformDb.db, (tx) =>
       tx
-        .select({ id: students.id, guardianId: students.guardianId, planId: students.academyPlanId })
+        .select({
+          id: students.id,
+          guardianId: students.guardianId,
+          planId: students.academyPlanId,
+        })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Lara Kids'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Lara Kids'),
+          ),
+        ),
     );
     const past = new Date();
     past.setMonth(past.getMonth() - 2);
@@ -239,7 +288,9 @@ describe('billing: responsável payments', () => {
       ['get', '/v1/admin/billing/plans'],
       ['get', '/v1/platform/billing/repasses'],
     ] as const) {
-      const res = await (t.http() as any)[method](path).set(bearer(professor.accessToken));
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(professor.accessToken));
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code).toBe('authz.forbidden_role');
     }

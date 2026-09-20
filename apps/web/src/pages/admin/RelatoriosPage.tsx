@@ -48,10 +48,14 @@ function ReportRow({
         sx={{ alignItems: 'center' }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 14, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             {row.title}
           </Typography>
-          <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-3)' }}>
+          <Typography
+            sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-3)' }}
+          >
             {row.subtitle(month)}
           </Typography>
         </Box>
@@ -80,7 +84,9 @@ export function RelatoriosPage() {
     setDownloadError(null);
     void downloadReportCsv(apiClient, row.slug, month)
       .catch(() => {
-        setDownloadError(`Não foi possível exportar ${row.title}. Tente novamente.`);
+        setDownloadError(
+          `Não foi possível exportar ${row.title}. Tente novamente.`,
+        );
       })
       .finally(() => setDownloading(null));
   }
@@ -97,7 +103,9 @@ export function RelatoriosPage() {
               size="small"
               value={month}
               inputProps={{ 'aria-label': 'Mês' }}
-              onChange={(event: SelectChangeEvent) => setMonth(event.target.value)}
+              onChange={(event: SelectChangeEvent) =>
+                setMonth(event.target.value)
+              }
               sx={{ minWidth: 160, background: 'var(--bg-surface)' }}
             >
               {options.map((option) => (
@@ -126,7 +134,11 @@ export function RelatoriosPage() {
             downloading={downloading === row.slug}
             onCsv={() => exportCsv(row)}
             onPdf={() => {
-              window.open(reportPrintUrl(row.slug, month), '_blank', 'noopener');
+              window.open(
+                reportPrintUrl(row.slug, month),
+                '_blank',
+                'noopener',
+              );
             }}
           />
         ))}

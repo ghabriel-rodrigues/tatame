@@ -37,13 +37,20 @@ import {
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { PixSheet } from '../../../features/billing/PixSheet';
-import { RESPONSAVEL_SUBTITLE, eventsErrorMessage, inscricaoSubtitle } from '../../../features/events/copy';
+import {
+  RESPONSAVEL_SUBTITLE,
+  eventsErrorMessage,
+  inscricaoSubtitle,
+} from '../../../features/events/copy';
 import {
   dependentChipAction,
   eventShortLine,
   priceLabel,
 } from '../../../features/events/format';
-import type { ResponsavelEvent, ResponsavelEventDependent } from '../../../features/events/types';
+import type {
+  ResponsavelEvent,
+  ResponsavelEventDependent,
+} from '../../../features/events/types';
 import { DependentChip } from '../../../features/events/ui';
 import { QueryState } from '../../../features/enrollment/ui';
 
@@ -63,14 +70,26 @@ function ResponsavelEventCard({
   onChipLongPress,
 }: {
   event: ResponsavelEvent;
-  onChipPress: (event: ResponsavelEvent, dependent: ResponsavelEventDependent) => void;
-  onChipLongPress: (event: ResponsavelEvent, dependent: ResponsavelEventDependent) => void;
+  onChipPress: (
+    event: ResponsavelEvent,
+    dependent: ResponsavelEventDependent,
+  ) => void;
+  onChipLongPress: (
+    event: ResponsavelEvent,
+    dependent: ResponsavelEventDependent,
+  ) => void;
 }) {
   const theme = useTheme();
   const gradient = eventGradientColors(theme, event.bannerPreset);
   return (
     <Card padding={0} testID={`responsavel-event-${event.id}`}>
-      <View style={{ overflow: 'hidden', borderTopLeftRadius: theme.radius.lg, borderTopRightRadius: theme.radius.lg }}>
+      <View
+        style={{
+          overflow: 'hidden',
+          borderTopLeftRadius: theme.radius.lg,
+          borderTopRightRadius: theme.radius.lg,
+        }}
+      >
         <LinearGradient
           colors={gradient}
           start={{ x: 0, y: 1 }}
@@ -145,10 +164,15 @@ export default function ResponsavelEventosScreen() {
   const events = eventsQuery.data?.events ?? [];
 
   const invalidateEvents = () => {
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/responsavel/events'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/responsavel/events'],
+    });
   };
 
-  const registerDependent = (event: ResponsavelEvent, dependent: ResponsavelEventDependent) => {
+  const registerDependent = (
+    event: ResponsavelEvent,
+    dependent: ResponsavelEventDependent,
+  ) => {
     if (register.isPending) return;
     setError(null);
     register.mutate(
@@ -161,7 +185,10 @@ export default function ResponsavelEventosScreen() {
             setPix({
               chargeId: data.chargeId,
               amountCents: event.priceCents,
-              subtitle: inscricaoSubtitle(event.name, firstName(dependent.fullName)),
+              subtitle: inscricaoSubtitle(
+                event.name,
+                firstName(dependent.fullName),
+              ),
             });
           }
         },
@@ -170,7 +197,10 @@ export default function ResponsavelEventosScreen() {
     );
   };
 
-  const cancelDependent = (event: ResponsavelEvent, dependent: ResponsavelEventDependent) => {
+  const cancelDependent = (
+    event: ResponsavelEvent,
+    dependent: ResponsavelEventDependent,
+  ) => {
     if (cancel.isPending) return;
     setError(null);
     cancel.mutate(
@@ -182,8 +212,14 @@ export default function ResponsavelEventosScreen() {
     );
   };
 
-  const onChipPress = (event: ResponsavelEvent, dependent: ResponsavelEventDependent) => {
-    const action = dependentChipAction(event.priceCents, dependent.registration);
+  const onChipPress = (
+    event: ResponsavelEvent,
+    dependent: ResponsavelEventDependent,
+  ) => {
+    const action = dependentChipAction(
+      event.priceCents,
+      dependent.registration,
+    );
     if (action === 'confirm' || action === 'pay') {
       registerDependent(event, dependent);
     } else if (action === 'cancel') {
@@ -196,34 +232,55 @@ export default function ResponsavelEventosScreen() {
         setPix({
           chargeId,
           amountCents: event.priceCents,
-          subtitle: inscricaoSubtitle(event.name, firstName(dependent.fullName)),
+          subtitle: inscricaoSubtitle(
+            event.name,
+            firstName(dependent.fullName),
+          ),
         });
       }
     }
     // 'none' (paid + confirmed): inert — only the admin refund undoes it.
   };
 
-  const onChipLongPress = (event: ResponsavelEvent, dependent: ResponsavelEventDependent) => {
+  const onChipLongPress = (
+    event: ResponsavelEvent,
+    dependent: ResponsavelEventDependent,
+  ) => {
     // Long-press cancel is only for pending paid registrations — the free
     // toggle already cancels on tap and settled inscriptions are inert.
-    if (dependentChipAction(event.priceCents, dependent.registration) === 'resume-payment') {
+    if (
+      dependentChipAction(event.priceCents, dependent.registration) ===
+      'resume-payment'
+    ) {
       cancelDependent(event, dependent);
     }
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader title="Eventos" subtitle={RESPONSAVEL_SUBTITLE} />
 
           {error ? (
-            <Text variant="caption" testID="events-error" color={theme.color.danger['500']}>
+            <Text
+              variant="caption"
+              testID="events-error"
+              color={theme.color.danger['500']}
+            >
               {error}
             </Text>
           ) : null}
 
-          <QueryState loading={eventsQuery.isPending} error={eventsQuery.isError}>
+          <QueryState
+            loading={eventsQuery.isPending}
+            error={eventsQuery.isError}
+          >
             {eventsQuery.data ? (
               events.length === 0 ? (
                 <Card testID="responsavel-events-empty">

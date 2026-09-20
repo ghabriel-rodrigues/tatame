@@ -13,7 +13,10 @@ function plainSpaces(text: string): string {
 /** "R$ 180,00" — full pt-BR currency from integer cents. */
 export function formatBRL(cents: number): string {
   return plainSpaces(
-    (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+    (cents / 100).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }),
   );
 }
 
@@ -75,7 +78,8 @@ export function monthShort(period: string): string {
 export function nextPeriod(period: string): string {
   const year = Number(period.slice(0, 4));
   const month = Number(period.slice(5, 7));
-  const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+  const next =
+    month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
   return `${next.year}-${String(next.month).padStart(2, '0')}`;
 }
 
@@ -92,7 +96,10 @@ export function shortDateLabel(isoDate: string): string {
 }
 
 /** Whole days past due from an ISO due date (0 floor — never negative). */
-export function daysOverdue(isoDueDate: string, today: Date = new Date()): number {
+export function daysOverdue(
+  isoDueDate: string,
+  today: Date = new Date(),
+): number {
   const due = new Date(`${isoDueDate}T00:00:00`);
   if (Number.isNaN(due.getTime())) return 0;
   const diff = Math.floor((today.getTime() - due.getTime()) / 86_400_000);
@@ -113,7 +120,10 @@ export function chargesCountLabel(count: number): string {
 }
 
 /** "Mensal · R$ 180,00" — plan option label on the student selects. */
-export function planOptionLabel(plan: { name: string; amountCents: number }): string {
+export function planOptionLabel(plan: {
+  name: string;
+  amountCents: number;
+}): string {
   return `${plan.name} · ${formatBRL(plan.amountCents)}`;
 }
 

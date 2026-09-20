@@ -80,7 +80,9 @@ export class WalletService {
     private readonly materialization: MaterializationService,
   ) {}
 
-  async getWallet(ctx: AuthContext & { tenantId: string }): Promise<WalletView> {
+  async getWallet(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<WalletView> {
     const today = localDate();
     const student = await withTenant(
       this.appDb.db,
@@ -93,17 +95,27 @@ export class WalletService {
             academyPlanId: students.academyPlanId,
           })
           .from(students)
-          .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
+          .where(
+            and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+          );
         return row ?? null;
       },
     );
     if (!student) {
-      throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
+      throw problem(
+        404,
+        ErrorCodes.NOT_FOUND,
+        'No active student record for this account',
+      );
     }
 
     // On-read materialization scoped to the caller (own charges only).
     await this.materialization.ensureCurrentCycleCharges(
-      { tenantId: ctx.tenantId, userId: ctx.userId, impersonatorUserId: ctx.impersonatorUserId },
+      {
+        tenantId: ctx.tenantId,
+        userId: ctx.userId,
+        impersonatorUserId: ctx.impersonatorUserId,
+      },
       { studentIds: [student.id] },
     );
 
@@ -112,13 +124,20 @@ export class WalletService {
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx) => {
         const plan = student.academyPlanId
-          ? ((await tx
-              .select()
-              .from(academyPlans)
-              .where(eq(academyPlans.id, student.academyPlanId)))[0] ?? null)
+          ? ((
+              await tx
+                .select()
+                .from(academyPlans)
+                .where(eq(academyPlans.id, student.academyPlanId))
+            )[0] ?? null)
           : null;
 
-        const currentCharge = await currentChargeOf(tx, student.id, plan, today);
+        const currentCharge = await currentChargeOf(
+          tx,
+          student.id,
+          plan,
+          today,
+        );
         const history = await settledHistory(tx, [student.id]);
 
         const [mandate] = await tx
@@ -138,7 +157,9 @@ export class WalletService {
           recurrence: {
             active: Boolean(mandate),
             nextChargeDueDate:
-              mandate && plan ? nextCycleDueDate(plan.recurrence, plan.dueDay, today) : null,
+              mandate && plan
+                ? nextCycleDueDate(plan.recurrence, plan.dueDay, today)
+                : null,
           },
           history,
         };
@@ -191,7 +212,10 @@ export async function currentChargeOf(
     .from(payments)
     .where(eq(payments.chargeId, target.id))
     .orderBy(desc(payments.createdAt));
-  return { ...toChargeView(target, todayIso), payments: attempts.map(toPaymentView) };
+  return {
+    ...toChargeView(target, todayIso),
+    payments: attempts.map(toPaymentView),
+  };
 }
 
 /** Settled charges (paid/refunded) with their settling payment, newest first. */
@@ -205,7 +229,10 @@ export async function settledHistory(
     .from(charges)
     .innerJoin(
       payments,
-      and(eq(payments.tenantId, charges.tenantId), eq(payments.chargeId, charges.id)),
+      and(
+        eq(payments.tenantId, charges.tenantId),
+        eq(payments.chargeId, charges.id),
+      ),
     )
     .where(
       and(

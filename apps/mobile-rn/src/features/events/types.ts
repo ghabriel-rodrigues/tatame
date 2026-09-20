@@ -11,7 +11,9 @@ export type AlunoEventItem = ApiSchemas['AlunoEventItemDto'];
 export type AlunoEventDetail = ApiSchemas['AlunoEventDetailResponseDto'];
 export type RegisterEventResponse = ApiSchemas['RegisterEventResponseDto'];
 export type ResponsavelEvent = ApiSchemas['ResponsavelEventDto'];
-export type ResponsavelEventDependent = ApiSchemas['ResponsavelEventDependentDto'];
-export type ResponsavelEventsResponse = ApiSchemas['ResponsavelEventsResponseDto'];
+export type ResponsavelEventDependent =
+  ApiSchemas['ResponsavelEventDependentDto'];
+export type ResponsavelEventsResponse =
+  ApiSchemas['ResponsavelEventsResponseDto'];
 export type ProfessorUpcomingEvent = ApiSchemas['ProfessorUpcomingEventDto'];
 export type CalendarEventItem = ApiSchemas['CalendarEventItemDto'];

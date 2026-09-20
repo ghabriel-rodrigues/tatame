@@ -11,12 +11,23 @@ import { Card, Text, useTheme } from '@tatame/design-system/native';
 import { initials } from './format';
 
 /** Brand-gradient monogram circle (roster rows, dependent cards). */
-export function InitialsAvatar({ name, size = 34 }: { name: string; size?: number }) {
+export function InitialsAvatar({
+  name,
+  size = 34,
+}: {
+  name: string;
+  size?: number;
+}) {
   const theme = useTheme();
   return (
     <View
       accessibilityElementsHidden
-      style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: 'hidden',
+      }}
     >
       <LinearGradient
         colors={[theme.color.brand['2'], theme.color.brand.accent]}

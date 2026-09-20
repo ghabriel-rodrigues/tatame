@@ -16,7 +16,8 @@ import {
 import { renderRoute } from '../../test/render-route';
 import { server } from '../../test/setup';
 
-const session = () => makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+const session = () =>
+  makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
 
 describe('edit + excluir (ENR.16)', () => {
   it('renames a student from the row sheet', async () => {
@@ -25,10 +26,18 @@ describe('edit + excluir (ENR.16)', () => {
     const lucas = registry.students[0]!;
     let patched: { id: string; body: Record<string, unknown> } | null = null;
     server.use(
-      http.patch('/v1/admin/students/{id}', async ({ params, request, response }) => {
-        patched = { id: params.id, body: (await request.json()) as Record<string, unknown> };
-        return response(200).json({ student: { ...lucas, fullName: 'Lucas A. Silva' } });
-      }),
+      http.patch(
+        '/v1/admin/students/{id}',
+        async ({ params, request, response }) => {
+          patched = {
+            id: params.id,
+            body: (await request.json()) as Record<string, unknown>,
+          };
+          return response(200).json({
+            student: { ...lucas, fullName: 'Lucas A. Silva' },
+          });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/cadastros', { session: session() });
@@ -42,7 +51,10 @@ describe('edit + excluir (ENR.16)', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Salvar' }));
 
     expect(await screen.findByText('Cadastro atualizado.')).toBeInTheDocument();
-    expect(patched).toMatchObject({ id: lucas.id, body: { fullName: 'Lucas A. Silva' } });
+    expect(patched).toMatchObject({
+      id: lucas.id,
+      body: { fullName: 'Lucas A. Silva' },
+    });
   });
 
   it('archives a student only after the confirmation dialog', async () => {
@@ -64,7 +76,9 @@ describe('edit + excluir (ENR.16)', () => {
     const sheet = await screen.findByRole('dialog', { name: 'Editar aluno' });
     await user.click(within(sheet).getByRole('button', { name: 'Excluir' }));
 
-    const confirm = await screen.findByRole('dialog', { name: 'Excluir aluno' });
+    const confirm = await screen.findByRole('dialog', {
+      name: 'Excluir aluno',
+    });
     expect(
       within(confirm).getByText(/matrículas ativas serão encerradas/),
     ).toBeInTheDocument();
@@ -91,11 +105,15 @@ describe('edit + excluir (ENR.16)', () => {
     await user.click(screen.getByRole('button', { name: /Lucas Almeida/ }));
     const sheet = await screen.findByRole('dialog', { name: 'Editar aluno' });
     await user.click(within(sheet).getByRole('button', { name: 'Excluir' }));
-    const confirm = await screen.findByRole('dialog', { name: 'Excluir aluno' });
+    const confirm = await screen.findByRole('dialog', {
+      name: 'Excluir aluno',
+    });
     await user.click(within(confirm).getByRole('button', { name: 'Cancelar' }));
 
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Excluir aluno' })).not.toBeInTheDocument(),
+      expect(
+        screen.queryByRole('dialog', { name: 'Excluir aluno' }),
+      ).not.toBeInTheDocument(),
     );
     expect(archived).toBe(false);
   });
@@ -108,7 +126,9 @@ describe('edit + excluir (ENR.16)', () => {
     server.use(
       http.patch('/v1/admin/guardians/{id}', async ({ request, response }) => {
         patched = (await request.json()) as Record<string, unknown>;
-        return response(200).json({ guardian: { ...fernanda, fullName: 'Fernanda S. Lima' } });
+        return response(200).json({
+          guardian: { ...fernanda, fullName: 'Fernanda S. Lima' },
+        });
       }),
     );
     const user = userEvent.setup();
@@ -118,8 +138,12 @@ describe('edit + excluir (ENR.16)', () => {
     await screen.findByText('Fernanda Silveira');
 
     await user.click(screen.getByRole('button', { name: /Fernanda Silveira/ }));
-    const sheet = await screen.findByRole('dialog', { name: 'Editar responsável' });
-    expect(within(sheet).queryByRole('button', { name: 'Excluir' })).not.toBeInTheDocument();
+    const sheet = await screen.findByRole('dialog', {
+      name: 'Editar responsável',
+    });
+    expect(
+      within(sheet).queryByRole('button', { name: 'Excluir' }),
+    ).not.toBeInTheDocument();
 
     const field = within(sheet).getByLabelText(/Nome/);
     await user.clear(field);
@@ -138,7 +162,9 @@ describe('edit + excluir (ENR.16)', () => {
     await user.click(screen.getByRole('tab', { name: 'Professores' }));
     await screen.findByText('Rafael Nunes');
 
-    expect(screen.queryByRole('button', { name: /Rafael Nunes/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Rafael Nunes/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('archives a turma from the detail with the ended-enrollments warning', async () => {
@@ -153,16 +179,22 @@ describe('edit + excluir (ENR.16)', () => {
       }),
     );
     const user = userEvent.setup();
-    const { router } = renderRoute(`/admin/turmas/${fundamentos.id}`, { session: session() });
+    const { router } = renderRoute(`/admin/turmas/${fundamentos.id}`, {
+      session: session(),
+    });
     await screen.findByRole('heading', { name: 'Fundamentos' });
 
     await user.click(screen.getByRole('button', { name: 'Editar' }));
     const sheet = await screen.findByRole('dialog', { name: 'Editar turma' });
     await user.click(within(sheet).getByRole('button', { name: 'Excluir' }));
 
-    const confirm = await screen.findByRole('dialog', { name: 'Excluir turma' });
+    const confirm = await screen.findByRole('dialog', {
+      name: 'Excluir turma',
+    });
     expect(
-      within(confirm).getByText(/matrículas ativas desta turma serão encerradas/),
+      within(confirm).getByText(
+        /matrículas ativas desta turma serão encerradas/,
+      ),
     ).toBeInTheDocument();
     await user.click(within(confirm).getByRole('button', { name: 'Excluir' }));
 

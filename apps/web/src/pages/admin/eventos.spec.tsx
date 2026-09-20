@@ -24,20 +24,25 @@ import {
 import { renderRoute } from '../../test/render-route';
 import { server } from '../../test/setup';
 
-const session = () => makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+const session = () =>
+  makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
 
 describe('Eventos (EVT.9)', () => {
   it('renders the admin-13 cards: valor chips, date and inscritos lines', async () => {
     server.use(...adminEventsHandlers());
     renderRoute('/admin/eventos', { session: session() });
 
-    expect(await screen.findByRole('heading', { name: 'Eventos' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Eventos' }),
+    ).toBeInTheDocument();
 
     // Open mat de verão — gratuito, sáb 15/08 10:00, 32 confirmados.
     expect(await screen.findByText('Open mat de verão')).toBeInTheDocument();
     expect(screen.getByText('Gratuito')).toBeInTheDocument();
     expect(screen.getByText('Sáb, 15 de agosto · 10:00')).toBeInTheDocument();
-    expect(screen.getByText('32 confirmados · Prof. Rafael Nunes')).toBeInTheDocument();
+    expect(
+      screen.getByText('32 confirmados · Prof. Rafael Nunes'),
+    ).toBeInTheDocument();
 
     // Exame de faixa — R$ 120, arrecadado R$ 2.160.
     expect(screen.getByText('Exame de faixa')).toBeInTheDocument();
@@ -56,11 +61,16 @@ describe('Eventos (EVT.9)', () => {
     ).toBeInTheDocument();
 
     // Published cards carry the Comunicar action.
-    expect(screen.getByRole('button', { name: 'Comunicar Open mat de verão' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Comunicar Open mat de verão' }),
+    ).toBeInTheDocument();
   });
 
   it('renders the gradient banner from the preset slug catalog', async () => {
-    const event = makeAdminEvent({ name: 'Open mat', bannerPreset: 'event-purple-pink' });
+    const event = makeAdminEvent({
+      name: 'Open mat',
+      bannerPreset: 'event-purple-pink',
+    });
     server.use(...adminEventsHandlers({ events: [event] }));
     renderRoute('/admin/eventos', { session: session() });
     await screen.findByText('Open mat');
@@ -74,13 +84,17 @@ describe('Eventos (EVT.9)', () => {
 
   it('shows the Rascunho chip and "Data a definir" on drafts, with no Comunicar', async () => {
     const draft = makeDraftEvent({ name: 'Seminário de guarda' });
-    server.use(...adminEventsHandlers({ events: [draft, ...makeAdminEventList()] }));
+    server.use(
+      ...adminEventsHandlers({ events: [draft, ...makeAdminEventList()] }),
+    );
     renderRoute('/admin/eventos', { session: session() });
 
     expect(await screen.findByText('Seminário de guarda')).toBeInTheDocument();
     expect(screen.getByText('Rascunho')).toBeInTheDocument();
     expect(screen.getByText('Data a definir')).toBeInTheDocument();
-    expect(screen.getByText('0 inscritos · Prof. Rafael Nunes')).toBeInTheDocument();
+    expect(
+      screen.getByText('0 inscritos · Prof. Rafael Nunes'),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Comunicar Seminário de guarda' }),
     ).not.toBeInTheDocument();
@@ -113,7 +127,9 @@ describe('Eventos (EVT.9)', () => {
     server.use(
       http.post('/v1/admin/events', async ({ request, response }) => {
         body = (await request.json()) as Record<string, unknown>;
-        return response(201).json(makeDraftEvent({ name: 'Seminário de guarda' }));
+        return response(201).json(
+          makeDraftEvent({ name: 'Seminário de guarda' }),
+        );
       }),
     );
     const user = userEvent.setup();
@@ -122,10 +138,19 @@ describe('Eventos (EVT.9)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Novo evento' }));
     const sheet = await screen.findByRole('dialog', { name: 'Novo evento' });
-    await user.type(within(sheet).getByLabelText(/Nome/), 'Seminário de guarda');
-    await user.click(within(sheet).getByRole('combobox', { name: 'Responsável' }));
-    await user.click(await screen.findByRole('option', { name: 'Rafael Nunes' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Salvar rascunho' }));
+    await user.type(
+      within(sheet).getByLabelText(/Nome/),
+      'Seminário de guarda',
+    );
+    await user.click(
+      within(sheet).getByRole('combobox', { name: 'Responsável' }),
+    );
+    await user.click(
+      await screen.findByRole('option', { name: 'Rafael Nunes' }),
+    );
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Salvar rascunho' }),
+    );
 
     expect(await screen.findByText('Rascunho salvo.')).toBeInTheDocument();
     expect(body).toEqual({
@@ -158,7 +183,10 @@ describe('Eventos (EVT.9)', () => {
     await user.click(screen.getByRole('button', { name: 'Novo evento' }));
     const sheet = await screen.findByRole('dialog', { name: 'Novo evento' });
     await user.type(within(sheet).getByLabelText(/Nome/), 'Festival Kids');
-    await user.type(within(sheet).getByLabelText(/Descrição/), 'Aberto às famílias');
+    await user.type(
+      within(sheet).getByLabelText(/Descrição/),
+      'Aberto às famílias',
+    );
     await user.type(within(sheet).getByLabelText(/Local/), 'Tatame principal');
     fireEvent.change(within(sheet).getByLabelText(/Data/), {
       target: { value: '2026-09-13' },
@@ -167,10 +195,16 @@ describe('Eventos (EVT.9)', () => {
       target: { value: '09:30' },
     });
     await user.type(within(sheet).getByLabelText(/Valor/), '60,00');
-    await user.click(within(sheet).getByRole('button', { name: 'Banner Rosa e roxo' }));
-    await user.click(within(sheet).getByRole('combobox', { name: 'Responsável' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Banner Rosa e roxo' }),
+    );
+    await user.click(
+      within(sheet).getByRole('combobox', { name: 'Responsável' }),
+    );
     await user.click(await screen.findByRole('option', { name: 'Ana Souza' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Publicar evento' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Publicar evento' }),
+    );
 
     expect(await screen.findByText('Evento publicado.')).toBeInTheDocument();
     expect(body).toEqual({
@@ -197,9 +231,13 @@ describe('Eventos (EVT.9)', () => {
     renderRoute('/admin/eventos', { session: session() });
     await screen.findByText('Seminário de guarda');
 
-    await user.click(screen.getByRole('button', { name: 'Editar Seminário de guarda' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Editar Seminário de guarda' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Editar evento' });
-    await user.click(within(sheet).getByRole('button', { name: 'Publicar evento' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Publicar evento' }),
+    );
 
     expect(
       await screen.findByText('Defina data e local para publicar o evento.'),
@@ -212,21 +250,31 @@ describe('Eventos (EVT.9)', () => {
     server.use(...adminEventsHandlers({ events }));
     let patched: { id: string; body: Record<string, unknown> } | null = null;
     server.use(
-      http.patch('/v1/admin/events/{id}', async ({ params, request, response }) => {
-        patched = { id: params.id, body: (await request.json()) as Record<string, unknown> };
-        return response(200).json({ ...openMat, location: 'Quadra externa' });
-      }),
+      http.patch(
+        '/v1/admin/events/{id}',
+        async ({ params, request, response }) => {
+          patched = {
+            id: params.id,
+            body: (await request.json()) as Record<string, unknown>,
+          };
+          return response(200).json({ ...openMat, location: 'Quadra externa' });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/eventos', { session: session() });
     await screen.findByText('Open mat de verão');
 
-    await user.click(screen.getByRole('button', { name: 'Editar Open mat de verão' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Editar Open mat de verão' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Editar evento' });
     const local = within(sheet).getByLabelText(/Local/);
     await user.clear(local);
     await user.type(local, 'Quadra externa');
-    await user.click(within(sheet).getByRole('button', { name: 'Salvar evento' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Salvar evento' }),
+    );
 
     expect(await screen.findByText('Evento atualizado.')).toBeInTheDocument();
     expect(patched).toEqual({
@@ -258,17 +306,27 @@ describe('Eventos (EVT.9)', () => {
     renderRoute('/admin/eventos', { session: session() });
     await screen.findByText('Exame de faixa');
 
-    await user.click(screen.getByRole('button', { name: 'Editar Exame de faixa' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Editar Exame de faixa' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Editar evento' });
-    await user.click(within(sheet).getByRole('button', { name: 'Cancelar evento' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Cancelar evento' }),
+    );
 
-    const confirm = await screen.findByRole('dialog', { name: 'Cancelar evento' });
+    const confirm = await screen.findByRole('dialog', {
+      name: 'Cancelar evento',
+    });
     expect(
-      within(confirm).getByText(/cobranças em aberto deste evento serão canceladas/),
+      within(confirm).getByText(
+        /cobranças em aberto deste evento serão canceladas/,
+      ),
     ).toBeInTheDocument();
     expect(canceledId).toBeNull();
 
-    await user.click(within(confirm).getByRole('button', { name: 'Cancelar evento' }));
+    await user.click(
+      within(confirm).getByRole('button', { name: 'Cancelar evento' }),
+    );
     expect(await screen.findByText('Evento cancelado.')).toBeInTheDocument();
     expect(canceledId).toBe(exame.id);
   });
@@ -279,7 +337,9 @@ describe('Eventos (EVT.9)', () => {
     renderRoute('/admin/eventos', { session: session() });
     await screen.findByText('Exame de faixa');
 
-    await user.click(screen.getByRole('button', { name: 'Inscritos de Exame de faixa' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Inscritos de Exame de faixa' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Inscritos' });
 
     // Totals: 3 inscritos, 2 confirmados, R$ 240,00 arrecadado.
@@ -293,7 +353,9 @@ describe('Eventos (EVT.9)', () => {
 
     // Rows: who registered, who confirmed, paid amount, status chips.
     expect(within(sheet).getByText('Lucas Almeida')).toBeInTheDocument();
-    expect(within(sheet).getByText('por Lucas Almeida · R$ 120,00')).toBeInTheDocument();
+    expect(
+      within(sheet).getByText('por Lucas Almeida · R$ 120,00'),
+    ).toBeInTheDocument();
     expect(within(sheet).getByText('Pedro Silveira')).toBeInTheDocument();
     expect(
       within(sheet).getByText('por Fernanda Silveira · R$ 120,00'),
@@ -319,7 +381,9 @@ describe('Eventos (EVT.9)', () => {
     renderRoute('/admin/eventos', { session: session() });
     await screen.findByText('Open mat de verão');
 
-    await user.click(screen.getByRole('button', { name: 'Comunicar Open mat de verão' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Comunicar Open mat de verão' }),
+    );
     expect(
       await screen.findByText('Comunicado enviado aos inscritos.'),
     ).toBeInTheDocument();
@@ -337,6 +401,8 @@ describe('Eventos (EVT.9)', () => {
     expect(link).toHaveAttribute('href', '/admin/eventos');
 
     await user.click(link);
-    expect(await screen.findByRole('heading', { name: 'Eventos' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Eventos' }),
+    ).toBeInTheDocument();
   });
 });

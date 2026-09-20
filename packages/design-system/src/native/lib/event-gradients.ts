@@ -14,8 +14,14 @@ export const EVENT_GRADIENT_DEFAULT = 'event-purple-pink';
 type GradientResolver = (theme: Theme) => [string, string];
 
 const CATALOG: Record<string, GradientResolver> = {
-  'event-purple-pink': (theme) => [theme.color.brand['2'], theme.color.brand.accent],
-  'event-blue-teal': (theme) => [theme.color.info['500'], theme.color.success['500']],
+  'event-purple-pink': (theme) => [
+    theme.color.brand['2'],
+    theme.color.brand.accent,
+  ],
+  'event-blue-teal': (theme) => [
+    theme.color.info['500'],
+    theme.color.success['500'],
+  ],
 };
 
 /**
@@ -23,7 +29,11 @@ const CATALOG: Record<string, GradientResolver> = {
  * Unknown slugs fall back to the default preset — a client never renders
  * a blank banner because the catalog lags the server.
  */
-export function eventGradientColors(theme: Theme, slug?: string | null): [string, string] {
-  const resolver = CATALOG[slug ?? EVENT_GRADIENT_DEFAULT] ?? CATALOG[EVENT_GRADIENT_DEFAULT]!;
+export function eventGradientColors(
+  theme: Theme,
+  slug?: string | null,
+): [string, string] {
+  const resolver =
+    CATALOG[slug ?? EVENT_GRADIENT_DEFAULT] ?? CATALOG[EVENT_GRADIENT_DEFAULT]!;
   return resolver(theme);
 }

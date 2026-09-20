@@ -45,7 +45,9 @@ export class TotpLoginDto {
 }
 
 export class RefreshDto {
-  @ApiPropertyOptional({ description: 'Required for body transport; web uses the cookie' })
+  @ApiPropertyOptional({
+    description: 'Required for body transport; web uses the cookie',
+  })
   @IsOptional()
   @IsString()
   refreshToken?: string;

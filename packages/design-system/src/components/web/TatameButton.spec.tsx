@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { TatameButton } from './TatameButton.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('TatameButton', () => {
   it('renders an accessible button with its label', () => {
@@ -33,9 +37,9 @@ describe('TatameButton', () => {
         <TatameButton variant="danger" label="Excluir" />
       </>,
     );
-    expect(screen.getByRole('button', { name: 'Ver depois' }).className).toContain(
-      'TatameButton-secondary',
-    );
+    expect(
+      screen.getByRole('button', { name: 'Ver depois' }).className,
+    ).toContain('TatameButton-secondary');
     const ghost = screen.getByRole('button', { name: 'Cancelar' });
     expect(ghost.className).toContain('TatameButton-ghost');
     expect(ghost.className).toContain('MuiButton-text');

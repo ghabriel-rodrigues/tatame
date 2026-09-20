@@ -22,7 +22,8 @@ import { renderRoute } from '../../test/render-route';
 import { server } from '../../test/setup';
 import { formatBRL, planOptionLabel } from '../billing-format';
 
-const session = () => makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+const session = () =>
+  makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
 
 describe('Planos de mensalidade (BIL.14)', () => {
   it('lists plans with value, due day, recurrence chip and dimmed archived rows', async () => {
@@ -33,9 +34,13 @@ describe('Planos de mensalidade (BIL.14)', () => {
       await screen.findByRole('heading', { name: 'Planos de mensalidade' }),
     ).toBeInTheDocument();
     await screen.findByText('Kids Mensal');
-    expect(screen.getByText(`${formatBRL(18_000)} · vence dia 5`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`${formatBRL(18_000)} · vence dia 5`),
+    ).toBeInTheDocument();
     expect(screen.getByText('Kids Mensal')).toBeInTheDocument();
-    expect(screen.getByText(`${formatBRL(15_000)} · vence dia 10`)).toBeInTheDocument();
+    expect(
+      screen.getByText(`${formatBRL(15_000)} · vence dia 10`),
+    ).toBeInTheDocument();
     // "Mensal" appears as a title + as the recurrence chip on both monthly plans.
     expect(screen.getAllByText('Mensal')).toHaveLength(3);
     // Archived plan: dimmed, "Arquivado" chip, not pressable.
@@ -70,7 +75,9 @@ describe('Planos de mensalidade (BIL.14)', () => {
     await user.type(within(sheet).getByLabelText(/Valor/), '2.500,00');
     await user.click(within(sheet).getByRole('button', { name: 'Anual' }));
     await user.click(within(sheet).getByRole('button', { name: 'Dia 10' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Criar plano' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar plano' }),
+    );
 
     expect(await screen.findByText('Plano criado.')).toBeInTheDocument();
     expect(body).toEqual({
@@ -87,7 +94,9 @@ describe('Planos de mensalidade (BIL.14)', () => {
     server.use(
       http.post('/v1/admin/billing/plans', async ({ request, response }) => {
         body = (await request.json()) as Record<string, unknown>;
-        return response(201).json({ plan: makePlan({ name: 'Semestral', dueDay: 8 }) });
+        return response(201).json({
+          plan: makePlan({ name: 'Semestral', dueDay: 8 }),
+        });
       }),
     );
     const user = userEvent.setup();
@@ -101,7 +110,9 @@ describe('Planos de mensalidade (BIL.14)', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Semestral' }));
     await user.click(within(sheet).getByRole('button', { name: 'Outro dia' }));
     await user.type(within(sheet).getByLabelText(/Dia do vencimento/), '8');
-    await user.click(within(sheet).getByRole('button', { name: 'Criar plano' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar plano' }),
+    );
 
     expect(await screen.findByText('Plano criado.')).toBeInTheDocument();
     expect(body).toEqual({
@@ -127,7 +138,9 @@ describe('Planos de mensalidade (BIL.14)', () => {
     const sheet = await screen.findByRole('dialog', { name: 'Novo plano' });
     await user.type(within(sheet).getByLabelText(/Nome/), 'Mensal');
     await user.type(within(sheet).getByLabelText(/Valor/), '180,00');
-    await user.click(within(sheet).getByRole('button', { name: 'Criar plano' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar plano' }),
+    );
 
     expect(
       await screen.findByText('Já existe um plano com esse nome.'),
@@ -140,10 +153,18 @@ describe('Planos de mensalidade (BIL.14)', () => {
     const mensal = plans[0]!;
     let patched: { id: string; body: Record<string, unknown> } | null = null;
     server.use(
-      http.patch('/v1/admin/billing/plans/{id}', async ({ params, request, response }) => {
-        patched = { id: params.id, body: (await request.json()) as Record<string, unknown> };
-        return response(200).json({ plan: { ...mensal, amountCents: 20_000 } });
-      }),
+      http.patch(
+        '/v1/admin/billing/plans/{id}',
+        async ({ params, request, response }) => {
+          patched = {
+            id: params.id,
+            body: (await request.json()) as Record<string, unknown>,
+          };
+          return response(200).json({
+            plan: { ...mensal, amountCents: 20_000 },
+          });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/planos', { session: session() });
@@ -154,12 +175,19 @@ describe('Planos de mensalidade (BIL.14)', () => {
     const valor = within(sheet).getByLabelText(/Valor/);
     await user.clear(valor);
     await user.type(valor, '200,00');
-    await user.click(within(sheet).getByRole('button', { name: 'Salvar plano' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Salvar plano' }),
+    );
 
     expect(await screen.findByText('Plano atualizado.')).toBeInTheDocument();
     expect(patched).toEqual({
       id: mensal.id,
-      body: { name: 'Mensal', amountCents: 20_000, recurrence: 'monthly', dueDay: 5 },
+      body: {
+        name: 'Mensal',
+        amountCents: 20_000,
+        recurrence: 'monthly',
+        dueDay: 5,
+      },
     });
   });
 
@@ -169,10 +197,13 @@ describe('Planos de mensalidade (BIL.14)', () => {
     const mensal = plans[0]!;
     let archivedId: string | null = null;
     server.use(
-      http.post('/v1/admin/billing/plans/{id}/archive', ({ params, response }) => {
-        archivedId = params.id;
-        return response(200).json({ plan: { ...mensal, isActive: false } });
-      }),
+      http.post(
+        '/v1/admin/billing/plans/{id}/archive',
+        ({ params, response }) => {
+          archivedId = params.id;
+          return response(200).json({ plan: { ...mensal, isActive: false } });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/planos', { session: session() });
@@ -180,9 +211,13 @@ describe('Planos de mensalidade (BIL.14)', () => {
 
     await user.click(screen.getByRole('button', { name: /^Mensal/ }));
     const sheet = await screen.findByRole('dialog', { name: 'Editar plano' });
-    await user.click(within(sheet).getByRole('button', { name: 'Arquivar plano' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Arquivar plano' }),
+    );
 
-    const confirm = await screen.findByRole('dialog', { name: 'Arquivar plano' });
+    const confirm = await screen.findByRole('dialog', {
+      name: 'Arquivar plano',
+    });
     expect(
       within(confirm).getByText(/Novos alunos não poderão assinar este plano/),
     ).toBeInTheDocument();
@@ -225,16 +260,28 @@ describe('student plan assignment (BIL.14)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
     const sheet = await screen.findByRole('dialog');
-    await user.type(within(sheet).getByLabelText(/Nome completo/), 'Aluno Plano');
+    await user.type(
+      within(sheet).getByLabelText(/Nome completo/),
+      'Aluno Plano',
+    );
     fireEvent.change(within(sheet).getByLabelText(/Data de nascimento/), {
       target: { value: '2000-01-01' },
     });
-    await user.click(within(sheet).getByRole('combobox', { name: 'Plano de mensalidade' }));
-    await user.click(await screen.findByRole('option', { name: planOptionLabel(mensal) }));
-    await user.click(within(sheet).getByRole('button', { name: 'Cadastrar aluno' }));
+    await user.click(
+      within(sheet).getByRole('combobox', { name: 'Plano de mensalidade' }),
+    );
+    await user.click(
+      await screen.findByRole('option', { name: planOptionLabel(mensal) }),
+    );
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Cadastrar aluno' }),
+    );
 
     expect(await screen.findByText('Aluno cadastrado.')).toBeInTheDocument();
-    expect(body).toMatchObject({ fullName: 'Aluno Plano', academyPlanId: mensal.id });
+    expect(body).toMatchObject({
+      fullName: 'Aluno Plano',
+      academyPlanId: mensal.id,
+    });
   });
 
   it('patches academyPlanId from the student edit sheet plan select', async () => {
@@ -246,12 +293,18 @@ describe('student plan assignment (BIL.14)', () => {
     const kidsMensal = plans[1]!;
     let patched: { id: string; body: Record<string, unknown> } | null = null;
     server.use(
-      http.patch('/v1/admin/students/{id}', async ({ params, request, response }) => {
-        patched = { id: params.id, body: (await request.json()) as Record<string, unknown> };
-        return response(200).json({
-          student: { ...lucas, academyPlanId: kidsMensal.id },
-        });
-      }),
+      http.patch(
+        '/v1/admin/students/{id}',
+        async ({ params, request, response }) => {
+          patched = {
+            id: params.id,
+            body: (await request.json()) as Record<string, unknown>,
+          };
+          return response(200).json({
+            student: { ...lucas, academyPlanId: kidsMensal.id },
+          });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/cadastros', { session: session() });
@@ -259,7 +312,9 @@ describe('student plan assignment (BIL.14)', () => {
 
     await user.click(screen.getByRole('button', { name: /Lucas Almeida/ }));
     const sheet = await screen.findByRole('dialog', { name: 'Editar aluno' });
-    await user.click(within(sheet).getByRole('combobox', { name: 'Plano de mensalidade' }));
+    await user.click(
+      within(sheet).getByRole('combobox', { name: 'Plano de mensalidade' }),
+    );
     await user.click(
       await screen.findByRole('option', { name: planOptionLabel(kidsMensal) }),
     );

@@ -1,4 +1,9 @@
-import { academies, academySubscriptions, auditLogs, withPlatform } from '@tatame/db';
+import {
+  academies,
+  academySubscriptions,
+  auditLogs,
+  withPlatform,
+} from '@tatame/db';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bearer, createTestApp, type TestApp } from './support/test-app.js';
@@ -69,8 +74,9 @@ describe('platform console: overview, academies, plans, team', () => {
     expect(body.series).toHaveLength(6);
     expect(body.series[body.series.length - 1].cents).toBe(body.mrrCents);
     // The seeds backdate the subscriptions, so history is not a flat line.
-    expect(new Set(body.series.map((point: { cents: number }) => point.cents)).size)
-      .toBeGreaterThan(1);
+    expect(
+      new Set(body.series.map((point: { cents: number }) => point.cents)).size,
+    ).toBeGreaterThan(1);
     // Delta's canceled subscription still earned the months it was live.
     expect(body.series[0].cents).toBeGreaterThan(0);
 
@@ -86,7 +92,9 @@ describe('platform console: overview, academies, plans, team', () => {
       ]),
     );
     expect(reasons['Bravo BJJ Team']).toMatch(/^Trial termina em \d+ dias?$/);
-    expect(reasons['Charlie Fight Club']).toMatch(/^Assinatura vencida( há \d+ dias?)?$/);
+    expect(reasons['Charlie Fight Club']).toMatch(
+      /^Assinatura vencida( há \d+ dias?)?$/,
+    );
     // Suspended academies are never "precisam de atenção" — they are decided.
     expect(reasons['Delta Team BJJ']).toBeUndefined();
   });
@@ -97,25 +105,42 @@ describe('platform console: overview, academies, plans, team', () => {
     const current = series[series.length - 1].cents;
     const previous = series[series.length - 2].cents;
     expect(mrrDeltaPct).toBe(
-      previous === 0 ? null : Math.round(((current - previous) / previous) * 100),
+      previous === 0
+        ? null
+        : Math.round(((current - previous) / previous) * 100),
     );
   });
 
   // --------------------------------------------------------------- academies
 
   it('lists every academy with city, students, plan and status (plataforma-03)', async () => {
-    const res = await t.http().get('/v1/platform/academies').set(bearer(support));
+    const res = await t
+      .http()
+      .get('/v1/platform/academies')
+      .set(bearer(support));
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(res.body.academies.length);
 
     const bySlug = Object.fromEntries(
       res.body.academies.map((row: { slug: string }) => [row.slug, row]),
     );
-    expect(bySlug['alpha-jj']).toMatchObject({ status: 'active', planName: 'Pro' });
-    expect(bySlug['bravo-bjj']).toMatchObject({ status: 'trial', planName: 'Essencial' });
-    expect(bySlug['charlie-fc']).toMatchObject({ status: 'delinquent', planName: 'Pro' });
+    expect(bySlug['alpha-jj']).toMatchObject({
+      status: 'active',
+      planName: 'Pro',
+    });
+    expect(bySlug['bravo-bjj']).toMatchObject({
+      status: 'trial',
+      planName: 'Essencial',
+    });
+    expect(bySlug['charlie-fc']).toMatchObject({
+      status: 'delinquent',
+      planName: 'Pro',
+    });
     // A canceled subscription leaves no live plan to name — honest null.
-    expect(bySlug['delta-team']).toMatchObject({ status: 'suspended', planName: null });
+    expect(bySlug['delta-team']).toMatchObject({
+      status: 'suspended',
+      planName: null,
+    });
     expect(bySlug['alpha-jj'].studentCount).toBeGreaterThan(0);
   });
 
@@ -155,11 +180,16 @@ describe('platform console: overview, academies, plans, team', () => {
     // the membership landed inside the tenant.
     const me = await t.http().get('/v1/platform/academies').set(bearer(owner));
     expect(
-      me.body.academies.some((row: { slug: string }) => row.slug === 'horizonte-bjj'),
+      me.body.academies.some(
+        (row: { slug: string }) => row.slug === 'horizonte-bjj',
+      ),
     ).toBe(true);
 
     const audit = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select().from(auditLogs).where(eq(auditLogs.action, 'academy.registered')),
+      tx
+        .select()
+        .from(auditLogs)
+        .where(eq(auditLogs.action, 'academy.registered')),
     );
     expect(audit).toHaveLength(1);
   });
@@ -196,10 +226,14 @@ describe('platform console: overview, academies, plans, team', () => {
 
     // The reused account now runs two academies: its session offers both.
     const session = await t.login('admin.bravo@tatame.dev');
-    const slugs = (session.memberships as Array<{ academySlug: string | null; role: string }>)
+    const slugs = (
+      session.memberships as Array<{ academySlug: string | null; role: string }>
+    )
       .filter((m) => m.role === 'admin')
       .map((m) => m.academySlug);
-    expect(slugs).toEqual(expect.arrayContaining(['bravo-bjj', 'equipe-kimura-sul']));
+    expect(slugs).toEqual(
+      expect.arrayContaining(['bravo-bjj', 'equipe-kimura-sul']),
+    );
   });
 
   it('rejects a registration on an unknown plan', async () => {
@@ -239,7 +273,10 @@ describe('platform console: overview, academies, plans, team', () => {
       .set(bearer(owner))
       .send({ platformPlanId: blackId });
     expect(res.status).toBe(200);
-    expect(res.body.pendingPlan).toMatchObject({ name: 'Black', priceCents: 34_900 });
+    expect(res.body.pendingPlan).toMatchObject({
+      name: 'Black',
+      priceCents: 34_900,
+    });
     // The academy is still on Pro, at Pro's price, for this whole period.
     expect(res.body.planName).toBe('Pro');
     expect(res.body.planPriceCents).toBe(19_900);
@@ -259,7 +296,10 @@ describe('platform console: overview, academies, plans, team', () => {
     expect(after[0]?.pending).toBe(blackId);
 
     // MRR is unchanged — a scheduled change is not revenue yet.
-    const overview = await t.http().get('/v1/platform/overview').set(bearer(owner));
+    const overview = await t
+      .http()
+      .get('/v1/platform/overview')
+      .set(bearer(owner));
     expect(overview.body.mrrCents).toBe(19_900 * 2);
   });
 
@@ -289,7 +329,10 @@ describe('platform console: overview, academies, plans, team', () => {
     const bravoId = await t.academyIdBySlug('bravo-bjj');
     const bravoAdmin = (await t.login('admin.bravo@tatame.dev')).accessToken;
 
-    const before = await t.http().get('/v1/admin/academy').set(bearer(bravoAdmin));
+    const before = await t
+      .http()
+      .get('/v1/admin/academy')
+      .set(bearer(bravoAdmin));
     expect(before.status).toBe(200);
 
     const suspended = await t
@@ -301,7 +344,10 @@ describe('platform console: overview, academies, plans, team', () => {
 
     // The AcademyStatusGuard caches for 30 s — the write must invalidate it,
     // otherwise a suspension takes half a minute to mean anything.
-    const blocked = await t.http().get('/v1/admin/academy').set(bearer(bravoAdmin));
+    const blocked = await t
+      .http()
+      .get('/v1/admin/academy')
+      .set(bearer(bravoAdmin));
     expect(blocked.status).toBe(403);
     expect(blocked.body.code).toBe('tenant.suspended');
 
@@ -313,11 +359,17 @@ describe('platform console: overview, academies, plans, team', () => {
     // Restored to the status the subscription justifies: bravo is on trial.
     expect(reactivated.body.status).toBe('trial');
 
-    const allowed = await t.http().get('/v1/admin/academy').set(bearer(bravoAdmin));
+    const allowed = await t
+      .http()
+      .get('/v1/admin/academy')
+      .set(bearer(bravoAdmin));
     expect(allowed.status).toBe(200);
 
     const actions = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ action: auditLogs.action }).from(auditLogs).where(eq(auditLogs.tenantId, bravoId)),
+      tx
+        .select({ action: auditLogs.action })
+        .from(auditLogs)
+        .where(eq(auditLogs.tenantId, bravoId)),
     );
     expect(actions.map((row) => row.action)).toEqual(
       expect.arrayContaining(['academy.suspended', 'academy.reactivated']),
@@ -326,7 +378,10 @@ describe('platform console: overview, academies, plans, team', () => {
 
   it('reactivating a past-due academy restores delinquent, not active', async () => {
     const charlieId = await t.academyIdBySlug('charlie-fc');
-    await t.http().post(`/v1/platform/academies/${charlieId}/suspend`).set(bearer(owner));
+    await t
+      .http()
+      .post(`/v1/platform/academies/${charlieId}/suspend`)
+      .set(bearer(owner));
     const res = await t
       .http()
       .post(`/v1/platform/academies/${charlieId}/reactivate`)
@@ -335,7 +390,10 @@ describe('platform console: overview, academies, plans, team', () => {
     expect(res.body.status).toBe('delinquent');
 
     const stored = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ status: academies.status }).from(academies).where(eq(academies.id, charlieId)),
+      tx
+        .select({ status: academies.status })
+        .from(academies)
+        .where(eq(academies.id, charlieId)),
     );
     expect(stored[0]?.status).toBe('delinquent');
   });
@@ -436,7 +494,11 @@ describe('platform console: overview, academies, plans, team', () => {
         features: ['attendance', 'store'],
       });
     expect(edited.status).toBe(200);
-    expect(edited.body).toMatchObject({ name: 'Master Plus', priceCents: 59_900, studentLimit: 500 });
+    expect(edited.body).toMatchObject({
+      name: 'Master Plus',
+      priceCents: 59_900,
+      studentLimit: 500,
+    });
     expect(edited.body.features.map((f: { slug: string }) => f.slug)).toEqual([
       'attendance',
       'store',
@@ -469,7 +531,12 @@ describe('platform console: overview, academies, plans, team', () => {
       .http()
       .post('/v1/platform/plans')
       .set(bearer(owner))
-      .send({ name: 'Negativo', priceCents: -1, studentLimit: 10, features: [] });
+      .send({
+        name: 'Negativo',
+        priceCents: -1,
+        studentLimit: 10,
+        features: [],
+      });
     expect(negative.status).toBe(422);
   });
 
@@ -492,7 +559,11 @@ describe('platform console: overview, academies, plans, team', () => {
       .http()
       .post('/v1/platform/team')
       .set(bearer(owner))
-      .send({ fullName: 'Paula Andrade', email: 'paula@tatame.app', role: 'support' });
+      .send({
+        fullName: 'Paula Andrade',
+        email: 'paula@tatame.app',
+        role: 'support',
+      });
     expect(invited.status).toBe(201);
     expect(invited.body.member).toMatchObject({
       fullName: 'Paula Andrade',
@@ -506,13 +577,20 @@ describe('platform console: overview, academies, plans, team', () => {
       .http()
       .post('/v1/platform/team')
       .set(bearer(owner))
-      .send({ fullName: 'Paula Andrade', email: 'paula@tatame.app', role: 'finance' });
+      .send({
+        fullName: 'Paula Andrade',
+        email: 'paula@tatame.app',
+        role: 'finance',
+      });
     expect(duplicate.status).toBe(409);
     expect(duplicate.body.code).toBe('resource.conflict');
   });
 
   it('serves the integrations stub as read-only (plataforma-11)', async () => {
-    const res = await t.http().get('/v1/platform/integrations').set(bearer(support));
+    const res = await t
+      .http()
+      .get('/v1/platform/integrations')
+      .set(bearer(support));
     expect(res.status).toBe(200);
     expect(res.body.provider).toBe('simulated');
     expect(res.body.integrations.map((i: { key: string }) => i.key)).toEqual([
@@ -522,7 +600,9 @@ describe('platform console: overview, academies, plans, team', () => {
     ]);
     // The handoff calls these stubs — the switches must render disabled.
     expect(
-      res.body.integrations.every((i: { configurable: boolean }) => i.configurable === false),
+      res.body.integrations.every(
+        (i: { configurable: boolean }) => i.configurable === false,
+      ),
     ).toBe(true);
   });
 
@@ -537,31 +617,104 @@ describe('platform console: overview, academies, plans, team', () => {
       status: number;
     }> = [
       // Money is owner/finance: support has no business on the MRR screen.
-      { method: 'get', path: '/v1/platform/overview', token: support, label: 'support→overview', status: 403 },
-      { method: 'get', path: '/v1/platform/overview', token: finance, label: 'finance→overview', status: 200 },
+      {
+        method: 'get',
+        path: '/v1/platform/overview',
+        token: support,
+        label: 'support→overview',
+        status: 403,
+      },
+      {
+        method: 'get',
+        path: '/v1/platform/overview',
+        token: finance,
+        label: 'finance→overview',
+        status: 200,
+      },
       // Catalog and customer writes are the owner's.
-      { method: 'post', path: '/v1/platform/plans', token: finance, label: 'finance→create plan', status: 403 },
-      { method: 'post', path: '/v1/platform/plans', token: support, label: 'support→create plan', status: 403 },
-      { method: 'post', path: '/v1/platform/academies', token: support, label: 'support→register', status: 403 },
-      { method: 'post', path: '/v1/platform/team', token: support, label: 'support→invite', status: 403 },
+      {
+        method: 'post',
+        path: '/v1/platform/plans',
+        token: finance,
+        label: 'finance→create plan',
+        status: 403,
+      },
+      {
+        method: 'post',
+        path: '/v1/platform/plans',
+        token: support,
+        label: 'support→create plan',
+        status: 403,
+      },
+      {
+        method: 'post',
+        path: '/v1/platform/academies',
+        token: support,
+        label: 'support→register',
+        status: 403,
+      },
+      {
+        method: 'post',
+        path: '/v1/platform/team',
+        token: support,
+        label: 'support→invite',
+        status: 403,
+      },
       // Reads all three roles share.
-      { method: 'get', path: '/v1/platform/academies', token: finance, label: 'finance→academies', status: 200 },
-      { method: 'get', path: '/v1/platform/plans', token: support, label: 'support→plans', status: 200 },
-      { method: 'get', path: '/v1/platform/team', token: support, label: 'support→team', status: 200 },
+      {
+        method: 'get',
+        path: '/v1/platform/academies',
+        token: finance,
+        label: 'finance→academies',
+        status: 200,
+      },
+      {
+        method: 'get',
+        path: '/v1/platform/plans',
+        token: support,
+        label: 'support→plans',
+        status: 200,
+      },
+      {
+        method: 'get',
+        path: '/v1/platform/team',
+        token: support,
+        label: 'support→team',
+        status: 200,
+      },
       // Academy personas never reach the platform surface at all.
-      { method: 'get', path: '/v1/platform/academies', token: admin, label: 'admin→academies', status: 403 },
-      { method: 'get', path: '/v1/platform/overview', token: professor, label: 'professor→overview', status: 403 },
+      {
+        method: 'get',
+        path: '/v1/platform/academies',
+        token: admin,
+        label: 'admin→academies',
+        status: 403,
+      },
+      {
+        method: 'get',
+        path: '/v1/platform/overview',
+        token: professor,
+        label: 'professor→overview',
+        status: 403,
+      },
     ];
 
     for (const testCase of cases) {
-      const request = t.http()[testCase.method](testCase.path).set(bearer(testCase.token));
-      const res = testCase.method === 'get' ? await request : await request.send({});
+      const request = t
+        .http()
+        [testCase.method](testCase.path)
+        .set(bearer(testCase.token));
+      const res =
+        testCase.method === 'get' ? await request : await request.send({});
       // A write with a valid role but an empty body fails validation (422),
       // which still proves the roles guard let it through.
       const acceptable =
         testCase.status === 403 ? [403] : [testCase.status, 400, 422];
-      expect(acceptable, `${testCase.label} → ${res.status}`).toContain(res.status);
-      if (testCase.status === 403) expect(res.body.code).toBe('authz.forbidden_role');
+      expect(acceptable, `${testCase.label} → ${res.status}`).toContain(
+        res.status,
+      );
+      if (testCase.status === 403)
+        expect(res.body.code).toBe('authz.forbidden_role');
     }
   });
 
@@ -575,7 +728,10 @@ describe('platform console: overview, academies, plans, team', () => {
       .send({});
     expect(financeImpersonation.status).toBe(403);
 
-    const supportRepasses = await t.http().get('/v1/platform/billing/repasses').set(bearer(support));
+    const supportRepasses = await t
+      .http()
+      .get('/v1/platform/billing/repasses')
+      .set(bearer(support));
     expect(supportRepasses.status).toBe(403);
 
     const supportImpersonation = await t

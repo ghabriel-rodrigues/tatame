@@ -22,8 +22,11 @@ module.exports = {
     // @org/*) stay bundled. Native addons (@node-rs/argon2) must never be
     // bundled.
     ({ request }, callback) => {
-      const isBare = request && !request.startsWith('.') && !request.startsWith('/');
-      const isWorkspace = request && (request.startsWith('@tatame/') || request.startsWith('@org/'));
+      const isBare =
+        request && !request.startsWith('.') && !request.startsWith('/');
+      const isWorkspace =
+        request &&
+        (request.startsWith('@tatame/') || request.startsWith('@org/'));
       if (isBare && !isWorkspace) {
         return callback(null, `commonjs ${request}`);
       }
@@ -49,7 +52,10 @@ module.exports = {
       outputFileName: 'main.cjs',
       // Headless OpenAPI emit entry (web-03): `nx run api:openapi`.
       additionalEntryPoints: [
-        { entryName: 'emit-openapi', entryPath: './src/scripts/emit-openapi.ts' },
+        {
+          entryName: 'emit-openapi',
+          entryPath: './src/scripts/emit-openapi.ts',
+        },
       ],
     }),
   ],

@@ -96,13 +96,22 @@ export function MiniBarChart({
   const classes = ['MiniBarChart-root', className].filter(Boolean).join(' ');
 
   return (
-    <Root className={classes} role="img" aria-label={ariaLabel ?? 'Gráfico de barras'}>
+    <Root
+      className={classes}
+      role="img"
+      aria-label={ariaLabel ?? 'Gráfico de barras'}
+    >
       {data.map((point, index) => {
         const ratio = max > 0 ? point.value / max : 0;
         const barHeight = Math.max(Math.round(ratio * height), MIN_BAR_HEIGHT);
-        const formatted = formatValue ? formatValue(point.value) : String(point.value);
+        const formatted = formatValue
+          ? formatValue(point.value)
+          : String(point.value);
         return (
-          <Column key={`${point.label}-${index}`} className="MiniBarChart-column">
+          <Column
+            key={`${point.label}-${index}`}
+            className="MiniBarChart-column"
+          >
             {formatValue ? (
               <Caption className="MiniBarChart-value">{formatted}</Caption>
             ) : null}

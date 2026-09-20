@@ -1,5 +1,20 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
@@ -48,7 +63,8 @@ export class AdminGraduationController {
 
   @Get('graduation-rules')
   @ApiOperation({
-    summary: 'Regras de graduação: merged ladder (defaults + overrides) in régua order',
+    summary:
+      'Regras de graduação: merged ladder (defaults + overrides) in régua order',
   })
   @ApiOkResponse({ type: GraduationRulesResponseDto })
   async getRules() {
@@ -58,8 +74,10 @@ export class AdminGraduationController {
 
   @Put('graduation-rules')
   @ApiOperation({
-    summary: 'Salvar: bulk upsert (≥ 10 lessons; only kids belts can be disabled)',
-    description: 'Changed rules immediately re-aim every progress bar in the academy (story 27).',
+    summary:
+      'Salvar: bulk upsert (≥ 10 lessons; only kids belts can be disabled)',
+    description:
+      'Changed rules immediately re-aim every progress bar in the academy (story 27).',
   })
   @ApiOkResponse({ type: GraduationRulesResponseDto })
   async putRules(@Body() dto: UpdateGraduationRulesDto) {
@@ -68,7 +86,9 @@ export class AdminGraduationController {
   }
 
   @Get('students/:id/graduations')
-  @ApiOperation({ summary: 'Full graduation history including revocations, newest first' })
+  @ApiOperation({
+    summary: 'Full graduation history including revocations, newest first',
+  })
   @ApiOkResponse({ type: GraduationHistoryResponseDto })
   async history(@Param('id', ParseUUIDPipe) id: string) {
     const ctx = requireTenantContext(this.cls);
@@ -80,7 +100,8 @@ export class AdminGraduationController {
           .select({ id: students.id })
           .from(students)
           .where(and(eq(students.id, id)));
-        if (!student) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
+        if (!student)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
         return this.query.timeline(tx, id);
       },
     );
@@ -89,9 +110,14 @@ export class AdminGraduationController {
 
   @Post('students/:id/graduations')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Award (no toggle gates the admin — role-fixed, story 28)' })
+  @ApiOperation({
+    summary: 'Award (no toggle gates the admin — role-fixed, story 28)',
+  })
   @ApiCreatedResponse({ type: AwardGraduationResponseDto })
-  async award(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AwardGraduationDto) {
+  async award(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AwardGraduationDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.awards.award(ctx, id, dto);
   }
@@ -99,19 +125,25 @@ export class AdminGraduationController {
   @Post('graduations/:id/revoke')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Revogar: append a compensation row restoring the previous belt/degree',
+    summary:
+      'Revogar: append a compensation row restoring the previous belt/degree',
     description:
       'Never an edit — history stays immutable. Each award is revocable at most once (409 on a ' +
       'second attempt); audited with who and why (graduation.revoked).',
   })
   @ApiOkResponse({ type: RevokeGraduationResponseDto })
-  async revoke(@Param('id', ParseUUIDPipe) id: string, @Body() dto: RevokeGraduationDto) {
+  async revoke(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RevokeGraduationDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.awards.revoke(ctx, id, dto.reason);
   }
 
   @Get('students/:id/notes')
-  @ApiOperation({ summary: 'Observações history — the staff shares one memory (story 19)' })
+  @ApiOperation({
+    summary: 'Observações history — the staff shares one memory (story 19)',
+  })
   @ApiOkResponse({ type: StudentNotesResponseDto })
   async listNotes(@Param('id', ParseUUIDPipe) id: string) {
     const ctx = requireTenantContext(this.cls);
@@ -122,7 +154,10 @@ export class AdminGraduationController {
   @HttpCode(201)
   @ApiOperation({ summary: 'Persist an observação as the admin' })
   @ApiCreatedResponse({ type: StudentNoteResponseDto })
-  async createNote(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateStudentNoteDto) {
+  async createNote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateStudentNoteDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return { note: await this.notes.create(ctx, id, dto.body) };
   }

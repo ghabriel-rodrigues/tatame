@@ -36,8 +36,20 @@
     { "token": "pink-700", "base": "accent", "pct": 64, "anchor": "#3B0A24" },
     { "token": "pink-600", "base": "accent", "pct": 80, "anchor": "#3B0A24" },
     { "token": "pink-400", "base": "accent", "pct": 72, "anchor": "W" },
-    { "token": "pink-300", "base": "accent", "pct": 46, "anchor": "W", "extrapolated": true },
-    { "token": "pink-200", "base": "accent", "pct": 27, "anchor": "W", "extrapolated": true },
+    {
+      "token": "pink-300",
+      "base": "accent",
+      "pct": 46,
+      "anchor": "W",
+      "extrapolated": true
+    },
+    {
+      "token": "pink-200",
+      "base": "accent",
+      "pct": 27,
+      "anchor": "W",
+      "extrapolated": true
+    },
     { "token": "pink-100", "base": "accent", "pct": 13, "anchor": "W" },
     { "token": "pink-50", "base": "accent", "pct": 6, "anchor": "W" }
   ]

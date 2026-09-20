@@ -45,7 +45,12 @@ export function ForgotPasswordPage() {
       <BrandLogo size="md" boxed />
       <Typography
         variant="h3"
-        sx={{ fontSize: 26, fontWeight: 700, marginTop: '20px', color: 'var(--fg-1)' }}
+        sx={{
+          fontSize: 26,
+          fontWeight: 700,
+          marginTop: '20px',
+          color: 'var(--fg-1)',
+        }}
       >
         Recuperar senha
       </Typography>

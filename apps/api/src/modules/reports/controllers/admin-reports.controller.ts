@@ -53,7 +53,8 @@ export class AdminReportsController {
 
   @Get(':report')
   @ApiOperation({
-    summary: 'One of the five admin reports as JSON (month/semester windows, tenant timezone)',
+    summary:
+      'One of the five admin reports as JSON (month/semester windows, tenant timezone)',
     description:
       'Slugs: financeiro, frequencia, inadimplencia, graduacoes, loja. `financeiro`, ' +
       '`frequencia` and `loja` take month=YYYY-MM (default: current month); `graduacoes` ' +
@@ -73,7 +74,10 @@ export class AdminReportsController {
       ],
     },
   })
-  async report(@Param('report') report: string, @Query('month') month?: string) {
+  async report(
+    @Param('report') report: string,
+    @Query('month') month?: string,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.reports.report(ctx, report, month);
   }
@@ -88,7 +92,10 @@ export class AdminReportsController {
   @ApiParam({ name: 'report', enum: REPORT_SLUGS })
   @ApiQuery({ name: 'month', required: false, example: '2026-08' })
   @ApiProduces('text/csv')
-  @ApiOkResponse({ schema: { type: 'string' }, description: 'CSV file attachment' })
+  @ApiOkResponse({
+    schema: { type: 'string' },
+    description: 'CSV file attachment',
+  })
   async reportCsv(
     @Param('report') report: string,
     @Res() res: Response,

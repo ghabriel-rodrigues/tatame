@@ -17,7 +17,9 @@ export function formatCpf(digits: string): string {
 /** Mask while typing: keeps digits, dots and dash in CPF positions. */
 export function maskCpfInput(raw: string): string {
   const d = raw.replace(/\D/g, '').slice(0, 11);
-  const parts = [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9)].filter((p) => p.length > 0);
+  const parts = [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9)].filter(
+    (p) => p.length > 0,
+  );
   const base = parts.join('.');
   return d.length > 9 ? `${base}-${d.slice(9)}` : base;
 }
@@ -52,13 +54,19 @@ export function joinCityUf(city: string | null, state: string | null): string {
  * "São Paulo / SP" → { city, state } for the two typed columns; a value
  * without the separator is all city (state null). Empty → both null.
  */
-export function parseCityUf(input: string): { city: string | null; state: string | null } {
+export function parseCityUf(input: string): {
+  city: string | null;
+  state: string | null;
+} {
   const trimmed = input.trim();
   if (!trimmed) return { city: null, state: null };
   const slash = trimmed.lastIndexOf('/');
   if (slash === -1) return { city: trimmed, state: null };
   const city = trimmed.slice(0, slash).trim();
-  const state = trimmed.slice(slash + 1).trim().toUpperCase();
+  const state = trimmed
+    .slice(slash + 1)
+    .trim()
+    .toUpperCase();
   return { city: city || null, state: state || null };
 }
 

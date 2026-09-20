@@ -117,14 +117,20 @@ export interface NotificationsBackendOptions {
  * endpoints with the spec's arithmetic — read-all zeroes the unread count,
  * muting the membership zeroes it too (rows keep serving underneath).
  */
-export function notificationsHandlers(options: NotificationsBackendOptions = {}): {
+export function notificationsHandlers(
+  options: NotificationsBackendOptions = {},
+): {
   handler: FetchHandler;
   log: NotificationsLog;
 } {
   const pages = options.pages ?? [makeNotificationsPage([])];
   let count = options.count ?? 0;
   let enabled = options.enabled ?? true;
-  const log: NotificationsLog = { readAllPosts: 0, listCursors: [], settingsPuts: [] };
+  const log: NotificationsLog = {
+    readAllPosts: 0,
+    listCursors: [],
+    settingsPuts: [],
+  };
 
   const handler: FetchHandler = ({ method, path, search, body }) => {
     if (method === 'GET' && path === '/v1/notifications') {

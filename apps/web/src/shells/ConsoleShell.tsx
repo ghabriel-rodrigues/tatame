@@ -19,7 +19,11 @@ import {
   switchMembership,
   useAuth,
 } from '../auth/auth-store';
-import { surfaceForMembership, writeLastSurface, type WebSurface } from '../auth/redirect';
+import {
+  surfaceForMembership,
+  writeLastSurface,
+  type WebSurface,
+} from '../auth/redirect';
 import { ROLE_LABELS } from '../auth/role-labels';
 import { BootSplash } from '../auth/guards';
 import { NotificationsBell } from './NotificationsBell';
@@ -55,7 +59,9 @@ function ImpersonationBanner({ session }: { session: MeResponse }) {
           setEnding(true);
           void endImpersonation()
             .then((state) => {
-              navigate(state.status === 'authed' ? '/plataforma' : '/login', { replace: true });
+              navigate(state.status === 'authed' ? '/plataforma' : '/login', {
+                replace: true,
+              });
             })
             .finally(() => setEnding(false));
         }}
@@ -76,7 +82,10 @@ function MembershipSwitcher({
   const current = session.activeMembershipId ?? '';
 
   function label(membership: MembershipView): string {
-    const place = membership.type === 'platform' ? 'Plataforma' : (membership.academyName ?? '');
+    const place =
+      membership.type === 'platform'
+        ? 'Plataforma'
+        : (membership.academyName ?? '');
     return `${place} · ${ROLE_LABELS[membership.role]}`;
   }
 
@@ -87,8 +96,11 @@ function MembershipSwitcher({
       disabled={disabled}
       inputProps={{ 'aria-label': 'Trocar de contexto' }}
       onChange={(event: SelectChangeEvent) => {
-        const membership = session.memberships.find((m) => m.id === event.target.value);
-        if (membership && membership.id !== session.activeMembershipId) onSwitch(membership);
+        const membership = session.memberships.find(
+          (m) => m.id === event.target.value,
+        );
+        if (membership && membership.id !== session.activeMembershipId)
+          onSwitch(membership);
       }}
       sx={{ minWidth: 220, background: 'var(--bg-surface)' }}
     >
@@ -132,7 +144,9 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
 
   return (
     <Box sx={{ minHeight: '100vh', background: 'var(--bg-app)' }}>
-      {surface === '/admin' && impersonated ? <ImpersonationBanner session={session} /> : null}
+      {surface === '/admin' && impersonated ? (
+        <ImpersonationBanner session={session} />
+      ) : null}
       <Box
         component="header"
         sx={{
@@ -149,10 +163,14 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
         <Stack direction="row" spacing="14px" sx={{ alignItems: 'center' }}>
           <BrandLogo size="sm" boxed />
           <Box>
-            <Typography sx={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-1)' }}>
+            <Typography
+              sx={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-1)' }}
+            >
               {title}
             </Typography>
-            <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+            <Typography
+              sx={{ fontSize: 12.5, fontWeight: 600, color: 'var(--fg-3)' }}
+            >
               {session.user.fullName}
             </Typography>
           </Box>
@@ -174,7 +192,11 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
           {/* NOT.7: admin surface only — plataforma has no bell in v1. */}
           {surface === '/admin' ? <NotificationsBell /> : null}
           {session.memberships.length > 1 && !impersonated ? (
-            <MembershipSwitcher session={session} disabled={switching} onSwitch={handleSwitch} />
+            <MembershipSwitcher
+              session={session}
+              disabled={switching}
+              onSwitch={handleSwitch}
+            />
           ) : null}
           <TatameButton
             variant="ghost"
@@ -233,7 +255,10 @@ export function ConsoleShell({ surface }: ConsoleShellProps) {
           </>
         )}
       </Box>
-      <Box component="main" sx={{ padding: '24px 20px', maxWidth: 1080, margin: '0 auto' }}>
+      <Box
+        component="main"
+        sx={{ padding: '24px 20px', maxWidth: 1080, margin: '0 auto' }}
+      >
         <Outlet />
       </Box>
     </Box>
@@ -248,14 +273,21 @@ export function UnderConstruction({ surfaceLabel }: { surfaceLabel: string }) {
         <Typography variant="overline" sx={{ color: 'inherit', opacity: 0.8 }}>
           {surfaceLabel}
         </Typography>
-        <Typography sx={{ fontSize: 24, fontWeight: 700, marginTop: '4px', color: 'inherit' }}>
+        <Typography
+          sx={{
+            fontSize: 24,
+            fontWeight: 700,
+            marginTop: '4px',
+            color: 'inherit',
+          }}
+        >
           Em construção
         </Typography>
       </Card>
       <Card variant="tinted">
         <Typography sx={{ fontSize: 13.5, color: 'var(--fg-2)' }}>
-          Os módulos desta área chegam nas próximas iterações. Sua sessão, permissões e
-          contexto de academia já estão ativos.
+          Os módulos desta área chegam nas próximas iterações. Sua sessão,
+          permissões e contexto de academia já estão ativos.
         </Typography>
       </Card>
     </Stack>

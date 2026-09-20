@@ -25,7 +25,9 @@ describe('route guards — /admin', () => {
   it('redirects anonymous users to /login preserving ?next=', () => {
     const { router } = renderRoute('/admin');
     expect(router.state.location.pathname).toBe('/login');
-    expect(router.state.location.search).toBe(`?next=${encodeURIComponent('/admin')}`);
+    expect(router.state.location.search).toBe(
+      `?next=${encodeURIComponent('/admin')}`,
+    );
   });
 
   it('renders the boot splash while the session is booting', () => {
@@ -81,9 +83,13 @@ describe('route guards — /admin', () => {
       }),
     });
     expect(
-      await screen.findByText(/Você está como admin de Alpha Jiu-Jitsu — sessão auditada/),
+      await screen.findByText(
+        /Você está como admin de Alpha Jiu-Jitsu — sessão auditada/,
+      ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Encerrar' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Encerrar' }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -91,7 +97,9 @@ describe('route guards — /plataforma', () => {
   it('redirects anonymous users to /login preserving ?next=', () => {
     const { router } = renderRoute('/plataforma');
     expect(router.state.location.pathname).toBe('/login');
-    expect(router.state.location.search).toBe(`?next=${encodeURIComponent('/plataforma')}`);
+    expect(router.state.location.search).toBe(
+      `?next=${encodeURIComponent('/plataforma')}`,
+    );
   });
 
   it('renders the platform console with the Visão geral home (PLT.10)', async () => {
@@ -100,7 +108,9 @@ describe('route guards — /plataforma', () => {
     renderRoute('/plataforma', {
       session: makeMeResponse({ memberships: [platform], academy: null }),
     });
-    expect(await screen.findByText('Console da plataforma')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Console da plataforma'),
+    ).toBeInTheDocument();
     expect(
       await screen.findByRole('heading', { name: 'Visão geral' }),
     ).toBeInTheDocument();

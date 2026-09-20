@@ -33,7 +33,11 @@ export const martialArts = pgTable(
     ...timestamps,
   },
   () => [
-    pgPolicy('martial_arts_public_select', { for: 'select', to: appRole, using: sql`true` }),
+    pgPolicy('martial_arts_public_select', {
+      for: 'select',
+      to: appRole,
+      using: sql`true`,
+    }),
   ],
 );
 
@@ -51,7 +55,11 @@ export const beltLadders = pgTable(
   },
   (t) => [
     unique('belt_ladders_art_kind_uq').on(t.martialArtId, t.kind),
-    pgPolicy('belt_ladders_public_select', { for: 'select', to: appRole, using: sql`true` }),
+    pgPolicy('belt_ladders_public_select', {
+      for: 'select',
+      to: appRole,
+      using: sql`true`,
+    }),
   ],
 );
 
@@ -85,6 +93,10 @@ export const belts = pgTable(
     unique('belts_ladder_position_uq').on(t.ladderId, t.position),
     check('belts_max_degrees_ck', sql`${t.maxDegrees} >= 0`),
     check('belts_position_ck', sql`${t.position} >= 1`),
-    pgPolicy('belts_public_select', { for: 'select', to: appRole, using: sql`true` }),
+    pgPolicy('belts_public_select', {
+      for: 'select',
+      to: appRole,
+      using: sql`true`,
+    }),
   ],
 );

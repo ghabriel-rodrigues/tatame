@@ -38,9 +38,7 @@
           }
         },
         "summary": "Credentials → token pair (or TOTP challenge) + memberships",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/login/totp": {
@@ -70,9 +68,7 @@
           }
         },
         "summary": "Complete platform 2FA login",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/refresh": {
@@ -102,9 +98,7 @@
           }
         },
         "summary": "Rotate the refresh token (family-reuse detection)",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/switch": {
@@ -139,9 +133,7 @@
           }
         ],
         "summary": "Re-issue the access token for another owned membership",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/logout": {
@@ -159,9 +151,7 @@
           }
         ],
         "summary": "Revoke the current session (also ends impersonation)",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/logout-all": {
@@ -179,9 +169,7 @@
           }
         ],
         "summary": "Revoke ALL sessions of the account",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/me": {
@@ -206,9 +194,7 @@
           }
         ],
         "summary": "Session bootstrap: user, memberships, context, toggles",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/password/forgot": {
@@ -238,9 +224,7 @@
           }
         },
         "summary": "Request a reset email — 202 always (no enumeration)",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/password/reset": {
@@ -263,9 +247,7 @@
           }
         },
         "summary": "Consume the single-use token; revokes all sessions",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/totp/setup": {
@@ -290,9 +272,7 @@
           }
         ],
         "summary": "Platform staff: generate the TOTP provisioning secret",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/auth/totp/enable": {
@@ -327,9 +307,7 @@
           }
         ],
         "summary": "Platform staff: arm TOTP, returns one-time recovery codes",
-        "tags": [
-          "auth"
-        ]
+        "tags": ["auth"]
       }
     },
     "/v1/aluno/profile": {
@@ -355,9 +333,7 @@
           }
         ],
         "summary": "Dados pessoais: identificação (CPF/RG lock state), contato, endereço, emergência",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       },
       "put": {
         "description": "CPF is normalized to digits and checksum-validated; CPF/RG are write-once (422 profile.field_locked on any change after set). Email/birthDate in the payload are a 422 profile.field_read_only. Name edits sync onto the linked student row in-transaction.",
@@ -391,9 +367,7 @@
           }
         ],
         "summary": "Salvar dados pessoais (partial update, per-field validation)",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/public/invites/{token}": {
@@ -422,9 +396,7 @@
           }
         },
         "summary": "Invite landing: academy branding + inherited bindings",
-        "tags": [
-          "public"
-        ]
+        "tags": ["public"]
       }
     },
     "/v1/public/invites/{token}/accept": {
@@ -463,9 +435,7 @@
           }
         },
         "summary": "The only signup: atomic accept, ends logged in",
-        "tags": [
-          "public"
-        ]
+        "tags": ["public"]
       }
     },
     "/v1/invites": {
@@ -500,9 +470,7 @@
           }
         ],
         "summary": "Generate an invite link bound to the academy (7-day validity)",
-        "tags": [
-          "invites"
-        ]
+        "tags": ["invites"]
       }
     },
     "/v1/invites/{token}/accept": {
@@ -536,9 +504,7 @@
           }
         ],
         "summary": "Attach the invite membership to the authenticated account",
-        "tags": [
-          "invites"
-        ]
+        "tags": ["invites"]
       }
     },
     "/v1/admin/academy": {
@@ -563,9 +529,7 @@
           }
         ],
         "summary": "Academy identity settings: name, brand triplet, toggles",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "put": {
         "description": "Full document. Brand accepts any valid hex triplet (case-normalized to uppercase); `brand: null` clears back to the default Tatame brand. Audited as `academy.updated` with before/after of the changed fields.",
@@ -599,9 +563,7 @@
           }
         ],
         "summary": "Update name + brand + auto-notifications (audited)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/permissions": {
@@ -626,9 +588,7 @@
           }
         ],
         "summary": "Resolved toggle matrix (defaults overlaid with rows) + per-role member counts",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "put": {
         "operationId": "AdminPermissionsController_update_v1",
@@ -661,9 +621,7 @@
           }
         ],
         "summary": "Upsert permission toggles (registry keys only)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/platform/academies/{id}/impersonate": {
@@ -697,9 +655,7 @@
           }
         ],
         "summary": "Audited 1-hour impersonated admin session for the academy",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/admin/students": {
@@ -713,11 +669,7 @@
             "description": "Default `active` — archived records are hidden from active listings",
             "schema": {
               "type": "string",
-              "enum": [
-                "active",
-                "inactive",
-                "all"
-              ]
+              "enum": ["active", "inactive", "all"]
             }
           }
         ],
@@ -739,9 +691,7 @@
           }
         ],
         "summary": "Student registry with derived Ativo/Pendente badges",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminStudentsController_create_v1",
@@ -774,9 +724,7 @@
           }
         ],
         "summary": "Create a student record (minor ⇒ guardian required)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/students/move": {
@@ -811,9 +759,7 @@
           }
         ],
         "summary": "Atomic bulk move: whole selection or nothing (capacity-checked)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/students/{id}": {
@@ -857,9 +803,7 @@
           }
         ],
         "summary": "Edit name and/or mensalidade plan assignment (spec 006 additive extension)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/students/{id}/archive": {
@@ -886,9 +830,7 @@
           }
         ],
         "summary": "Soft archive: inactive + active enrollments ended atomically",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/guardians": {
@@ -913,9 +855,7 @@
           }
         ],
         "summary": "Guardian registry with dependent counts",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminGuardiansController_create_v1",
@@ -948,9 +888,7 @@
           }
         ],
         "summary": "Create a guardian record without a login",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/guardians/{id}": {
@@ -994,9 +932,7 @@
           }
         ],
         "summary": "Name-only edit",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/professors": {
@@ -1021,9 +957,7 @@
           }
         ],
         "summary": "Active professor memberships of the academy",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminProfessorsController_register_v1",
@@ -1056,9 +990,7 @@
           }
         ],
         "summary": "Register a professor: reuse-or-create user by email + membership + set-password email",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/classes": {
@@ -1072,11 +1004,7 @@
             "description": "Default `active` — archived records are hidden from active listings",
             "schema": {
               "type": "string",
-              "enum": [
-                "active",
-                "inactive",
-                "all"
-              ]
+              "enum": ["active", "inactive", "all"]
             }
           }
         ],
@@ -1098,9 +1026,7 @@
           }
         ],
         "summary": "Turmas with schedules, occupancy and derived Lotada",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminClassesController_create_v1",
@@ -1133,9 +1059,7 @@
           }
         ],
         "summary": "Create a recurring turma — weekday chips fan out into schedule rows",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/classes/{id}": {
@@ -1169,9 +1093,7 @@
           }
         ],
         "summary": "Turma detail: schedule, occupancy, roster",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "patch": {
         "operationId": "AdminClassesController_rename_v1",
@@ -1213,9 +1135,7 @@
           }
         ],
         "summary": "Name-only edit (schedule/professor/capacity editing deferred)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/classes/{id}/archive": {
@@ -1242,9 +1162,7 @@
           }
         ],
         "summary": "Soft archive: archived + active enrollments ended atomically",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/classes/{id}/students": {
@@ -1288,9 +1206,7 @@
           }
         ],
         "summary": "Add to roster (row-locked capacity; reactivates a removed row)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/classes/{id}/students/{studentId}": {
@@ -1332,9 +1248,7 @@
           }
         ],
         "summary": "Remove from roster (soft: enrollment flips to removed)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/professor/classes": {
@@ -1359,9 +1273,7 @@
           }
         ],
         "summary": "Minhas turmas: days, times, occupancy",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/classes/{id}": {
@@ -1395,9 +1307,7 @@
           }
         ],
         "summary": "Own turma detail with roster (foreign class → 404)",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/classes/{id}/students": {
@@ -1441,9 +1351,7 @@
           }
         ],
         "summary": "Adicionar aluno — same capacity rule that binds the admin",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/classes/{id}/students/{studentId}": {
@@ -1485,9 +1393,7 @@
           }
         ],
         "summary": "Remove from own roster",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/responsavel/dependents": {
@@ -1512,9 +1418,7 @@
           }
         ],
         "summary": "My children with class and next scheduled slot",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       },
       "post": {
         "operationId": "ResponsavelDependentsController_register_v1",
@@ -1547,9 +1451,7 @@
           }
         ],
         "summary": "Cadastrar filho: auto guardian link + enrollment into the accepted suggestion",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/responsavel/dependents/{id}": {
@@ -1583,9 +1485,7 @@
           }
         ],
         "summary": "Child detail (foreign dependent → 404, no existence leak)",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/responsavel/class-suggestion": {
@@ -1620,9 +1520,7 @@
           }
         ],
         "summary": "Age-suggested class for a birth date (null when no match/room)",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/aluno/checkins": {
@@ -1658,9 +1556,7 @@
           }
         ],
         "summary": "Fazer check-in (qr / code / manual)",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/aluno/home": {
@@ -1686,9 +1582,7 @@
           }
         ],
         "summary": "Início: today-class hero, presença %, streak, graduation card, próximos eventos",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/professor/classes/{id}/live-codes": {
@@ -1723,9 +1617,7 @@
           }
         ],
         "summary": "Iniciar chamada — materialize today's session + mint code/QR",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/live-codes/{id}/close": {
@@ -1759,9 +1651,7 @@
           }
         ],
         "summary": "Encerrar chamada — invalidate code + QR, session → done",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/live-codes/{id}/attendances": {
@@ -1796,9 +1686,7 @@
           }
         ],
         "summary": "Live snapshot — also the 5 s polling fallback target",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/live-codes/{id}/stream-ticket": {
@@ -1833,9 +1721,7 @@
           }
         ],
         "summary": "Mint the ~60 s single-purpose SSE ticket",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/live-codes/{id}/stream": {
@@ -1886,9 +1772,7 @@
           }
         ],
         "summary": "SSE stream: checkin / revoke events + 20 s heartbeat (contract exception)",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/classes/{id}/roll-call": {
@@ -1923,9 +1807,7 @@
           }
         ],
         "summary": "Abrir chamada manual — materialize session + roster with states",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/sessions/{id}/attendances": {
@@ -1970,9 +1852,7 @@
           }
         ],
         "summary": "Toggle on — professor-recorded manual presence (audited in-transaction)",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/attendances/{id}/revoke": {
@@ -2017,9 +1897,7 @@
           }
         ],
         "summary": "Toggle off — same-day revoke through the audited void seam",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/dashboard": {
@@ -2045,9 +1923,7 @@
           }
         ],
         "summary": "Dashboard: alunos hoje, presença média, next-class hero, today's classes, eventos futuros",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/students": {
@@ -2084,9 +1960,7 @@
           }
         ],
         "summary": "Academy students — optional filter: not enrolled in one of my classes",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/admin/attendances/{id}/revoke": {
@@ -2130,9 +2004,7 @@
           }
         ],
         "summary": "Any-time audited revoke (window same_day | admin_late in the audit row)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/classes/{id}/sessions": {
@@ -2166,9 +2038,7 @@
           }
         ],
         "summary": "Turma sessions with active attendance counts (replaces Phase-3 placeholders)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/events": {
@@ -2194,9 +2064,7 @@
           }
         ],
         "summary": "Eventos: gradient cards with valor chip, date, inscritos/arrecadado totals",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "description": "Valor vazio = gratuito. status=published requires date + local (422 event.publish_requirements).",
@@ -2230,9 +2098,7 @@
           }
         ],
         "summary": "Create an event (Rascunho by default; publishing is a separate gesture)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/events/{id}": {
@@ -2277,9 +2143,7 @@
           }
         ],
         "summary": "Edit an event (canceled events are frozen history — 409)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/events/{id}/publish": {
@@ -2314,9 +2178,7 @@
           }
         ],
         "summary": "Publish a draft (audited) — requires date + local",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/events/{id}/cancel": {
@@ -2351,9 +2213,7 @@
           }
         ],
         "summary": "Cancel an event (never hard-delete; audited)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/events/{id}/registrations": {
@@ -2387,9 +2247,7 @@
           }
         ],
         "summary": "Inscritos: who registered, status, who confirmed, paid amount + totals",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/events/{id}/announce": {
@@ -2424,9 +2282,7 @@
           }
         ],
         "summary": "Comunicar: queue an announcement to the inscritos (published only)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/aluno/events/{id}": {
@@ -2461,9 +2317,7 @@
           }
         ],
         "summary": "Event detail: banner, data/local/responsável, valor chip, own state",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/aluno/events/{id}/registration": {
@@ -2498,9 +2352,7 @@
           }
         ],
         "summary": "Confirmar presença (free) / Pagar inscrição (paid → chargeId)",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       },
       "delete": {
         "description": "Canceling a pending registration voids its open charge. A paid, confirmed registration is only undone by an admin refund (409 event.registration_settled).",
@@ -2526,9 +2378,7 @@
           }
         ],
         "summary": "Cancelar participação (free or not-yet-paid)",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/responsavel/events": {
@@ -2553,9 +2403,7 @@
           }
         ],
         "summary": "Published events as gradient cards with one chip per dependent",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/responsavel/events/{id}/registrations/{studentId}": {
@@ -2598,9 +2446,7 @@
           }
         ],
         "summary": "Confirm (free) / start paying (paid) for one dependent",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       },
       "delete": {
         "operationId": "ResponsavelEventsController_cancel_v1",
@@ -2633,9 +2479,7 @@
           }
         ],
         "summary": "Cancel one dependent's registration (free or not-yet-paid)",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/aluno/wallet": {
@@ -2661,9 +2505,7 @@
           }
         ],
         "summary": "Carteira: plan header, current mensalidade, recurrence banner, histórico",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/aluno/wallet/charges/{id}/payments": {
@@ -2708,9 +2550,7 @@
           }
         ],
         "summary": "Open a settlement attempt (pix / boleto / cartão + recurrence toggle)",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/aluno/wallet/mandate": {
@@ -2728,9 +2568,7 @@
           }
         ],
         "summary": "Cancelar recorrência no cartão (audited; 404 when none active)",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/responsavel/payments": {
@@ -2756,9 +2594,7 @@
           }
         ],
         "summary": "Per-dependent mensalidade cards + consolidated histórico",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/responsavel/payments/charges/{id}/payments": {
@@ -2803,9 +2639,7 @@
           }
         ],
         "summary": "Pay a dependent’s charge (same methods as the aluno sheet)",
-        "tags": [
-          "responsavel"
-        ]
+        "tags": ["responsavel"]
       }
     },
     "/v1/billing/payments/{id}/simulate": {
@@ -2840,9 +2674,7 @@
           }
         ],
         "summary": "Simular pagamento — settles a pending attempt instantly",
-        "tags": [
-          "billing"
-        ]
+        "tags": ["billing"]
       }
     },
     "/v1/billing/payments/{id}/receipt": {
@@ -2877,9 +2709,7 @@
           }
         ],
         "summary": "Comprovante data for a settled payment",
-        "tags": [
-          "billing"
-        ]
+        "tags": ["billing"]
       }
     },
     "/v1/admin/billing/overview": {
@@ -2905,9 +2735,7 @@
           }
         ],
         "summary": "Visão financeira: receita mês/ano, previsão, inadimplência %, série, vencimentos",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/billing/charges/materialize": {
@@ -2933,9 +2761,7 @@
           }
         ],
         "summary": "Materialize the current cycle tenant-wide on demand (audited)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/billing/payments/{id}/refund": {
@@ -2980,9 +2806,7 @@
           }
         ],
         "summary": "Full refund of a settled payment via the provider path (audited)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/billing/plans": {
@@ -3007,9 +2831,7 @@
           }
         ],
         "summary": "Plan catalog including archived (soft-archive is a filter, not a delete)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "description": "Duplicate name in the academy → 409 `plan.name_taken` (UNIQUE tenant+name).",
@@ -3043,9 +2865,7 @@
           }
         ],
         "summary": "Novo plano (nome, valor em centavos, recorrência chip, vencimento chip)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/billing/plans/{id}": {
@@ -3089,9 +2909,7 @@
           }
         ],
         "summary": "Edit a plan (existing charges keep their issued amounts)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/billing/plans/{id}/archive": {
@@ -3125,9 +2943,7 @@
           }
         ],
         "summary": "Soft archive: refuses new assignment, history stays intact (never hard-delete)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/platform/billing/repasses": {
@@ -3153,9 +2969,7 @@
           }
         ],
         "summary": "Repasse read model: gross − fee_bps = net, Retido on delinquent academies",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/admin/store/overview": {
@@ -3181,9 +2995,7 @@
           }
         ],
         "summary": "Loja tiles: vendas do mês, pedidos no mês, estoque baixo",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/store/categories": {
@@ -3208,9 +3020,7 @@
           }
         ],
         "summary": "\"Categorias da loja\" — one chip per category with its count",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminStoreController_createCategory_v1",
@@ -3243,9 +3053,7 @@
           }
         ],
         "summary": "\"+ Nova categoria\" (name unique per academy — 409 on duplicate)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/store/categories/{id}": {
@@ -3289,9 +3097,7 @@
           }
         ],
         "summary": "Rename a category (audited)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "delete": {
         "description": "Referenced (archived products included) → 409 `category.in_use`.",
@@ -3317,9 +3123,7 @@
           }
         ],
         "summary": "Delete a category — only while no product references it",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/store/products": {
@@ -3345,9 +3149,7 @@
           }
         ],
         "summary": "Produto rows per admin-03: tile, price, \"N em estoque · N vendidos\"",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "description": "Monogram derives from the name and the gradient preset cycles the design-system catalog when omitted. No image upload in v1 (recorded debt) — the galeria renders monogram-tile variants derived client-side.",
@@ -3381,9 +3183,7 @@
           }
         ],
         "summary": "\"Novo produto\" per admin-06",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/store/products/{id}": {
@@ -3427,9 +3227,7 @@
           }
         ],
         "summary": "\"Editar produto\" (archived products are frozen — 409)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "delete": {
         "description": "Order history referencing the product stays intact; the vitrine stops showing it.",
@@ -3462,9 +3260,7 @@
           }
         ],
         "summary": "\"Remover da loja\" — archives, never hard-deletes (story 6)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/store/orders": {
@@ -3490,9 +3286,7 @@
           }
         ],
         "summary": "Pedidos board per admin-04 — pending excluded, newest first",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/store/orders/{id}/status": {
@@ -3537,9 +3331,7 @@
           }
         ],
         "summary": "Status sheet per admin-05: paid → ready → delivered; canceled refunds",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/store/products": {
@@ -3582,9 +3374,7 @@
           }
         ],
         "summary": "Vitrine: active products + the category chip carousel data",
-        "tags": [
-          "store"
-        ]
+        "tags": ["store"]
       }
     },
     "/v1/store/products/{id}": {
@@ -3619,9 +3409,7 @@
           }
         ],
         "summary": "Product detail: gallery derivation inputs, size pills, stock, price",
-        "tags": [
-          "store"
-        ]
+        "tags": ["store"]
       }
     },
     "/v1/store/orders": {
@@ -3657,9 +3445,7 @@
           }
         ],
         "summary": "\"Comprar com Pix · R$ X\" — pending order + order-origin charge",
-        "tags": [
-          "store"
-        ]
+        "tags": ["store"]
       },
       "get": {
         "operationId": "StorefrontController_myOrders_v1",
@@ -3682,9 +3468,7 @@
           }
         ],
         "summary": "Meus pedidos — own orders with status chips and the retirada note",
-        "tags": [
-          "store"
-        ]
+        "tags": ["store"]
       }
     },
     "/v1/store/orders/{id}": {
@@ -3712,9 +3496,7 @@
           }
         ],
         "summary": "Cancel an own order still awaiting payment (voids its open charge)",
-        "tags": [
-          "store"
-        ]
+        "tags": ["store"]
       }
     },
     "/v1/store/charges/{id}/payments": {
@@ -3759,9 +3541,7 @@
           }
         ],
         "summary": "Pix payment on an own order charge — persona-neutral wallet twin",
-        "tags": [
-          "store"
-        ]
+        "tags": ["store"]
       }
     },
     "/v1/aluno/agenda": {
@@ -3799,9 +3579,7 @@
           }
         ],
         "summary": "Agenda: enrolled classes of one weekday (default today) + check-in state",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/aluno/calendar": {
@@ -3838,9 +3616,7 @@
           }
         ],
         "summary": "Month calendar: enrolled-class weekly recurrence buckets (\"sua aula\")",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/professor/calendar": {
@@ -3877,9 +3653,7 @@
           }
         ],
         "summary": "Month calendar: own-class weekly recurrence buckets (\"aula recorrente\")",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/admin/calendar": {
@@ -3916,9 +3690,7 @@
           }
         ],
         "summary": "Month calendar: all-active-turma weekly recurrence buckets (\"aulas recorrentes\")",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/aluno/graduation": {
@@ -3944,9 +3716,7 @@
           }
         ],
         "summary": "Graduação: belt hero, progress to the next milestone, evolution timeline",
-        "tags": [
-          "aluno"
-        ]
+        "tags": ["aluno"]
       }
     },
     "/v1/professor/profile": {
@@ -3971,9 +3741,7 @@
           }
         ],
         "summary": "Own profile: belt chip + Graduações válidas (merged régua)",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/students/{id}/profile": {
@@ -4008,9 +3776,7 @@
           }
         ],
         "summary": "Perfil do aluno: belt, progress, Phase-4 stat tiles, observações",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/students/{id}/graduations": {
@@ -4055,9 +3821,7 @@
           }
         ],
         "summary": "Adicionar grau / Promover faixa (gated by the graduation.update toggle)",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/professor/students/{id}/notes": {
@@ -4091,9 +3855,7 @@
           }
         ],
         "summary": "Observações history (staff-visible only), newest first",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       },
       "post": {
         "operationId": "ProfessorGraduationController_createNote_v1",
@@ -4135,9 +3897,7 @@
           }
         ],
         "summary": "Persist an observação (coaching notes outlive graduations)",
-        "tags": [
-          "professor"
-        ]
+        "tags": ["professor"]
       }
     },
     "/v1/admin/graduation-rules": {
@@ -4162,9 +3922,7 @@
           }
         ],
         "summary": "Regras de graduação: merged ladder (defaults + overrides) in régua order",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "put": {
         "description": "Changed rules immediately re-aim every progress bar in the academy (story 27).",
@@ -4198,9 +3956,7 @@
           }
         ],
         "summary": "Salvar: bulk upsert (≥ 10 lessons; only kids belts can be disabled)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/students/{id}/graduations": {
@@ -4234,9 +3990,7 @@
           }
         ],
         "summary": "Full graduation history including revocations, newest first",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminGraduationController_award_v1",
@@ -4278,9 +4032,7 @@
           }
         ],
         "summary": "Award (no toggle gates the admin — role-fixed, story 28)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/graduations/{id}/revoke": {
@@ -4325,9 +4077,7 @@
           }
         ],
         "summary": "Revogar: append a compensation row restoring the previous belt/degree",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/students/{id}/notes": {
@@ -4361,9 +4111,7 @@
           }
         ],
         "summary": "Observações history — the staff shares one memory (story 19)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       },
       "post": {
         "operationId": "AdminGraduationController_createNote_v1",
@@ -4405,9 +4153,7 @@
           }
         ],
         "summary": "Persist an observação as the admin",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/reports/{report}": {
@@ -4474,9 +4220,7 @@
           }
         ],
         "summary": "One of the five admin reports as JSON (month/semester windows, tenant timezone)",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/admin/reports/{report}/csv": {
@@ -4527,9 +4271,7 @@
           }
         ],
         "summary": "The same report as a streamed CSV download",
-        "tags": [
-          "admin"
-        ]
+        "tags": ["admin"]
       }
     },
     "/v1/rankings": {
@@ -4550,10 +4292,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": [
-                "lessons",
-                "events"
-              ],
+              "enum": ["lessons", "events"],
               "type": "string"
             }
           }
@@ -4576,9 +4315,7 @@
           }
         ],
         "summary": "Academy-wide ranking: Por aulas (month) / Por eventos (semester)",
-        "tags": [
-          "rankings"
-        ]
+        "tags": ["rankings"]
       }
     },
     "/v1/platform/overview": {
@@ -4604,9 +4341,7 @@
           }
         ],
         "summary": "Visão geral: MRR + delta, academias/alunos/inadimplência, 6-month series, atenção",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/academies": {
@@ -4631,9 +4366,7 @@
           }
         ],
         "summary": "Academies with city, student count, plan and status",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       },
       "post": {
         "description": "Academy + trialing subscription + admin membership in one transaction; the set-password email goes out after it commits, so a mail failure never rolls back a created customer.",
@@ -4667,9 +4400,7 @@
           }
         ],
         "summary": "Register an academy on Trial and invite its admin by email",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/academies/{id}": {
@@ -4703,9 +4434,7 @@
           }
         ],
         "summary": "Academy detail: stats, subscription and pending plan change",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/academies/{id}/plan": {
@@ -4750,9 +4479,7 @@
           }
         ],
         "summary": "Schedule the academy plan change for the next cycle",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/academies/{id}/suspend": {
@@ -4786,9 +4513,7 @@
           }
         ],
         "summary": "Suspend the academy — blocks access immediately (audited)",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/academies/{id}/reactivate": {
@@ -4822,9 +4547,7 @@
           }
         ],
         "summary": "Reactivate the academy — restores the status its subscription justifies",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/plans": {
@@ -4849,9 +4572,7 @@
           }
         ],
         "summary": "Plan catalog with derived \"mais assinado\" + feature inheritance, and the registry",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       },
       "post": {
         "operationId": "PlatformConsoleController_createPlan_v1",
@@ -4884,9 +4605,7 @@
           }
         ],
         "summary": "Create a plan — available for new academy subscriptions immediately",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/plans/{id}": {
@@ -4931,9 +4650,7 @@
           }
         ],
         "summary": "Edit a plan (name, price, limit, features)",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/team": {
@@ -4958,9 +4675,7 @@
           }
         ],
         "summary": "Platform team roster with roles",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       },
       "post": {
         "operationId": "PlatformConsoleController_inviteTeamMember_v1",
@@ -4993,9 +4708,7 @@
           }
         ],
         "summary": "Invite a team member — same set-password email as academy admins",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/platform/integrations": {
@@ -5021,9 +4734,7 @@
           }
         ],
         "summary": "Payment rails (read-only stub)",
-        "tags": [
-          "platform"
-        ]
+        "tags": ["platform"]
       }
     },
     "/v1/notifications": {
@@ -5058,9 +4769,7 @@
           }
         ],
         "summary": "Own notifications, newest first — the Notificações screen feed",
-        "tags": [
-          "notifications"
-        ]
+        "tags": ["notifications"]
       }
     },
     "/v1/notifications/unread-count": {
@@ -5086,9 +4795,7 @@
           }
         ],
         "summary": "Unread badge count — 0 while the membership is muted",
-        "tags": [
-          "notifications"
-        ]
+        "tags": ["notifications"]
       }
     },
     "/v1/notifications/settings": {
@@ -5113,9 +4820,7 @@
           }
         ],
         "summary": "The perfil \"Notificações\" switch state (active membership)",
-        "tags": [
-          "notifications"
-        ]
+        "tags": ["notifications"]
       },
       "put": {
         "description": "@BypassReadOnly: a delinquent (read-only) academy's members still manage their own switch.",
@@ -5149,9 +4854,7 @@
           }
         ],
         "summary": "Flip the per-membership mute switch",
-        "tags": [
-          "notifications"
-        ]
+        "tags": ["notifications"]
       }
     },
     "/v1/notifications/read-all": {
@@ -5176,9 +4879,7 @@
           }
         ],
         "summary": "Mark every own notification read — fired on screen open, kills the dot",
-        "tags": [
-          "notifications"
-        ]
+        "tags": ["notifications"]
       }
     },
     "/v1/notifications/{id}/read": {
@@ -5213,9 +4914,7 @@
           }
         ],
         "summary": "Mark one notification read (idempotent)",
-        "tags": [
-          "notifications"
-        ]
+        "tags": ["notifications"]
       }
     }
   },
@@ -5298,17 +4997,11 @@
           },
           "transport": {
             "type": "string",
-            "enum": [
-              "cookie",
-              "body"
-            ],
+            "enum": ["cookie", "body"],
             "default": "cookie"
           }
         },
-        "required": [
-          "email",
-          "password"
-        ]
+        "required": ["email", "password"]
       },
       "UserSummaryDto": {
         "type": "object",
@@ -5324,11 +5017,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "email",
-          "fullName"
-        ]
+        "required": ["id", "email", "fullName"]
       },
       "MembershipViewDto": {
         "type": "object",
@@ -5339,10 +5028,7 @@
           },
           "type": {
             "type": "string",
-            "enum": [
-              "academy",
-              "platform"
-            ]
+            "enum": ["academy", "platform"]
           },
           "role": {
             "type": "string",
@@ -5429,19 +5115,14 @@
         "properties": {
           "mfaRequired": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "challengeToken": {
             "type": "string",
             "description": "Short-lived token consumed by POST /auth/login/totp"
           }
         },
-        "required": [
-          "mfaRequired",
-          "challengeToken"
-        ]
+        "required": ["mfaRequired", "challengeToken"]
       },
       "TotpLoginDto": {
         "type": "object",
@@ -5455,17 +5136,11 @@
           },
           "transport": {
             "type": "string",
-            "enum": [
-              "cookie",
-              "body"
-            ],
+            "enum": ["cookie", "body"],
             "default": "cookie"
           }
         },
-        "required": [
-          "challengeToken",
-          "code"
-        ]
+        "required": ["challengeToken", "code"]
       },
       "RefreshDto": {
         "type": "object",
@@ -5476,10 +5151,7 @@
           },
           "transport": {
             "type": "string",
-            "enum": [
-              "cookie",
-              "body"
-            ],
+            "enum": ["cookie", "body"],
             "default": "cookie"
           }
         }
@@ -5499,10 +5171,7 @@
             "description": "Only for `body` transport; web gets the httpOnly cookie"
           }
         },
-        "required": [
-          "accessToken",
-          "accessExpiresIn"
-        ]
+        "required": ["accessToken", "accessExpiresIn"]
       },
       "SwitchMembershipDto": {
         "type": "object",
@@ -5512,9 +5181,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "membershipId"
-        ]
+        "required": ["membershipId"]
       },
       "SwitchMembershipResponseDto": {
         "type": "object",
@@ -5531,11 +5198,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "accessToken",
-          "accessExpiresIn",
-          "activeMembershipId"
-        ]
+        "required": ["accessToken", "accessExpiresIn", "activeMembershipId"]
       },
       "MeUserDto": {
         "type": "object",
@@ -5562,14 +5225,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "email",
-          "fullName",
-          "phone",
-          "avatarUrl",
-          "locale"
-        ]
+        "required": ["id", "email", "fullName", "phone", "avatarUrl", "locale"]
       },
       "BrandThemeDto": {
         "type": "object",
@@ -5590,11 +5246,7 @@
             "pattern": "^#[0-9A-F]{6}$"
           }
         },
-        "required": [
-          "deep",
-          "vibrant",
-          "accent"
-        ]
+        "required": ["deep", "vibrant", "accent"]
       },
       "MeAcademyDto": {
         "type": "object",
@@ -5627,14 +5279,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "slug",
-          "status",
-          "logoUrl",
-          "theme"
-        ]
+        "required": ["id", "name", "slug", "status", "logoUrl", "theme"]
       },
       "MeImpersonationDto": {
         "type": "object",
@@ -5648,9 +5293,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "isImpersonated"
-        ]
+        "required": ["isImpersonated"]
       },
       "MeResponseDto": {
         "type": "object",
@@ -5718,23 +5361,17 @@
             "type": "string"
           }
         },
-        "required": [
-          "email"
-        ]
+        "required": ["email"]
       },
       "ForgotPasswordResponseDto": {
         "type": "object",
         "properties": {
           "accepted": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           }
         },
-        "required": [
-          "accepted"
-        ]
+        "required": ["accepted"]
       },
       "ResetPasswordDto": {
         "type": "object",
@@ -5747,10 +5384,7 @@
             "minLength": 8
           }
         },
-        "required": [
-          "token",
-          "newPassword"
-        ]
+        "required": ["token", "newPassword"]
       },
       "TotpSetupResponseDto": {
         "type": "object",
@@ -5764,10 +5398,7 @@
             "description": "otpauth:// URI for authenticator apps"
           }
         },
-        "required": [
-          "secret",
-          "otpauthUri"
-        ]
+        "required": ["secret", "otpauthUri"]
       },
       "TotpEnableDto": {
         "type": "object",
@@ -5777,9 +5408,7 @@
             "description": "Code from the authenticator app"
           }
         },
-        "required": [
-          "code"
-        ]
+        "required": ["code"]
       },
       "TotpEnableResponseDto": {
         "type": "object",
@@ -5792,9 +5421,7 @@
             }
           }
         },
-        "required": [
-          "recoveryCodes"
-        ]
+        "required": ["recoveryCodes"]
       },
       "AlunoProfileResponseDto": {
         "type": "object",
@@ -5818,12 +5445,7 @@
           },
           "gender": {
             "type": "string",
-            "enum": [
-              "female",
-              "male",
-              "other",
-              "unspecified"
-            ],
+            "enum": ["female", "male", "other", "unspecified"],
             "nullable": true
           },
           "cpf": {
@@ -5903,12 +5525,7 @@
           },
           "gender": {
             "type": "string",
-            "enum": [
-              "female",
-              "male",
-              "other",
-              "unspecified"
-            ],
+            "enum": ["female", "male", "other", "unspecified"],
             "nullable": true
           },
           "phone": {
@@ -5984,22 +5601,14 @@
             ]
           }
         },
-        "required": [
-          "name",
-          "slug",
-          "logoUrl",
-          "theme"
-        ]
+        "required": ["name", "slug", "logoUrl", "theme"]
       },
       "InviteLandingResponseDto": {
         "type": "object",
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "student",
-              "guardian"
-            ]
+            "enum": ["student", "guardian"]
           },
           "expiresAt": {
             "type": "string",
@@ -6019,13 +5628,7 @@
             "$ref": "#/components/schemas/InviteAcademyDto"
           }
         },
-        "required": [
-          "kind",
-          "expiresAt",
-          "classId",
-          "academyPlanId",
-          "academy"
-        ]
+        "required": ["kind", "expiresAt", "classId", "academyPlanId", "academy"]
       },
       "DependentDto": {
         "type": "object",
@@ -6038,10 +5641,7 @@
             "example": "2015-04-20"
           }
         },
-        "required": [
-          "fullName",
-          "birthDate"
-        ]
+        "required": ["fullName", "birthDate"]
       },
       "AcceptInviteDto": {
         "type": "object",
@@ -6071,11 +5671,7 @@
             }
           }
         },
-        "required": [
-          "email",
-          "password",
-          "fullName"
-        ]
+        "required": ["email", "password", "fullName"]
       },
       "InviteAcceptResponseDto": {
         "type": "object",
@@ -6123,10 +5719,7 @@
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "student",
-              "guardian"
-            ]
+            "enum": ["student", "guardian"]
           },
           "classId": {
             "type": "string",
@@ -6144,9 +5737,7 @@
             "description": "Absent = unlimited until expiry"
           }
         },
-        "required": [
-          "kind"
-        ]
+        "required": ["kind"]
       },
       "CreateInviteResponseDto": {
         "type": "object",
@@ -6161,17 +5752,10 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "student",
-              "guardian"
-            ]
+            "enum": ["student", "guardian"]
           }
         },
-        "required": [
-          "token",
-          "expiresAt",
-          "kind"
-        ]
+        "required": ["token", "expiresAt", "kind"]
       },
       "AttachInviteResponseDto": {
         "type": "object",
@@ -6186,19 +5770,10 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "student",
-              "professor",
-              "admin",
-              "guardian"
-            ]
+            "enum": ["student", "professor", "admin", "guardian"]
           }
         },
-        "required": [
-          "membershipId",
-          "tenantId",
-          "role"
-        ]
+        "required": ["membershipId", "tenantId", "role"]
       },
       "AdminAcademyResponseDto": {
         "type": "object",
@@ -6260,11 +5835,7 @@
             "pattern": "^#[0-9a-fA-F]{6}$"
           }
         },
-        "required": [
-          "deep",
-          "vibrant",
-          "accent"
-        ]
+        "required": ["deep", "vibrant", "accent"]
       },
       "UpdateAcademyDto": {
         "type": "object",
@@ -6290,23 +5861,14 @@
             "description": "Gates the automatic notification fan-out tenant-wide"
           }
         },
-        "required": [
-          "name",
-          "brand",
-          "autoNotificationsEnabled"
-        ]
+        "required": ["name", "brand", "autoNotificationsEnabled"]
       },
       "ResolvedPermissionDto": {
         "type": "object",
         "properties": {
           "role": {
             "type": "string",
-            "enum": [
-              "student",
-              "professor",
-              "admin",
-              "guardian"
-            ]
+            "enum": ["student", "professor", "admin", "guardian"]
           },
           "key": {
             "type": "string",
@@ -6323,13 +5885,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "role",
-          "key",
-          "label",
-          "defaultAllowed",
-          "allowed"
-        ]
+        "required": ["role", "key", "label", "defaultAllowed", "allowed"]
       },
       "RoleMemberCountsDto": {
         "type": "object",
@@ -6344,11 +5900,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "professor",
-          "student",
-          "guardian"
-        ]
+        "required": ["professor", "student", "guardian"]
       },
       "PermissionMatrixResponseDto": {
         "type": "object",
@@ -6363,22 +5915,14 @@
             "$ref": "#/components/schemas/RoleMemberCountsDto"
           }
         },
-        "required": [
-          "permissions",
-          "memberCounts"
-        ]
+        "required": ["permissions", "memberCounts"]
       },
       "PermissionEntryDto": {
         "type": "object",
         "properties": {
           "role": {
             "type": "string",
-            "enum": [
-              "student",
-              "professor",
-              "admin",
-              "guardian"
-            ]
+            "enum": ["student", "professor", "admin", "guardian"]
           },
           "key": {
             "type": "string",
@@ -6388,11 +5932,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "role",
-          "key",
-          "allowed"
-        ]
+        "required": ["role", "key", "allowed"]
       },
       "UpdatePermissionsDto": {
         "type": "object",
@@ -6404,9 +5944,7 @@
             }
           }
         },
-        "required": [
-          "entries"
-        ]
+        "required": ["entries"]
       },
       "ImpersonationAcademyDto": {
         "type": "object",
@@ -6425,12 +5963,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "slug",
-          "status"
-        ]
+        "required": ["id", "name", "slug", "status"]
       },
       "ImpersonationGrantResponseDto": {
         "type": "object",
@@ -6474,10 +6007,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name"
-        ]
+        "required": ["id", "name"]
       },
       "BeltViewDto": {
         "type": "object",
@@ -6536,17 +6066,11 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "inactive"
-            ]
+            "enum": ["active", "inactive"]
           },
           "badge": {
             "type": "string",
-            "enum": [
-              "ativo",
-              "pendente"
-            ],
+            "enum": ["ativo", "pendente"],
             "description": "Derived: pendente = record not yet claimed by a login"
           },
           "guardianId": {
@@ -6602,9 +6126,7 @@
             }
           }
         },
-        "required": [
-          "students"
-        ]
+        "required": ["students"]
       },
       "CreateStudentDto": {
         "type": "object",
@@ -6632,10 +6154,7 @@
             "description": "Mensalidade plan assignment (spec 006): must be an active plan of this academy — dangling → 404 plan.not_found, archived → 409 plan.archived."
           }
         },
-        "required": [
-          "fullName",
-          "birthDate"
-        ]
+        "required": ["fullName", "birthDate"]
       },
       "StudentResponseDto": {
         "type": "object",
@@ -6644,9 +6163,7 @@
             "$ref": "#/components/schemas/StudentListItemDto"
           }
         },
-        "required": [
-          "student"
-        ]
+        "required": ["student"]
       },
       "MoveStudentsDto": {
         "type": "object",
@@ -6664,10 +6181,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "studentIds",
-          "destinationClassId"
-        ]
+        "required": ["studentIds", "destinationClassId"]
       },
       "MoveStudentsResponseDto": {
         "type": "object",
@@ -6684,10 +6198,7 @@
             }
           }
         },
-        "required": [
-          "destinationClassId",
-          "movedStudentIds"
-        ]
+        "required": ["destinationClassId", "movedStudentIds"]
       },
       "UpdateStudentDto": {
         "type": "object",
@@ -6722,10 +6233,7 @@
           },
           "badge": {
             "type": "string",
-            "enum": [
-              "ativo",
-              "pendente"
-            ]
+            "enum": ["ativo", "pendente"]
           },
           "userId": {
             "type": "string",
@@ -6756,9 +6264,7 @@
             }
           }
         },
-        "required": [
-          "guardians"
-        ]
+        "required": ["guardians"]
       },
       "CreateGuardianDto": {
         "type": "object",
@@ -6773,9 +6279,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "fullName"
-        ]
+        "required": ["fullName"]
       },
       "GuardianResponseDto": {
         "type": "object",
@@ -6784,9 +6288,7 @@
             "$ref": "#/components/schemas/GuardianListItemDto"
           }
         },
-        "required": [
-          "guardian"
-        ]
+        "required": ["guardian"]
       },
       "UpdateNameDto": {
         "type": "object",
@@ -6795,9 +6297,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "fullName"
-        ]
+        "required": ["fullName"]
       },
       "ProfessorListItemDto": {
         "type": "object",
@@ -6821,13 +6321,7 @@
             "description": "Membership status"
           }
         },
-        "required": [
-          "membershipId",
-          "userId",
-          "fullName",
-          "email",
-          "status"
-        ]
+        "required": ["membershipId", "userId", "fullName", "email", "status"]
       },
       "ProfessorListResponseDto": {
         "type": "object",
@@ -6839,9 +6333,7 @@
             }
           }
         },
-        "required": [
-          "professors"
-        ]
+        "required": ["professors"]
       },
       "RegisterProfessorDto": {
         "type": "object",
@@ -6854,10 +6346,7 @@
             "description": "Reused cross-tenant when an account already exists"
           }
         },
-        "required": [
-          "fullName",
-          "email"
-        ]
+        "required": ["fullName", "email"]
       },
       "RegisterProfessorResponseDto": {
         "type": "object",
@@ -6933,10 +6422,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "userId",
-          "fullName"
-        ]
+        "required": ["userId", "fullName"]
       },
       "ScheduleSlotViewDto": {
         "type": "object",
@@ -6955,11 +6441,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "weekday",
-          "startTime",
-          "durationMinutes"
-        ]
+        "required": ["weekday", "startTime", "durationMinutes"]
       },
       "ClassListItemDto": {
         "type": "object",
@@ -6973,10 +6455,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "archived"
-            ]
+            "enum": ["active", "archived"]
           },
           "capacity": {
             "type": "number"
@@ -7050,9 +6529,7 @@
             }
           }
         },
-        "required": [
-          "classes"
-        ]
+        "required": ["classes"]
       },
       "ScheduleSlotDto": {
         "type": "object",
@@ -7073,11 +6550,7 @@
             "minimum": 1
           }
         },
-        "required": [
-          "weekday",
-          "startTime",
-          "durationMinutes"
-        ]
+        "required": ["weekday", "startTime", "durationMinutes"]
       },
       "CreateClassDto": {
         "type": "object",
@@ -7122,12 +6595,7 @@
             }
           }
         },
-        "required": [
-          "name",
-          "professorUserId",
-          "capacity",
-          "schedules"
-        ]
+        "required": ["name", "professorUserId", "capacity", "schedules"]
       },
       "RosterStudentDto": {
         "type": "object",
@@ -7145,10 +6613,7 @@
           },
           "badge": {
             "type": "string",
-            "enum": [
-              "ativo",
-              "pendente"
-            ]
+            "enum": ["ativo", "pendente"]
           },
           "belt": {
             "description": "Derived current belt (GRD.6)",
@@ -7159,12 +6624,7 @@
             ]
           }
         },
-        "required": [
-          "studentId",
-          "fullName",
-          "birthDate",
-          "badge"
-        ]
+        "required": ["studentId", "fullName", "birthDate", "badge"]
       },
       "ClassDetailDto": {
         "type": "object",
@@ -7178,10 +6638,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "archived"
-            ]
+            "enum": ["active", "archived"]
           },
           "capacity": {
             "type": "number"
@@ -7260,9 +6717,7 @@
             "$ref": "#/components/schemas/ClassDetailDto"
           }
         },
-        "required": [
-          "class"
-        ]
+        "required": ["class"]
       },
       "UpdateClassNameDto": {
         "type": "object",
@@ -7271,9 +6726,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "AddRosterStudentDto": {
         "type": "object",
@@ -7283,9 +6736,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "studentId"
-        ]
+        "required": ["studentId"]
       },
       "EnrollmentResultDto": {
         "type": "object",
@@ -7300,17 +6751,10 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "removed"
-            ]
+            "enum": ["active", "removed"]
           }
         },
-        "required": [
-          "classId",
-          "studentId",
-          "status"
-        ]
+        "required": ["classId", "studentId", "status"]
       },
       "EnrollmentResultResponseDto": {
         "type": "object",
@@ -7319,9 +6763,7 @@
             "$ref": "#/components/schemas/EnrollmentResultDto"
           }
         },
-        "required": [
-          "enrollment"
-        ]
+        "required": ["enrollment"]
       },
       "DependentClassDto": {
         "type": "object",
@@ -7350,12 +6792,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "schedules",
-          "nextSlot"
-        ]
+        "required": ["id", "name", "schedules", "nextSlot"]
       },
       "MensalidadeAlertDto": {
         "type": "object",
@@ -7410,10 +6847,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "inactive"
-            ]
+            "enum": ["active", "inactive"]
           },
           "class": {
             "nullable": true,
@@ -7444,13 +6878,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "fullName",
-          "birthDate",
-          "status",
-          "class"
-        ]
+        "required": ["id", "fullName", "birthDate", "status", "class"]
       },
       "DependentListResponseDto": {
         "type": "object",
@@ -7462,9 +6890,7 @@
             }
           }
         },
-        "required": [
-          "dependents"
-        ]
+        "required": ["dependents"]
       },
       "DependentResponseDto": {
         "type": "object",
@@ -7473,9 +6899,7 @@
             "$ref": "#/components/schemas/DependentDetailDto"
           }
         },
-        "required": [
-          "dependent"
-        ]
+        "required": ["dependent"]
       },
       "RegisterDependentDto": {
         "type": "object",
@@ -7493,10 +6917,7 @@
             "description": "Accepted age-suggested class. Registration succeeds even when it is full — the enrollment is skipped (story 34)."
           }
         },
-        "required": [
-          "fullName",
-          "birthDate"
-        ]
+        "required": ["fullName", "birthDate"]
       },
       "RegisterDependentResponseDto": {
         "type": "object",
@@ -7509,10 +6930,7 @@
             "description": "False when no class was accepted or the accepted class was full (story 34)"
           }
         },
-        "required": [
-          "dependent",
-          "enrolled"
-        ]
+        "required": ["dependent", "enrolled"]
       },
       "ClassSuggestionDto": {
         "type": "object",
@@ -7575,11 +6993,7 @@
         "properties": {
           "method": {
             "type": "string",
-            "enum": [
-              "qr",
-              "code",
-              "manual"
-            ]
+            "enum": ["qr", "code", "manual"]
           },
           "qrToken": {
             "type": "string",
@@ -7596,9 +7010,7 @@
             "description": "Class to check into (method=manual — location step is a client stub)"
           }
         },
-        "required": [
-          "method"
-        ]
+        "required": ["method"]
       },
       "AttendanceRefDto": {
         "type": "object",
@@ -7613,23 +7025,14 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "qr",
-              "code",
-              "manual"
-            ]
+            "enum": ["qr", "code", "manual"]
           },
           "checkedInAt": {
             "format": "date-time",
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "classSessionId",
-          "method",
-          "checkedInAt"
-        ]
+        "required": ["id", "classSessionId", "method", "checkedInAt"]
       },
       "CheckinSessionRefDto": {
         "type": "object",
@@ -7650,12 +7053,7 @@
             "example": "2026-08-03"
           }
         },
-        "required": [
-          "id",
-          "classId",
-          "className",
-          "sessionDate"
-        ]
+        "required": ["id", "classId", "className", "sessionDate"]
       },
       "AlunoStatsDto": {
         "type": "object",
@@ -7696,10 +7094,7 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "checked_in",
-              "already_checked_in"
-            ],
+            "enum": ["checked_in", "already_checked_in"],
             "description": "Stable duplicate state — clients render \"Presença registrada\", never an error"
           },
           "attendance": {
@@ -7717,12 +7112,7 @@
             ]
           }
         },
-        "required": [
-          "status",
-          "attendance",
-          "session",
-          "stats"
-        ]
+        "required": ["status", "attendance", "session", "stats"]
       },
       "AlunoStudentRefDto": {
         "type": "object",
@@ -7735,10 +7125,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "fullName"
-        ]
+        "required": ["id", "fullName"]
       },
       "AlunoTodayClassDto": {
         "type": "object",
@@ -7758,22 +7145,14 @@
             "description": "Hero flips to \"Presença registrada\" when true"
           }
         },
-        "required": [
-          "classId",
-          "className",
-          "slot",
-          "checkedIn"
-        ]
+        "required": ["classId", "className", "slot", "checkedIn"]
       },
       "NextMilestoneDto": {
         "type": "object",
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "degree",
-              "belt"
-            ]
+            "enum": ["degree", "belt"]
           },
           "degree": {
             "type": "number",
@@ -7781,10 +7160,7 @@
             "description": "The degree the bar points at; null when the milestone is the next belt"
           }
         },
-        "required": [
-          "kind",
-          "degree"
-        ]
+        "required": ["kind", "degree"]
       },
       "GraduationProgressDto": {
         "type": "object",
@@ -7806,12 +7182,7 @@
             "$ref": "#/components/schemas/NextMilestoneDto"
           }
         },
-        "required": [
-          "current",
-          "target",
-          "label",
-          "nextMilestone"
-        ]
+        "required": ["current", "target", "label", "nextMilestone"]
       },
       "AlunoHomeGraduationDto": {
         "type": "object",
@@ -7823,10 +7194,7 @@
             "$ref": "#/components/schemas/GraduationProgressDto"
           }
         },
-        "required": [
-          "belt",
-          "progress"
-        ]
+        "required": ["belt", "progress"]
       },
       "EventRegistrationStateDto": {
         "type": "object",
@@ -7837,11 +7205,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending_payment",
-              "confirmed",
-              "canceled"
-            ]
+            "enum": ["pending_payment", "confirmed", "canceled"]
           },
           "chargeId": {
             "type": "string",
@@ -7850,10 +7214,7 @@
             "description": "Open event-origin charge to pay (pending_payment only) — drives the Pix sheet"
           }
         },
-        "required": [
-          "id",
-          "status"
-        ]
+        "required": ["id", "status"]
       },
       "AlunoEventItemDto": {
         "type": "object",
@@ -7908,11 +7269,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "bannerPreset"
-        ]
+        "required": ["id", "name", "bannerPreset"]
       },
       "ProductCardDto": {
         "type": "object",
@@ -7949,13 +7306,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "id",
-          "name",
-          "priceCents",
-          "monogram",
-          "gradientPreset"
-        ]
+        "required": ["id", "name", "priceCents", "monogram", "gradientPreset"]
       },
       "AlunoHomeResponseDto": {
         "type": "object",
@@ -8008,12 +7359,7 @@
             }
           }
         },
-        "required": [
-          "student",
-          "stats",
-          "upcomingEvents",
-          "storeStrip"
-        ]
+        "required": ["student", "stats", "upcomingEvents", "storeStrip"]
       },
       "LiveSessionDto": {
         "type": "object",
@@ -8040,11 +7386,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "scheduled",
-              "done",
-              "canceled"
-            ]
+            "enum": ["scheduled", "done", "canceled"]
           }
         },
         "required": [
@@ -8117,11 +7459,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "id",
-          "expiresAt",
-          "revokedAt"
-        ]
+        "required": ["id", "expiresAt", "revokedAt"]
       },
       "SnapshotAttendanceDto": {
         "type": "object",
@@ -8139,24 +7477,14 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "qr",
-              "code",
-              "manual"
-            ]
+            "enum": ["qr", "code", "manual"]
           },
           "checkedInAt": {
             "format": "date-time",
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "studentId",
-          "studentName",
-          "method",
-          "checkedInAt"
-        ]
+        "required": ["id", "studentId", "studentName", "method", "checkedInAt"]
       },
       "LiveSnapshotResponseDto": {
         "type": "object",
@@ -8175,11 +7503,7 @@
             }
           }
         },
-        "required": [
-          "presentCount",
-          "code",
-          "attendances"
-        ]
+        "required": ["presentCount", "code", "attendances"]
       },
       "StreamTicketResponseDto": {
         "type": "object",
@@ -8193,10 +7517,7 @@
             "example": 60
           }
         },
-        "required": [
-          "ticket",
-          "expiresInSeconds"
-        ]
+        "required": ["ticket", "expiresInSeconds"]
       },
       "LiveStreamCheckinEventDto": {
         "type": "object",
@@ -8214,11 +7535,7 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "qr",
-              "code",
-              "manual"
-            ]
+            "enum": ["qr", "code", "manual"]
           },
           "checkedInAt": {
             "type": "string",
@@ -8250,10 +7567,7 @@
             "description": "Active attendances after this event"
           }
         },
-        "required": [
-          "attendanceId",
-          "presentCount"
-        ]
+        "required": ["attendanceId", "presentCount"]
       },
       "RosterAttendanceDto": {
         "type": "object",
@@ -8264,11 +7578,7 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "qr",
-              "code",
-              "manual"
-            ]
+            "enum": ["qr", "code", "manual"]
           },
           "checkedInAt": {
             "format": "date-time",
@@ -8281,12 +7591,7 @@
             "description": "NULL = self check-in; set = professor-recorded manual row"
           }
         },
-        "required": [
-          "id",
-          "method",
-          "checkedInAt",
-          "recordedByUserId"
-        ]
+        "required": ["id", "method", "checkedInAt", "recordedByUserId"]
       },
       "RosterRowDto": {
         "type": "object",
@@ -8316,10 +7621,7 @@
             ]
           }
         },
-        "required": [
-          "studentId",
-          "fullName"
-        ]
+        "required": ["studentId", "fullName"]
       },
       "RollCallResponseDto": {
         "type": "object",
@@ -8339,11 +7641,7 @@
             }
           }
         },
-        "required": [
-          "session",
-          "presentCount",
-          "roster"
-        ]
+        "required": ["session", "presentCount", "roster"]
       },
       "MarkAttendanceDto": {
         "type": "object",
@@ -8353,9 +7651,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "studentId"
-        ]
+        "required": ["studentId"]
       },
       "MarkAttendanceResultDto": {
         "type": "object",
@@ -8377,22 +7673,14 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "classSessionId",
-          "studentId",
-          "checkedInAt"
-        ]
+        "required": ["id", "classSessionId", "studentId", "checkedInAt"]
       },
       "MarkAttendanceResponseDto": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "checked_in",
-              "already_checked_in"
-            ]
+            "enum": ["checked_in", "already_checked_in"]
           },
           "attendance": {
             "$ref": "#/components/schemas/MarkAttendanceResultDto"
@@ -8401,11 +7689,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "status",
-          "attendance",
-          "presentCount"
-        ]
+        "required": ["status", "attendance", "presentCount"]
       },
       "RevokeAttendanceDto": {
         "type": "object",
@@ -8421,10 +7705,7 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "revoked",
-              "already_revoked"
-            ],
+            "enum": ["revoked", "already_revoked"],
             "description": "A second toggle-off is benign"
           },
           "attendanceId": {
@@ -8435,11 +7716,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "status",
-          "attendanceId",
-          "presentCount"
-        ]
+        "required": ["status", "attendanceId", "presentCount"]
       },
       "ProfessorNextClassDto": {
         "type": "object",
@@ -8459,12 +7736,7 @@
             "description": "Today's session check-in count when one exists, else 0"
           }
         },
-        "required": [
-          "classId",
-          "className",
-          "slot",
-          "checkedInCount"
-        ]
+        "required": ["classId", "className", "slot", "checkedInCount"]
       },
       "ProfessorTodayClassDto": {
         "type": "object",
@@ -8543,12 +7815,7 @@
             "description": "The \"N confirmados\" of the dashboard list"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "bannerPreset",
-          "confirmedCount"
-        ]
+        "required": ["id", "name", "bannerPreset", "confirmedCount"]
       },
       "ProfessorDashboardResponseDto": {
         "type": "object",
@@ -8613,10 +7880,7 @@
           },
           "badge": {
             "type": "string",
-            "enum": [
-              "ativo",
-              "pendente"
-            ]
+            "enum": ["ativo", "pendente"]
           },
           "belt": {
             "description": "Derived current belt (GRD.6)",
@@ -8627,12 +7891,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "fullName",
-          "birthDate",
-          "badge"
-        ]
+        "required": ["id", "fullName", "birthDate", "badge"]
       },
       "ProfessorStudentsResponseDto": {
         "type": "object",
@@ -8644,9 +7903,7 @@
             }
           }
         },
-        "required": [
-          "students"
-        ]
+        "required": ["students"]
       },
       "AdminSessionRowDto": {
         "type": "object",
@@ -8666,24 +7923,14 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "scheduled",
-              "done",
-              "canceled"
-            ]
+            "enum": ["scheduled", "done", "canceled"]
           },
           "presentCount": {
             "type": "number",
             "description": "Active (non-revoked) attendance count"
           }
         },
-        "required": [
-          "id",
-          "sessionDate",
-          "startsAt",
-          "status",
-          "presentCount"
-        ]
+        "required": ["id", "sessionDate", "startsAt", "status", "presentCount"]
       },
       "AdminSessionListResponseDto": {
         "type": "object",
@@ -8696,9 +7943,7 @@
             }
           }
         },
-        "required": [
-          "sessions"
-        ]
+        "required": ["sessions"]
       },
       "EventResponsibleDto": {
         "type": "object",
@@ -8712,10 +7957,7 @@
             "example": "Paulo Professor"
           }
         },
-        "required": [
-          "userId",
-          "fullName"
-        ]
+        "required": ["userId", "fullName"]
       },
       "EventTotalsDto": {
         "type": "object",
@@ -8732,11 +7974,7 @@
             "description": "Settled event money (paid charges; refunds excluded)"
           }
         },
-        "required": [
-          "inscritos",
-          "confirmados",
-          "arrecadadoCents"
-        ]
+        "required": ["inscritos", "confirmados", "arrecadadoCents"]
       },
       "AdminEventDto": {
         "type": "object",
@@ -8787,11 +8025,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "draft",
-              "published",
-              "canceled"
-            ]
+            "enum": ["draft", "published", "canceled"]
           },
           "responsible": {
             "$ref": "#/components/schemas/EventResponsibleDto"
@@ -8820,9 +8054,7 @@
             }
           }
         },
-        "required": [
-          "events"
-        ]
+        "required": ["events"]
       },
       "CreateEventDto": {
         "type": "object",
@@ -8864,17 +8096,11 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "draft",
-              "published"
-            ],
+            "enum": ["draft", "published"],
             "description": "Default draft — creating and publishing are separate gestures"
           }
         },
-        "required": [
-          "name",
-          "responsibleUserId"
-        ]
+        "required": ["name", "responsibleUserId"]
       },
       "UpdateEventDto": {
         "type": "object",
@@ -8922,10 +8148,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "fullName"
-        ]
+        "required": ["id", "fullName"]
       },
       "AdminRegistrationRowDto": {
         "type": "object",
@@ -8939,11 +8162,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending_payment",
-              "confirmed",
-              "canceled"
-            ]
+            "enum": ["pending_payment", "confirmed", "canceled"]
           },
           "confirmedBy": {
             "description": "Who confirmed — the aluno themself or the responsável",
@@ -8959,12 +8178,7 @@
             "description": "Settled amount for this registration (null while unpaid / free)"
           }
         },
-        "required": [
-          "id",
-          "student",
-          "status",
-          "confirmedBy"
-        ]
+        "required": ["id", "student", "status", "confirmedBy"]
       },
       "AdminEventRegistrationsResponseDto": {
         "type": "object",
@@ -8982,11 +8196,7 @@
             "$ref": "#/components/schemas/EventTotalsDto"
           }
         },
-        "required": [
-          "event",
-          "registrations",
-          "totals"
-        ]
+        "required": ["event", "registrations", "totals"]
       },
       "AnnounceResponseDto": {
         "type": "object",
@@ -8996,9 +8206,7 @@
             "description": "Inscritos addressed by the queued announcement"
           }
         },
-        "required": [
-          "recipients"
-        ]
+        "required": ["recipients"]
       },
       "AlunoEventDetailResponseDto": {
         "type": "object",
@@ -9065,12 +8273,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "bannerPreset",
-          "responsible"
-        ]
+        "required": ["id", "name", "bannerPreset", "responsible"]
       },
       "RegisterEventResponseDto": {
         "type": "object",
@@ -9085,9 +8288,7 @@
             "description": "Paid events: pay this charge through the existing wallet rails (Pix sheet + simulate). Null on free events."
           }
         },
-        "required": [
-          "registration"
-        ]
+        "required": ["registration"]
       },
       "ResponsavelEventDependentDto": {
         "type": "object",
@@ -9109,10 +8310,7 @@
             ]
           }
         },
-        "required": [
-          "studentId",
-          "fullName"
-        ]
+        "required": ["studentId", "fullName"]
       },
       "ResponsavelEventDto": {
         "type": "object",
@@ -9169,12 +8367,7 @@
             }
           }
         },
-        "required": [
-          "id",
-          "name",
-          "bannerPreset",
-          "dependents"
-        ]
+        "required": ["id", "name", "bannerPreset", "dependents"]
       },
       "ResponsavelEventsResponseDto": {
         "type": "object",
@@ -9187,9 +8380,7 @@
             }
           }
         },
-        "required": [
-          "events"
-        ]
+        "required": ["events"]
       },
       "WalletStudentDto": {
         "type": "object",
@@ -9202,10 +8393,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "fullName"
-        ]
+        "required": ["id", "fullName"]
       },
       "PlanDto": {
         "type": "object",
@@ -9228,12 +8416,7 @@
           },
           "recurrence": {
             "type": "string",
-            "enum": [
-              "monthly",
-              "quarterly",
-              "semiannual",
-              "yearly"
-            ]
+            "enum": ["monthly", "quarterly", "semiannual", "yearly"]
           },
           "dueDay": {
             "type": "number",
@@ -9268,20 +8451,11 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "pix",
-              "boleto",
-              "card"
-            ]
+            "enum": ["pix", "boleto", "card"]
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "succeeded",
-              "failed",
-              "refunded"
-            ]
+            "enum": ["pending", "succeeded", "failed", "refunded"]
           },
           "amountCents": {
             "type": "number"
@@ -9292,10 +8466,7 @@
           },
           "provider": {
             "type": "string",
-            "enum": [
-              "simulated",
-              "stripe"
-            ]
+            "enum": ["simulated", "stripe"]
           },
           "providerData": {
             "type": "object",
@@ -9342,13 +8513,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "open",
-              "paid",
-              "overdue",
-              "canceled",
-              "refunded"
-            ]
+            "enum": ["open", "paid", "overdue", "canceled", "refunded"]
           },
           "overdue": {
             "type": "boolean",
@@ -9411,9 +8576,7 @@
             "description": "Next cycle vencimento (\"a próxima mensalidade chega em …\")"
           }
         },
-        "required": [
-          "active"
-        ]
+        "required": ["active"]
       },
       "HistoryEntryDto": {
         "type": "object",
@@ -9440,10 +8603,7 @@
           },
           "chargeStatus": {
             "type": "string",
-            "enum": [
-              "paid",
-              "refunded"
-            ]
+            "enum": ["paid", "refunded"]
           },
           "paymentId": {
             "type": "string",
@@ -9451,11 +8611,7 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "pix",
-              "boleto",
-              "card"
-            ]
+            "enum": ["pix", "boleto", "card"]
           },
           "paidAt": {
             "type": "string",
@@ -9512,11 +8668,7 @@
             }
           }
         },
-        "required": [
-          "student",
-          "recurrence",
-          "history"
-        ]
+        "required": ["student", "recurrence", "history"]
       },
       "CardDetailsDto": {
         "type": "object",
@@ -9536,11 +8688,7 @@
         "properties": {
           "method": {
             "type": "string",
-            "enum": [
-              "pix",
-              "boleto",
-              "card"
-            ]
+            "enum": ["pix", "boleto", "card"]
           },
           "recurrence": {
             "type": "boolean",
@@ -9550,9 +8698,7 @@
             "$ref": "#/components/schemas/CardDetailsDto"
           }
         },
-        "required": [
-          "method"
-        ]
+        "required": ["method"]
       },
       "ChargeDto": {
         "type": "object",
@@ -9574,13 +8720,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "open",
-              "paid",
-              "overdue",
-              "canceled",
-              "refunded"
-            ]
+            "enum": ["open", "paid", "overdue", "canceled", "refunded"]
           },
           "overdue": {
             "type": "boolean",
@@ -9636,11 +8776,7 @@
             "description": "True when the recurrence toggle created a mandate"
           }
         },
-        "required": [
-          "payment",
-          "charge",
-          "mandateCreated"
-        ]
+        "required": ["payment", "charge", "mandateCreated"]
       },
       "DependentPaymentsDto": {
         "type": "object",
@@ -9675,11 +8811,7 @@
             "description": "\"Pago via recorrência no cartão\" mandate switch"
           }
         },
-        "required": [
-          "studentId",
-          "fullName",
-          "recurrenceActive"
-        ]
+        "required": ["studentId", "fullName", "recurrenceActive"]
       },
       "GuardianHistoryEntryDto": {
         "type": "object",
@@ -9706,10 +8838,7 @@
           },
           "chargeStatus": {
             "type": "string",
-            "enum": [
-              "paid",
-              "refunded"
-            ]
+            "enum": ["paid", "refunded"]
           },
           "paymentId": {
             "type": "string",
@@ -9717,11 +8846,7 @@
           },
           "method": {
             "type": "string",
-            "enum": [
-              "pix",
-              "boleto",
-              "card"
-            ]
+            "enum": ["pix", "boleto", "card"]
           },
           "paidAt": {
             "type": "string",
@@ -9763,10 +8888,7 @@
             }
           }
         },
-        "required": [
-          "dependents",
-          "history"
-        ]
+        "required": ["dependents", "history"]
       },
       "SimulatePaymentResponseDto": {
         "type": "object",
@@ -9778,10 +8900,7 @@
             "$ref": "#/components/schemas/ChargeDto"
           }
         },
-        "required": [
-          "payment",
-          "charge"
-        ]
+        "required": ["payment", "charge"]
       },
       "ReceiptResponseDto": {
         "type": "object",
@@ -9806,10 +8925,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "payment",
-          "charge"
-        ]
+        "required": ["payment", "charge"]
       },
       "RevenueMonthDto": {
         "type": "object",
@@ -9822,10 +8938,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "month",
-          "totalCents"
-        ]
+        "required": ["month", "totalCents"]
       },
       "UpcomingChargeDto": {
         "type": "object",
@@ -9849,12 +8962,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "chargeId",
-          "studentId",
-          "studentName",
-          "amountCents"
-        ]
+        "required": ["chargeId", "studentId", "studentName", "amountCents"]
       },
       "UpcomingGroupDto": {
         "type": "object",
@@ -9876,12 +8984,7 @@
             }
           }
         },
-        "required": [
-          "dueDate",
-          "count",
-          "totalCents",
-          "charges"
-        ]
+        "required": ["dueDate", "count", "totalCents", "charges"]
       },
       "DelinquentStudentDto": {
         "type": "object",
@@ -9929,11 +9032,7 @@
             "description": "Due charges auto-settled by active card mandates"
           }
         },
-        "required": [
-          "created",
-          "flippedOverdue",
-          "autoSettled"
-        ]
+        "required": ["created", "flippedOverdue", "autoSettled"]
       },
       "AdminOverviewResponseDto": {
         "type": "object",
@@ -10009,10 +9108,7 @@
             "$ref": "#/components/schemas/ChargeDto"
           }
         },
-        "required": [
-          "payment",
-          "charge"
-        ]
+        "required": ["payment", "charge"]
       },
       "PlanListResponseDto": {
         "type": "object",
@@ -10024,9 +9120,7 @@
             }
           }
         },
-        "required": [
-          "plans"
-        ]
+        "required": ["plans"]
       },
       "CreatePlanDto": {
         "type": "object",
@@ -10042,12 +9136,7 @@
           },
           "recurrence": {
             "type": "string",
-            "enum": [
-              "monthly",
-              "quarterly",
-              "semiannual",
-              "yearly"
-            ]
+            "enum": ["monthly", "quarterly", "semiannual", "yearly"]
           },
           "dueDay": {
             "type": "number",
@@ -10056,12 +9145,7 @@
             "description": "Vencimento day — UI offers the handoff chips 5/10/15"
           }
         },
-        "required": [
-          "name",
-          "amountCents",
-          "recurrence",
-          "dueDay"
-        ]
+        "required": ["name", "amountCents", "recurrence", "dueDay"]
       },
       "PlanResponseDto": {
         "type": "object",
@@ -10070,9 +9154,7 @@
             "$ref": "#/components/schemas/PlanDto"
           }
         },
-        "required": [
-          "plan"
-        ]
+        "required": ["plan"]
       },
       "UpdatePlanDto": {
         "type": "object",
@@ -10087,12 +9169,7 @@
           },
           "recurrence": {
             "type": "string",
-            "enum": [
-              "monthly",
-              "quarterly",
-              "semiannual",
-              "yearly"
-            ]
+            "enum": ["monthly", "quarterly", "semiannual", "yearly"]
           },
           "dueDay": {
             "type": "number",
@@ -10113,10 +9190,7 @@
             "description": "\"taxa de pagamento\" — current-period platform fees"
           }
         },
-        "required": [
-          "subscriptionsMonthCents",
-          "paymentFeesMonthCents"
-        ]
+        "required": ["subscriptionsMonthCents", "paymentFeesMonthCents"]
       },
       "RepasseRowDto": {
         "type": "object",
@@ -10156,11 +9230,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "repassado",
-              "em_transito",
-              "retido"
-            ]
+            "enum": ["repassado", "em_transito", "retido"]
           }
         },
         "required": [
@@ -10189,10 +9259,7 @@
             }
           }
         },
-        "required": [
-          "totals",
-          "repasses"
-        ]
+        "required": ["totals", "repasses"]
       },
       "LowStockProductDto": {
         "type": "object",
@@ -10242,10 +9309,7 @@
             }
           }
         },
-        "required": [
-          "count",
-          "products"
-        ]
+        "required": ["count", "products"]
       },
       "StoreOverviewResponseDto": {
         "type": "object",
@@ -10267,12 +9331,7 @@
             "$ref": "#/components/schemas/LowStockDto"
           }
         },
-        "required": [
-          "month",
-          "vendasMesCents",
-          "pedidosMesCount",
-          "lowStock"
-        ]
+        "required": ["month", "vendasMesCents", "pedidosMesCount", "lowStock"]
       },
       "StoreCategoryDto": {
         "type": "object",
@@ -10290,11 +9349,7 @@
             "description": "The chip count, derived on read"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "productCount"
-        ]
+        "required": ["id", "name", "productCount"]
       },
       "StoreCategoriesResponseDto": {
         "type": "object",
@@ -10306,9 +9361,7 @@
             }
           }
         },
-        "required": [
-          "categories"
-        ]
+        "required": ["categories"]
       },
       "CreateCategoryDto": {
         "type": "object",
@@ -10319,9 +9372,7 @@
             "description": "\"+ Nova categoria\" — unique per academy"
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "RenameCategoryDto": {
         "type": "object",
@@ -10332,9 +9383,7 @@
             "description": "\"+ Nova categoria\" — unique per academy"
           }
         },
-        "required": [
-          "name"
-        ]
+        "required": ["name"]
       },
       "AdminProductDto": {
         "type": "object",
@@ -10398,10 +9447,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "archived"
-            ]
+            "enum": ["active", "archived"]
           },
           "lowStock": {
             "type": "boolean",
@@ -10437,9 +9483,7 @@
             }
           }
         },
-        "required": [
-          "products"
-        ]
+        "required": ["products"]
       },
       "CreateProductDto": {
         "type": "object",
@@ -10498,10 +9542,7 @@
             "description": "Design-system gradient catalog slug; cycles the catalog when omitted"
           }
         },
-        "required": [
-          "name",
-          "priceCents"
-        ]
+        "required": ["name", "priceCents"]
       },
       "UpdateProductDto": {
         "type": "object",
@@ -10606,10 +9647,7 @@
             "example": "Ana Aluna"
           }
         },
-        "required": [
-          "userId",
-          "fullName"
-        ]
+        "required": ["userId", "fullName"]
       },
       "AdminOrderDto": {
         "type": "object",
@@ -10625,13 +9663,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "paid",
-              "ready",
-              "delivered",
-              "canceled"
-            ]
+            "enum": ["pending", "paid", "ready", "delivered", "canceled"]
           },
           "totalCents": {
             "type": "number",
@@ -10690,26 +9722,18 @@
             }
           }
         },
-        "required": [
-          "orders"
-        ]
+        "required": ["orders"]
       },
       "OrderStatusTransitionDto": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "ready",
-              "delivered",
-              "canceled"
-            ],
+            "enum": ["ready", "delivered", "canceled"],
             "description": "ready = Em andamento (from paid), delivered = Entregue (from ready, terminal), canceled = Cancelado (from paid/ready — runs the audited Pix refund). `paid` is never set by hand: payment truth comes only from the provider-event handler."
           }
         },
-        "required": [
-          "status"
-        ]
+        "required": ["status"]
       },
       "VitrineCategoryDto": {
         "type": "object",
@@ -10722,10 +9746,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "name"
-        ]
+        "required": ["id", "name"]
       },
       "VitrineResponseDto": {
         "type": "object",
@@ -10745,10 +9766,7 @@
             }
           }
         },
-        "required": [
-          "products",
-          "categories"
-        ]
+        "required": ["products", "categories"]
       },
       "ProductDetailDto": {
         "type": "object",
@@ -10836,10 +9854,7 @@
             "description": "Capped by available stock at creation"
           }
         },
-        "required": [
-          "productId",
-          "quantity"
-        ]
+        "required": ["productId", "quantity"]
       },
       "OrderDto": {
         "type": "object",
@@ -10855,13 +9870,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "pending",
-              "paid",
-              "ready",
-              "delivered",
-              "canceled"
-            ]
+            "enum": ["pending", "paid", "ready", "delivered", "canceled"]
           },
           "totalCents": {
             "type": "number",
@@ -10912,10 +9921,7 @@
             "description": "The order-origin charge: pay it via POST /store/charges/{id}/payments (Pix) and the existing simulate button — addressed \"Pedido #NNNN · <produto>\""
           }
         },
-        "required": [
-          "order",
-          "chargeId"
-        ]
+        "required": ["order", "chargeId"]
       },
       "OrdersResponseDto": {
         "type": "object",
@@ -10928,23 +9934,17 @@
             }
           }
         },
-        "required": [
-          "orders"
-        ]
+        "required": ["orders"]
       },
       "CreateOrderChargePaymentDto": {
         "type": "object",
         "properties": {
           "method": {
             "type": "string",
-            "enum": [
-              "pix"
-            ]
+            "enum": ["pix"]
           }
         },
-        "required": [
-          "method"
-        ]
+        "required": ["method"]
       },
       "AgendaOccupancyDto": {
         "type": "object",
@@ -10957,10 +9957,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "active",
-          "capacity"
-        ]
+        "required": ["active", "capacity"]
       },
       "AlunoAgendaClassDto": {
         "type": "object",
@@ -11059,12 +10056,7 @@
             }
           }
         },
-        "required": [
-          "weekday",
-          "isToday",
-          "classes",
-          "events"
-        ]
+        "required": ["weekday", "isToday", "classes", "events"]
       },
       "CalendarClassItemDto": {
         "type": "object",
@@ -11153,15 +10145,7 @@
             }
           }
         },
-        "required": [
-          "0",
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6"
-        ]
+        "required": ["0", "1", "2", "3", "4", "5", "6"]
       },
       "CalendarEventItemDto": {
         "type": "object",
@@ -11217,11 +10201,7 @@
             ]
           }
         },
-        "required": [
-          "id",
-          "name",
-          "bannerPreset"
-        ]
+        "required": ["id", "name", "bannerPreset"]
       },
       "CalendarResponseDto": {
         "type": "object",
@@ -11242,11 +10222,7 @@
             }
           }
         },
-        "required": [
-          "month",
-          "classesByWeekday",
-          "events"
-        ]
+        "required": ["month", "classesByWeekday", "events"]
       },
       "GraduationActorDto": {
         "type": "object",
@@ -11259,10 +10235,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "userId",
-          "fullName"
-        ]
+        "required": ["userId", "fullName"]
       },
       "GraduationEntryDto": {
         "type": "object",
@@ -11273,11 +10246,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "degree",
-              "belt",
-              "revocation"
-            ]
+            "enum": ["degree", "belt", "revocation"]
           },
           "belt": {
             "$ref": "#/components/schemas/BeltRefDto"
@@ -11347,11 +10316,7 @@
             }
           }
         },
-        "required": [
-          "belt",
-          "progress",
-          "timeline"
-        ]
+        "required": ["belt", "progress", "timeline"]
       },
       "ValidGraduationDto": {
         "type": "object",
@@ -11382,10 +10347,7 @@
           },
           "ladderKind": {
             "type": "string",
-            "enum": [
-              "adult",
-              "kids"
-            ]
+            "enum": ["adult", "kids"]
           },
           "enabled": {
             "type": "boolean",
@@ -11426,10 +10388,7 @@
             }
           }
         },
-        "required": [
-          "professor",
-          "validGraduations"
-        ]
+        "required": ["professor", "validGraduations"]
       },
       "ProfileStudentDto": {
         "type": "object",
@@ -11447,26 +10406,14 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "active",
-              "inactive"
-            ]
+            "enum": ["active", "inactive"]
           },
           "badge": {
             "type": "string",
-            "enum": [
-              "ativo",
-              "pendente"
-            ]
+            "enum": ["ativo", "pendente"]
           }
         },
-        "required": [
-          "id",
-          "fullName",
-          "birthDate",
-          "status",
-          "badge"
-        ]
+        "required": ["id", "fullName", "birthDate", "status", "badge"]
       },
       "StudentNoteDto": {
         "type": "object",
@@ -11486,12 +10433,7 @@
             "$ref": "#/components/schemas/GraduationActorDto"
           }
         },
-        "required": [
-          "id",
-          "body",
-          "createdAt",
-          "author"
-        ]
+        "required": ["id", "body", "createdAt", "author"]
       },
       "StudentProfileResponseDto": {
         "type": "object",
@@ -11521,23 +10463,14 @@
             }
           }
         },
-        "required": [
-          "student",
-          "belt",
-          "progress",
-          "stats",
-          "notes"
-        ]
+        "required": ["student", "belt", "progress", "stats", "notes"]
       },
       "AwardGraduationDto": {
         "type": "object",
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "degree",
-              "belt"
-            ],
+            "enum": ["degree", "belt"],
             "description": "degree = one more stripe on the current belt; belt = promotion (degrees reset)"
           },
           "beltId": {
@@ -11550,9 +10483,7 @@
             "description": "Observação carried on the timeline entry"
           }
         },
-        "required": [
-          "kind"
-        ]
+        "required": ["kind"]
       },
       "AwardGraduationResponseDto": {
         "type": "object",
@@ -11569,10 +10500,7 @@
             ]
           }
         },
-        "required": [
-          "graduation",
-          "belt"
-        ]
+        "required": ["graduation", "belt"]
       },
       "StudentNotesResponseDto": {
         "type": "object",
@@ -11585,9 +10513,7 @@
             }
           }
         },
-        "required": [
-          "notes"
-        ]
+        "required": ["notes"]
       },
       "CreateStudentNoteDto": {
         "type": "object",
@@ -11597,9 +10523,7 @@
             "example": "Exame de faixa — aprovado com distinção."
           }
         },
-        "required": [
-          "body"
-        ]
+        "required": ["body"]
       },
       "StudentNoteResponseDto": {
         "type": "object",
@@ -11608,9 +10532,7 @@
             "$ref": "#/components/schemas/StudentNoteDto"
           }
         },
-        "required": [
-          "note"
-        ]
+        "required": ["note"]
       },
       "GraduationRuleRowDto": {
         "type": "object",
@@ -11641,10 +10563,7 @@
           },
           "ladderKind": {
             "type": "string",
-            "enum": [
-              "adult",
-              "kids"
-            ]
+            "enum": ["adult", "kids"]
           },
           "lessonsPerDegree": {
             "type": "number",
@@ -11681,9 +10600,7 @@
             }
           }
         },
-        "required": [
-          "rules"
-        ]
+        "required": ["rules"]
       },
       "GraduationRuleEntryDto": {
         "type": "object",
@@ -11702,11 +10619,7 @@
             "description": "false is accepted only for kids-ladder belts"
           }
         },
-        "required": [
-          "beltId",
-          "lessonsPerDegree",
-          "enabled"
-        ]
+        "required": ["beltId", "lessonsPerDegree", "enabled"]
       },
       "UpdateGraduationRulesDto": {
         "type": "object",
@@ -11719,9 +10632,7 @@
             }
           }
         },
-        "required": [
-          "rules"
-        ]
+        "required": ["rules"]
       },
       "GraduationHistoryResponseDto": {
         "type": "object",
@@ -11734,9 +10645,7 @@
             }
           }
         },
-        "required": [
-          "graduations"
-        ]
+        "required": ["graduations"]
       },
       "RevokeGraduationDto": {
         "type": "object",
@@ -11752,9 +10661,7 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "revoked"
-            ]
+            "enum": ["revoked"]
           },
           "graduationId": {
             "type": "string",
@@ -11775,12 +10682,7 @@
             ]
           }
         },
-        "required": [
-          "status",
-          "graduationId",
-          "revocationId",
-          "belt"
-        ]
+        "required": ["status", "graduationId", "revocationId", "belt"]
       },
       "FinanceiroSummaryDto": {
         "type": "object",
@@ -11798,11 +10700,7 @@
             "description": "Overdue-open plan amount ÷ month plan total (0-100)"
           }
         },
-        "required": [
-          "receitaCents",
-          "previstoCents",
-          "inadimplenciaPct"
-        ]
+        "required": ["receitaCents", "previstoCents", "inadimplenciaPct"]
       },
       "FinanceiroRowDto": {
         "type": "object",
@@ -11818,11 +10716,7 @@
           },
           "origin": {
             "type": "string",
-            "enum": [
-              "plan",
-              "event",
-              "order"
-            ]
+            "enum": ["plan", "event", "order"]
           },
           "periodStart": {
             "type": "string",
@@ -11861,9 +10755,7 @@
         "properties": {
           "report": {
             "type": "string",
-            "enum": [
-              "financeiro"
-            ]
+            "enum": ["financeiro"]
           },
           "month": {
             "type": "string",
@@ -11888,13 +10780,7 @@
             ]
           }
         },
-        "required": [
-          "report",
-          "month",
-          "summary",
-          "rows",
-          "materialization"
-        ]
+        "required": ["report", "month", "summary", "rows", "materialization"]
       },
       "FrequenciaStudentDto": {
         "type": "object",
@@ -11948,21 +10834,14 @@
             }
           }
         },
-        "required": [
-          "classId",
-          "className",
-          "sessionsCount",
-          "students"
-        ]
+        "required": ["classId", "className", "sessionsCount", "students"]
       },
       "FrequenciaReportDto": {
         "type": "object",
         "properties": {
           "report": {
             "type": "string",
-            "enum": [
-              "frequencia"
-            ]
+            "enum": ["frequencia"]
           },
           "month": {
             "type": "string",
@@ -11975,11 +10854,7 @@
             }
           }
         },
-        "required": [
-          "report",
-          "month",
-          "classes"
-        ]
+        "required": ["report", "month", "classes"]
       },
       "InadimplenciaTotalsDto": {
         "type": "object",
@@ -11991,10 +10866,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "count",
-          "totalCents"
-        ]
+        "required": ["count", "totalCents"]
       },
       "InadimplenciaRowDto": {
         "type": "object",
@@ -12042,9 +10914,7 @@
         "properties": {
           "report": {
             "type": "string",
-            "enum": [
-              "inadimplencia"
-            ]
+            "enum": ["inadimplencia"]
           },
           "asOf": {
             "type": "string",
@@ -12061,12 +10931,7 @@
             }
           }
         },
-        "required": [
-          "report",
-          "asOf",
-          "totals",
-          "rows"
-        ]
+        "required": ["report", "asOf", "totals", "rows"]
       },
       "ReportWindowDto": {
         "type": "object",
@@ -12086,11 +10951,7 @@
             "description": "Exclusive tenant-local end day"
           }
         },
-        "required": [
-          "label",
-          "start",
-          "endExclusive"
-        ]
+        "required": ["label", "start", "endExclusive"]
       },
       "GraduacoesRowDto": {
         "type": "object",
@@ -12104,10 +10965,7 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "degree",
-              "belt"
-            ],
+            "enum": ["degree", "belt"],
             "description": "Revocations and reversed awards excluded"
           },
           "beltName": {
@@ -12141,9 +10999,7 @@
         "properties": {
           "report": {
             "type": "string",
-            "enum": [
-              "graduacoes"
-            ]
+            "enum": ["graduacoes"]
           },
           "month": {
             "type": "string",
@@ -12165,12 +11021,7 @@
             }
           }
         },
-        "required": [
-          "report",
-          "month",
-          "semester",
-          "rows"
-        ]
+        "required": ["report", "month", "semester", "rows"]
       },
       "LojaTotalsDto": {
         "type": "object",
@@ -12188,11 +11039,7 @@
             "description": "Order total sum over the counted orders (cents)"
           }
         },
-        "required": [
-          "pedidos",
-          "itens",
-          "vendasCents"
-        ]
+        "required": ["pedidos", "itens", "vendasCents"]
       },
       "LojaRowDto": {
         "type": "object",
@@ -12248,9 +11095,7 @@
         "properties": {
           "report": {
             "type": "string",
-            "enum": [
-              "loja"
-            ]
+            "enum": ["loja"]
           },
           "month": {
             "type": "string",
@@ -12266,12 +11111,7 @@
             }
           }
         },
-        "required": [
-          "report",
-          "month",
-          "totals",
-          "rows"
-        ]
+        "required": ["report", "month", "totals", "rows"]
       },
       "RankingRowDto": {
         "type": "object",
@@ -12292,12 +11132,7 @@
             "description": "The requesting student's own row (\"você\" chip)"
           }
         },
-        "required": [
-          "position",
-          "name",
-          "count",
-          "isMe"
-        ]
+        "required": ["position", "name", "count", "isMe"]
       },
       "RankingMeDto": {
         "type": "object",
@@ -12309,20 +11144,14 @@
             "type": "number"
           }
         },
-        "required": [
-          "position",
-          "count"
-        ]
+        "required": ["position", "count"]
       },
       "RankingResponseDto": {
         "type": "object",
         "properties": {
           "by": {
             "type": "string",
-            "enum": [
-              "lessons",
-              "events"
-            ]
+            "enum": ["lessons", "events"]
           },
           "window": {
             "description": "Month for lessons, semester for events",
@@ -12354,13 +11183,7 @@
             "description": "Active students ranked (zero counts included)"
           }
         },
-        "required": [
-          "by",
-          "window",
-          "top",
-          "me",
-          "totalRanked"
-        ]
+        "required": ["by", "window", "top", "me", "totalRanked"]
       },
       "MrrPointDto": {
         "type": "object",
@@ -12375,10 +11198,7 @@
             "example": 1924000
           }
         },
-        "required": [
-          "month",
-          "cents"
-        ]
+        "required": ["month", "cents"]
       },
       "AttentionRowDto": {
         "type": "object",
@@ -12392,22 +11212,14 @@
           },
           "kind": {
             "type": "string",
-            "enum": [
-              "trial_ending",
-              "subscription_overdue"
-            ]
+            "enum": ["trial_ending", "subscription_overdue"]
           },
           "reason": {
             "type": "string",
             "example": "Trial termina em 9 dias"
           }
         },
-        "required": [
-          "academyId",
-          "academyName",
-          "kind",
-          "reason"
-        ]
+        "required": ["academyId", "academyName", "kind", "reason"]
       },
       "PlatformOverviewResponseDto": {
         "type": "object",
@@ -12473,12 +11285,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "trial",
-              "active",
-              "delinquent",
-              "suspended"
-            ]
+            "enum": ["trial", "active", "delinquent", "suspended"]
           },
           "studentCount": {
             "type": "number"
@@ -12521,10 +11328,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "academies",
-          "total"
-        ]
+        "required": ["academies", "total"]
       },
       "RegisterAcademyDto": {
         "type": "object",
@@ -12554,12 +11358,7 @@
             "format": "uuid"
           }
         },
-        "required": [
-          "name",
-          "city",
-          "adminEmail",
-          "platformPlanId"
-        ]
+        "required": ["name", "city", "adminEmail", "platformPlanId"]
       },
       "PendingPlanDto": {
         "type": "object",
@@ -12575,11 +11374,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "id",
-          "name",
-          "priceCents"
-        ]
+        "required": ["id", "name", "priceCents"]
       },
       "PlatformAcademyDetailDto": {
         "type": "object",
@@ -12600,12 +11395,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "trial",
-              "active",
-              "delinquent",
-              "suspended"
-            ]
+            "enum": ["trial", "active", "delinquent", "suspended"]
           },
           "studentCount": {
             "type": "number"
@@ -12697,9 +11487,7 @@
             "nullable": true
           }
         },
-        "required": [
-          "platformPlanId"
-        ]
+        "required": ["platformPlanId"]
       },
       "PlanFeatureDto": {
         "type": "object",
@@ -12713,10 +11501,7 @@
             "example": "Loja da academia"
           }
         },
-        "required": [
-          "slug",
-          "label"
-        ]
+        "required": ["slug", "label"]
       },
       "PlatformPlanRowDto": {
         "type": "object",
@@ -12792,10 +11577,7 @@
             }
           }
         },
-        "required": [
-          "plans",
-          "featureRegistry"
-        ]
+        "required": ["plans", "featureRegistry"]
       },
       "PlatformPlanWriteDto": {
         "type": "object",
@@ -12820,22 +11602,14 @@
           },
           "features": {
             "description": "Feature registry slugs; unknown slugs are rejected",
-            "example": [
-              "attendance",
-              "graduations"
-            ],
+            "example": ["attendance", "graduations"],
             "type": "array",
             "items": {
               "type": "string"
             }
           }
         },
-        "required": [
-          "name",
-          "priceCents",
-          "studentLimit",
-          "features"
-        ]
+        "required": ["name", "priceCents", "studentLimit", "features"]
       },
       "PlatformTeamMemberDto": {
         "type": "object",
@@ -12856,24 +11630,13 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "owner",
-              "support",
-              "finance"
-            ]
+            "enum": ["owner", "support", "finance"]
           },
           "status": {
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "userId",
-          "fullName",
-          "email",
-          "role",
-          "status"
-        ]
+        "required": ["id", "userId", "fullName", "email", "role", "status"]
       },
       "PlatformTeamResponseDto": {
         "type": "object",
@@ -12885,9 +11648,7 @@
             }
           }
         },
-        "required": [
-          "members"
-        ]
+        "required": ["members"]
       },
       "InviteTeamMemberDto": {
         "type": "object",
@@ -12904,19 +11665,11 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "owner",
-              "support",
-              "finance"
-            ],
+            "enum": ["owner", "support", "finance"],
             "example": "support"
           }
         },
-        "required": [
-          "fullName",
-          "email",
-          "role"
-        ]
+        "required": ["fullName", "email", "role"]
       },
       "InviteTeamMemberResponseDto": {
         "type": "object",
@@ -12931,11 +11684,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "member",
-          "userCreated",
-          "passwordEmailSent"
-        ]
+        "required": ["member", "userCreated", "passwordEmailSent"]
       },
       "PlatformIntegrationDto": {
         "type": "object",
@@ -12978,10 +11727,7 @@
         "properties": {
           "provider": {
             "type": "string",
-            "enum": [
-              "simulated",
-              "stripe"
-            ]
+            "enum": ["simulated", "stripe"]
           },
           "integrations": {
             "type": "array",
@@ -12990,10 +11736,7 @@
             }
           }
         },
-        "required": [
-          "provider",
-          "integrations"
-        ]
+        "required": ["provider", "integrations"]
       },
       "NotificationDto": {
         "type": "object",
@@ -13004,13 +11747,7 @@
           },
           "category": {
             "type": "string",
-            "enum": [
-              "payment",
-              "event",
-              "graduation",
-              "attendance",
-              "store"
-            ]
+            "enum": ["payment", "event", "graduation", "attendance", "store"]
           },
           "chip": {
             "type": "string",
@@ -13044,12 +11781,7 @@
             "description": "Clients render the relative PT-BR timestamp"
           }
         },
-        "required": [
-          "id",
-          "category",
-          "title",
-          "createdAt"
-        ]
+        "required": ["id", "category", "title", "createdAt"]
       },
       "NotificationsListResponseDto": {
         "type": "object",
@@ -13067,9 +11799,7 @@
             "description": "Opaque keyset cursor for the next page; null = no further pages"
           }
         },
-        "required": [
-          "notifications"
-        ]
+        "required": ["notifications"]
       },
       "UnreadCountResponseDto": {
         "type": "object",
@@ -13079,9 +11809,7 @@
             "description": "0 while the active membership is muted"
           }
         },
-        "required": [
-          "count"
-        ]
+        "required": ["count"]
       },
       "NotificationSettingsResponseDto": {
         "type": "object",
@@ -13091,9 +11819,7 @@
             "description": "The active membership's notifications_enabled flag"
           }
         },
-        "required": [
-          "enabled"
-        ]
+        "required": ["enabled"]
       },
       "UpdateNotificationSettingsDto": {
         "type": "object",
@@ -13103,9 +11829,7 @@
             "description": "The perfil \"Notificações\" switch — false mutes the badge (rows keep being written; the feed doubles as the receipt trail)."
           }
         },
-        "required": [
-          "enabled"
-        ]
+        "required": ["enabled"]
       },
       "MarkAllReadResponseDto": {
         "type": "object",
@@ -13115,9 +11839,7 @@
             "description": "Rows flipped unread → read by this call"
           }
         },
-        "required": [
-          "updated"
-        ]
+        "required": ["updated"]
       },
       "MarkReadResponseDto": {
         "type": "object",
@@ -13126,9 +11848,7 @@
             "$ref": "#/components/schemas/NotificationDto"
           }
         },
-        "required": [
-          "notification"
-        ]
+        "required": ["notification"]
       }
     }
   }

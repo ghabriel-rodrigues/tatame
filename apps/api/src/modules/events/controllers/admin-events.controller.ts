@@ -46,8 +46,10 @@ export class AdminEventsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Eventos: gradient cards with valor chip, date, inscritos/arrecadado totals',
-    description: 'Drafts first ("Rascunho · Data a definir"), then chronological.',
+    summary:
+      'Eventos: gradient cards with valor chip, date, inscritos/arrecadado totals',
+    description:
+      'Drafts first ("Rascunho · Data a definir"), then chronological.',
   })
   @ApiOkResponse({ type: AdminEventsResponseDto })
   async list() {
@@ -58,7 +60,8 @@ export class AdminEventsController {
   @Post()
   @HttpCode(201)
   @ApiOperation({
-    summary: 'Create an event (Rascunho by default; publishing is a separate gesture)',
+    summary:
+      'Create an event (Rascunho by default; publishing is a separate gesture)',
     description:
       'Valor vazio = gratuito. status=published requires date + local (422 event.publish_requirements).',
   })
@@ -71,10 +74,14 @@ export class AdminEventsController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Edit an event (canceled events are frozen history — 409)',
-    description: 'A published event must keep its date and local (422 event.publish_requirements).',
+    description:
+      'A published event must keep its date and local (422 event.publish_requirements).',
   })
   @ApiOkResponse({ type: AdminEventDto })
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateEventDto) {
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateEventDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.adminEvents.update(ctx, id, dto);
   }
@@ -108,7 +115,8 @@ export class AdminEventsController {
 
   @Get(':id/registrations')
   @ApiOperation({
-    summary: 'Inscritos: who registered, status, who confirmed, paid amount + totals',
+    summary:
+      'Inscritos: who registered, status, who confirmed, paid amount + totals',
   })
   @ApiOkResponse({ type: AdminEventRegistrationsResponseDto })
   async registrations(@Param('id', ParseUUIDPipe) id: string) {
@@ -119,7 +127,8 @@ export class AdminEventsController {
   @Post(':id/announce')
   @HttpCode(202)
   @ApiOperation({
-    summary: 'Comunicar: queue an announcement to the inscritos (published only)',
+    summary:
+      'Comunicar: queue an announcement to the inscritos (published only)',
     description:
       'Emits events.announcement.requested + one audit row and NOTHING else — delivery is the ' +
       'notifications phase. Clients show "Comunicado enviado aos inscritos." on 202.',

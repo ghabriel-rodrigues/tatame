@@ -19,7 +19,10 @@ import { makeBuckets, makeCalendarItem } from '../helpers/agenda';
 
 describe('expandMonthMarks', () => {
   it('marks every date whose weekday bucket is non-empty (August 2026)', () => {
-    const buckets = makeBuckets({ 1: [makeCalendarItem()], 6: [makeCalendarItem()] });
+    const buckets = makeBuckets({
+      1: [makeCalendarItem()],
+      6: [makeCalendarItem()],
+    });
     const marks = expandMonthMarks(buckets, 2026, 8);
 
     // Mondays and Saturdays of August 2026.
@@ -72,13 +75,21 @@ describe('levelChipLabel', () => {
 
   it('composes the belt range', () => {
     expect(
-      levelChipLabel({ ...base, minBelt: { name: 'Branca' }, maxBelt: { name: 'Azul' } }),
+      levelChipLabel({
+        ...base,
+        minBelt: { name: 'Branca' },
+        maxBelt: { name: 'Azul' },
+      }),
     ).toBe('Branca a Azul');
   });
 
   it('collapses an equal-belt range to the single belt', () => {
     expect(
-      levelChipLabel({ ...base, minBelt: { name: 'Azul' }, maxBelt: { name: 'Azul' } }),
+      levelChipLabel({
+        ...base,
+        minBelt: { name: 'Azul' },
+        maxBelt: { name: 'Azul' },
+      }),
     ).toBe('Azul');
   });
 
@@ -88,7 +99,9 @@ describe('levelChipLabel', () => {
   });
 
   it('falls back to the Kids age range', () => {
-    expect(levelChipLabel({ ...base, ageMin: 6, ageMax: 9 })).toBe('6 a 9 anos');
+    expect(levelChipLabel({ ...base, ageMin: 6, ageMax: 9 })).toBe(
+      '6 a 9 anos',
+    );
   });
 
   it('defaults to "Todas as faixas"', () => {

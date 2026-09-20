@@ -7,7 +7,9 @@ import type { ComponentProps } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { CalendarMonth, ThemeProvider } from '@tatame/design-system/native';
 
-function renderMonth(props: Partial<ComponentProps<typeof CalendarMonth>> = {}) {
+function renderMonth(
+  props: Partial<ComponentProps<typeof CalendarMonth>> = {},
+) {
   return render(
     <ThemeProvider>
       <CalendarMonth year={2026} month={8} testID="calendar" {...props} />
@@ -25,7 +27,9 @@ describe('CalendarMonth', () => {
   });
 
   it('paints class and event dots from the marks map', () => {
-    renderMonth({ marks: { 3: { classDot: true }, 15: { classDot: true, eventDot: true } } });
+    renderMonth({
+      marks: { 3: { classDot: true }, 15: { classDot: true, eventDot: true } },
+    });
     expect(screen.getByTestId('class-dot-3')).toBeTruthy();
     expect(screen.getByTestId('class-dot-15')).toBeTruthy();
     expect(screen.getByTestId('event-dot-15')).toBeTruthy();
@@ -37,8 +41,12 @@ describe('CalendarMonth', () => {
     const onSelectDay = jest.fn();
     renderMonth({ selectedDay: 2, onSelectDay });
 
-    expect(screen.getByLabelText('Dia 2').props.accessibilityState.selected).toBe(true);
-    expect(screen.getByLabelText('Dia 5').props.accessibilityState.selected).toBe(false);
+    expect(
+      screen.getByLabelText('Dia 2').props.accessibilityState.selected,
+    ).toBe(true);
+    expect(
+      screen.getByLabelText('Dia 5').props.accessibilityState.selected,
+    ).toBe(false);
 
     fireEvent.press(screen.getByLabelText('Dia 5'));
     expect(onSelectDay).toHaveBeenCalledWith(5);

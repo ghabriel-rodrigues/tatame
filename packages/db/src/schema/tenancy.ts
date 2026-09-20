@@ -81,7 +81,11 @@ export const invites = pgTable(
       columns: [t.tenantId, t.academyPlanId],
       foreignColumns: [academyPlans.tenantId, academyPlans.id],
     }),
-    pgPolicy('invites_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('invites_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -118,7 +122,9 @@ export const memberships = pgTable(
      * written (the feed doubles as the receipt/history trail); it suppresses
      * the unread count (endpoint returns 0) and any future push.
      */
-    notificationsEnabled: boolean('notifications_enabled').notNull().default(true),
+    notificationsEnabled: boolean('notifications_enabled')
+      .notNull()
+      .default(true),
     ...timestamps,
   },
   (t) => [
@@ -130,7 +136,11 @@ export const memberships = pgTable(
       columns: [t.tenantId, t.inviteId],
       foreignColumns: [invites.tenantId, invites.id],
     }),
-    pgPolicy('memberships_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('memberships_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
     pgPolicy('memberships_self_select', {
       for: 'select',
       to: appRole,
@@ -158,7 +168,11 @@ export const rolePermissions = pgTable(
     ...timestamps,
   },
   (t) => [
-    unique('role_permissions_tenant_role_key_uq').on(t.tenantId, t.role, t.permissionKey),
+    unique('role_permissions_tenant_role_key_uq').on(
+      t.tenantId,
+      t.role,
+      t.permissionKey,
+    ),
     unique('role_permissions_tenant_id_id_uq').on(t.tenantId, t.id),
     pgPolicy('role_permissions_tenant_all', {
       for: 'all',

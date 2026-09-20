@@ -22,7 +22,9 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
     t = await createTestApp();
     aluno = await t.login('aluno@tatame.dev');
     paidEvents = [];
-    t.app.get(EventEmitter2).on(BILLING_CHARGE_PAID, (event) => paidEvents.push(event));
+    t.app
+      .get(EventEmitter2)
+      .on(BILLING_CHARGE_PAID, (event) => paidEvents.push(event));
   });
 
   afterAll(async () => {
@@ -34,18 +36,27 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
     // Ana ships with an active mandate; with it, any materialization pass
     // would auto-settle her due charge — cancel first so the manual Pix flow
     // below is exercised deterministically regardless of the calendar day.
-    const res = await t.http().delete('/v1/aluno/wallet/mandate').set(bearer(aluno.accessToken));
+    const res = await t
+      .http()
+      .delete('/v1/aluno/wallet/mandate')
+      .set(bearer(aluno.accessToken));
     expect(res.status).toBe(204);
 
     // Cancel is not idempotent-silent: nothing active left → 404.
-    const again = await t.http().delete('/v1/aluno/wallet/mandate').set(bearer(aluno.accessToken));
+    const again = await t
+      .http()
+      .delete('/v1/aluno/wallet/mandate')
+      .set(bearer(aluno.accessToken));
     expect(again.status).toBe(404);
   });
 
   let currentChargeId: string;
 
   it('wallet payload: plan header, open current charge, histórico, no banner', async () => {
-    const res = await t.http().get('/v1/aluno/wallet').set(bearer(aluno.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/aluno/wallet')
+      .set(bearer(aluno.accessToken));
     expect(res.status).toBe(200);
 
     expect(res.body.plan).toMatchObject({
@@ -61,7 +72,10 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
     currentChargeId = res.body.currentCharge.id;
 
     // Mandate canceled above → banner off.
-    expect(res.body.recurrence).toEqual({ active: false, nextChargeDueDate: null });
+    expect(res.body.recurrence).toEqual({
+      active: false,
+      nextChargeDueDate: null,
+    });
 
     // Histórico: the seeded previous-cycle Pix settlement + Ana's settled
     // event inscription (spec 008) + her store order settlements (spec 009 —
@@ -73,11 +87,15 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
       expect(entry.receiptUrl).toContain('/receipt');
     }
     expect(
-      res.body.history.map((h: any) => h.amountCents).sort((a: number, b: number) => a - b),
+      res.body.history
+        .map((h: any) => h.amountCents)
+        .sort((a: number, b: number) => a - b),
     ).toEqual([3900, 6000, 11800, 12900, 18000]);
     // The refunded store order is the only refunded record.
     expect(
-      res.body.history.filter((h: any) => h.chargeStatus === 'refunded').map((h: any) => h.amountCents),
+      res.body.history
+        .filter((h: any) => h.chargeStatus === 'refunded')
+        .map((h: any) => h.amountCents),
     ).toEqual([12900]);
   });
 
@@ -99,9 +117,15 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
   });
 
   it('home "mensalidade em aberto" alert is fed by the real charge', async () => {
-    const res = await t.http().get('/v1/aluno/home').set(bearer(aluno.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/aluno/home')
+      .set(bearer(aluno.accessToken));
     expect(res.status).toBe(200);
-    expect(res.body.mensalidade).toMatchObject({ chargeId: currentChargeId, amountCents: 18000 });
+    expect(res.body.mensalidade).toMatchObject({
+      chargeId: currentChargeId,
+      amountCents: 18000,
+    });
   });
 
   let pixPaymentId: string;
@@ -138,7 +162,12 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
       .http()
       .post('/v1/admin/billing/plans')
       .set(bearer(admin.accessToken))
-      .send({ name: 'Bloqueado', amountCents: 1000, recurrence: 'monthly', dueDay: 5 });
+      .send({
+        name: 'Bloqueado',
+        amountCents: 1000,
+        recurrence: 'monthly',
+        dueDay: 5,
+      });
     expect(blocked.status).toBe(403);
     expect(blocked.body.code).toBe('tenant.read_only');
   });
@@ -186,12 +215,18 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
 
     // The card flips to Paga and the histórico gains the settlement (on top
     // of the seeded plan + event + store entries).
-    const wallet = await t.http().get('/v1/aluno/wallet').set(bearer(aluno.accessToken));
+    const wallet = await t
+      .http()
+      .get('/v1/aluno/wallet')
+      .set(bearer(aluno.accessToken));
     expect(wallet.body.currentCharge.status).toBe('paid');
     expect(wallet.body.history.length).toBe(6);
 
     // Home alert now tells the truth: nothing open.
-    const home = await t.http().get('/v1/aluno/home').set(bearer(aluno.accessToken));
+    const home = await t
+      .http()
+      .get('/v1/aluno/home')
+      .set(bearer(aluno.accessToken));
     expect(home.body.mensalidade).toBeNull();
 
     await t.setAcademyStatus('alpha-jj', 'active');
@@ -291,7 +326,10 @@ describe('billing: aluno wallet + simulated paid-flow', () => {
     expect(accept.status).toBe(201);
 
     const fresh = await t.login('planless@tatame.dev', 'planless-pass-123');
-    const wallet = await t.http().get('/v1/aluno/wallet').set(bearer(fresh.accessToken));
+    const wallet = await t
+      .http()
+      .get('/v1/aluno/wallet')
+      .set(bearer(fresh.accessToken));
     expect(wallet.status).toBe(200);
     expect(wallet.body.plan).toBeNull();
     expect(wallet.body.currentCharge).toBeNull();

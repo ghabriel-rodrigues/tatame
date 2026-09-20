@@ -22,7 +22,8 @@ import {
 export class StatusFilterQueryDto {
   @ApiPropertyOptional({
     enum: ['active', 'inactive', 'all'],
-    description: 'Default `active` — archived records are hidden from active listings',
+    description:
+      'Default `active` — archived records are hidden from active listings',
   })
   @IsOptional()
   @IsIn(['active', 'inactive', 'all'])
@@ -109,7 +110,9 @@ export class RegisterProfessorDto {
   @MinLength(2)
   fullName!: string;
 
-  @ApiProperty({ description: 'Reused cross-tenant when an account already exists' })
+  @ApiProperty({
+    description: 'Reused cross-tenant when an account already exists',
+  })
   @IsEmail()
   email!: string;
 }
@@ -132,7 +135,11 @@ export class UpdateClassNameDto {
 
 /** One weekday chip — fans out into a class_schedules row. */
 export class ScheduleSlotDto {
-  @ApiProperty({ minimum: 0, maximum: 6, description: '0 = Sunday … 6 = Saturday' })
+  @ApiProperty({
+    minimum: 0,
+    maximum: 6,
+    description: '0 = Sunday … 6 = Saturday',
+  })
   @IsInt()
   @Min(0)
   @Max(6)
@@ -140,7 +147,9 @@ export class ScheduleSlotDto {
 
   @ApiProperty({ example: '19:00', description: 'HH:MM (24h)' })
   @IsString()
-  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, { message: 'startTime must be HH:MM (24h)' })
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'startTime must be HH:MM (24h)',
+  })
   startTime!: string;
 
   @ApiProperty({ minimum: 1 })
@@ -155,16 +164,25 @@ export class CreateClassDto {
   @MinLength(2)
   name!: string;
 
-  @ApiProperty({ format: 'uuid', description: 'Must hold an active professor membership' })
+  @ApiProperty({
+    format: 'uuid',
+    description: 'Must hold an active professor membership',
+  })
   @IsUUID()
   professorUserId!: string;
 
-  @ApiProperty({ minimum: 1, description: 'Student limit — "Lotada" when reached' })
+  @ApiProperty({
+    minimum: 1,
+    description: 'Student limit — "Lotada" when reached',
+  })
   @IsInt()
   @Min(1)
   capacity!: number;
 
-  @ApiPropertyOptional({ minimum: 0, description: 'Optional age range (Kids chip)' })
+  @ApiPropertyOptional({
+    minimum: 0,
+    description: 'Optional age range (Kids chip)',
+  })
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -178,13 +196,17 @@ export class CreateClassDto {
 
   @ApiPropertyOptional({
     format: 'uuid',
-    description: 'Turma belt range floor — catalog belt ("Branca a Azul" chips, GRD.6)',
+    description:
+      'Turma belt range floor — catalog belt ("Branca a Azul" chips, GRD.6)',
   })
   @IsOptional()
   @IsUUID()
   minBeltId?: string;
 
-  @ApiPropertyOptional({ format: 'uuid', description: 'Turma belt range ceiling — catalog belt' })
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Turma belt range ceiling — catalog belt',
+  })
   @IsOptional()
   @IsUUID()
   maxBeltId?: string;

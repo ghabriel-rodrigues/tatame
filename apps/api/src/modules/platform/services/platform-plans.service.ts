@@ -123,7 +123,9 @@ export class PlatformPlansService {
     return plans.map((plan, index) => {
       const own = new Set(sortFeatureSlugs(plan.features));
       const previous = plans[index - 1];
-      const previousFeatures = previous ? sortFeatureSlugs(previous.features) : [];
+      const previousFeatures = previous
+        ? sortFeatureSlugs(previous.features)
+        : [];
       const contains =
         previous !== undefined &&
         previousFeatures.length > 0 &&
@@ -131,7 +133,9 @@ export class PlatformPlansService {
         own.size > previousFeatures.length;
 
       const shown = contains
-        ? sortFeatureSlugs(plan.features).filter((slug) => !previousFeatures.includes(slug))
+        ? sortFeatureSlugs(plan.features).filter(
+            (slug) => !previousFeatures.includes(slug),
+          )
         : sortFeatureSlugs(plan.features);
 
       return {
@@ -139,7 +143,10 @@ export class PlatformPlansService {
         name: plan.name,
         priceCents: plan.priceCents,
         studentLimit: plan.studentLimit,
-        features: shown.map((slug) => ({ slug, label: planFeatureLabel(slug) })),
+        features: shown.map((slug) => ({
+          slug,
+          label: planFeatureLabel(slug),
+        })),
         academyCount: countByPlan.get(plan.id) ?? 0,
         // Zero subscriptions everywhere = no flagship to badge.
         isMostSubscribed: leaderCount > 0 && plan.id === leaderId,
@@ -162,12 +169,17 @@ export class PlatformPlansService {
     return sortFeatureSlugs(input.features);
   }
 
-  async create(ctx: AuthContext, input: PlanWriteInput): Promise<PlatformPlanRow> {
+  async create(
+    ctx: AuthContext,
+    input: PlanWriteInput,
+  ): Promise<PlatformPlanRow> {
     const features = PlatformPlansService.validate(input);
     return withPlatform(this.platformDb.db, async (tx) => {
       await PlatformPlansService.assertNameFree(tx, input.name, null);
       const [maxOrder] = await tx
-        .select({ value: sql<number>`COALESCE(MAX(${platformPlans.sortOrder}), 0)::int` })
+        .select({
+          value: sql<number>`COALESCE(MAX(${platformPlans.sortOrder}), 0)::int`,
+        })
         .from(platformPlans);
 
       const [inserted] = await tx
@@ -184,7 +196,8 @@ export class PlatformPlansService {
           feeBps: null,
         })
         .returning({ id: platformPlans.id });
-      if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Plan insert returned no row');
+      if (!inserted)
+        throw problem(500, ErrorCodes.INTERNAL, 'Plan insert returned no row');
 
       await this.audit.append({
         tenantId: null,
@@ -196,18 +209,30 @@ export class PlatformPlansService {
         metadata: { name: input.name, priceCents: input.priceCents },
       });
 
-      return PlatformPlansService.requireRow(await PlatformPlansService.rows(tx), inserted.id);
+      return PlatformPlansService.requireRow(
+        await PlatformPlansService.rows(tx),
+        inserted.id,
+      );
     });
   }
 
-  async update(ctx: AuthContext, planId: string, input: PlanWriteInput): Promise<PlatformPlanRow> {
+  async update(
+    ctx: AuthContext,
+    planId: string,
+    input: PlanWriteInput,
+  ): Promise<PlatformPlanRow> {
     const features = PlatformPlansService.validate(input);
     return withPlatform(this.platformDb.db, async (tx) => {
       const [existing] = await tx
         .select({ id: platformPlans.id })
         .from(platformPlans)
         .where(eq(platformPlans.id, planId));
-      if (!existing) throw problem(404, ErrorCodes.PLAN_NOT_FOUND, 'Platform plan not found');
+      if (!existing)
+        throw problem(
+          404,
+          ErrorCodes.PLAN_NOT_FOUND,
+          'Platform plan not found',
+        );
       await PlatformPlansService.assertNameFree(tx, input.name, planId);
 
       await tx
@@ -231,7 +256,10 @@ export class PlatformPlansService {
         metadata: { name: input.name, priceCents: input.priceCents },
       });
 
-      return PlatformPlansService.requireRow(await PlatformPlansService.rows(tx), planId);
+      return PlatformPlansService.requireRow(
+        await PlatformPlansService.rows(tx),
+        planId,
+      );
     });
   }
 
@@ -245,13 +273,25 @@ export class PlatformPlansService {
       .from(platformPlans)
       .where(sql`lower(${platformPlans.name}) = ${name.toLowerCase()}`);
     if (clash.some((row) => row.id !== exceptId)) {
-      throw problem(409, ErrorCodes.PLAN_NAME_TAKEN, 'A platform plan with this name exists');
+      throw problem(
+        409,
+        ErrorCodes.PLAN_NAME_TAKEN,
+        'A platform plan with this name exists',
+      );
     }
   }
 
-  private static requireRow(rows: PlatformPlanRow[], planId: string): PlatformPlanRow {
+  private static requireRow(
+    rows: PlatformPlanRow[],
+    planId: string,
+  ): PlatformPlanRow {
     const row = rows.find((candidate) => candidate.id === planId);
-    if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Plan disappeared mid-transaction');
+    if (!row)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Plan disappeared mid-transaction',
+      );
     return row;
   }
 }

@@ -7,7 +7,15 @@
 import type { ScheduleSlotView } from '@tatame/shared';
 
 /** 0 = Domingo … 6 = Sábado (API weekday contract). */
-export const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
+export const WEEKDAY_SHORT = [
+  'Dom',
+  'Seg',
+  'Ter',
+  'Qua',
+  'Qui',
+  'Sex',
+  'Sáb',
+] as const;
 
 /** Weekday chips rendered Monday-first, like the handoff (Seg … Dom). */
 export const WEEKDAY_CHIP_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
@@ -16,7 +24,8 @@ function sortedDays(schedules: ScheduleSlotView[]): string[] {
   const days = [...schedules]
     .sort(
       (a, b) =>
-        WEEKDAY_CHIP_ORDER.indexOf(a.weekday as 1) - WEEKDAY_CHIP_ORDER.indexOf(b.weekday as 1),
+        WEEKDAY_CHIP_ORDER.indexOf(a.weekday as 1) -
+        WEEKDAY_CHIP_ORDER.indexOf(b.weekday as 1),
     )
     .map((slot) => WEEKDAY_SHORT[slot.weekday] ?? '?');
   return [...new Set(days)];
@@ -38,7 +47,10 @@ export function scheduleSummary(schedules: ScheduleSlotView[]): string {
 }
 
 /** "Kids · Ter e Qui 18:00" — the suggestion chip label (responsavel-08). */
-export function suggestionLabel(name: string, schedules: ScheduleSlotView[]): string {
+export function suggestionLabel(
+  name: string,
+  schedules: ScheduleSlotView[],
+): string {
   const first = schedules[0];
   if (!first) return name;
   const days = sortedDays(schedules);
@@ -55,18 +67,25 @@ export function slotLabel(slot: ScheduleSlotView): string {
 export function initials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/);
   const first = parts[0]?.[0] ?? '';
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : (parts[0]?.[1] ?? '');
+  const last =
+    parts.length > 1
+      ? (parts[parts.length - 1]?.[0] ?? '')
+      : (parts[0]?.[1] ?? '');
   return `${first}${last}`.toUpperCase();
 }
 
 /** Whole-years age from an ISO birth date. */
-export function ageFromBirthDate(birthDate: string, today: Date = new Date()): number {
+export function ageFromBirthDate(
+  birthDate: string,
+  today: Date = new Date(),
+): number {
   const birth = new Date(`${birthDate}T00:00:00`);
   if (Number.isNaN(birth.getTime())) return Number.NaN;
   let age = today.getFullYear() - birth.getFullYear();
   const beforeBirthday =
     today.getMonth() < birth.getMonth() ||
-    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+    (today.getMonth() === birth.getMonth() &&
+      today.getDate() < birth.getDate());
   if (beforeBirthday) age -= 1;
   return age;
 }
@@ -115,7 +134,10 @@ export function maskBirthDateInput(raw: string): string {
  * future — the suggestion query only fires on a real birth date (fixes the
  * prototype's pre-filled static chip).
  */
-export function parseBirthDate(masked: string, today: Date = new Date()): string | null {
+export function parseBirthDate(
+  masked: string,
+  today: Date = new Date(),
+): string | null {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(masked);
   if (!match) return null;
   const [, dd, mm, yyyy] = match;
@@ -124,7 +146,9 @@ export function parseBirthDate(masked: string, today: Date = new Date()): string
   const year = Number(yyyy);
   const date = new Date(year, month - 1, day);
   const valid =
-    date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day;
   if (!valid || date.getTime() > today.getTime()) return null;
   const pad = (n: number) => n.toString().padStart(2, '0');
   return `${year}-${pad(month)}-${pad(day)}`;

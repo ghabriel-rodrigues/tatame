@@ -2,7 +2,12 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { LiveRoomRegistry, StreamTicketService } from '@org/api';
-import { attendances, classSessions, withPlatform, withTenant } from '@tatame/db';
+import {
+  attendances,
+  classSessions,
+  withPlatform,
+  withTenant,
+} from '@tatame/db';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bearer, createTestApp, type TestApp } from './support/test-app.js';
 
@@ -11,7 +16,9 @@ const spDate = (at: Date = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(at);
 const spWeekday = (at: Date = new Date()) =>
   ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
-    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(at),
+    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(
+      at,
+    ),
   );
 const spMinutes = (at: Date = new Date()) => {
   const [h, m] = new Intl.DateTimeFormat('en-GB', {
@@ -30,7 +37,11 @@ const hhmm = (mins: number) =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function waitFor(predicate: () => boolean, label: string, timeoutMs = 10_000): Promise<void> {
+async function waitFor(
+  predicate: () => boolean,
+  label: string,
+  timeoutMs = 10_000,
+): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (predicate()) return;
@@ -52,7 +63,11 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
   let liveClassId: string;
 
   const nowSlot = () => [
-    { weekday: spWeekday(), startTime: hhmm(Math.max(0, spMinutes() - 10)), durationMinutes: 60 },
+    {
+      weekday: spWeekday(),
+      startTime: hhmm(Math.max(0, spMinutes() - 10)),
+      durationMinutes: 60,
+    },
   ];
 
   beforeAll(async () => {
@@ -62,18 +77,31 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
     aluno = (await t.login('aluno@tatame.dev')).accessToken;
     alphaId = await t.academyIdBySlug('alpha-jj');
 
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    anaStudentId = students.body.students.find((s: any) => s.fullName === 'Ana Aluna').id;
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    anaStudentId = students.body.students.find(
+      (s: any) => s.fullName === 'Ana Aluna',
+    ).id;
 
     const classA = await t
       .http()
       .post('/v1/admin/classes')
       .set(bearer(admin))
-      .send({ name: 'Live SSE', professorUserId, capacity: 20, schedules: nowSlot() });
+      .send({
+        name: 'Live SSE',
+        professorUserId,
+        capacity: 20,
+        schedules: nowSlot(),
+      });
     liveClassId = classA.body.class.id;
     await t
       .http()
@@ -85,10 +113,18 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
       .http()
       .post('/v1/admin/classes')
       .set(bearer(admin))
-      .send({ name: 'Live SSE B', professorUserId, capacity: 20, schedules: nowSlot() });
+      .send({
+        name: 'Live SSE B',
+        professorUserId,
+        capacity: 20,
+        schedules: nowSlot(),
+      });
 
     liveA = (
-      await t.http().post(`/v1/professor/classes/${liveClassId}/live-codes`).set(bearer(professor))
+      await t
+        .http()
+        .post(`/v1/professor/classes/${liveClassId}/live-codes`)
+        .set(bearer(professor))
     ).body;
     liveB = (
       await t
@@ -127,7 +163,9 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
     expect(forged.status).toBe(401);
     expect(forged.body.code).toBe('stream.ticket_invalid');
 
-    const missing = await t.http().get(`/v1/professor/live-codes/${liveA.id}/stream`);
+    const missing = await t
+      .http()
+      .get(`/v1/professor/live-codes/${liveA.id}/stream`);
     expect(missing.status).toBe(401);
 
     const tickets = t.app.get(StreamTicketService);
@@ -137,7 +175,9 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
     );
     const expiredRes = await t
       .http()
-      .get(`/v1/professor/live-codes/${liveA.id}/stream?ticket=${encodeURIComponent(expired.ticket)}`);
+      .get(
+        `/v1/professor/live-codes/${liveA.id}/stream?ticket=${encodeURIComponent(expired.ticket)}`,
+      );
     expect(expiredRes.status).toBe(401);
     expect(expiredRes.body.code).toBe('stream.ticket_invalid');
 
@@ -202,7 +242,10 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
     expect(checkin.body.status).toBe('checked_in');
     checkinAttendanceId = checkin.body.attendance.id;
 
-    await waitFor(() => received().includes('event: checkin'), 'the checkin event');
+    await waitFor(
+      () => received().includes('event: checkin'),
+      'the checkin event',
+    );
     expect(received()).toContain('Ana Aluna');
     expect(received()).toContain('"presentCount":1');
 
@@ -213,7 +256,10 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
       .set(bearer(professor))
       .send({ reason: 'e2e stream revoke' });
     expect(revoked.status).toBe(200);
-    await waitFor(() => received().includes('event: revoke'), 'the revoke event');
+    await waitFor(
+      () => received().includes('event: revoke'),
+      'the revoke event',
+    );
     expect(received()).toContain('"presentCount":0');
 
     // Ana checks in again (correction pattern) — stats below expect today attended.
@@ -231,7 +277,10 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
     // Disconnect → the per-session room is cleaned up.
     req.destroy();
     const rooms = t.app.get(LiveRoomRegistry);
-    await waitFor(() => rooms.roomCount() === 0, 'room cleanup after disconnect');
+    await waitFor(
+      () => rooms.roomCount() === 0,
+      'room cleanup after disconnect',
+    );
   });
 
   it('snapshot doubles as the polling fallback: active rows only', async () => {
@@ -259,7 +308,10 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
       tx
         .select({ total: count() })
         .from(attendances)
-        .innerJoin(classSessions, eq(classSessions.id, attendances.classSessionId))
+        .innerJoin(
+          classSessions,
+          eq(classSessions.id, attendances.classSessionId),
+        )
         .where(
           and(
             eq(attendances.studentId, anaStudentId),
@@ -279,16 +331,25 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
 
     const { stats } = body;
     expect(stats.monthTotalSessions).toBeGreaterThanOrEqual(1);
-    expect(stats.monthAttendedSessions).toBeLessThanOrEqual(stats.monthTotalSessions);
+    expect(stats.monthAttendedSessions).toBeLessThanOrEqual(
+      stats.monthTotalSessions,
+    );
     expect(stats.monthPresencePct).toBe(
-      Math.round((stats.monthAttendedSessions / stats.monthTotalSessions) * 100),
+      Math.round(
+        (stats.monthAttendedSessions / stats.monthTotalSessions) * 100,
+      ),
     );
 
     const rows = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select({ total: count() })
         .from(attendances)
-        .where(and(eq(attendances.studentId, anaStudentId), isNull(attendances.revokedAt))),
+        .where(
+          and(
+            eq(attendances.studentId, anaStudentId),
+            isNull(attendances.revokedAt),
+          ),
+        ),
     );
     expect(stats.totalLessons).toBe(Number(rows[0]?.total));
     expect(typeof stats.streak).toBe('number');
@@ -358,7 +419,11 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin))
-      .send({ entries: [{ role: 'student', key: 'gamification.streak', allowed: false }] });
+      .send({
+        entries: [
+          { role: 'student', key: 'gamification.streak', allowed: false },
+        ],
+      });
     expect(off.status).toBe(200);
 
     expect((await home()).stats.streak).toBeNull();
@@ -374,18 +439,27 @@ describe('attendance realtime + derived stats (ATT.10/ATT.11/13)', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin))
-      .send({ entries: [{ role: 'student', key: 'gamification.streak', allowed: true }] });
+      .send({
+        entries: [
+          { role: 'student', key: 'gamification.streak', allowed: true },
+        ],
+      });
     expect(typeof (await home()).stats.streak).toBe('number');
   });
 
   it('professor dashboard: alunos hoje, presença média, next-class hero with count', async () => {
-    const res = await t.http().get('/v1/professor/dashboard').set(bearer(professor));
+    const res = await t
+      .http()
+      .get('/v1/professor/dashboard')
+      .set(bearer(professor));
     expect(res.status).toBe(200);
     expect(res.body.alunosHoje).toBeGreaterThanOrEqual(1);
     expect(res.body.presencaMediaPct).toBeGreaterThanOrEqual(0);
     expect(res.body.presencaMediaPct).toBeLessThanOrEqual(100);
 
-    const liveClass = res.body.todayClasses.find((c: any) => c.classId === liveClassId);
+    const liveClass = res.body.todayClasses.find(
+      (c: any) => c.classId === liveClassId,
+    );
     expect(liveClass).toBeTruthy();
     expect(liveClass.checkedInCount).toBe(1);
     expect(liveClass.enrolledCount).toBe(1);

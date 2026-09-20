@@ -30,6 +30,8 @@ describe('applyBrand', () => {
   });
 
   it('throws without a document and without an explicit target', () => {
-    expect(() => applyBrand({ 'purple-700': '#4F2389' })).toThrow(/no document/);
+    expect(() => applyBrand({ 'purple-700': '#4F2389' })).toThrow(
+      /no document/,
+    );
   });
 });

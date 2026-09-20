@@ -10,7 +10,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import {
@@ -41,16 +47,23 @@ export class AdminClassesController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'Turmas with schedules, occupancy and derived Lotada' })
+  @ApiOperation({
+    summary: 'Turmas with schedules, occupancy and derived Lotada',
+  })
   @ApiOkResponse({ type: ClassListResponseDto })
   async list(@Query() query: StatusFilterQueryDto) {
     const ctx = requireTenantContext(this.cls);
-    return { classes: await this.classService.list(ctx, query.status ?? 'active') };
+    return {
+      classes: await this.classService.list(ctx, query.status ?? 'active'),
+    };
   }
 
   @Post()
   @HttpCode(201)
-  @ApiOperation({ summary: 'Create a recurring turma — weekday chips fan out into schedule rows' })
+  @ApiOperation({
+    summary:
+      'Create a recurring turma — weekday chips fan out into schedule rows',
+  })
   @ApiCreatedResponse({ type: ClassDetailResponseDto })
   async create(@Body() dto: CreateClassDto) {
     const ctx = requireTenantContext(this.cls);
@@ -66,16 +79,23 @@ export class AdminClassesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Name-only edit (schedule/professor/capacity editing deferred)' })
+  @ApiOperation({
+    summary: 'Name-only edit (schedule/professor/capacity editing deferred)',
+  })
   @ApiOkResponse({ type: ClassDetailResponseDto })
-  async rename(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateClassNameDto) {
+  async rename(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateClassNameDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return { class: await this.classService.updateName(ctx, id, dto.name) };
   }
 
   @Post(':id/archive')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Soft archive: archived + active enrollments ended atomically' })
+  @ApiOperation({
+    summary: 'Soft archive: archived + active enrollments ended atomically',
+  })
   async archive(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     const ctx = requireTenantContext(this.cls);
     await this.classService.archive(ctx, id);
@@ -83,22 +103,33 @@ export class AdminClassesController {
 
   @Post(':id/students')
   @HttpCode(201)
-  @ApiOperation({ summary: 'Add to roster (row-locked capacity; reactivates a removed row)' })
+  @ApiOperation({
+    summary: 'Add to roster (row-locked capacity; reactivates a removed row)',
+  })
   @ApiCreatedResponse({ type: EnrollmentResultResponseDto })
-  async addStudent(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AddRosterStudentDto) {
+  async addStudent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AddRosterStudentDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
-    return { enrollment: await this.enrollment.addStudent(ctx, id, dto.studentId) };
+    return {
+      enrollment: await this.enrollment.addStudent(ctx, id, dto.studentId),
+    };
   }
 
   @Delete(':id/students/:studentId')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Remove from roster (soft: enrollment flips to removed)' })
+  @ApiOperation({
+    summary: 'Remove from roster (soft: enrollment flips to removed)',
+  })
   @ApiOkResponse({ type: EnrollmentResultResponseDto })
   async removeStudent(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {
     const ctx = requireTenantContext(this.cls);
-    return { enrollment: await this.enrollment.removeStudent(ctx, id, studentId) };
+    return {
+      enrollment: await this.enrollment.removeStudent(ctx, id, studentId),
+    };
   }
 }

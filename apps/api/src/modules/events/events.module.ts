@@ -22,8 +22,16 @@ import { EventsQueryService } from './services/events-query.service.js';
  */
 @Module({
   imports: [DbModule, BillingModule],
-  controllers: [AdminEventsController, AlunoEventsController, ResponsavelEventsController],
-  providers: [AdminEventsService, EventRegistrationsService, EventsQueryService],
+  controllers: [
+    AdminEventsController,
+    AlunoEventsController,
+    ResponsavelEventsController,
+  ],
+  providers: [
+    AdminEventsService,
+    EventRegistrationsService,
+    EventsQueryService,
+  ],
   // EventsQueryService feeds the AGD `events` contracts (agenda module) and
   // the home/dashboard enrichments (attendance module).
   exports: [EventsQueryService],

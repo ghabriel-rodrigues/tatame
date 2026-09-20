@@ -31,13 +31,19 @@ export class LiveRoomRegistry implements OnModuleDestroy {
   subscribe(classSessionId: string): Observable<LiveRoomEvent> {
     return defer(() => {
       const existing = this.rooms.get(classSessionId);
-      const room: Room = existing ?? { subject: new Subject<LiveRoomEvent>(), subscribers: 0 };
+      const room: Room = existing ?? {
+        subject: new Subject<LiveRoomEvent>(),
+        subscribers: 0,
+      };
       if (!existing) this.rooms.set(classSessionId, room);
       room.subscribers += 1;
       return room.subject.asObservable().pipe(
         finalize(() => {
           room.subscribers -= 1;
-          if (room.subscribers <= 0 && this.rooms.get(classSessionId) === room) {
+          if (
+            room.subscribers <= 0 &&
+            this.rooms.get(classSessionId) === room
+          ) {
             this.rooms.delete(classSessionId);
           }
         }),

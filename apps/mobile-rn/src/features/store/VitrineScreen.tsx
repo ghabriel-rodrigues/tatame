@@ -41,7 +41,9 @@ import { ProductGridCard } from './ui';
 import type { ProductCard } from './types';
 
 /** Pairs the grid items into 2-column rows (no measurement, no clipping). */
-function toRows(products: ProductCard[]): Array<[ProductCard, ProductCard | null]> {
+function toRows(
+  products: ProductCard[],
+): Array<[ProductCard, ProductCard | null]> {
   const rows: Array<[ProductCard, ProductCard | null]> = [];
   for (let index = 0; index < products.length; index += 2) {
     rows.push([products[index]!, products[index + 1] ?? null]);
@@ -75,10 +77,19 @@ export function VitrineScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: theme.space['3'],
+            }}
           >
             <Pressable
               accessibilityRole="button"
@@ -102,7 +113,11 @@ export function VitrineScreen() {
               <Text variant="subtitle" weight="bold" numberOfLines={1}>
                 {storeTitle(session?.academy?.name)}
               </Text>
-              <Text variant="caption" numberOfLines={1} style={{ fontSize: 11 }}>
+              <Text
+                variant="caption"
+                numberOfLines={1}
+                style={{ fontSize: 11 }}
+              >
                 {STORE_SUBTITLE}
               </Text>
             </View>
@@ -133,14 +148,20 @@ export function VitrineScreen() {
             testID="vitrine-search"
           />
 
-          <QueryState loading={vitrineQuery.isPending} error={vitrineQuery.isError}>
+          <QueryState
+            loading={vitrineQuery.isPending}
+            error={vitrineQuery.isError}
+          >
             {/* Working chip carousel — horizontal scroll, never clipped
                 (the aluno-16 prototype bug is fixed, not reproduced). */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               testID="category-chips"
-              contentContainerStyle={{ gap: theme.space['2'], paddingVertical: 2 }}
+              contentContainerStyle={{
+                gap: theme.space['2'],
+                paddingVertical: 2,
+              }}
             >
               <Chip
                 label={ALL_CHIP_LABEL}
@@ -158,7 +179,9 @@ export function VitrineScreen() {
                   tone="brand"
                   selected={categoryId === category.id}
                   onPress={() =>
-                    setCategoryId(categoryId === category.id ? null : category.id)
+                    setCategoryId(
+                      categoryId === category.id ? null : category.id,
+                    )
                   }
                   testID={`category-chip-${category.id}`}
                 />

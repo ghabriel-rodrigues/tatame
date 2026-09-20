@@ -15,7 +15,11 @@ import { AgendaService } from './services/agenda.service.js';
  */
 @Module({
   imports: [DbModule, GraduationCoreModule, EventsModule],
-  controllers: [AlunoAgendaController, ProfessorCalendarController, AdminCalendarController],
+  controllers: [
+    AlunoAgendaController,
+    ProfessorCalendarController,
+    AdminCalendarController,
+  ],
   providers: [AgendaService],
 })
 export class AgendaModule {}

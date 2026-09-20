@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { BrandLogo } from './BrandLogo.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('BrandLogo', () => {
   it('is an accessible image named Tatame by default', () => {

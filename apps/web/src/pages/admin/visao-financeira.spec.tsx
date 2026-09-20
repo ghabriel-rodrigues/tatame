@@ -64,9 +64,14 @@ describe('Visão financeira (BIL.13)', () => {
     for (const label of ['FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL']) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
-    const classOf = (element: unknown) => (element as { className: string }).className;
-    expect(classOf(screen.getByLabelText(/^JUL: /))).toContain('MiniBarChart-highlight');
-    expect(classOf(screen.getByLabelText(/^FEV: /))).not.toContain('MiniBarChart-highlight');
+    const classOf = (element: unknown) =>
+      (element as { className: string }).className;
+    expect(classOf(screen.getByLabelText(/^JUL: /))).toContain(
+      'MiniBarChart-highlight',
+    );
+    expect(classOf(screen.getByLabelText(/^FEV: /))).not.toContain(
+      'MiniBarChart-highlight',
+    );
   });
 
   it('groups próximos vencimentos by due day with count and amount', async () => {
@@ -108,7 +113,10 @@ describe('Visão financeira (BIL.13)', () => {
   it('renders the empty-list copy when there is nothing due or overdue', async () => {
     server.use(
       ...billingHandlers({
-        overview: makeAdminOverview({ proximosVencimentos: [], inadimplentes: [] }),
+        overview: makeAdminOverview({
+          proximosVencimentos: [],
+          inadimplentes: [],
+        }),
       }),
     );
     renderOverview();
@@ -116,6 +124,8 @@ describe('Visão financeira (BIL.13)', () => {
     expect(
       await screen.findByText('Nenhuma cobrança em aberto no próximo ciclo.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Nenhum aluno inadimplente neste ciclo.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Nenhum aluno inadimplente neste ciclo.'),
+    ).toBeInTheDocument();
   });
 });

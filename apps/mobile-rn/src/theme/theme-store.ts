@@ -63,7 +63,11 @@ function parseCachedBrand(raw: string | null): BrandInput | null {
       HEX.test(value.vibrant ?? '') &&
       HEX.test(value.accent ?? '')
     ) {
-      return { deep: value.deep!, vibrant: value.vibrant!, accent: value.accent! };
+      return {
+        deep: value.deep!,
+        vibrant: value.vibrant!,
+        accent: value.accent!,
+      };
     }
   } catch {
     // Corrupt cache === no cache.
@@ -105,9 +109,13 @@ export async function hydrateTheme(): Promise<void> {
  * caches the triplet; authed unbranded / logged out clears back to the
  * default Tatame brand (logout must never leave a stale tenant brand).
  */
-export async function applySessionBrand(brand: BrandInput | null): Promise<void> {
+export async function applySessionBrand(
+  brand: BrandInput | null,
+): Promise<void> {
   brandResolvedFromSession = true;
-  const next = brand ? { deep: brand.deep, vibrant: brand.vibrant, accent: brand.accent } : null;
+  const next = brand
+    ? { deep: brand.deep, vibrant: brand.vibrant, accent: brand.accent }
+    : null;
   if (!sameBrand(next, state.brand)) setState({ ...state, brand: next });
   try {
     if (next) await AsyncStorage.setItem(BRAND_CACHE_KEY, JSON.stringify(next));

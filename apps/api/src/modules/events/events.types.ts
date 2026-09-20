@@ -1,4 +1,8 @@
-import { TENANT_TIMEZONE, instantAt, localDate } from '../attendance/lib/time.js';
+import {
+  TENANT_TIMEZONE,
+  instantAt,
+  localDate,
+} from '../attendance/lib/time.js';
 
 /**
  * Shared read shapes of the events module (spec 008). Amounts are integer
@@ -7,7 +11,8 @@ import { TENANT_TIMEZONE, instantAt, localDate } from '../attendance/lib/time.js
  * date square the mat experiences (story 30).
  */
 
-export type EventRegistrationStatus = 'pending_payment' | 'confirmed' | 'canceled';
+export type EventRegistrationStatus =
+  'pending_payment' | 'confirmed' | 'canceled';
 
 /** One student's registration state on one event. */
 export interface EventRegistrationStateView {
@@ -40,7 +45,10 @@ export interface CalendarEventItemView extends EventCardView {
 }
 
 /** Tenant-local HH:MM of an instant. */
-export function localTime(at: Date, timeZone: string = TENANT_TIMEZONE): string {
+export function localTime(
+  at: Date,
+  timeZone: string = TENANT_TIMEZONE,
+): string {
   return new Intl.DateTimeFormat('en-GB', {
     timeZone,
     hour: '2-digit',
@@ -71,7 +79,9 @@ export function eventTimeParts(startsAt: Date | null): {
 export function monthWindow(month: string): { startUtc: Date; endUtc: Date } {
   const [year, monthNum] = month.split('-').map(Number) as [number, number];
   const next =
-    monthNum === 12 ? `${year + 1}-01` : `${year}-${String(monthNum + 1).padStart(2, '0')}`;
+    monthNum === 12
+      ? `${year + 1}-01`
+      : `${year}-${String(monthNum + 1).padStart(2, '0')}`;
   return {
     startUtc: instantAt(`${month}-01`, '00:00'),
     endUtc: instantAt(`${next}-01`, '00:00'),

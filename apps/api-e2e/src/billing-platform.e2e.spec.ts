@@ -27,7 +27,10 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
 
   it('repasse math: gross settled − fee_bps = net, per academy per period', async () => {
     const owner = await t.login('owner@tatame.dev');
-    const res = await t.http().get('/v1/platform/billing/repasses').set(bearer(owner.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/platform/billing/repasses')
+      .set(bearer(owner.accessToken));
     expect(res.status).toBe(200);
 
     const alphaId = await t.academyIdBySlug('alpha-jj');
@@ -36,7 +39,9 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
     for (const row of rows) {
       // Alpha rides the Pro plan: fee_bps 400 (seeded catalog).
       expect(row.feeBps).toBe(400);
-      expect(row.feeCents).toBe(Math.round((row.grossCents * row.feeBps) / 10_000));
+      expect(row.feeCents).toBe(
+        Math.round((row.grossCents * row.feeBps) / 10_000),
+      );
       expect(row.netCents).toBe(row.grossCents - row.feeCents);
       expect(row.withheld).toBe(false);
     }
@@ -49,30 +54,51 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
           students: dsql<string>`COUNT(DISTINCT ${charges.studentId})`,
         })
         .from(payments)
-        .innerJoin(charges, and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)))
-        .where(and(eq(payments.tenantId, alphaId), eq(payments.status, 'succeeded'))),
+        .innerJoin(
+          charges,
+          and(
+            eq(charges.tenantId, payments.tenantId),
+            eq(charges.id, payments.chargeId),
+          ),
+        )
+        .where(
+          and(eq(payments.tenantId, alphaId), eq(payments.status, 'succeeded')),
+        ),
     );
-    const totalGross = rows.reduce((sum: number, r: any) => sum + r.grossCents, 0);
+    const totalGross = rows.reduce(
+      (sum: number, r: any) => sum + r.grossCents,
+      0,
+    );
     expect(totalGross).toBe(Number(truth!.gross));
     // Plan fixtures (Ana 18000 + Kiko 15000 + Lara 15000) + Ana's settled
     // event inscription (spec 008, 6000) + the settled store orders (spec 009:
     // #2427 11800 + #2429 34900 + #2430 3900; the refunded #2428 excluded) —
     // event and store money repasses too.
     expect(Number(truth!.gross)).toBe(104_600);
-    const totalStudents = rows.reduce((sum: number, r: any) => sum + r.studentCount, 0);
+    const totalStudents = rows.reduce(
+      (sum: number, r: any) => sum + r.studentCount,
+      0,
+    );
     expect(totalStudents).toBeGreaterThanOrEqual(Number(truth!.students));
 
     // Past periods → Repassado; the current period → Em trânsito.
     const currentPeriod = new Date().toISOString().slice(0, 7);
     for (const row of rows) {
-      expect(row.status).toBe(row.period === currentPeriod ? 'em_transito' : 'repassado');
+      expect(row.status).toBe(
+        row.period === currentPeriod ? 'em_transito' : 'repassado',
+      );
     }
   });
 
   it('the delinquent academy is always Retido (charter retention rule)', async () => {
     const owner = await t.login('owner@tatame.dev');
-    const res = await t.http().get('/v1/platform/billing/repasses').set(bearer(owner.accessToken));
-    const charlie = res.body.repasses.filter((r: any) => r.academyName === 'Charlie Fight Club');
+    const res = await t
+      .http()
+      .get('/v1/platform/billing/repasses')
+      .set(bearer(owner.accessToken));
+    const charlie = res.body.repasses.filter(
+      (r: any) => r.academyName === 'Charlie Fight Club',
+    );
     expect(charlie.length).toBeGreaterThanOrEqual(1);
     for (const row of charlie) {
       expect(row.withheld).toBe(true);
@@ -85,7 +111,10 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
 
   it('platform RBAC: finance allowed, support denied, academy admin denied', async () => {
     const finance = await t.login('financeiro@tatame.dev');
-    const ok = await t.http().get('/v1/platform/billing/repasses').set(bearer(finance.accessToken));
+    const ok = await t
+      .http()
+      .get('/v1/platform/billing/repasses')
+      .set(bearer(finance.accessToken));
     expect(ok.status).toBe(200);
 
     const support = await t.login('suporte@tatame.dev');
@@ -111,7 +140,8 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
       for (const wrapper of module.controllers.values()) {
         const metatype = wrapper.metatype as (new () => unknown) | undefined;
         if (!metatype) continue;
-        const controllerPath: string = Reflect.getMetadata('path', metatype) ?? '';
+        const controllerPath: string =
+          Reflect.getMetadata('path', metatype) ?? '';
         const prototype = metatype.prototype as Record<string, unknown>;
         for (const name of Object.getOwnPropertyNames(prototype)) {
           if (name === 'constructor') continue;
@@ -120,19 +150,27 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
           const path = Reflect.getMetadata('path', handler);
           if (path === undefined) continue;
           const fullPath = `${controllerPath}/${path}`;
-          if (!/billing|wallet|repasses|responsavel\/payments/.test(fullPath)) continue;
+          if (!/billing|wallet|repasses|responsavel\/payments/.test(fullPath))
+            continue;
           billingRoutes += 1;
           const roles: string[] =
             Reflect.getMetadata(ROLES_KEY, handler) ??
             Reflect.getMetadata(ROLES_KEY, metatype) ??
             [];
-          expect(roles.length, `${metatype.name}.${name} must declare roles`).toBeGreaterThan(0);
+          expect(
+            roles.length,
+            `${metatype.name}.${name} must declare roles`,
+          ).toBeGreaterThan(0);
           // Spec 009 carve-out: the simulate driver affordance admits the
           // professor for STORE purchases only — authorization stays ownership
           // of the underlying charge (a professor owns nothing but their own
           // order charges). Every other billing route still shuts them out.
-          if (`${metatype.name}.${name}` === 'BillingSharedController.simulate') continue;
-          expect(roles, `${metatype.name}.${name} admits professor`).not.toContain('professor');
+          if (`${metatype.name}.${name}` === 'BillingSharedController.simulate')
+            continue;
+          expect(
+            roles,
+            `${metatype.name}.${name} admits professor`,
+          ).not.toContain('professor');
         }
       }
     }
@@ -161,7 +199,10 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
           if (typeof handler !== 'function') continue;
           const key = `${metatype.name}.${name}`;
           if (!expected.has(key)) continue;
-          found.set(key, Reflect.getMetadata(BYPASS_READ_ONLY_KEY, handler) === true);
+          found.set(
+            key,
+            Reflect.getMetadata(BYPASS_READ_ONLY_KEY, handler) === true,
+          );
         }
       }
     }
@@ -171,7 +212,9 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
   });
 
   it('simulate is 404 when the provider is not simulated (env swap)', async () => {
-    const stripeApp = await createTestApp({ env: { PAYMENTS_PROVIDER: 'stripe' } });
+    const stripeApp = await createTestApp({
+      env: { PAYMENTS_PROVIDER: 'stripe' },
+    });
     try {
       const aluno = await stripeApp.login('aluno@tatame.dev');
       const alphaId = await stripeApp.academyIdBySlug('alpha-jj');
@@ -182,7 +225,9 @@ describe('billing: platform repasses + CI assertions + provider gating', () => {
         tx
           .select({ id: charges.id, amountCents: charges.amountCents })
           .from(charges)
-          .where(and(eq(charges.tenantId, alphaId), eq(charges.status, 'open'))),
+          .where(
+            and(eq(charges.tenantId, alphaId), eq(charges.status, 'open')),
+          ),
       );
       expect(openCharge).toBeTruthy();
       const [payment] = await withPlatform(stripeApp.platformDb.db, (tx) =>

@@ -36,16 +36,23 @@ export type ApiClient = Client<paths>;
  * Paths where a 401 is a final answer — refreshing would loop or is
  * pointless (credential and refresh endpoints themselves).
  */
-const NO_REFRESH_PATHS = ['/v1/auth/login', '/v1/auth/refresh', '/v1/auth/password'];
+const NO_REFRESH_PATHS = [
+  '/v1/auth/login',
+  '/v1/auth/refresh',
+  '/v1/auth/password',
+];
 
 function isRefreshExempt(url: string): boolean {
   const path = new URL(url, 'http://localhost').pathname;
   return NO_REFRESH_PATHS.some((prefix) => path.startsWith(prefix));
 }
 
-export function createApiClient(options: CreateApiClientOptions = {}): ApiClient {
+export function createApiClient(
+  options: CreateApiClientOptions = {},
+): ApiClient {
   const { baseUrl = '', auth } = options;
-  const baseFetch = options.fetch ?? ((input: Request) => globalThis.fetch(input));
+  const baseFetch =
+    options.fetch ?? ((input: Request) => globalThis.fetch(input));
 
   /** Single-flight guard: all concurrent 401s await the same refresh. */
   let inflightRefresh: Promise<string | null> | null = null;

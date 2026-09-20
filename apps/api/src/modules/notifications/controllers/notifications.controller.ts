@@ -1,5 +1,21 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { AnyRole, BypassReadOnly } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
@@ -36,7 +52,7 @@ export class NotificationsController {
     summary: 'Own notifications, newest first — the Notificações screen feed',
     description:
       'Cursor-paged (~30). Rows are render-ready PT-BR (title/body/chip composed at insert ' +
-      'time); `route` is a semantic hint mapped to each shell\'s navigation client-side.',
+      "time); `route` is a semantic hint mapped to each shell's navigation client-side.",
   })
   @ApiQuery({ name: 'cursor', required: false })
   @ApiOkResponse({ type: NotificationsListResponseDto })
@@ -57,7 +73,9 @@ export class NotificationsController {
   }
 
   @Get('settings')
-  @ApiOperation({ summary: 'The perfil "Notificações" switch state (active membership)' })
+  @ApiOperation({
+    summary: 'The perfil "Notificações" switch state (active membership)',
+  })
   @ApiOkResponse({ type: NotificationSettingsResponseDto })
   async getSettings() {
     return this.service.getSettings(requireTenantContext(this.cls));
@@ -68,18 +86,22 @@ export class NotificationsController {
   @ApiOperation({
     summary: 'Flip the per-membership mute switch',
     description:
-      '@BypassReadOnly: a delinquent (read-only) academy\'s members still manage their own switch.',
+      "@BypassReadOnly: a delinquent (read-only) academy's members still manage their own switch.",
   })
   @ApiOkResponse({ type: NotificationSettingsResponseDto })
   async updateSettings(@Body() dto: UpdateNotificationSettingsDto) {
-    return this.service.updateSettings(requireTenantContext(this.cls), dto.enabled);
+    return this.service.updateSettings(
+      requireTenantContext(this.cls),
+      dto.enabled,
+    );
   }
 
   @Post('read-all')
   @BypassReadOnly()
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Mark every own notification read — fired on screen open, kills the dot',
+    summary:
+      'Mark every own notification read — fired on screen open, kills the dot',
   })
   @ApiOkResponse({ type: MarkAllReadResponseDto })
   async readAll() {
@@ -91,7 +113,8 @@ export class NotificationsController {
   @HttpCode(200)
   @ApiOperation({
     summary: 'Mark one notification read (idempotent)',
-    description: 'Foreign or cross-tenant ids behave as 404 — no existence leak.',
+    description:
+      'Foreign or cross-tenant ids behave as 404 — no existence leak.',
   })
   @ApiOkResponse({ type: MarkReadResponseDto })
   async read(@Param('id', ParseUUIDPipe) id: string) {

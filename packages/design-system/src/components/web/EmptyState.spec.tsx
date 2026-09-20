@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { EmptyState } from './EmptyState.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('EmptyState', () => {
   it('renders title, description and action slot', () => {
@@ -21,7 +25,9 @@ describe('EmptyState', () => {
       />,
     );
     expect(getByText('Nenhum aluno ainda')).toBeTruthy();
-    expect(getByText('Use o botão + para criar o primeiro registro.')).toBeTruthy();
+    expect(
+      getByText('Use o botão + para criar o primeiro registro.'),
+    ).toBeTruthy();
     expect(getByRole('button', { name: 'Criar' })).toBeTruthy();
   });
 

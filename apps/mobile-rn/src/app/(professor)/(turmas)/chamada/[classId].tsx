@@ -26,11 +26,19 @@ import {
 } from '@tatame/design-system/native';
 import { api } from '../../../../api/query';
 import { attendanceErrorMessage } from '../../../../features/attendance/copy';
-import { countdownLabel, isExpired, timeLabel } from '../../../../features/attendance/format';
+import {
+  countdownLabel,
+  isExpired,
+  timeLabel,
+} from '../../../../features/attendance/format';
 import { useLiveChamada } from '../../../../features/attendance/use-live-chamada';
 import { InitialsAvatar } from '../../../../features/enrollment/ui';
 
-const METHOD_LABELS = { qr: 'QR Code', code: 'Código', manual: 'Manual' } as const;
+const METHOD_LABELS = {
+  qr: 'QR Code',
+  code: 'Código',
+  manual: 'Manual',
+} as const;
 
 /** Big 4-digit code as individual boxes (professor-03). */
 function CodeDigits({ code }: { code: string }) {
@@ -38,7 +46,11 @@ function CodeDigits({ code }: { code: string }) {
   return (
     <View
       testID="live-code-digits"
-      style={{ flexDirection: 'row', gap: theme.space['3'], justifyContent: 'center' }}
+      style={{
+        flexDirection: 'row',
+        gap: theme.space['3'],
+        justifyContent: 'center',
+      }}
     >
       {code.split('').map((digit, index) => (
         <View
@@ -73,8 +85,14 @@ export default function LiveChamadaScreen() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
 
-  const openMutation = api.useMutation('post', '/v1/professor/classes/{id}/live-codes');
-  const closeMutation = api.useMutation('post', '/v1/professor/live-codes/{id}/close');
+  const openMutation = api.useMutation(
+    'post',
+    '/v1/professor/classes/{id}/live-codes',
+  );
+  const closeMutation = api.useMutation(
+    'post',
+    '/v1/professor/live-codes/{id}/close',
+  );
 
   const requestCode = (id: string) => {
     openMutation.mutate(
@@ -84,7 +102,8 @@ export default function LiveChamadaScreen() {
           setLiveCode(response);
           setClosed(false);
         },
-        onError: (mutationError) => setError(attendanceErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(attendanceErrorMessage(mutationError)),
       },
     );
   };
@@ -114,7 +133,9 @@ export default function LiveChamadaScreen() {
   const expired = liveCode ? isExpired(liveCode.expiresAt, now) : false;
   const streamActive = !!liveCode && !closed && !expired;
   const live = useLiveChamada(streamActive ? liveCode.id : null);
-  const presentCount = live.synced ? live.presentCount : (liveCode?.presentCount ?? 0);
+  const presentCount = live.synced
+    ? live.presentCount
+    : (liveCode?.presentCount ?? 0);
 
   const encerrar = () => {
     if (!liveCode) return;
@@ -126,14 +147,20 @@ export default function LiveChamadaScreen() {
           setLiveCode(response);
           setClosed(true);
         },
-        onError: (mutationError) => setError(attendanceErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setError(attendanceErrorMessage(mutationError)),
       },
     );
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             title={
@@ -176,7 +203,11 @@ export default function LiveChamadaScreen() {
                 padding={theme.space['4']}
                 style={{ alignSelf: 'center', backgroundColor: '#FFFFFF' }}
               >
-                <QRCode value={liveCode.qrToken} size={150} backgroundColor="#FFFFFF" />
+                <QRCode
+                  value={liveCode.qrToken}
+                  size={150}
+                  backgroundColor="#FFFFFF"
+                />
               </Card>
 
               <Text
@@ -186,7 +217,10 @@ export default function LiveChamadaScreen() {
                 style={{ textAlign: 'center' }}
                 testID="live-present-count"
               >
-                ● {presentCount} {presentCount === 1 ? 'aluno já registrou' : 'alunos já registraram'}{' '}
+                ● {presentCount}{' '}
+                {presentCount === 1
+                  ? 'aluno já registrou'
+                  : 'alunos já registraram'}{' '}
                 presença
               </Text>
               {live.status === 'polling' ? (
@@ -202,7 +236,9 @@ export default function LiveChamadaScreen() {
                       key={row.id}
                       title={row.studentName}
                       subtitle={`${METHOD_LABELS[row.method]} · ${timeLabel(row.checkedInAt)}`}
-                      leading={<InitialsAvatar name={row.studentName} size={30} />}
+                      leading={
+                        <InitialsAvatar name={row.studentName} size={30} />
+                      }
                       divider={index < live.attendances.length - 1}
                     />
                   ))}
@@ -223,11 +259,14 @@ export default function LiveChamadaScreen() {
               <Card>
                 <View style={{ gap: 4 }}>
                   <Text variant="label">
-                    {presentCount} {presentCount === 1 ? 'presença registrada' : 'presenças registradas'}
+                    {presentCount}{' '}
+                    {presentCount === 1
+                      ? 'presença registrada'
+                      : 'presenças registradas'}
                   </Text>
                   <Text variant="caption">
-                    Reabrir gera um novo código para a mesma aula. Correções pontuais ficam na
-                    chamada manual.
+                    Reabrir gera um novo código para a mesma aula. Correções
+                    pontuais ficam na chamada manual.
                   </Text>
                 </View>
               </Card>

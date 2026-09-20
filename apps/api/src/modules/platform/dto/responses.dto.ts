@@ -8,7 +8,12 @@ import { PLATFORM_ROLES } from '../../../common/decorators.js';
  * plataforma console.
  */
 
-const ACADEMY_STATUSES = ['trial', 'active', 'delinquent', 'suspended'] as const;
+const ACADEMY_STATUSES = [
+  'trial',
+  'active',
+  'delinquent',
+  'suspended',
+] as const;
 
 export class MrrPointDto {
   @ApiProperty({ example: '2026-08', description: 'YYYY-MM' })
@@ -33,10 +38,16 @@ export class AttentionRowDto {
 }
 
 export class PlatformOverviewResponseDto {
-  @ApiProperty({ description: 'Live subscription revenue this month, in cents' })
+  @ApiProperty({
+    description: 'Live subscription revenue this month, in cents',
+  })
   mrrCents!: number;
 
-  @ApiProperty({ nullable: true, type: Number, description: 'Whole percent vs. last month' })
+  @ApiProperty({
+    nullable: true,
+    type: Number,
+    description: 'Whole percent vs. last month',
+  })
   mrrDeltaPct!: number | null;
 
   @ApiProperty()
@@ -45,7 +56,9 @@ export class PlatformOverviewResponseDto {
   @ApiProperty()
   studentCount!: number;
 
-  @ApiProperty({ description: 'Delinquent share of non-suspended academies, one decimal' })
+  @ApiProperty({
+    description: 'Delinquent share of non-suspended academies, one decimal',
+  })
   delinquencyPct!: number;
 
   @ApiProperty({ type: [MrrPointDto] })
@@ -152,10 +165,17 @@ export class PlatformPlanRowDto {
   @ApiProperty()
   priceCents!: number;
 
-  @ApiProperty({ nullable: true, type: Number, description: 'null = unlimited' })
+  @ApiProperty({
+    nullable: true,
+    type: Number,
+    description: 'null = unlimited',
+  })
   studentLimit!: number | null;
 
-  @ApiProperty({ type: [PlanFeatureDto], description: 'Inherited chips excluded when inheritsFrom is set' })
+  @ApiProperty({
+    type: [PlanFeatureDto],
+    description: 'Inherited chips excluded when inheritsFrom is set',
+  })
   features!: PlanFeatureDto[];
 
   @ApiProperty()
@@ -164,7 +184,11 @@ export class PlatformPlanRowDto {
   @ApiProperty({ description: 'Derived from live subscriptions, never stored' })
   isMostSubscribed!: boolean;
 
-  @ApiProperty({ nullable: true, type: String, description: 'Drives the "Tudo do X" chip' })
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Drives the "Tudo do X" chip',
+  })
   inheritsFrom!: string | null;
 
   @ApiProperty()
@@ -178,7 +202,10 @@ export class PlatformPlanCatalogResponseDto {
   @ApiProperty({ type: [PlatformPlanRowDto] })
   plans!: PlatformPlanRowDto[];
 
-  @ApiProperty({ type: [PlanFeatureDto], description: 'The plataforma-06 toggle rows' })
+  @ApiProperty({
+    type: [PlanFeatureDto],
+    description: 'The plataforma-06 toggle rows',
+  })
   featureRegistry!: PlanFeatureDto[];
 }
 

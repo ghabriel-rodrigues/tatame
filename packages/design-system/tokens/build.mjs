@@ -16,13 +16,22 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import StyleDictionary from 'style-dictionary';
-import { formatCss, formatTsWeb, formatTsNative, formatKotlin, formatSwift } from './lib/formats.mjs';
+import {
+  formatCss,
+  formatTsWeb,
+  formatTsNative,
+  formatKotlin,
+  formatSwift,
+} from './lib/formats.mjs';
 
 const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 StyleDictionary.registerFormat({ name: 'tatame/css', format: formatCss });
 StyleDictionary.registerFormat({ name: 'tatame/ts-web', format: formatTsWeb });
-StyleDictionary.registerFormat({ name: 'tatame/ts-native', format: formatTsNative });
+StyleDictionary.registerFormat({
+  name: 'tatame/ts-native',
+  format: formatTsNative,
+});
 StyleDictionary.registerFormat({ name: 'tatame/kotlin', format: formatKotlin });
 StyleDictionary.registerFormat({ name: 'tatame/swift', format: formatSwift });
 
@@ -57,7 +66,9 @@ await sd.buildAllPlatforms();
 
 /* ---- palette-recipe.json -> src/theme/palette-recipe.data.ts mirror ---- */
 
-const recipe = JSON.parse(readFileSync(join(pkgRoot, 'tokens/palette-recipe.json'), 'utf8'));
+const recipe = JSON.parse(
+  readFileSync(join(pkgRoot, 'tokens/palette-recipe.json'), 'utf8'),
+);
 const { $description: _drop, ...recipeData } = recipe;
 
 const mirror = `/**
@@ -97,12 +108,23 @@ writeFileSync(join(pkgRoot, 'src/theme/palette-recipe.data.ts'), mirror);
 
 /* ---- report ---- */
 
-const count = (file, re) => (readFileSync(join(pkgRoot, file), 'utf8').match(re) ?? []).length;
+const count = (file, re) =>
+  (readFileSync(join(pkgRoot, file), 'utf8').match(re) ?? []).length;
 mkdirSync(join(pkgRoot, 'build'), { recursive: true });
 console.log('[design-system:tokens] built:');
-console.log(`  build/web/tokens.css        ${count('build/web/tokens.css', /^ {2}--/gm)} custom properties`);
-console.log(`  build/web/tokens.ts         ${count('build/web/tokens.ts', /"[^"\n]+": /g)} entries`);
-console.log(`  build/native/tokens.ts      ${count('build/native/tokens.ts', /"[^"\n]+": /g)} entries`);
-console.log(`  build/kotlin/LumiraTokens.kt   ${count('build/kotlin/LumiraTokens.kt', /val /g)} vals`);
-console.log(`  build/swift/LumiraTokens.swift ${count('build/swift/LumiraTokens.swift', /static let /g)} constants`);
+console.log(
+  `  build/web/tokens.css        ${count('build/web/tokens.css', /^ {2}--/gm)} custom properties`,
+);
+console.log(
+  `  build/web/tokens.ts         ${count('build/web/tokens.ts', /"[^"\n]+": /g)} entries`,
+);
+console.log(
+  `  build/native/tokens.ts      ${count('build/native/tokens.ts', /"[^"\n]+": /g)} entries`,
+);
+console.log(
+  `  build/kotlin/LumiraTokens.kt   ${count('build/kotlin/LumiraTokens.kt', /val /g)} vals`,
+);
+console.log(
+  `  build/swift/LumiraTokens.swift ${count('build/swift/LumiraTokens.swift', /static let /g)} constants`,
+);
 console.log('  src/theme/palette-recipe.data.ts (recipe mirror)');

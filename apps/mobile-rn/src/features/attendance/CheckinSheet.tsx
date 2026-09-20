@@ -58,7 +58,13 @@ function ResultView({
   const theme = useTheme();
   const already = result.status === 'already_checked_in';
   return (
-    <View style={{ alignItems: 'center', gap: theme.space['3'], paddingVertical: theme.space['2'] }}>
+    <View
+      style={{
+        alignItems: 'center',
+        gap: theme.space['3'],
+        paddingVertical: theme.space['2'],
+      }}
+    >
       <Animated.View
         entering={pop()}
         testID="checkin-success-pop"
@@ -78,7 +84,8 @@ function ResultView({
       </Text>
       {already ? (
         <Text variant="caption" style={{ textAlign: 'center' }}>
-          Você já tinha feito check-in nesta aula — tudo certo, nada foi duplicado.
+          Você já tinha feito check-in nesta aula — tudo certo, nada foi
+          duplicado.
         </Text>
       ) : result.stats.streak !== null ? (
         <Text variant="caption" style={{ textAlign: 'center' }}>
@@ -103,7 +110,9 @@ export function CheckinSheet({ open, onClose }: CheckinSheetProps) {
 
   const [permission, requestPermission] = useCameraPermissions();
 
-  const homeQuery = api.useQuery('get', '/v1/aluno/home', undefined, { enabled: open });
+  const homeQuery = api.useQuery('get', '/v1/aluno/home', undefined, {
+    enabled: open,
+  });
   const todayClass = homeQuery.data?.todayClass ?? null;
 
   const checkinMutation = api.useMutation('post', '/v1/aluno/checkins');
@@ -117,9 +126,13 @@ export function CheckinSheet({ open, onClose }: CheckinSheetProps) {
         onSuccess: (response) => {
           setResult(response);
           // Hero flip + stat tiles refresh from server truth.
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/aluno/home'],
+          });
           // Agenda check-in affordance flips too (AGD.5 — spec 007 story 7).
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/agenda'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/aluno/agenda'],
+          });
         },
         onError: (mutationError) => {
           scannedRef.current = false;
@@ -173,8 +186,8 @@ export function CheckinSheet({ open, onClose }: CheckinSheetProps) {
   ) : (
     <View style={{ gap: theme.space['3'] }}>
       <Text variant="caption">
-        Câmera indisponível neste aparelho ou sem permissão. Você ainda pode entrar com o
-        código de 4 dígitos.
+        Câmera indisponível neste aparelho ou sem permissão. Você ainda pode
+        entrar com o código de 4 dígitos.
       </Text>
       {permission && !permission.granted ? (
         <TatameButton
@@ -186,7 +199,11 @@ export function CheckinSheet({ open, onClose }: CheckinSheetProps) {
           }}
         />
       ) : null}
-      <TatameButton fullWidth label="Usar código" onPress={() => setMethod('code')} />
+      <TatameButton
+        fullWidth
+        label="Usar código"
+        onPress={() => setMethod('code')}
+      />
     </View>
   );
 
@@ -213,15 +230,18 @@ export function CheckinSheet({ open, onClose }: CheckinSheetProps) {
   const manualPane = (
     <View style={{ gap: theme.space['3'] }}>
       <Text variant="caption">
-        Verificação de localização em breve — por enquanto sua presença é registrada
-        direto para a aula de hoje e fica marcada como manual para o professor.
+        Verificação de localização em breve — por enquanto sua presença é
+        registrada direto para a aula de hoje e fica marcada como manual para o
+        professor.
       </Text>
       {todayClass ? (
         <TatameButton
           fullWidth
           label="Registrar presença"
           loading={checkinMutation.isPending}
-          onPress={() => submit({ method: 'manual', classId: todayClass.classId })}
+          onPress={() =>
+            submit({ method: 'manual', classId: todayClass.classId })
+          }
         />
       ) : (
         <Text variant="caption">Nenhuma aula sua acontece hoje.</Text>

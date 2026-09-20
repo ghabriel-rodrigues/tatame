@@ -5,9 +5,14 @@
 import { makeMembership, makePlatformMembership } from '@tatame/shared/testing';
 import { isValidNextPath, resolvePostLogin } from './redirect';
 
-const adminAlpha = () => makeMembership({ role: 'admin', academyName: 'Alpha Jiu-Jitsu' });
+const adminAlpha = () =>
+  makeMembership({ role: 'admin', academyName: 'Alpha Jiu-Jitsu' });
 const adminBravo = () =>
-  makeMembership({ role: 'admin', academyName: 'Bravo BJJ Team', tenantId: 'tenant-bravo' });
+  makeMembership({
+    role: 'admin',
+    academyName: 'Bravo BJJ Team',
+    tenantId: 'tenant-bravo',
+  });
 const student = () => makeMembership({ role: 'student' });
 const platform = () => makePlatformMembership();
 
@@ -80,7 +85,9 @@ describe('resolvePostLogin', () => {
     ).toEqual({ kind: 'navigate', to: '/admin' });
 
     const s = student();
-    expect(resolvePostLogin({ memberships: [s], activeMembershipId: s.id })).toEqual({
+    expect(
+      resolvePostLogin({ memberships: [s], activeMembershipId: s.id }),
+    ).toEqual({
       kind: 'navigate',
       to: '/baixe-o-app',
     });

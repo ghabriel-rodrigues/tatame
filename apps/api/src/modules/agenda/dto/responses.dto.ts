@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AlunoEventItemDto, CalendarEventItemDto } from '../../events/dto/responses.dto.js';
+import {
+  AlunoEventItemDto,
+  CalendarEventItemDto,
+} from '../../events/dto/responses.dto.js';
 import { BeltRefDto } from '../../graduation/dto/belt.dto.js';
 
 /**
@@ -8,7 +11,9 @@ import { BeltRefDto } from '../../graduation/dto/belt.dto.js';
  */
 
 export class AgendaOccupancyDto {
-  @ApiProperty({ description: 'Active enrollments — the "N" of the "N de M" chip' })
+  @ApiProperty({
+    description: 'Active enrollments — the "N" of the "N de M" chip',
+  })
   active!: number;
 
   @ApiProperty()
@@ -59,13 +64,22 @@ export class AlunoAgendaClassDto {
 }
 
 export class AlunoAgendaResponseDto {
-  @ApiProperty({ minimum: 0, maximum: 6, description: '0 = Sunday … 6 = Saturday' })
+  @ApiProperty({
+    minimum: 0,
+    maximum: 6,
+    description: '0 = Sunday … 6 = Saturday',
+  })
   weekday!: number;
 
-  @ApiProperty({ description: 'Whether the returned weekday is today in the tenant timezone' })
+  @ApiProperty({
+    description: 'Whether the returned weekday is today in the tenant timezone',
+  })
   isToday!: boolean;
 
-  @ApiProperty({ type: [AlunoAgendaClassDto], description: 'Sorted by start time' })
+  @ApiProperty({
+    type: [AlunoAgendaClassDto],
+    description: 'Sorted by start time',
+  })
   classes!: AlunoAgendaClassDto[];
 
   @ApiProperty({
@@ -121,7 +135,10 @@ export class CalendarBucketsDto {
 }
 
 export class CalendarResponseDto {
-  @ApiProperty({ example: '2026-08', description: 'Echoed (or current tenant-local) month' })
+  @ApiProperty({
+    example: '2026-08',
+    description: 'Echoed (or current tenant-local) month',
+  })
   month!: string;
 
   @ApiProperty({ type: CalendarBucketsDto })

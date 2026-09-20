@@ -39,16 +39,31 @@ export interface ChipProps {
   testID?: string;
 }
 
-function toneColors(theme: Theme, tone: ChipTone): { background: string; color: string } {
+function toneColors(
+  theme: Theme,
+  tone: ChipTone,
+): { background: string; color: string } {
   switch (tone) {
     case 'brand':
-      return { background: theme.color.brand.tint, color: theme.color.brand['1'] };
+      return {
+        background: theme.color.brand.tint,
+        color: theme.color.brand['1'],
+      };
     case 'success':
-      return { background: theme.color.success['100'], color: theme.color.success['500'] };
+      return {
+        background: theme.color.success['100'],
+        color: theme.color.success['500'],
+      };
     case 'warning':
-      return { background: theme.color.warning['100'], color: theme.color.warning['500'] };
+      return {
+        background: theme.color.warning['100'],
+        color: theme.color.warning['500'],
+      };
     case 'danger':
-      return { background: theme.color.danger['100'], color: theme.color.danger['500'] };
+      return {
+        background: theme.color.danger['100'],
+        color: theme.color.danger['500'],
+      };
     default:
       return { background: theme.color.bg.app, color: theme.color.fg['3'] };
   }
@@ -88,7 +103,10 @@ export function Chip({
       variant="caption"
       weight="bold"
       color={color}
-      style={{ fontSize: size === 'sm' ? 11 : 12.5, lineHeight: size === 'sm' ? 14 : 16 }}
+      style={{
+        fontSize: size === 'sm' ? 11 : 12.5,
+        lineHeight: size === 'sm' ? 14 : 16,
+      }}
       numberOfLines={1}
     >
       {label}

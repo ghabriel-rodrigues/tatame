@@ -29,10 +29,10 @@ services:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
-        value: "24"
+        value: '24'
       # Render routes traffic to $PORT (10000); the app reads API_PORT.
       - key: API_PORT
-        value: "10000"
+        value: '10000'
       - key: PAYMENTS_PROVIDER
         value: simulated
       - key: WEB_URL

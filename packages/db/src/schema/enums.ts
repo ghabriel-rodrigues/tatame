@@ -15,7 +15,10 @@ export const membershipRole = pgEnum('membership_role', [
 ]);
 
 /** Membership lifecycle status. */
-export const membershipStatus = pgEnum('membership_status', ['active', 'suspended']);
+export const membershipStatus = pgEnum('membership_status', [
+  'active',
+  'suspended',
+]);
 
 /** Invite variant: aluno (student) vs responsavel (guardian). */
 export const inviteKind = pgEnum('invite_kind', ['student', 'guardian']);
@@ -27,7 +30,10 @@ export const studentStatus = pgEnum('student_status', ['active', 'inactive']);
 export const classStatus = pgEnum('class_status', ['active', 'archived']);
 
 /** Enrollment lifecycle — removal flips to `removed`; re-adding reactivates the row. */
-export const enrollmentStatus = pgEnum('enrollment_status', ['active', 'removed']);
+export const enrollmentStatus = pgEnum('enrollment_status', [
+  'active',
+  'removed',
+]);
 
 /**
  * Materialized class occurrence lifecycle — "Encerrar chamada" sets `done`;
@@ -50,7 +56,11 @@ export const beltLadderKind = pgEnum('belt_ladder_kind', ['adult', 'kids']);
  * Graduation row kind — `degree`/`belt` are awards; `revocation` is the
  * admin-only compensation row reversing exactly one award (spec 005 GRD.3).
  */
-export const graduationKind = pgEnum('graduation_kind', ['degree', 'belt', 'revocation']);
+export const graduationKind = pgEnum('graduation_kind', [
+  'degree',
+  'belt',
+  'revocation',
+]);
 
 /** Academy->student plan recurrence — the handoff "recorrência" chips. */
 export const billingRecurrence = pgEnum('billing_recurrence', [
@@ -86,14 +96,21 @@ export const paymentStatus = pgEnum('payment_status', [
 ]);
 
 /** Payment method — the three sheets of the aluno Carteira. */
-export const paymentMethod = pgEnum('payment_method', ['pix', 'boleto', 'card']);
+export const paymentMethod = pgEnum('payment_method', [
+  'pix',
+  'boleto',
+  'card',
+]);
 
 /**
  * Payment provider behind the port. v1 runtime is `simulated` only; `stripe`
  * lands with the stage-2 Connect swap (additive enum values only — the swap
  * needs no migration).
  */
-export const paymentProvider = pgEnum('payment_provider', ['simulated', 'stripe']);
+export const paymentProvider = pgEnum('payment_provider', [
+  'simulated',
+  'stripe',
+]);
 
 /** Card-recurrence mandate lifecycle ("recorrência ativa" toggle). */
 export const mandateStatus = pgEnum('mandate_status', ['active', 'canceled']);
@@ -103,7 +120,11 @@ export const mandateStatus = pgEnum('mandate_status', ['active', 'canceled']);
  * lack date/local ("Rascunho · Data a definir"); publishing requires both
  * (the `events_published_ck` CHECK). Never hard-deleted.
  */
-export const eventStatus = pgEnum('event_status', ['draft', 'published', 'canceled']);
+export const eventStatus = pgEnum('event_status', [
+  'draft',
+  'published',
+  'canceled',
+]);
 
 /**
  * Registration lifecycle — one row per (event, student) whose status flips:
@@ -159,7 +180,11 @@ export const academyStatus = pgEnum('academy_status', [
 ]);
 
 /** Platform (SaaS owner) team roles. */
-export const platformRole = pgEnum('platform_role', ['owner', 'support', 'finance']);
+export const platformRole = pgEnum('platform_role', [
+  'owner',
+  'support',
+  'finance',
+]);
 
 /** Academy -> platform plan subscription status. */
 export const subscriptionStatus = pgEnum('subscription_status', [

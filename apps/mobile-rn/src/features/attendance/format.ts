@@ -4,7 +4,10 @@
  */
 
 /** "09:42" countdown to an ISO expiry; clamps at 00:00 once past. */
-export function countdownLabel(expiresAt: string, now: Date = new Date()): string {
+export function countdownLabel(
+  expiresAt: string,
+  now: Date = new Date(),
+): string {
   const remaining = Math.max(0, new Date(expiresAt).getTime() - now.getTime());
   const totalSeconds = Math.floor(remaining / 1000);
   const pad = (n: number) => n.toString().padStart(2, '0');

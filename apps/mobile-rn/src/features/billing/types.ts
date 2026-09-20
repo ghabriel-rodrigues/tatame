@@ -17,6 +17,7 @@ export type SimulatePaymentResponse = ApiSchemas['SimulatePaymentResponseDto'];
 export type ReceiptResponse = ApiSchemas['ReceiptResponseDto'];
 export type HistoryEntry = ApiSchemas['HistoryEntryDto'];
 export type GuardianHistoryEntry = ApiSchemas['GuardianHistoryEntryDto'];
-export type GuardianPaymentsResponse = ApiSchemas['GuardianPaymentsResponseDto'];
+export type GuardianPaymentsResponse =
+  ApiSchemas['GuardianPaymentsResponseDto'];
 export type DependentPayments = ApiSchemas['DependentPaymentsDto'];
 export type MensalidadeAlert = ApiSchemas['MensalidadeAlertDto'];

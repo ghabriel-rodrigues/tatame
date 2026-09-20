@@ -63,15 +63,23 @@ export default function LoginScreen() {
       setStep({ kind: 'choose', options: session.memberships, session });
       return;
     }
-    const adopted = await adoptSession(session.accessToken, session.refreshToken);
-    if (!adopted) setError('Não foi possível carregar sua sessão. Tente novamente.');
+    const adopted = await adoptSession(
+      session.accessToken,
+      session.refreshToken,
+    );
+    if (!adopted)
+      setError('Não foi possível carregar sua sessão. Tente novamente.');
   }
 
   async function submitCredentials(): Promise<void> {
     setError(null);
     setSubmitting(true);
     try {
-      const { data, error: apiError, response } = await apiClient.POST('/v1/auth/login', {
+      const {
+        data,
+        error: apiError,
+        response,
+      } = await apiClient.POST('/v1/auth/login', {
         body: { email: email.trim(), password, transport: 'body' },
       });
       if (data) {
@@ -97,13 +105,17 @@ export default function LoginScreen() {
     }
   }
 
-  async function chooseMembership(step: Extract<Step, { kind: 'choose' }>, membership: MembershipView): Promise<void> {
+  async function chooseMembership(
+    step: Extract<Step, { kind: 'choose' }>,
+    membership: MembershipView,
+  ): Promise<void> {
     setSubmitting(true);
     setError(null);
     try {
       if (membership.id === step.session.activeMembershipId) {
         const adopted = await adoptSession(step.session.accessToken);
-        if (!adopted) setError('Não foi possível carregar sua sessão. Tente novamente.');
+        if (!adopted)
+          setError('Não foi possível carregar sua sessão. Tente novamente.');
         return;
       }
       await switchMembership(membership.id);
@@ -139,7 +151,11 @@ export default function LoginScreen() {
               <Text variant="display" style={{ fontSize: 26, marginTop: 20 }}>
                 Bem-vindo de volta
               </Text>
-              <Text variant="body" color={theme.color.fg['3']} style={{ marginTop: 6 }}>
+              <Text
+                variant="body"
+                color={theme.color.fg['3']}
+                style={{ marginTop: 6 }}
+              >
                 Entre para acompanhar seus treinos.
               </Text>
               <View style={{ gap: 12, marginTop: 28 }}>
@@ -183,7 +199,11 @@ export default function LoginScreen() {
                   label="Esqueci minha senha"
                   onPress={() => router.push('/forgot-password')}
                 />
-                <Text variant="label" color={theme.color.fg['3']} style={{ padding: 4 }}>
+                <Text
+                  variant="label"
+                  color={theme.color.fg['3']}
+                  style={{ padding: 4 }}
+                >
                   Criar conta
                 </Text>
               </View>
@@ -193,11 +213,25 @@ export default function LoginScreen() {
                 style={{ marginTop: 48 }}
                 testID="invite-notice"
               >
-                <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
-                  <QrCode size={18} color={theme.color.purple['500']} style={{ marginTop: 1 }} />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 10,
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <QrCode
+                    size={18}
+                    color={theme.color.purple['500']}
+                    style={{ marginTop: 1 }}
+                  />
                   <Text variant="caption" style={{ flex: 1, lineHeight: 18 }}>
                     Novo na academia? Peça ao seu professor o{' '}
-                    <Text variant="caption" weight="bold" color={theme.color.fg['2']}>
+                    <Text
+                      variant="caption"
+                      weight="bold"
+                      color={theme.color.fg['2']}
+                    >
                       link de convite
                     </Text>{' '}
                     — seu cadastro já entra vinculado à turma certa.
@@ -212,7 +246,11 @@ export default function LoginScreen() {
               <Text variant="display" style={{ fontSize: 26, marginTop: 20 }}>
                 Escolha seu perfil
               </Text>
-              <Text variant="body" color={theme.color.fg['3']} style={{ marginTop: 6 }}>
+              <Text
+                variant="body"
+                color={theme.color.fg['3']}
+                style={{ marginTop: 6 }}
+              >
                 Sua conta tem mais de um vínculo. Onde você quer entrar?
               </Text>
               <View style={{ gap: 12, marginTop: 28 }}>
@@ -225,12 +263,17 @@ export default function LoginScreen() {
                     disabled={submitting}
                     onPress={() => void chooseMembership(step, membership)}
                   >
-                    {membership.academyName ?? 'Plataforma'} · {ROLE_LABELS[membership.role]}
+                    {membership.academyName ?? 'Plataforma'} ·{' '}
+                    {ROLE_LABELS[membership.role]}
                   </TatameButton>
                 ))}
               </View>
               {error ? (
-                <Text variant="caption" color={theme.color.danger['500']} style={{ marginTop: 12 }}>
+                <Text
+                  variant="caption"
+                  color={theme.color.danger['500']}
+                  style={{ marginTop: 12 }}
+                >
                   {error}
                 </Text>
               ) : null}
@@ -242,9 +285,13 @@ export default function LoginScreen() {
               <Text variant="display" style={{ fontSize: 26, marginTop: 20 }}>
                 Use o console web
               </Text>
-              <Text variant="body" color={theme.color.fg['3']} style={{ marginTop: 6 }}>
-                Sua conta faz parte da equipe da plataforma e usa verificação em duas
-                etapas. Entre pelo console web do Tatame no navegador.
+              <Text
+                variant="body"
+                color={theme.color.fg['3']}
+                style={{ marginTop: 6 }}
+              >
+                Sua conta faz parte da equipe da plataforma e usa verificação em
+                duas etapas. Entre pelo console web do Tatame no navegador.
               </Text>
               <TatameButton
                 fullWidth

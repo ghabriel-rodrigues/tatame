@@ -46,11 +46,19 @@ export interface CheckinResult {
     method: CheckinMethod;
     checkedInAt: Date;
   };
-  session: { id: string; classId: string; className: string; sessionDate: string };
+  session: {
+    id: string;
+    classId: string;
+    className: string;
+    sessionDate: string;
+  };
   stats: AlunoStats;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Aluno check-in (spec 004, ATT.7): three methods, one validated INSERT.
@@ -70,89 +78,137 @@ export class CheckinService {
     private readonly events: EventEmitter2,
   ) {}
 
-  async checkIn(ctx: AuthContext & { tenantId: string }, input: CheckinInput): Promise<CheckinResult> {
+  async checkIn(
+    ctx: AuthContext & { tenantId: string },
+    input: CheckinInput,
+  ): Promise<CheckinResult> {
     const now = new Date();
     let event: CheckinRecordedEvent | null = null;
 
-    const result = await withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
-      const [student] = await tx
-        .select({ id: students.id, fullName: students.fullName })
-        .from(students)
-        .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
-      if (!student) {
-        throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
-      }
+    const result = await withTenant(
+      this.appDb.db,
+      tenantCtx(ctx),
+      async (tx) => {
+        const [student] = await tx
+          .select({ id: students.id, fullName: students.fullName })
+          .from(students)
+          .where(
+            and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+          );
+        if (!student) {
+          throw problem(
+            404,
+            ErrorCodes.NOT_FOUND,
+            'No active student record for this account',
+          );
+        }
 
-      const resolved = await this.resolveSession(tx, ctx, input, now);
+        const resolved = await this.resolveSession(tx, ctx, input, now);
 
-      // Enrollment gate — required for every method (story 11).
-      const [enrollment] = await tx
-        .select({ id: enrollments.id })
-        .from(enrollments)
-        .where(
-          and(
-            eq(enrollments.classId, resolved.classId),
-            eq(enrollments.studentId, student.id),
-            eq(enrollments.status, 'active'),
-          ),
+        // Enrollment gate — required for every method (story 11).
+        const [enrollment] = await tx
+          .select({ id: enrollments.id })
+          .from(enrollments)
+          .where(
+            and(
+              eq(enrollments.classId, resolved.classId),
+              eq(enrollments.studentId, student.id),
+              eq(enrollments.status, 'active'),
+            ),
+          );
+        if (!enrollment) {
+          throw problem(
+            403,
+            ErrorCodes.CHECKIN_NOT_ENROLLED,
+            'Not enrolled in this class',
+          );
+        }
+
+        if (resolved.sessionDate !== localDate(now)) {
+          throw problem(
+            422,
+            ErrorCodes.CHECKIN_NO_SESSION_TODAY,
+            'Check-in is only accepted on the day of the session',
+          );
+        }
+
+        // Duplicate pre-check (story 9) — the fast path of the duplicate state.
+        const existing = await this.activeAttendance(
+          tx,
+          resolved.sessionId,
+          student.id,
         );
-      if (!enrollment) {
-        throw problem(403, ErrorCodes.CHECKIN_NOT_ENROLLED, 'Not enrolled in this class');
-      }
+        if (existing) {
+          return this.result(
+            'already_checked_in',
+            existing,
+            resolved,
+            await this.freshStats(tx, ctx, student.id, now),
+          );
+        }
 
-      if (resolved.sessionDate !== localDate(now)) {
-        throw problem(
-          422,
-          ErrorCodes.CHECKIN_NO_SESSION_TODAY,
-          'Check-in is only accepted on the day of the session',
+        let inserted: typeof attendances.$inferSelect | undefined;
+        try {
+          // SAVEPOINT so the unique-violation loser keeps the outer tx usable.
+          inserted = await tx.transaction(async (stx) => {
+            const [row] = await stx
+              .insert(attendances)
+              .values({
+                tenantId: ctx.tenantId,
+                classSessionId: resolved.sessionId,
+                studentId: student.id,
+                method: input.method,
+                checkedInAt: now,
+                recordedByUserId: null, // self check-in — the row is the record
+              })
+              .returning();
+            return row;
+          });
+        } catch (error) {
+          if (!SessionService.isDuplicateAttendance(error)) throw error;
+          const winner = await this.activeAttendance(
+            tx,
+            resolved.sessionId,
+            student.id,
+          );
+          if (!winner) throw error;
+          return this.result(
+            'already_checked_in',
+            winner,
+            resolved,
+            await this.freshStats(tx, ctx, student.id, now),
+          );
+        }
+        if (!inserted)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Attendance insert returned no row',
+          );
+
+        const presentCount = await this.sessions.presentCount(
+          tx,
+          resolved.sessionId,
         );
-      }
+        event = {
+          tenantId: ctx.tenantId,
+          classSessionId: resolved.sessionId,
+          attendanceId: inserted.id,
+          studentId: student.id,
+          studentName: student.fullName,
+          method: input.method,
+          checkedInAt: inserted.checkedInAt.toISOString(),
+          presentCount,
+        };
 
-      // Duplicate pre-check (story 9) — the fast path of the duplicate state.
-      const existing = await this.activeAttendance(tx, resolved.sessionId, student.id);
-      if (existing) {
-        return this.result('already_checked_in', existing, resolved, await this.freshStats(tx, ctx, student.id, now));
-      }
-
-      let inserted: typeof attendances.$inferSelect | undefined;
-      try {
-        // SAVEPOINT so the unique-violation loser keeps the outer tx usable.
-        inserted = await tx.transaction(async (stx) => {
-          const [row] = await stx
-            .insert(attendances)
-            .values({
-              tenantId: ctx.tenantId,
-              classSessionId: resolved.sessionId,
-              studentId: student.id,
-              method: input.method,
-              checkedInAt: now,
-              recordedByUserId: null, // self check-in — the row is the record
-            })
-            .returning();
-          return row;
-        });
-      } catch (error) {
-        if (!SessionService.isDuplicateAttendance(error)) throw error;
-        const winner = await this.activeAttendance(tx, resolved.sessionId, student.id);
-        if (!winner) throw error;
-        return this.result('already_checked_in', winner, resolved, await this.freshStats(tx, ctx, student.id, now));
-      }
-      if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Attendance insert returned no row');
-
-      const presentCount = await this.sessions.presentCount(tx, resolved.sessionId);
-      event = {
-        tenantId: ctx.tenantId,
-        classSessionId: resolved.sessionId,
-        attendanceId: inserted.id,
-        studentId: student.id,
-        studentName: student.fullName,
-        method: input.method,
-        checkedInAt: inserted.checkedInAt.toISOString(),
-        presentCount,
-      };
-
-      return this.result('checked_in', inserted, resolved, await this.freshStats(tx, ctx, student.id, now));
-    });
+        return this.result(
+          'checked_in',
+          inserted,
+          resolved,
+          await this.freshStats(tx, ctx, student.id, now),
+        );
+      },
+    );
 
     // Post-commit bridge (be-09): only committed check-ins reach a stream.
     if (event) this.events.emit(ATTENDANCE_CHECKIN_RECORDED, event);
@@ -165,16 +221,26 @@ export class CheckinService {
     ctx: AuthContext & { tenantId: string },
     input: CheckinInput,
     now: Date,
-  ): Promise<{ sessionId: string; classId: string; className: string; sessionDate: string }> {
+  ): Promise<{
+    sessionId: string;
+    classId: string;
+    className: string;
+    sessionDate: string;
+  }> {
     if (input.method === 'qr' || input.method === 'code') {
       const secret = input.method === 'qr' ? input.qrToken : input.code;
       if (!secret) {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Missing code for the chosen method', [
-          {
-            field: input.method === 'qr' ? 'qrToken' : 'code',
-            messages: ['Required for this method'],
-          },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Missing code for the chosen method',
+          [
+            {
+              field: input.method === 'qr' ? 'qrToken' : 'code',
+              messages: ['Required for this method'],
+            },
+          ],
+        );
       }
       // Active (not revoked, not expired) code — a wrong, expired, closed or
       // foreign-academy code all behave as nonexistent (stories 7/46; RLS
@@ -196,17 +262,26 @@ export class CheckinService {
         )
         .innerJoin(
           classes,
-          and(eq(classes.tenantId, classSessions.tenantId), eq(classes.id, classSessions.classId)),
+          and(
+            eq(classes.tenantId, classSessions.tenantId),
+            eq(classes.id, classSessions.classId),
+          ),
         )
         .where(
           and(
-            input.method === 'qr' ? eq(checkinCodes.qrToken, secret) : eq(checkinCodes.code, secret),
+            input.method === 'qr'
+              ? eq(checkinCodes.qrToken, secret)
+              : eq(checkinCodes.code, secret),
             isNull(checkinCodes.revokedAt),
             gt(checkinCodes.expiresAt, now),
           ),
         );
       if (!row) {
-        throw problem(404, ErrorCodes.CHECKIN_CODE_INVALID, 'Invalid or expired check-in code');
+        throw problem(
+          404,
+          ErrorCodes.CHECKIN_CODE_INVALID,
+          'Invalid or expired check-in code',
+        );
       }
       return row;
     }
@@ -214,9 +289,12 @@ export class CheckinService {
     // manual — today's session for the given class, materialized on demand,
     // accepted only inside the window: slot start − 30 min → slot end + grace.
     if (!input.classId) {
-      throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Missing classId for manual check-in', [
-        { field: 'classId', messages: ['Required for the manual method'] },
-      ]);
+      throw problem(
+        422,
+        ErrorCodes.VALIDATION_FAILED,
+        'Missing classId for manual check-in',
+        [{ field: 'classId', messages: ['Required for the manual method'] }],
+      );
     }
     const klass = await this.sessions.ownedClass(tx, input.classId);
     if (!klass || klass.status !== 'active') {
@@ -239,7 +317,12 @@ export class CheckinService {
         'Manual check-in is outside the class window',
       );
     }
-    const session = await this.sessions.materializeToday(tx, ctx.tenantId, input.classId, now);
+    const session = await this.sessions.materializeToday(
+      tx,
+      ctx.tenantId,
+      input.classId,
+      now,
+    );
     return {
       sessionId: session.id,
       classId: klass.id,
@@ -248,7 +331,11 @@ export class CheckinService {
     };
   }
 
-  private async activeAttendance(tx: DbTransaction, sessionId: string, studentId: string) {
+  private async activeAttendance(
+    tx: DbTransaction,
+    sessionId: string,
+    studentId: string,
+  ) {
     const [row] = await tx
       .select()
       .from(attendances)
@@ -276,7 +363,12 @@ export class CheckinService {
   private result(
     status: CheckinResult['status'],
     row: typeof attendances.$inferSelect,
-    resolved: { sessionId: string; classId: string; className: string; sessionDate: string },
+    resolved: {
+      sessionId: string;
+      classId: string;
+      className: string;
+      sessionDate: string;
+    },
     stats: AlunoStats,
   ): CheckinResult {
     return {

@@ -45,21 +45,30 @@ export function ContaPage() {
   return (
     <Box sx={{ maxWidth: 560, margin: '0 auto' }}>
       <Stack spacing="16px">
-        <ScreenHeader title="Conta" subtitle="Equipe, faturamento e integrações da plataforma." />
+        <ScreenHeader
+          title="Conta"
+          subtitle="Equipe, faturamento e integrações da plataforma."
+        />
 
         <Card padding={16}>
           <Stack direction="row" spacing="12px" sx={{ alignItems: 'center' }}>
             <InitialsAvatar name={session?.user.fullName ?? 'Tatame'} />
             <Box>
-              <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+              <Typography
+                sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}
+              >
                 {session?.user.fullName}
               </Typography>
-              <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-3)' }}>
+              <Typography
+                sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-3)' }}
+              >
                 {session?.user.email}
               </Typography>
             </Box>
             <Box sx={{ marginLeft: 'auto' }}>
-              {session ? <Chip label={ROLE_LABELS[session.activeRole]} tone="brand" /> : null}
+              {session ? (
+                <Chip label={ROLE_LABELS[session.activeRole]} tone="brand" />
+              ) : null}
             </Box>
           </Stack>
         </Card>
@@ -118,7 +127,8 @@ function InviteSheet({
   function submit() {
     const next: Record<string, string> = {};
     if (fullName.trim().length < 2) next['fullName'] = 'Informe o nome.';
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) next['email'] = 'Informe um email válido.';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()))
+      next['email'] = 'Informe um email válido.';
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -126,7 +136,9 @@ function InviteSheet({
       { body: { fullName: fullName.trim(), email: email.trim(), role } },
       {
         onSuccess: async (response) => {
-          await queryClient.invalidateQueries({ queryKey: ['get', '/v1/platform/team'] });
+          await queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/platform/team'],
+          });
           onInvited(
             `Convite enviado por email com papel ${ROLE_LABELS[response.member.role]}.`,
           );
@@ -207,14 +219,20 @@ export function EquipePage() {
           {...(isOwner
             ? {
                 trailing: (
-                  <TatameButton size="sm" label="Convidar" onPress={() => setInviting(true)} />
+                  <TatameButton
+                    size="sm"
+                    label="Convidar"
+                    onPress={() => setInviting(true)}
+                  />
                 ),
               }
             : {})}
         />
 
         {query.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando equipe…
           </Typography>
         ) : null}
@@ -227,7 +245,10 @@ export function EquipePage() {
               subtitle={member.email}
               leading={<InitialsAvatar name={member.fullName} />}
               trailing={
-                <Chip label={ROLE_LABELS[member.role]} tone={ROLE_TONES[member.role]} />
+                <Chip
+                  label={ROLE_LABELS[member.role]}
+                  tone={ROLE_TONES[member.role]}
+                />
               }
             />
           ))}
@@ -243,10 +264,18 @@ export function EquipePage() {
       </Stack>
 
       {inviting ? (
-        <InviteSheet open onClose={() => setInviting(false)} onInvited={toast.show} />
+        <InviteSheet
+          open
+          onClose={() => setInviting(false)}
+          onInvited={toast.show}
+        />
       ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }
@@ -286,8 +315,8 @@ export function IntegracoesPage() {
 
         <Card variant="tinted">
           <Typography sx={{ fontSize: 12.5, color: 'var(--fg-2)' }}>
-            Na v1 os meios de pagamento são somente leitura — pausar uma trilha para novas
-            cobranças chega em uma próxima entrega.
+            Na v1 os meios de pagamento são somente leitura — pausar uma trilha
+            para novas cobranças chega em uma próxima entrega.
           </Typography>
         </Card>
       </Stack>

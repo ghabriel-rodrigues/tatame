@@ -1,5 +1,8 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EVENTS_REGISTRATION_CANCELED, EVENTS_REGISTRATION_CONFIRMED } from '@org/api';
+import {
+  EVENTS_REGISTRATION_CANCELED,
+  EVENTS_REGISTRATION_CONFIRMED,
+} from '@org/api';
 import { auditLogs, charges, withPlatform } from '@tatame/db';
 import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -27,7 +30,9 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     admin = (await t.login('admin@tatame.dev')).accessToken;
 
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
-    openMatId = list.body.events.find((e: any) => e.name === 'Open Mat de Verao').id;
+    openMatId = list.body.events.find(
+      (e: any) => e.name === 'Open Mat de Verao',
+    ).id;
     exameId = list.body.events.find((e: any) => e.name === 'Exame de Faixa').id;
 
     const emitter = t.app.get(EventEmitter2);
@@ -45,7 +50,9 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.action, action), eq(auditLogs.targetId, targetId))),
+        .where(
+          and(eq(auditLogs.action, action), eq(auditLogs.targetId, targetId)),
+        ),
     );
 
   it('home gains upcomingEvents: the next 2 published with own state (additive)', async () => {
@@ -55,7 +62,10 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     expect(res.body.student.fullName).toBe('Ana Aluna');
     expect(res.body.stats).toBeTruthy();
 
-    expect(res.body.upcomingEvents.map((e: any) => e.id)).toEqual([openMatId, exameId]);
+    expect(res.body.upcomingEvents.map((e: any) => e.id)).toEqual([
+      openMatId,
+      exameId,
+    ]);
     const [openMat, exame] = res.body.upcomingEvents;
     expect(openMat).toMatchObject({
       name: 'Open Mat de Verao',
@@ -69,7 +79,10 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
   });
 
   it('detail answers everything on one screen; drafts and foreign events are 404', async () => {
-    const res = await t.http().get(`/v1/aluno/events/${openMatId}`).set(bearer(aluno));
+    const res = await t
+      .http()
+      .get(`/v1/aluno/events/${openMatId}`)
+      .set(bearer(aluno));
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       name: 'Open Mat de Verao',
@@ -85,21 +98,35 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     // Drafts stay backstage (story 25).
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
     const draftId = list.body.events.find((e: any) => e.status === 'draft').id;
-    const draft = await t.http().get(`/v1/aluno/events/${draftId}`).set(bearer(aluno));
+    const draft = await t
+      .http()
+      .get(`/v1/aluno/events/${draftId}`)
+      .set(bearer(aluno));
     expect(draft.status).toBe(404);
 
     // RLS backstop: a bravo event id behaves as 404 for an alpha aluno.
     const bravoAdmin = await t.login('admin.bravo@tatame.dev');
-    const bravoList = await t.http().get('/v1/admin/events').set(bearer(bravoAdmin.accessToken));
-    const bravoEventId = bravoList.body.events.find((e: any) => e.status === 'published').id;
-    const foreign = await t.http().get(`/v1/aluno/events/${bravoEventId}`).set(bearer(aluno));
+    const bravoList = await t
+      .http()
+      .get('/v1/admin/events')
+      .set(bearer(bravoAdmin.accessToken));
+    const bravoEventId = bravoList.body.events.find(
+      (e: any) => e.status === 'published',
+    ).id;
+    const foreign = await t
+      .http()
+      .get(`/v1/aluno/events/${bravoEventId}`)
+      .set(bearer(aluno));
     expect(foreign.status).toBe(404);
   });
 
   let openMatRegistrationId: string;
 
   it('free cancel flips the row; re-confirm reuses the SAME row (unique holds)', async () => {
-    const detail = await t.http().get(`/v1/aluno/events/${openMatId}`).set(bearer(aluno));
+    const detail = await t
+      .http()
+      .get(`/v1/aluno/events/${openMatId}`)
+      .set(bearer(aluno));
     openMatRegistrationId = detail.body.registration.id;
 
     const canceled = await t
@@ -107,12 +134,17 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
       .delete(`/v1/aluno/events/${openMatId}/registration`)
       .set(bearer(aluno));
     expect(canceled.status).toBe(204);
-    const after = await t.http().get(`/v1/aluno/events/${openMatId}`).set(bearer(aluno));
+    const after = await t
+      .http()
+      .get(`/v1/aluno/events/${openMatId}`)
+      .set(bearer(aluno));
     expect(after.body.registration).toMatchObject({
       id: openMatRegistrationId,
       status: 'canceled',
     });
-    expect(canceledEvents.find((e) => e.registrationId === openMatRegistrationId)).toMatchObject({
+    expect(
+      canceledEvents.find((e) => e.registrationId === openMatRegistrationId),
+    ).toMatchObject({
       via: 'self',
       audience: 'student',
     });
@@ -131,13 +163,19 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
       .set(bearer(aluno));
     expect(reconfirmed.status).toBe(201);
     expect(reconfirmed.body).toMatchObject({
-      registration: { id: openMatRegistrationId, status: 'confirmed', chargeId: null },
+      registration: {
+        id: openMatRegistrationId,
+        status: 'confirmed',
+        chargeId: null,
+      },
       chargeId: null,
     });
     expect(
       confirmedEvents.find((e) => e.registrationId === openMatRegistrationId),
     ).toBeTruthy();
-    expect(await auditRows('events.registration.canceled', openMatRegistrationId)).toHaveLength(1);
+    expect(
+      await auditRows('events.registration.canceled', openMatRegistrationId),
+    ).toHaveLength(1);
 
     // Counts stay honest: still 2 inscritos on the admin card, never 3 rows.
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
@@ -168,7 +206,8 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
         birthDate: '1998-05-05',
       });
     expect(accept.status).toBe(201);
-    fresh = (await t.login('pagante@tatame.dev', 'pagante-pass-123')).accessToken;
+    fresh = (await t.login('pagante@tatame.dev', 'pagante-pass-123'))
+      .accessToken;
 
     const res = await t
       .http()
@@ -205,7 +244,10 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     // Home reflects the pending state with the deep-linkable chargeId.
     const home = await t.http().get('/v1/aluno/home').set(bearer(fresh));
     const exame = home.body.upcomingEvents.find((e: any) => e.id === exameId);
-    expect(exame.registration).toMatchObject({ status: 'pending_payment', chargeId });
+    expect(exame.registration).toMatchObject({
+      status: 'pending_payment',
+      chargeId,
+    });
   });
 
   it('pays over the EXISTING wallet rails while read-only; simulate confirms through the handler', async () => {
@@ -224,7 +266,9 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
       .set(bearer(fresh))
       .send({ method: 'pix' });
     expect(payment.status).toBe(201);
-    expect(payment.body.payment.providerData.copiaECola).toBe(`TATAME-SIM-PIX-${chargeId}`);
+    expect(payment.body.payment.providerData.copiaECola).toBe(
+      `TATAME-SIM-PIX-${chargeId}`,
+    );
     paymentId = payment.body.payment.id;
 
     const simulated = await t
@@ -236,25 +280,39 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     await t.setAcademyStatus('alpha-jj', 'active');
 
     // The normalized handler settled the charge AND confirmed the inscription.
-    const detail = await t.http().get(`/v1/aluno/events/${exameId}`).set(bearer(fresh));
+    const detail = await t
+      .http()
+      .get(`/v1/aluno/events/${exameId}`)
+      .set(bearer(fresh));
     expect(detail.body.registration).toMatchObject({
       id: registrationId,
       status: 'confirmed',
       chargeId: null, // nothing left to pay
     });
-    expect(confirmedEvents.find((e) => e.registrationId === registrationId)).toBeTruthy();
-    expect(await auditRows('events.registration.confirmed', registrationId)).toHaveLength(1);
+    expect(
+      confirmedEvents.find((e) => e.registrationId === registrationId),
+    ).toBeTruthy();
+    expect(
+      await auditRows('events.registration.confirmed', registrationId),
+    ).toHaveLength(1);
 
     // Event money lands in the Carteira histórico with a comprovante.
     const wallet = await t.http().get('/v1/aluno/wallet').set(bearer(fresh));
     expect(wallet.body.history).toHaveLength(1);
-    expect(wallet.body.history[0]).toMatchObject({ method: 'pix', amountCents: 6000 });
+    expect(wallet.body.history[0]).toMatchObject({
+      method: 'pix',
+      amountCents: 6000,
+    });
     expect(wallet.body.history[0].receiptUrl).toContain('/receipt');
 
     // The admin card's arrecadado grows by the settled inscription.
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
     const exame = list.body.events.find((e: any) => e.id === exameId);
-    expect(exame.totals).toMatchObject({ inscritos: 3, confirmados: 2, arrecadadoCents: 12000 });
+    expect(exame.totals).toMatchObject({
+      inscritos: 3,
+      confirmados: 2,
+      arrecadadoCents: 12000,
+    });
   });
 
   it('self-cancel of the paid, settled registration → 409 event.registration_settled', async () => {
@@ -275,12 +333,22 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     expect(res.status).toBe(200);
     expect(res.body.charge.status).toBe('refunded');
 
-    const detail = await t.http().get(`/v1/aluno/events/${exameId}`).set(bearer(fresh));
-    expect(detail.body.registration).toMatchObject({ id: registrationId, status: 'canceled' });
-    expect(canceledEvents.find((e) => e.registrationId === registrationId)).toMatchObject({
+    const detail = await t
+      .http()
+      .get(`/v1/aluno/events/${exameId}`)
+      .set(bearer(fresh));
+    expect(detail.body.registration).toMatchObject({
+      id: registrationId,
+      status: 'canceled',
+    });
+    expect(
+      canceledEvents.find((e) => e.registrationId === registrationId),
+    ).toMatchObject({
       via: 'refund',
     });
-    expect(await auditRows('events.registration.canceled', registrationId)).toHaveLength(1);
+    expect(
+      await auditRows('events.registration.canceled', registrationId),
+    ).toHaveLength(1);
   });
 
   it('re-register after refund issues a NEW charge; canceling pending voids it', async () => {
@@ -306,7 +374,10 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
   });
 
   it('registration on a canceled event → 422 event.not_published (stable code)', async () => {
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     const professorUserId = professors.body.professors[0].userId;
     const created = await t
       .http()
@@ -320,7 +391,10 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
         status: 'published',
       });
     expect(created.status).toBe(201);
-    await t.http().post(`/v1/admin/events/${created.body.id}/cancel`).set(bearer(admin));
+    await t
+      .http()
+      .post(`/v1/admin/events/${created.body.id}/cancel`)
+      .set(bearer(admin));
 
     const res = await t
       .http()
@@ -330,7 +404,10 @@ describe('events: aluno home/detail + free and paid registration flows', () => {
     expect(res.body.code).toBe('event.not_published');
 
     // And it disappeared from every published-only read.
-    const detail = await t.http().get(`/v1/aluno/events/${created.body.id}`).set(bearer(aluno));
+    const detail = await t
+      .http()
+      .get(`/v1/aluno/events/${created.body.id}`)
+      .set(bearer(aluno));
     expect(detail.status).toBe(404);
   });
 });

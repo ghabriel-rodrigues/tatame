@@ -9,10 +9,20 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { BottomSheet, TatameButton, Text, useTheme } from '@tatame/design-system/native';
+import {
+  BottomSheet,
+  TatameButton,
+  Text,
+  useTheme,
+} from '@tatame/design-system/native';
 import { isSimulated, providerField } from './format';
 import { BarcodeStripes, CopiedNotice, PaymentSuccess } from './ui';
-import { usePendingPayment, useSimulatePayment, useSettleInvalidation, type PaymentScope } from './use-payment';
+import {
+  usePendingPayment,
+  useSimulatePayment,
+  useSettleInvalidation,
+  type PaymentScope,
+} from './use-payment';
 
 export interface BoletoSheetProps {
   open: boolean;
@@ -23,16 +33,30 @@ export interface BoletoSheetProps {
   subtitle: string;
 }
 
-export function BoletoSheet({ open, onClose, scope, chargeId, subtitle }: BoletoSheetProps) {
+export function BoletoSheet({
+  open,
+  onClose,
+  scope,
+  chargeId,
+  subtitle,
+}: BoletoSheetProps) {
   const theme = useTheme();
   const [copied, setCopied] = useState(false);
 
-  const { payment, pending, error } = usePendingPayment({ scope, chargeId, method: 'boleto' });
+  const { payment, pending, error } = usePendingPayment({
+    scope,
+    chargeId,
+    method: 'boleto',
+  });
   const invalidate = useSettleInvalidation(scope);
   const simulate = useSimulatePayment(invalidate);
 
-  const linhaDigitavel = payment ? providerField(payment, 'linhaDigitavel') : null;
-  const barcodePayload = payment ? providerField(payment, 'barcodePayload') : null;
+  const linhaDigitavel = payment
+    ? providerField(payment, 'linhaDigitavel')
+    : null;
+  const barcodePayload = payment
+    ? providerField(payment, 'barcodePayload')
+    : null;
 
   const copy = () => {
     if (!linhaDigitavel) return;
@@ -108,7 +132,10 @@ export function BoletoSheet({ open, onClose, scope, chargeId, subtitle }: Boleto
                   onPress={() => simulate.run(payment.id)}
                 />
               ) : null}
-              <Text variant="caption" style={{ textAlign: 'center', fontSize: 11 }}>
+              <Text
+                variant="caption"
+                style={{ textAlign: 'center', fontSize: 11 }}
+              >
                 Boletos são compensados em até 1 dia útil após o pagamento.
               </Text>
             </>

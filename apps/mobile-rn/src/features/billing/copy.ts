@@ -15,7 +15,8 @@ const MESSAGES: Record<string, string> = {
   [ApiErrorCodes.BILLING_SIMULATE_UNAVAILABLE]:
     'A simulação de pagamento não está disponível neste ambiente.',
   [ApiErrorCodes.NOT_FOUND]: 'Registro não encontrado.',
-  [ApiErrorCodes.VALIDATION_FAILED]: 'Dados inválidos. Revise e tente novamente.',
+  [ApiErrorCodes.VALIDATION_FAILED]:
+    'Dados inválidos. Revise e tente novamente.',
 };
 
 export const GENERIC_BILLING_ERROR = 'Algo deu errado. Tente novamente.';

@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
-import { PAYMENT_PROVIDER_PORT, type PaymentProviderPort } from './payment-provider.port.js';
+import {
+  PAYMENT_PROVIDER_PORT,
+  type PaymentProviderPort,
+} from './payment-provider.port.js';
 import { SimulatedPaymentProvider } from './simulated-payment.provider.js';
 import { StripePaymentProvider } from './stripe-payment.provider.js';
 

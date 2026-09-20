@@ -42,10 +42,14 @@ describe('turma belt range (GRD.14)', () => {
       session: makeMeResponse({ memberships: [admin()] }),
     });
 
-    expect(await screen.findByRole('heading', { name: 'Fundamentos' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Fundamentos' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Faixas')).toBeInTheDocument();
     // BeltChips drawn from the payload slugs — belt name labels, never hex.
-    expect(screen.getByRole('img', { name: 'Faixa branca' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Faixa branca' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Faixa azul' })).toBeInTheDocument();
   });
 
@@ -56,7 +60,9 @@ describe('turma belt range (GRD.14)', () => {
     server.use(
       http.post('/v1/admin/classes', async ({ request, response }) => {
         body = (await request.json()) as Record<string, unknown>;
-        return response(201).json({ class: makeClassDetail({ name: 'Competição' }) });
+        return response(201).json({
+          class: makeClassDetail({ name: 'Competição' }),
+        });
       }),
     );
     const user = userEvent.setup();
@@ -69,16 +75,25 @@ describe('turma belt range (GRD.14)', () => {
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
 
     const sheet = await screen.findByRole('dialog', { name: 'Nova turma' });
-    await user.type(within(sheet).getByLabelText(/Nome da turma/), 'Competição');
+    await user.type(
+      within(sheet).getByLabelText(/Nome da turma/),
+      'Competição',
+    );
     await user.click(within(sheet).getByRole('button', { name: 'Seg' }));
     // Comboboxes in order: professor, faixa mínima, faixa máxima.
     await user.click(within(sheet).getAllByRole('combobox')[0]!);
-    await user.click(await screen.findByRole('option', { name: 'Rafael Nunes' }));
+    await user.click(
+      await screen.findByRole('option', { name: 'Rafael Nunes' }),
+    );
     await user.click(within(sheet).getAllByRole('combobox')[1]!);
     await user.click(await screen.findByRole('option', { name: 'Faixa azul' }));
     await user.click(within(sheet).getAllByRole('combobox')[2]!);
-    await user.click(await screen.findByRole('option', { name: 'Faixa preta' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Criar turma' }));
+    await user.click(
+      await screen.findByRole('option', { name: 'Faixa preta' }),
+    );
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar turma' }),
+    );
 
     expect(await screen.findByText('Turma criada.')).toBeInTheDocument();
     expect(body).toMatchObject({

@@ -9,7 +9,9 @@ export class NotificationDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 
-  @ApiProperty({ enum: ['payment', 'event', 'graduation', 'attendance', 'store'] })
+  @ApiProperty({
+    enum: ['payment', 'event', 'graduation', 'attendance', 'store'],
+  })
   category!: 'payment' | 'event' | 'graduation' | 'attendance' | 'store';
 
   @ApiPropertyOptional({
@@ -24,7 +26,11 @@ export class NotificationDto {
   @ApiProperty({ example: 'Mensalidade de agosto disponível' })
   title!: string;
 
-  @ApiPropertyOptional({ nullable: true, type: String, example: 'Vence em 05/08 · R$ 180,00' })
+  @ApiPropertyOptional({
+    nullable: true,
+    type: String,
+    example: 'Vence em 05/08 · R$ 180,00',
+  })
   body!: string | null;
 
   @ApiPropertyOptional({
@@ -32,25 +38,32 @@ export class NotificationDto {
     type: String,
     example: 'wallet',
     description:
-      'Semantic deep-link hint (wallet, event/{eventId}, graduation, orders, store) — mapped to each shell\'s local navigation; unknown/null routes are inert',
+      "Semantic deep-link hint (wallet, event/{eventId}, graduation, orders, store) — mapped to each shell's local navigation; unknown/null routes are inert",
   })
   route!: string | null;
 
   @ApiPropertyOptional({ format: 'date-time', nullable: true, type: String })
   readAt!: string | null;
 
-  @ApiProperty({ format: 'date-time', description: 'Clients render the relative PT-BR timestamp' })
+  @ApiProperty({
+    format: 'date-time',
+    description: 'Clients render the relative PT-BR timestamp',
+  })
   createdAt!: string;
 }
 
 export class NotificationsListResponseDto {
-  @ApiProperty({ type: [NotificationDto], description: 'Own rows, newest first (~30 per page)' })
+  @ApiProperty({
+    type: [NotificationDto],
+    description: 'Own rows, newest first (~30 per page)',
+  })
   notifications!: NotificationDto[];
 
   @ApiPropertyOptional({
     nullable: true,
     type: String,
-    description: 'Opaque keyset cursor for the next page; null = no further pages',
+    description:
+      'Opaque keyset cursor for the next page; null = no further pages',
   })
   nextCursor!: string | null;
 }
@@ -71,6 +84,8 @@ export class MarkAllReadResponseDto {
 }
 
 export class NotificationSettingsResponseDto {
-  @ApiProperty({ description: 'The active membership\'s notifications_enabled flag' })
+  @ApiProperty({
+    description: "The active membership's notifications_enabled flag",
+  })
   enabled!: boolean;
 }

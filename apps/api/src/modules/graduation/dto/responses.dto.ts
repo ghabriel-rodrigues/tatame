@@ -1,6 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AlunoStatsDto } from '../../attendance/dto/responses.dto.js';
-import { BeltRefDto, BeltViewDto, GraduationProgressDto, NextMilestoneDto } from './belt.dto.js';
+import {
+  BeltRefDto,
+  BeltViewDto,
+  GraduationProgressDto,
+  NextMilestoneDto,
+} from './belt.dto.js';
 
 /**
  * Response DTOs — OpenAPI documentation classes only (web-03 pipeline). The
@@ -40,10 +45,17 @@ export class GraduationEntryDto {
   @ApiProperty({ nullable: true, type: String })
   notes!: string | null;
 
-  @ApiProperty({ description: 'Award reversed by a later revocation compensation row' })
+  @ApiProperty({
+    description: 'Award reversed by a later revocation compensation row',
+  })
   reversed!: boolean;
 
-  @ApiProperty({ format: 'uuid', nullable: true, type: String, description: 'Set on revocation rows' })
+  @ApiProperty({
+    format: 'uuid',
+    nullable: true,
+    type: String,
+    description: 'Set on revocation rows',
+  })
   reversesGraduationId!: string | null;
 
   @ApiProperty({
@@ -61,7 +73,10 @@ export class AlunoGraduationResponseDto {
   @ApiProperty({ type: GraduationProgressDto })
   progress!: GraduationProgressDto;
 
-  @ApiProperty({ type: [GraduationEntryDto], description: 'Histórico de evolução, newest first' })
+  @ApiProperty({
+    type: [GraduationEntryDto],
+    description: 'Histórico de evolução, newest first',
+  })
   timeline!: GraduationEntryDto[];
 }
 
@@ -69,7 +84,10 @@ export class AwardGraduationResponseDto {
   @ApiProperty({ type: GraduationEntryDto })
   graduation!: GraduationEntryDto;
 
-  @ApiProperty({ type: BeltViewDto, description: 'Freshly derived current belt after the award' })
+  @ApiProperty({
+    type: BeltViewDto,
+    description: 'Freshly derived current belt after the award',
+  })
   belt!: BeltViewDto;
 }
 
@@ -83,12 +101,18 @@ export class RevokeGraduationResponseDto {
   @ApiProperty({ format: 'uuid', description: 'The appended compensation row' })
   revocationId!: string;
 
-  @ApiProperty({ type: BeltViewDto, description: 'Restored current belt after the reversal' })
+  @ApiProperty({
+    type: BeltViewDto,
+    description: 'Restored current belt after the reversal',
+  })
   belt!: BeltViewDto;
 }
 
 export class GraduationHistoryResponseDto {
-  @ApiProperty({ type: [GraduationEntryDto], description: 'Full history incl. revocations' })
+  @ApiProperty({
+    type: [GraduationEntryDto],
+    description: 'Full history incl. revocations',
+  })
   graduations!: GraduationEntryDto[];
 }
 
@@ -96,7 +120,9 @@ export class GraduationRuleRowDto extends BeltRefDto {
   @ApiProperty({ enum: ['adult', 'kids'] })
   ladderKind!: 'adult' | 'kids';
 
-  @ApiProperty({ description: 'Aulas por grau — default 40 when no override row exists' })
+  @ApiProperty({
+    description: 'Aulas por grau — default 40 when no override row exists',
+  })
   lessonsPerDegree!: number;
 
   @ApiProperty()
@@ -165,10 +191,16 @@ export class StudentProfileResponseDto {
   @ApiProperty({ type: GraduationProgressDto })
   progress!: GraduationProgressDto;
 
-  @ApiProperty({ type: AlunoStatsDto, description: 'Phase-4 attendance stat tiles' })
+  @ApiProperty({
+    type: AlunoStatsDto,
+    description: 'Phase-4 attendance stat tiles',
+  })
   stats!: AlunoStatsDto;
 
-  @ApiProperty({ type: [StudentNoteDto], description: 'Observações, newest first' })
+  @ApiProperty({
+    type: [StudentNoteDto],
+    description: 'Observações, newest first',
+  })
   notes!: StudentNoteDto[];
 }
 
@@ -176,7 +208,9 @@ export class ValidGraduationDto extends BeltRefDto {
   @ApiProperty({ enum: ['adult', 'kids'] })
   ladderKind!: 'adult' | 'kids';
 
-  @ApiProperty({ description: 'Kids belts reflect the admin toggles (dimmed when false)' })
+  @ApiProperty({
+    description: 'Kids belts reflect the admin toggles (dimmed when false)',
+  })
   enabled!: boolean;
 }
 
@@ -191,6 +225,9 @@ export class ProfessorProfileResponseDto {
   })
   belt!: BeltViewDto | null;
 
-  @ApiProperty({ type: [ValidGraduationDto], description: 'Graduações válidas (merged régua)' })
+  @ApiProperty({
+    type: [ValidGraduationDto],
+    description: 'Graduações válidas (merged régua)',
+  })
   validGraduations!: ValidGraduationDto[];
 }

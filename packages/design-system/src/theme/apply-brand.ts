@@ -20,12 +20,18 @@ export interface CssVarTarget {
  * Defaults to `document.documentElement`; pass `target` explicitly in
  * non-browser environments (tests, SSR shells).
  */
-export function applyBrand(derived: DerivedPalette, target?: CssVarTarget): void {
+export function applyBrand(
+  derived: DerivedPalette,
+  target?: CssVarTarget,
+): void {
   const el =
     target ??
-    (globalThis as { document?: { documentElement: CssVarTarget } }).document?.documentElement;
+    (globalThis as { document?: { documentElement: CssVarTarget } }).document
+      ?.documentElement;
   if (!el) {
-    throw new Error('applyBrand: no document available — pass an explicit CssVarTarget.');
+    throw new Error(
+      'applyBrand: no document available — pass an explicit CssVarTarget.',
+    );
   }
   for (const [token, hex] of Object.entries(derived)) {
     el.style.setProperty(`--${token}`, hex);

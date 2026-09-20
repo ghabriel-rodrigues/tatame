@@ -12,23 +12,37 @@ describe('relativeDayPt (aluno-20 trailing label)', () => {
   const now = new Date(2026, 7, 10, 12, 0, 0);
 
   it('renders Hoje for the same calendar day', () => {
-    expect(relativeDayPt(new Date(2026, 7, 10, 0, 5).toISOString(), now)).toBe('Hoje');
-    expect(relativeDayPt(new Date(2026, 7, 10, 11, 59).toISOString(), now)).toBe('Hoje');
+    expect(relativeDayPt(new Date(2026, 7, 10, 0, 5).toISOString(), now)).toBe(
+      'Hoje',
+    );
+    expect(
+      relativeDayPt(new Date(2026, 7, 10, 11, 59).toISOString(), now),
+    ).toBe('Hoje');
   });
 
   it('renders Ontem for the previous calendar day', () => {
-    expect(relativeDayPt(new Date(2026, 7, 9, 23, 59).toISOString(), now)).toBe('Ontem');
+    expect(relativeDayPt(new Date(2026, 7, 9, 23, 59).toISOString(), now)).toBe(
+      'Ontem',
+    );
   });
 
   it('renders the short weekday within the last week', () => {
     // 2026-08-08 was a Saturday, 2026-08-04 a Tuesday.
-    expect(relativeDayPt(new Date(2026, 7, 8, 10, 0).toISOString(), now)).toBe('Sáb');
-    expect(relativeDayPt(new Date(2026, 7, 4, 10, 0).toISOString(), now)).toBe('Ter');
+    expect(relativeDayPt(new Date(2026, 7, 8, 10, 0).toISOString(), now)).toBe(
+      'Sáb',
+    );
+    expect(relativeDayPt(new Date(2026, 7, 4, 10, 0).toISOString(), now)).toBe(
+      'Ter',
+    );
   });
 
   it('renders the month abbreviation beyond a week', () => {
-    expect(relativeDayPt(new Date(2026, 5, 20, 10, 0).toISOString(), now)).toBe('Jun');
-    expect(relativeDayPt(new Date(2025, 11, 24, 10, 0).toISOString(), now)).toBe('Dez');
+    expect(relativeDayPt(new Date(2026, 5, 20, 10, 0).toISOString(), now)).toBe(
+      'Jun',
+    );
+    expect(
+      relativeDayPt(new Date(2025, 11, 24, 10, 0).toISOString(), now),
+    ).toBe('Dez');
   });
 });
 

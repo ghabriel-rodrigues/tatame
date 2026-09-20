@@ -37,7 +37,8 @@ export function profileSaveError(error: unknown): ProfileSaveError {
   const fieldErrors: Record<string, string> = {};
   for (const entry of problem.errors ?? []) {
     if (problem.code === 'profile.field_locked') {
-      fieldErrors[entry.field] = FIELD_LOCKED_MESSAGES[entry.field] ?? 'Campo bloqueado.';
+      fieldErrors[entry.field] =
+        FIELD_LOCKED_MESSAGES[entry.field] ?? 'Campo bloqueado.';
     } else if (problem.code === 'profile.field_read_only') {
       fieldErrors[entry.field] = 'Campo somente leitura.';
     } else {
@@ -48,13 +49,16 @@ export function profileSaveError(error: unknown): ProfileSaveError {
 
   if (problem.code === 'profile.field_locked') {
     return {
-      message: problem.detail ?? 'Documentos não podem ser alterados após definidos.',
+      message:
+        problem.detail ?? 'Documentos não podem ser alterados após definidos.',
       fieldErrors,
     };
   }
   if (problem.code === 'profile.field_read_only') {
     return {
-      message: problem.detail ?? 'E-mail e data de nascimento não podem ser alterados.',
+      message:
+        problem.detail ??
+        'E-mail e data de nascimento não podem ser alterados.',
       fieldErrors,
     };
   }

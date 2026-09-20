@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { FormField } from './FormField.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('FormField', () => {
   it('associates the label with the input', () => {
@@ -21,7 +25,9 @@ describe('FormField', () => {
   it('reports text changes through onChangeText', () => {
     const onChangeText = vi.fn();
     renderUi(<FormField label="Email" onChangeText={onChangeText} />);
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.c' } });
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'a@b.c' },
+    });
     expect(onChangeText).toHaveBeenCalledWith('a@b.c');
   });
 

@@ -22,7 +22,9 @@ function renderCadastros() {
   });
 }
 
-async function selectTwoStudents(registry: ReturnType<typeof makeEnrollmentRegistry>) {
+async function selectTwoStudents(
+  registry: ReturnType<typeof makeEnrollmentRegistry>,
+) {
   const user = userEvent.setup();
   renderCadastros();
   await screen.findByText('Lucas Almeida');
@@ -52,7 +54,9 @@ describe('multi-select + mover para turma (ENR.14)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByText('1 selecionado')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('Selecionar Lucas Almeida')).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Selecionar Lucas Almeida'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows destinations with occupancy and blocks a class without room', async () => {
@@ -68,7 +72,9 @@ describe('multi-select + mover para turma (ENR.14)', () => {
     ).not.toBeInTheDocument();
 
     // Avançada has 4 free slots — pressable, with occupancy in the row.
-    expect(within(sheet).getByRole('button', { name: /Avançada/ })).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole('button', { name: /Avançada/ }),
+    ).toBeInTheDocument();
     expect(within(sheet).getByText(/16\/20/)).toBeInTheDocument();
   });
 
@@ -90,7 +96,9 @@ describe('multi-select + mover para turma (ENR.14)', () => {
     const { user, sheet } = await selectTwoStudents(registry);
     await user.click(within(sheet).getByRole('button', { name: /Avançada/ }));
 
-    expect(await screen.findByText('2 alunos movidos para Avançada.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('2 alunos movidos para Avançada.'),
+    ).toBeInTheDocument();
     expect(body).toMatchObject({
       destinationClassId: destination.id,
       studentIds: [registry.students[0]!.id, registry.students[3]!.id],
@@ -115,11 +123,20 @@ describe('multi-select + mover para turma (ENR.14)', () => {
               code: 'class.capacity_exceeded',
               detail: 'Destination has 0 free slot(s) for 2 student(s)',
               errors: [
-                { field: lucas.id, messages: ['No seat available in the destination class'] },
-                { field: joao.id, messages: ['No seat available in the destination class'] },
+                {
+                  field: lucas.id,
+                  messages: ['No seat available in the destination class'],
+                },
+                {
+                  field: joao.id,
+                  messages: ['No seat available in the destination class'],
+                },
               ],
             }),
-            { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
+            {
+              status: 409,
+              headers: { 'Content-Type': 'application/problem+json' },
+            },
           ),
         ),
       ),
@@ -136,8 +153,12 @@ describe('multi-select + mover para turma (ENR.14)', () => {
     expect(
       screen.getByText('Lucas Almeida: sem vaga na turma de destino.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('João Ferraz: sem vaga na turma de destino.')).toBeInTheDocument();
+    expect(
+      screen.getByText('João Ferraz: sem vaga na turma de destino.'),
+    ).toBeInTheDocument();
     // The atomic failure keeps the selection intact for a retry.
-    expect(screen.getByRole('dialog', { name: 'Mover 2 alunos' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('dialog', { name: 'Mover 2 alunos' }),
+    ).toBeInTheDocument();
   });
 });

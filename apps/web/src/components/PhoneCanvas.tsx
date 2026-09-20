@@ -29,7 +29,8 @@ export function PhoneCanvas({ children }: PhoneCanvasProps) {
           <Box
             sx={{
               minHeight: { xs: '100vh', sm: 780 },
-              background: 'linear-gradient(180deg, var(--purple-50) 0%, var(--bg-app) 40%)',
+              background:
+                'linear-gradient(180deg, var(--purple-50) 0%, var(--bg-app) 40%)',
               padding: '96px 28px 40px',
               boxSizing: 'border-box',
             }}

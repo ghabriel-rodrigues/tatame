@@ -9,7 +9,9 @@ async function bootstrap(): Promise<void> {
   configureApp(app);
   const config = app.get<AppConfig>(APP_CONFIG);
   await app.listen(config.port);
-  Logger.log(`Tatame API listening on http://localhost:${config.port}/v1 (docs at /docs)`);
+  Logger.log(
+    `Tatame API listening on http://localhost:${config.port}/v1 (docs at /docs)`,
+  );
 }
 
 void bootstrap();

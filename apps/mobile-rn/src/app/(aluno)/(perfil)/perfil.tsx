@@ -43,7 +43,11 @@ export default function AlunoPerfilScreen() {
               marginTop: theme.space['2'],
             }}
           >
-            <BeltChip belt={belt} label={beltChipLabel(belt)} testID="perfil-belt-chip" />
+            <BeltChip
+              belt={belt}
+              label={beltChipLabel(belt)}
+              testID="perfil-belt-chip"
+            />
             <TatameButton
               size="sm"
               variant="ghost"

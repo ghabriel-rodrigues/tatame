@@ -45,7 +45,9 @@ describe('build/web/tokens.css', () => {
 
   it('exposes the ink tokens with a dark block override', () => {
     expect(css).toContain('--purple-ink: var(--purple-700);');
-    expect(css).toMatch(/\[data-theme="dark"\] \{[\s\S]*--purple-ink: #B08AF7;/);
+    expect(css).toMatch(
+      /\[data-theme="dark"\] \{[\s\S]*--purple-ink: #B08AF7;/,
+    );
     expect(css).toMatch(/\[data-theme="dark"\] \{[\s\S]*--bg-app: #141021;/);
   });
 
@@ -91,7 +93,9 @@ describe('build/web/tokens.ts + build/native/tokens.ts', () => {
     expect(tokens.color.fg['1']).toBe('#1A0B2E');
     expect(darkTokens.color.bg.app).toBe('#141021');
     expect(webCss.shadow.glow).toBe('0 8px 32px rgba(139, 61, 235, 0.35)');
-    expect(webCss.focusRing).toContain('color-mix(in oklab, var(--purple-500) 40%, transparent)');
+    expect(webCss.focusRing).toContain(
+      'color-mix(in oklab, var(--purple-500) 40%, transparent)',
+    );
     expect(cssVars['color.ink.purple']).toBe('--purple-ink');
     expect(cssVars['radius.pill']).toBe('--radius-pill');
   });

@@ -68,7 +68,8 @@ const monthName = (offset: number): string => {
 /** The published free fixture event both academies carry (spec 008 seeds). */
 const FIXTURE_EVENT_NAME = 'Open Mat de Verao';
 
-const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 3600 * 1000);
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 3600 * 1000);
 
 function alphaFixtures(): DevNotificationFixture[] {
   return [
@@ -298,9 +299,15 @@ export async function seedNotificationFixtures({
 }: SeedNotificationHandles): Promise<void> {
   for (const [slug, fixturesOf] of Object.entries(DEV_NOTIFICATIONS)) {
     const [academy] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      tx
+        .select({ id: academies.id })
+        .from(academies)
+        .where(eq(academies.slug, slug)),
     );
-    if (!academy) throw new Error(`Fixture academy ${slug} missing — run seedDevFixtures first`);
+    if (!academy)
+      throw new Error(
+        `Fixture academy ${slug} missing — run seedDevFixtures first`,
+      );
     const tenantId = academy.id;
 
     const fixtures = fixturesOf();
@@ -309,7 +316,8 @@ export async function seedNotificationFixtures({
       const [user] = await withPlatform(platformDb, (tx) =>
         tx.select({ id: users.id }).from(users).where(eq(users.email, email)),
       );
-      if (!user) throw new Error(`Missing user ${email} — run seedDevFixtures first`);
+      if (!user)
+        throw new Error(`Missing user ${email} — run seedDevFixtures first`);
       userIdByEmail.set(email, user.id);
     }
 
@@ -318,9 +326,13 @@ export async function seedNotificationFixtures({
       const [event] = await tx
         .select({ id: events.id, startsAt: events.startsAt })
         .from(events)
-        .where(and(eq(events.name, FIXTURE_EVENT_NAME), isNotNull(events.startsAt)));
+        .where(
+          and(eq(events.name, FIXTURE_EVENT_NAME), isNotNull(events.startsAt)),
+        );
       if (!event?.startsAt) {
-        throw new Error(`Fixture event missing for ${slug} — run seedEventFixtures first`);
+        throw new Error(
+          `Fixture event missing for ${slug} — run seedEventFixtures first`,
+        );
       }
       const eventChip = String(event.startsAt.getDate());
       const eventRoute = `event/${event.id}`;

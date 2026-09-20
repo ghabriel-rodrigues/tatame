@@ -4,7 +4,13 @@
  * and the full login -> role-gated shell handoff.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
@@ -19,7 +25,10 @@ import {
 
 jest.useFakeTimers();
 
-const secure = SecureStore as unknown as { __store: Map<string, string>; __reset: () => void };
+const secure = SecureStore as unknown as {
+  __store: Map<string, string>;
+  __reset: () => void;
+};
 
 function renderLogin(handler: FetchHandler) {
   installFetchMock(handler);
@@ -49,7 +58,9 @@ describe('login screen', () => {
   it('renders the handoff composition (logo, fields, CTA, invite notice)', () => {
     renderLogin(() => null);
     expect(screen.getByText('Bem-vindo de volta')).toBeTruthy();
-    expect(screen.getByText('Entre para acompanhar seus treinos.')).toBeTruthy();
+    expect(
+      screen.getByText('Entre para acompanhar seus treinos.'),
+    ).toBeTruthy();
     expect(screen.getByPlaceholderText('Email')).toBeTruthy();
     expect(screen.getByPlaceholderText('Senha')).toBeTruthy();
     expect(screen.getByText('Esqueci minha senha')).toBeTruthy();
@@ -65,7 +76,9 @@ describe('login screen', () => {
         : null,
     );
     await submit('aluno@tatame.dev', 'wrong');
-    await waitFor(() => expect(screen.getByText('Email ou senha inválidos.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Email ou senha inválidos.')).toBeTruthy(),
+    );
   });
 
   it('logs in with body transport and lands on the role-gated shell', async () => {
@@ -78,7 +91,11 @@ describe('login screen', () => {
           transport: 'body',
         });
         return json(200, {
-          user: { id: me.user.id, email: me.user.email, fullName: me.user.fullName },
+          user: {
+            id: me.user.id,
+            email: me.user.email,
+            fullName: me.user.fullName,
+          },
           memberships: me.memberships,
           activeMembershipId: me.activeMembershipId,
           accessToken: 'at-1',
@@ -105,7 +122,11 @@ describe('login screen', () => {
     renderLogin(({ method, path }) => {
       if (method === 'POST' && path === '/v1/auth/login') {
         return json(200, {
-          user: { id: 'u1', email: 'multi@tatame.dev', fullName: 'Multi Persona' },
+          user: {
+            id: 'u1',
+            email: 'multi@tatame.dev',
+            fullName: 'Multi Persona',
+          },
           memberships: [student, professor],
           activeMembershipId: student.id,
           accessToken: 'at-1',
@@ -116,7 +137,9 @@ describe('login screen', () => {
       return null;
     });
     await submit('multi@tatame.dev', 'TatameDev!123');
-    await waitFor(() => expect(screen.getByText('Escolha seu perfil')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Escolha seu perfil')).toBeTruthy(),
+    );
     expect(screen.getByText('Alpha Jiu-Jitsu · Aluno')).toBeTruthy();
     expect(screen.getByText('Bravo BJJ Team · Professor')).toBeTruthy();
   });
@@ -128,7 +151,9 @@ describe('login screen', () => {
         : null,
     );
     await submit('owner@tatame.dev', 'TatameDev!123');
-    await waitFor(() => expect(screen.getByText('Use o console web')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Use o console web')).toBeTruthy(),
+    );
     expect(screen.getByText('Voltar ao login')).toBeTruthy();
     // Back to credentials.
     await act(async () => {
@@ -143,7 +168,11 @@ describe('login screen', () => {
       fireEvent.press(screen.getByText('Esqueci minha senha'));
     });
     await waitFor(() =>
-      expect(screen.getByText('Informe seu email e enviaremos as instruções de redefinição.')).toBeTruthy(),
+      expect(
+        screen.getByText(
+          'Informe seu email e enviaremos as instruções de redefinição.',
+        ),
+      ).toBeTruthy(),
     );
     expect(screen.getByText('Enviar instruções')).toBeTruthy();
   });

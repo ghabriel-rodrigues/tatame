@@ -16,8 +16,13 @@ export const MONTH_EVENTS_TITLE = 'Eventos do mês';
 export const RESPONSAVEL_SUBTITLE = 'Confirme a participação por dependente';
 
 /** "Inscrição · Open mat de verão" (+ " · Pedro" on the guardian variant). */
-export function inscricaoSubtitle(eventName: string, dependentName?: string): string {
-  return dependentName ? `Inscrição · ${eventName} · ${dependentName}` : `Inscrição · ${eventName}`;
+export function inscricaoSubtitle(
+  eventName: string,
+  dependentName?: string,
+): string {
+  return dependentName
+    ? `Inscrição · ${eventName} · ${dependentName}`
+    : `Inscrição · ${eventName}`;
 }
 
 const MESSAGES: Record<string, string> = {

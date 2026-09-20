@@ -5,7 +5,8 @@
  * same mechanism as `events.banner_preset`.
  */
 
-export type OrderStatus = 'pending' | 'paid' | 'ready' | 'delivered' | 'canceled';
+export type OrderStatus =
+  'pending' | 'paid' | 'ready' | 'delivered' | 'canceled';
 
 /**
  * The store slice of the design-system gradient catalog — the prototypes'

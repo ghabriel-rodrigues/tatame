@@ -11,7 +11,10 @@ export function ageOn(birthDate: string, on: Date = new Date()): number {
   const birth = new Date(`${birthDate}T00:00:00Z`);
   let age = on.getUTCFullYear() - birth.getUTCFullYear();
   const monthDelta = on.getUTCMonth() - birth.getUTCMonth();
-  if (monthDelta < 0 || (monthDelta === 0 && on.getUTCDate() < birth.getUTCDate())) {
+  if (
+    monthDelta < 0 ||
+    (monthDelta === 0 && on.getUTCDate() < birth.getUTCDate())
+  ) {
     age -= 1;
   }
   return age;
@@ -41,7 +44,8 @@ export function nextSlot(
   now: Date = new Date(),
 ): ScheduleSlotView | null {
   if (schedules.length === 0) return null;
-  const nowMinutes = now.getDay() * 24 * 60 + now.getHours() * 60 + now.getMinutes();
+  const nowMinutes =
+    now.getDay() * 24 * 60 + now.getHours() * 60 + now.getMinutes();
   const week = 7 * 24 * 60;
   let best: { delta: number; slot: ScheduleSlotView } | null = null;
   for (const slot of schedules) {

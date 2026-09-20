@@ -43,7 +43,11 @@ interface RegisterSheetProps {
   onRegistered: (message: string) => void;
 }
 
-function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProps) {
+function RegisterAcademySheet({
+  open,
+  onClose,
+  onRegistered,
+}: RegisterSheetProps) {
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
@@ -55,7 +59,8 @@ function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProp
   const catalog = $api.useQuery('get', '/v1/platform/plans');
   const plans = (catalog.data?.plans ?? []).filter((plan) => plan.isActive);
   const register = $api.useMutation('post', '/v1/platform/academies');
-  const selectedPlan = planId ?? plans[Math.min(1, plans.length - 1)]?.id ?? null;
+  const selectedPlan =
+    planId ?? plans[Math.min(1, plans.length - 1)]?.id ?? null;
 
   function submit() {
     const next: Record<string, string> = {};
@@ -78,8 +83,12 @@ function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProp
       },
       {
         onSuccess: async (response) => {
-          await queryClient.invalidateQueries({ queryKey: ['get', '/v1/platform/academies'] });
-          await queryClient.invalidateQueries({ queryKey: ['get', '/v1/platform/overview'] });
+          await queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/platform/academies'],
+          });
+          await queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/platform/overview'],
+          });
           setDone(response.academy.name);
         },
         onError: (error: unknown) => setApiError(platformErrorMessage(error)),
@@ -100,7 +109,8 @@ function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProp
       >
         <Stack spacing="14px">
           <Typography sx={{ fontSize: 13.5, color: 'var(--fg-2)' }}>
-            {done} entra como <strong>Trial</strong>. A cobrança começa quando o trial terminar.
+            {done} entra como <strong>Trial</strong>. A cobrança começa quando o
+            trial terminar.
           </Typography>
           <TatameButton
             label="Concluir"
@@ -130,7 +140,12 @@ function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProp
           error={errors['name']}
           required
         />
-        <FormField label="Cidade / UF" value={city} onChangeText={setCity} placeholder="São Paulo / SP" />
+        <FormField
+          label="Cidade / UF"
+          value={city}
+          onChangeText={setCity}
+          placeholder="São Paulo / SP"
+        />
         <FormField
           label="Email do administrador"
           type="email"
@@ -142,7 +157,11 @@ function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProp
 
         <Stack spacing="6px">
           <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Plano</FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {plans.map((plan) => (
               <Chip
                 key={plan.id}
@@ -154,7 +173,9 @@ function RegisterAcademySheet({ open, onClose, onRegistered }: RegisterSheetProp
               />
             ))}
           </Stack>
-          {errors['plan'] ? <FormHelperText error>{errors['plan']}</FormHelperText> : null}
+          {errors['plan'] ? (
+            <FormHelperText error>{errors['plan']}</FormHelperText>
+          ) : null}
         </Stack>
 
         {apiError ? <FormHelperText error>{apiError}</FormHelperText> : null}
@@ -217,7 +238,9 @@ export function AcademiasPage() {
         />
 
         {query.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando academias…
           </Typography>
         ) : null}
@@ -251,7 +274,11 @@ export function AcademiasPage() {
         />
       ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

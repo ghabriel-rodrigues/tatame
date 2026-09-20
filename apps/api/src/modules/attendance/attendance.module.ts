@@ -31,7 +31,13 @@ import { StatsService } from './services/stats.service.js';
   // EventsModule feeds the home "Próximos eventos" section and the professor
   // dashboard "Eventos futuros" tile (spec 008 — controller-level merge);
   // StoreModule feeds the home "Loja da academia" strip (spec 009, same merge).
-  imports: [DbModule, IdentityModule, GraduationCoreModule, EventsModule, StoreModule],
+  imports: [
+    DbModule,
+    IdentityModule,
+    GraduationCoreModule,
+    EventsModule,
+    StoreModule,
+  ],
   controllers: [
     AlunoAttendanceController,
     ProfessorLiveController,

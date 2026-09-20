@@ -6,11 +6,22 @@
  * ranked; isMe is server-false).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeDashboard } from '../helpers/attendance';
 import { rankingBySearch } from '../helpers/rankings';
 
@@ -22,11 +33,17 @@ function renderProfessor(override?: FetchHandler): void {
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
-    if (request.method === 'GET' && request.path === '/v1/professor/dashboard') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/professor/dashboard'
+    ) {
       return json(200, makeDashboard());
     }
     if (request.method === 'GET' && request.path === '/v1/rankings') {
-      return json(200, rankingBySearch(request.search, { isMe: false, me: null }));
+      return json(
+        200,
+        rankingBySearch(request.search, { isMe: false, me: null }),
+      );
     }
     return null;
   });
@@ -50,7 +67,9 @@ describe('professor ranking (REP.11)', () => {
   it('dashboard section shows the real top 3 with the month title', async () => {
     renderProfessor();
 
-    await waitFor(() => expect(screen.getByTestId('ranking-section')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('ranking-section')).toBeTruthy(),
+    );
     expect(screen.getByText('Ranking de presença · agosto')).toBeTruthy();
 
     // Top 3 preview only (professor-02): Marina, Lucas, Júlia.
@@ -71,10 +90,14 @@ describe('professor ranking (REP.11)', () => {
       fireEvent.press(screen.getByText('Ver todos'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('ranking-segments')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('ranking-segments')).toBeTruthy(),
+    );
     expect(screen.getByText('Ranking de presença')).toBeTruthy();
     expect(screen.getByText('Agosto · Alpha Jiu-Jitsu')).toBeTruthy();
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
     // Professors are never ranked — no você highlight anywhere.
     expect(screen.queryByTestId('ranking-voce-chip')).toBeNull();
 
@@ -83,7 +106,9 @@ describe('professor ranking (REP.11)', () => {
       fireEvent.press(screen.getByText('Por eventos'));
     });
     await waitFor(() =>
-      expect(screen.getByText('Participações em eventos no semestre')).toBeTruthy(),
+      expect(
+        screen.getByText('Participações em eventos no semestre'),
+      ).toBeTruthy(),
     );
     expect(screen.getByText('5 eventos')).toBeTruthy();
     expect(screen.getByText('Espírito de equipe')).toBeTruthy();
@@ -94,7 +119,11 @@ describe('professor ranking (REP.11)', () => {
       method === 'GET' && path === '/v1/rankings'
         ? json(200, {
             by: 'lessons',
-            window: { label: '2026-08', start: '2026-08-01', endExclusive: '2026-09-01' },
+            window: {
+              label: '2026-08',
+              start: '2026-08-01',
+              endExclusive: '2026-09-01',
+            },
             top: [],
             me: null,
             totalRanked: 0,

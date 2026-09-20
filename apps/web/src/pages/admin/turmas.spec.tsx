@@ -35,7 +35,9 @@ describe('turmas list + nova turma (ENR.15)', () => {
     expect(
       screen.getByText('Seg · Qua · Sex 19:00 · Prof. Rafael Nunes · 24/24'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Ter · Qui 18:00 · Prof. Ana Souza · 14/16')).toBeInTheDocument();
+    expect(
+      screen.getByText('Ter · Qui 18:00 · Prof. Ana Souza · 14/16'),
+    ).toBeInTheDocument();
     expect(screen.getAllByText('Lotada')).toHaveLength(1);
   });
 
@@ -51,10 +53,17 @@ describe('turmas list + nova turma (ENR.15)', () => {
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
 
     const sheet = await screen.findByRole('dialog', { name: 'Nova turma' });
-    await user.type(within(sheet).getByLabelText(/Nome da turma/), 'Iniciantes');
+    await user.type(
+      within(sheet).getByLabelText(/Nome da turma/),
+      'Iniciantes',
+    );
     await user.click(within(sheet).getAllByRole('combobox')[0]!);
-    await user.click(await screen.findByRole('option', { name: 'Rafael Nunes' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Criar turma' }));
+    await user.click(
+      await screen.findByRole('option', { name: 'Rafael Nunes' }),
+    );
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar turma' }),
+    );
 
     expect(
       await screen.findByText('Selecione pelo menos um dia da semana.'),
@@ -68,7 +77,9 @@ describe('turmas list + nova turma (ENR.15)', () => {
     server.use(
       http.post('/v1/admin/classes', async ({ request, response }) => {
         body = (await request.json()) as Record<string, unknown>;
-        return response(201).json({ class: makeClassDetail({ name: 'Iniciantes' }) });
+        return response(201).json({
+          class: makeClassDetail({ name: 'Iniciantes' }),
+        });
       }),
     );
     const user = userEvent.setup();
@@ -81,7 +92,10 @@ describe('turmas list + nova turma (ENR.15)', () => {
     await user.click(screen.getByRole('button', { name: 'Criar registro' }));
 
     const sheet = await screen.findByRole('dialog', { name: 'Nova turma' });
-    await user.type(within(sheet).getByLabelText(/Nome da turma/), 'Iniciantes');
+    await user.type(
+      within(sheet).getByLabelText(/Nome da turma/),
+      'Iniciantes',
+    );
     await user.click(within(sheet).getByRole('button', { name: 'Seg' }));
     await user.click(within(sheet).getByRole('button', { name: 'Qua' }));
     fireEvent.change(within(sheet).getByLabelText(/Hora de início/), {
@@ -89,7 +103,9 @@ describe('turmas list + nova turma (ENR.15)', () => {
     });
     await user.click(within(sheet).getAllByRole('combobox')[0]!);
     await user.click(await screen.findByRole('option', { name: 'Ana Souza' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Criar turma' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar turma' }),
+    );
 
     expect(await screen.findByText('Turma criada.')).toBeInTheDocument();
     expect(body).toMatchObject({
@@ -113,7 +129,9 @@ describe('turma detail (ENR.15)', () => {
       session: makeMeResponse({ memberships: [admin()] }),
     });
 
-    expect(await screen.findByRole('heading', { name: 'Fundamentos' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Fundamentos' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Prof. Rafael Nunes')).toBeInTheDocument();
     expect(screen.getByText('19:00 – 20:00')).toBeInTheDocument();
     expect(screen.getByText('toda semana')).toBeInTheDocument();
@@ -127,7 +145,9 @@ describe('turma detail (ENR.15)', () => {
     expect(screen.getByText('Sem chamadas registradas')).toBeInTheDocument();
     // Session list empty state (ATT.14).
     expect(screen.getByText('Chamadas')).toBeInTheDocument();
-    expect(await screen.findByText('Nenhuma chamada registrada ainda')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Nenhuma chamada registrada ainda'),
+    ).toBeInTheDocument();
     // Roster rows.
     expect(screen.getByText('Alunos da turma')).toBeInTheDocument();
     expect(screen.getByText('Lucas Almeida')).toBeInTheDocument();
@@ -162,7 +182,9 @@ describe('turma detail (ENR.15)', () => {
     // Frequência média = mean of listed session counts ((12 + 1) / 2 = 6,5).
     expect(screen.getByText('6,5')).toBeInTheDocument();
     expect(screen.getByText('presenças por aula')).toBeInTheDocument();
-    expect(screen.queryByText('Nenhuma chamada registrada ainda')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Nenhuma chamada registrada ainda'),
+    ).not.toBeInTheDocument();
   });
 
   it('removes a student from the roster with a single tap', async () => {
@@ -172,12 +194,19 @@ describe('turma detail (ENR.15)', () => {
     const lucasId = registry.students[0]!.id;
     let removedPath: { id: string; studentId: string } | null = null;
     server.use(
-      http.delete('/v1/admin/classes/{id}/students/{studentId}', ({ params, response }) => {
-        removedPath = { id: params.id, studentId: params.studentId };
-        return response(200).json({
-          enrollment: { classId: params.id, studentId: params.studentId, status: 'removed' },
-        });
-      }),
+      http.delete(
+        '/v1/admin/classes/{id}/students/{studentId}',
+        ({ params, response }) => {
+          removedPath = { id: params.id, studentId: params.studentId };
+          return response(200).json({
+            enrollment: {
+              classId: params.id,
+              studentId: params.studentId,
+              status: 'removed',
+            },
+          });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute(`/admin/turmas/${fundamentos.id}`, {
@@ -185,8 +214,12 @@ describe('turma detail (ENR.15)', () => {
     });
     await screen.findByText('Lucas Almeida');
 
-    await user.click(screen.getByRole('button', { name: 'Remover Lucas Almeida' }));
-    expect(await screen.findByText('Aluno removido da turma.')).toBeInTheDocument();
+    await user.click(
+      screen.getByRole('button', { name: 'Remover Lucas Almeida' }),
+    );
+    expect(
+      await screen.findByText('Aluno removido da turma.'),
+    ).toBeInTheDocument();
     expect(removedPath).toEqual({ id: fundamentos.id, studentId: lucasId });
   });
 
@@ -196,7 +229,9 @@ describe('turma detail (ENR.15)', () => {
     const fundamentos = registry.classes[0]!;
     server.use(
       http.post('/v1/admin/classes/{id}/students', ({ response }) =>
-        response.untyped(problemResponse(409, 'class.full', 'Class is at capacity')),
+        response.untyped(
+          problemResponse(409, 'class.full', 'Class is at capacity'),
+        ),
       ),
     );
     const user = userEvent.setup();
@@ -206,10 +241,14 @@ describe('turma detail (ENR.15)', () => {
     await screen.findByText('Lucas Almeida');
 
     await user.click(screen.getByRole('button', { name: 'Adicionar aluno' }));
-    const sheet = await screen.findByRole('dialog', { name: 'Adicionar aluno' });
+    const sheet = await screen.findByRole('dialog', {
+      name: 'Adicionar aluno',
+    });
     // Roster members are excluded from the picker.
     expect(within(sheet).queryByText('Lucas Almeida')).not.toBeInTheDocument();
-    await user.click(within(sheet).getByRole('button', { name: /Marina Costa/ }));
+    await user.click(
+      within(sheet).getByRole('button', { name: /Marina Costa/ }),
+    );
 
     expect(await screen.findByText('A turma está lotada.')).toBeInTheDocument();
   });
@@ -220,16 +259,19 @@ describe('turma detail (ENR.15)', () => {
     const kids = registry.classes[2]!;
     let body: Record<string, unknown> | null = null;
     server.use(
-      http.post('/v1/admin/classes/{id}/students', async ({ request, params, response }) => {
-        body = (await request.json()) as Record<string, unknown>;
-        return response(201).json({
-          enrollment: {
-            classId: params.id,
-            studentId: body['studentId'] as string,
-            status: 'active',
-          },
-        });
-      }),
+      http.post(
+        '/v1/admin/classes/{id}/students',
+        async ({ request, params, response }) => {
+          body = (await request.json()) as Record<string, unknown>;
+          return response(201).json({
+            enrollment: {
+              classId: params.id,
+              studentId: body['studentId'] as string,
+              status: 'active',
+            },
+          });
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute(`/admin/turmas/${kids.id}`, {
@@ -238,10 +280,16 @@ describe('turma detail (ENR.15)', () => {
     await screen.findByRole('heading', { name: 'Kids' });
 
     await user.click(screen.getByRole('button', { name: 'Adicionar aluno' }));
-    const sheet = await screen.findByRole('dialog', { name: 'Adicionar aluno' });
-    await user.click(within(sheet).getByRole('button', { name: /Pedro Silveira/ }));
+    const sheet = await screen.findByRole('dialog', {
+      name: 'Adicionar aluno',
+    });
+    await user.click(
+      within(sheet).getByRole('button', { name: /Pedro Silveira/ }),
+    );
 
-    expect(await screen.findByText('Aluno adicionado à turma.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Aluno adicionado à turma.'),
+    ).toBeInTheDocument();
     expect(body).toMatchObject({ studentId: registry.students[2]!.id });
   });
 });

@@ -41,7 +41,11 @@ export function makeRegistration(
 export function makePendingRegistration(
   overrides: Partial<EventRegistrationState> = {},
 ): EventRegistrationState {
-  return makeRegistration({ status: 'pending_payment', chargeId: EVENT_CHARGE_ID, ...overrides });
+  return makeRegistration({
+    status: 'pending_payment',
+    chargeId: EVENT_CHARGE_ID,
+    ...overrides,
+  });
 }
 
 /** aluno-03/11 card: Open mat de verão, gratuito, sáb 15/08 10:00. */

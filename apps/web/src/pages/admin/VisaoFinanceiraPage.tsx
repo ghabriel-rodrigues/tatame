@@ -51,12 +51,18 @@ function HeroStat({ label, value }: { label: string; value: string }) {
       >
         {label}
       </Typography>
-      <Typography sx={{ fontSize: 15, fontWeight: 700, color: 'inherit' }}>{value}</Typography>
+      <Typography sx={{ fontSize: 15, fontWeight: 700, color: 'inherit' }}>
+        {value}
+      </Typography>
     </Box>
   );
 }
 
-function SectionCard({ title, caption, children }: {
+function SectionCard({
+  title,
+  caption,
+  children,
+}: {
   title: string;
   caption?: string;
   children: ReactNode;
@@ -65,13 +71,21 @@ function SectionCard({ title, caption, children }: {
     <Card padding={16}>
       <Stack
         direction="row"
-        sx={{ alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px' }}
+        sx={{
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          marginBottom: '10px',
+        }}
       >
-        <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}
+        >
           {title}
         </Typography>
         {caption ? (
-          <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+          <Typography
+            sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}
+          >
             {caption}
           </Typography>
         ) : null}
@@ -86,12 +100,20 @@ function VencimentoGroup({ group }: { group: UpcomingGroup }) {
     <Box>
       <Stack
         direction="row"
-        sx={{ alignItems: 'baseline', justifyContent: 'space-between', padding: '8px 0 2px' }}
+        sx={{
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          padding: '8px 0 2px',
+        }}
       >
-        <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-2)' }}>
+        <Typography
+          sx={{ fontSize: 12.5, fontWeight: 700, color: 'var(--fg-2)' }}
+        >
           {dueDayLabel(group.dueDate)}
         </Typography>
-        <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+        <Typography
+          sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}
+        >
           {chargesCountLabel(group.count)} · {formatBRL(group.totalCents)}
         </Typography>
       </Stack>
@@ -102,7 +124,9 @@ function VencimentoGroup({ group }: { group: UpcomingGroup }) {
           {...(charge.planName ? { subtitle: charge.planName } : {})}
           leading={<InitialsAvatar name={charge.studentName} />}
           trailing={
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}>
+            <Typography
+              sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+            >
               {formatBRL(charge.amountCents)}
             </Typography>
           }
@@ -121,10 +145,15 @@ function InadimplenteRow({ entry }: { entry: DelinquentStudent }) {
       leading={<InitialsAvatar name={entry.fullName} />}
       trailing={
         <Stack sx={{ alignItems: 'flex-end' }} spacing="4px">
-          <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             {formatBRL(entry.totalCents)}
           </Typography>
-          <Chip label={`${days} ${days === 1 ? 'dia' : 'dias'}`} tone="danger" />
+          <Chip
+            label={`${days} ${days === 1 ? 'dia' : 'dias'}`}
+            tone="danger"
+          />
         </Stack>
       }
     />
@@ -154,7 +183,9 @@ export function VisaoFinanceiraPage() {
         />
 
         {overview.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando visão financeira…
           </Typography>
         ) : null}
@@ -170,11 +201,19 @@ export function VisaoFinanceiraPage() {
         {data ? (
           <>
             <Card variant="hero">
-              <Typography variant="overline" sx={{ color: 'inherit', opacity: 0.8 }}>
+              <Typography
+                variant="overline"
+                sx={{ color: 'inherit', opacity: 0.8 }}
+              >
                 Receita de {monthName(data.month)}
               </Typography>
               <Typography
-                sx={{ fontSize: 32, fontWeight: 800, marginTop: '2px', color: 'inherit' }}
+                sx={{
+                  fontSize: 32,
+                  fontWeight: 800,
+                  marginTop: '2px',
+                  color: 'inherit',
+                }}
               >
                 {formatBRLWhole(data.receitaMesCents)}
               </Typography>
@@ -190,12 +229,18 @@ export function VisaoFinanceiraPage() {
                 }
                 sx={{ marginTop: '14px' }}
               >
-                <HeroStat label="no ano" value={formatBRLCompact(data.receitaAnoCents)} />
+                <HeroStat
+                  label="no ano"
+                  value={formatBRLCompact(data.receitaAnoCents)}
+                />
                 <HeroStat
                   label={`previsão ${monthName(nextPeriod(data.month))}`}
                   value={formatBRLWhole(data.previsaoProximoMesCents)}
                 />
-                <HeroStat label="inadimplência" value={formatPct(data.inadimplenciaPct)} />
+                <HeroStat
+                  label="inadimplência"
+                  value={formatPct(data.inadimplenciaPct)}
+                />
               </Stack>
             </Card>
 

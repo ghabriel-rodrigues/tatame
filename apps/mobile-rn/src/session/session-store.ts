@@ -11,7 +11,11 @@ import { useSyncExternalStore } from 'react';
 import type { MeResponse } from '@tatame/shared';
 import { apiClient, queryClient, requestBodyRefreshDetailed } from './api';
 import { onAuthLost, setAccessToken } from './token';
-import { clearRefreshToken, getRefreshToken, setRefreshToken } from './token-store';
+import {
+  clearRefreshToken,
+  getRefreshToken,
+  setRefreshToken,
+} from './token-store';
 
 export type SessionStatus = 'booting' | 'authed' | 'anon';
 
@@ -47,7 +51,9 @@ onAuthLost(() => {
   void toAnon();
 });
 
-async function toAnon(options: { keepRefreshToken?: boolean } = {}): Promise<void> {
+async function toAnon(
+  options: { keepRefreshToken?: boolean } = {},
+): Promise<void> {
   setAccessToken(null);
   if (!options.keepRefreshToken) await clearRefreshToken();
   queryClient.clear();
@@ -120,7 +126,9 @@ export async function refreshSession(): Promise<MeResponse | null> {
  * Membership switch (same session, new access token) — a tenant boundary:
  * cache cleared, session re-bootstrapped.
  */
-export async function switchMembership(membershipId: string): Promise<MeResponse | null> {
+export async function switchMembership(
+  membershipId: string,
+): Promise<MeResponse | null> {
   const { data, error } = await apiClient.POST('/v1/auth/switch', {
     body: { membershipId },
   });
@@ -205,7 +213,10 @@ export const sessionTestApi = {
     state = { status: 'booting', session: null };
     listeners.clear();
   },
-  seed(next: SessionState, accessToken: string | null = 'test-access-token'): void {
+  seed(
+    next: SessionState,
+    accessToken: string | null = 'test-access-token',
+  ): void {
     setAccessToken(next.status === 'authed' ? accessToken : null);
     setState(next);
   },

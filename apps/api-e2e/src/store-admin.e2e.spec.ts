@@ -7,13 +7,20 @@ import {
   STORE_ORDER_DELIVERED,
   STORE_ORDER_READY,
 } from '@org/api';
-import { auditLogs, charges, payments, products, withPlatform } from '@tatame/db';
+import {
+  auditLogs,
+  charges,
+  payments,
+  products,
+  withPlatform,
+} from '@tatame/db';
 import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bearer, createTestApp, type TestApp } from './support/test-app.js';
 
 const TZ = 'America/Sao_Paulo';
-const tzDate = (d: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
+const tzDate = (d: Date) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
 
 /**
  * STO.4/STO.6/STO.7 — the admin Loja console: overview tiles vs the seeded
@@ -28,15 +35,24 @@ describe('store: admin console + orders lifecycle', () => {
   let admin: string;
   let alphaId: string;
   let productIdByName: Map<string, string>;
-  const emitted: Record<string, any[]> = { ready: [], delivered: [], canceled: [] };
+  const emitted: Record<string, any[]> = {
+    ready: [],
+    delivered: [],
+    canceled: [],
+  };
 
   beforeAll(async () => {
     t = await createTestApp();
     admin = (await t.login('admin@tatame.dev')).accessToken;
     alphaId = await t.academyIdBySlug('alpha-jj');
 
-    const list = await t.http().get('/v1/admin/store/products').set(bearer(admin));
-    productIdByName = new Map(list.body.products.map((p: any) => [p.name, p.id]));
+    const list = await t
+      .http()
+      .get('/v1/admin/store/products')
+      .set(bearer(admin));
+    productIdByName = new Map(
+      list.body.products.map((p: any) => [p.name, p.id]),
+    );
 
     const emitter = t.app.get(EventEmitter2);
     emitter.on(STORE_ORDER_READY, (e) => emitted['ready']!.push(e));
@@ -53,12 +69,17 @@ describe('store: admin console + orders lifecycle', () => {
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.action, action), eq(auditLogs.targetId, targetId))),
+        .where(
+          and(eq(auditLogs.action, action), eq(auditLogs.targetId, targetId)),
+        ),
     );
 
   const stockOf = async (productId: string) => {
     const [row] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ stockQty: products.stockQty }).from(products).where(eq(products.id, productId)),
+      tx
+        .select({ stockQty: products.stockQty })
+        .from(products)
+        .where(eq(products.id, productId)),
     );
     return row!.stockQty;
   };
@@ -70,7 +91,10 @@ describe('store: admin console + orders lifecycle', () => {
   };
 
   it('overview tiles: vendas do mês (tenant tz), pedidos no mês, estoque baixo — vs seeds', async () => {
-    const res = await t.http().get('/v1/admin/store/overview').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/store/overview')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
 
     const month = tzDate(new Date()).slice(0, 7);
@@ -82,7 +106,9 @@ describe('store: admin console + orders lifecycle', () => {
     const inMonth = (daysAgo: number) =>
       tzDate(new Date(Date.now() - daysAgo * 86_400_000)).slice(0, 7) === month;
     const expectedVendas =
-      (inMonth(10) ? 11_800 : 0) + (inMonth(2) ? 34_900 : 0) + (inMonth(1) ? 3_900 : 0);
+      (inMonth(10) ? 11_800 : 0) +
+      (inMonth(2) ? 34_900 : 0) +
+      (inMonth(1) ? 3_900 : 0);
     // Pedidos count orders that REACHED paid in the month — the later-refunded
     // #2428 still counts (paid_at survives the refund).
     const expectedPedidos = [10, 7, 2, 1].filter(inMonth).length;
@@ -102,11 +128,15 @@ describe('store: admin console + orders lifecycle', () => {
   });
 
   it('produto rows per admin-03: stock, derived vendidos, category, low-stock flag', async () => {
-    const res = await t.http().get('/v1/admin/store/products').set(bearer(admin));
+    const res = await t
+      .http()
+      .get('/v1/admin/store/products')
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     expect(res.body.products).toHaveLength(6);
 
-    const byName = (name: string) => res.body.products.find((p: any) => p.name === name);
+    const byName = (name: string) =>
+      res.body.products.find((p: any) => p.name === name);
     // Vendidos across paid/ready/delivered only: TS ×2 (delivered), GI ×1
     // (ready), PB ×1 (paid); the refunded RG and pending FX count nothing.
     expect(byName('Camiseta da Academia')).toMatchObject({
@@ -123,15 +153,26 @@ describe('store: admin console + orders lifecycle', () => {
       sizes: ['A1', 'A2', 'A3', 'A4'],
       categoryName: 'Kimonos',
     });
-    expect(byName('Rashguard Team')).toMatchObject({ soldCount: 0, stockQty: 20 });
+    expect(byName('Rashguard Team')).toMatchObject({
+      soldCount: 0,
+      stockQty: 20,
+    });
     expect(byName('Faixa Oficial')).toMatchObject({ soldCount: 0 });
-    expect(byName('Protetor Bucal')).toMatchObject({ soldCount: 1, lowStock: true, stockQty: 2 });
+    expect(byName('Protetor Bucal')).toMatchObject({
+      soldCount: 1,
+      lowStock: true,
+      stockQty: 2,
+    });
   });
 
   it('categorias: chips with counts; create, duplicate 409, rename', async () => {
-    const list = await t.http().get('/v1/admin/store/categories').set(bearer(admin));
+    const list = await t
+      .http()
+      .get('/v1/admin/store/categories')
+      .set(bearer(admin));
     expect(list.status).toBe(200);
-    const byName = (name: string) => list.body.categories.find((c: any) => c.name === name);
+    const byName = (name: string) =>
+      list.body.categories.find((c: any) => c.name === name);
     expect(byName('Kimonos').productCount).toBe(1);
     expect(byName('Vestuario').productCount).toBe(2);
     expect(byName('Acessorios').productCount).toBe(2);
@@ -143,7 +184,9 @@ describe('store: admin console + orders lifecycle', () => {
       .send({ name: 'Promocoes' });
     expect(created.status).toBe(201);
     expect(created.body).toMatchObject({ name: 'Promocoes', productCount: 0 });
-    expect(await auditRows('store.category.created', created.body.id)).toHaveLength(1);
+    expect(
+      await auditRows('store.category.created', created.body.id),
+    ).toHaveLength(1);
 
     const dup = await t
       .http()
@@ -159,11 +202,16 @@ describe('store: admin console + orders lifecycle', () => {
       .send({ name: 'Ofertas' });
     expect(renamed.status).toBe(200);
     expect(renamed.body.name).toBe('Ofertas');
-    expect(await auditRows('store.category.updated', created.body.id)).toHaveLength(1);
+    expect(
+      await auditRows('store.category.updated', created.body.id),
+    ).toHaveLength(1);
   });
 
   it('category delete is guarded: referenced → 409 category.in_use; empty deletes', async () => {
-    const list = await t.http().get('/v1/admin/store/categories').set(bearer(admin));
+    const list = await t
+      .http()
+      .get('/v1/admin/store/categories')
+      .set(bearer(admin));
     const kimonos = list.body.categories.find((c: any) => c.name === 'Kimonos');
 
     const blocked = await t
@@ -179,10 +227,17 @@ describe('store: admin console + orders lifecycle', () => {
       .delete(`/v1/admin/store/categories/${ofertas.id}`)
       .set(bearer(admin));
     expect(gone.status).toBe(204);
-    expect(await auditRows('store.category.deleted', ofertas.id)).toHaveLength(1);
+    expect(await auditRows('store.category.deleted', ofertas.id)).toHaveLength(
+      1,
+    );
 
-    const after = await t.http().get('/v1/admin/store/categories').set(bearer(admin));
-    expect(after.body.categories.map((c: any) => c.name)).not.toContain('Ofertas');
+    const after = await t
+      .http()
+      .get('/v1/admin/store/categories')
+      .set(bearer(admin));
+    expect(after.body.categories.map((c: any) => c.name)).not.toContain(
+      'Ofertas',
+    );
   });
 
   let createdProductId: string;
@@ -210,7 +265,9 @@ describe('store: admin console + orders lifecycle', () => {
     // 6 seeded products → the 7th cycles to catalog index 6 % 4 = 2.
     expect(res.body.gradientPreset).toBe('store-orange-red');
     createdProductId = res.body.id;
-    expect(await auditRows('store.product.created', createdProductId)).toHaveLength(1);
+    expect(
+      await auditRows('store.product.created', createdProductId),
+    ).toHaveLength(1);
 
     const zero = await t
       .http()
@@ -241,7 +298,9 @@ describe('store: admin console + orders lifecycle', () => {
       .send({ priceCents: 4900, sizes: ['P', 'M'] });
     expect(updated.status).toBe(200);
     expect(updated.body).toMatchObject({ priceCents: 4900, sizes: ['P', 'M'] });
-    expect(await auditRows('store.product.updated', createdProductId)).toHaveLength(1);
+    expect(
+      await auditRows('store.product.updated', createdProductId),
+    ).toHaveLength(1);
 
     // "Remover da loja" archives — the row survives with its history.
     const archived = await t
@@ -250,10 +309,15 @@ describe('store: admin console + orders lifecycle', () => {
       .set(bearer(admin));
     expect(archived.status).toBe(200);
     expect(archived.body.status).toBe('archived');
-    expect(await auditRows('store.product.archived', createdProductId)).toHaveLength(1);
+    expect(
+      await auditRows('store.product.archived', createdProductId),
+    ).toHaveLength(1);
 
     // Still on the admin list (as archived); frozen for edits; re-archive 409.
-    const list = await t.http().get('/v1/admin/store/products').set(bearer(admin));
+    const list = await t
+      .http()
+      .get('/v1/admin/store/products')
+      .set(bearer(admin));
     const row = list.body.products.find((p: any) => p.id === createdProductId);
     expect(row.status).toBe('archived');
     const edit = await t
@@ -270,9 +334,14 @@ describe('store: admin console + orders lifecycle', () => {
 
     // The vitrine never shows archived products (story 31).
     const aluno = await t.login('aluno@tatame.dev');
-    const vitrine = await t.http().get('/v1/store/products').set(bearer(aluno.accessToken));
+    const vitrine = await t
+      .http()
+      .get('/v1/store/products')
+      .set(bearer(aluno.accessToken));
     expect(vitrine.status).toBe(200);
-    expect(vitrine.body.products.map((p: any) => p.id)).not.toContain(createdProductId);
+    expect(vitrine.body.products.map((p: any) => p.id)).not.toContain(
+      createdProductId,
+    );
   });
 
   it('pedidos board per admin-04: pending excluded, buyer + item + status', async () => {
@@ -302,7 +371,10 @@ describe('store: admin console + orders lifecycle', () => {
 
     const anaOrder = res.body.orders.find((o: any) => o.number === 2427);
     expect(anaOrder.buyer.fullName).toBe('Ana Aluna');
-    expect(anaOrder.item).toMatchObject({ productName: 'Camiseta da Academia', quantity: 2 });
+    expect(anaOrder.item).toMatchObject({
+      productName: 'Camiseta da Academia',
+      quantity: 2,
+    });
   });
 
   it('transition matrix: paid → ready → delivered, audited; invalid moves 409', async () => {
@@ -342,7 +414,9 @@ describe('store: admin console + orders lifecycle', () => {
       .send({ status: 'delivered' });
     expect(delivered.status).toBe(200);
     expect(delivered.body.status).toBe('delivered');
-    expect(emitted['delivered']!.find((e) => e.orderId === paid.id)).toBeTruthy();
+    expect(
+      emitted['delivered']!.find((e) => e.orderId === paid.id),
+    ).toBeTruthy();
 
     // Delivered is terminal — no backward move, no cancel-with-refund.
     for (const status of ['ready', 'canceled'] as const) {
@@ -357,7 +431,10 @@ describe('store: admin console + orders lifecycle', () => {
 
     // Both moves audited with from→to.
     const audits = await auditRows('store.order.status_changed', paid.id);
-    const pairs = audits.map((a: any) => ({ from: a.metadata.from, to: a.metadata.to }));
+    const pairs = audits.map((a: any) => ({
+      from: a.metadata.from,
+      to: a.metadata.to,
+    }));
     expect(pairs).toEqual(
       expect.arrayContaining([
         { from: 'paid', to: 'ready' },
@@ -395,10 +472,14 @@ describe('store: admin console + orders lifecycle', () => {
 
     // …and the stock came back through the refund event, exactly once.
     expect(await stockOf(gi)).toBe(stockBefore + 1);
-    const canceledEvent = emitted['canceled']!.find((e) => e.orderId === ready.id);
+    const canceledEvent = emitted['canceled']!.find(
+      (e) => e.orderId === ready.id,
+    );
     expect(canceledEvent).toMatchObject({ refunded: true, number: 2429 });
     expect(await auditRows('store.order.canceled', ready.id)).toHaveLength(1);
-    expect(await auditRows('billing.payment.refunded', payment!.id)).toHaveLength(1);
+    expect(
+      await auditRows('billing.payment.refunded', payment!.id),
+    ).toHaveLength(1);
 
     // A canceled order cannot transition anywhere (409 on every move).
     const again = await t
@@ -437,7 +518,10 @@ describe('store: admin console + orders lifecycle', () => {
     expect(transition.status).toBe(403);
     expect(transition.body.code).toBe('tenant.read_only');
 
-    const reads = await t.http().get('/v1/admin/store/overview').set(bearer(admin));
+    const reads = await t
+      .http()
+      .get('/v1/admin/store/overview')
+      .set(bearer(admin));
     expect(reads.status).toBe(200);
     await t.setAcademyStatus('alpha-jj', 'active');
   });
@@ -450,26 +534,37 @@ describe('store: admin console + orders lifecycle', () => {
       ['get', '/v1/admin/store/orders'],
       ['post', '/v1/admin/store/categories'],
     ] as const) {
-      const res = await (t.http() as any)[method](path).set(bearer(professor.accessToken)).send({});
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(professor.accessToken))
+        .send({});
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code).toBe('authz.forbidden_role');
     }
     const aluno = await t.login('aluno@tatame.dev');
-    const denied = await t.http().get('/v1/admin/store/products').set(bearer(aluno.accessToken));
+    const denied = await t
+      .http()
+      .get('/v1/admin/store/products')
+      .set(bearer(aluno.accessToken));
     expect(denied.status).toBe(403);
 
     // RLS backstop: a bravo admin sees an alpha product id as 404, never 403.
     const bravoAdmin = await t.login('admin.bravo@tatame.dev');
     const foreign = await t
       .http()
-      .patch(`/v1/admin/store/products/${productIdByName.get('Kimono Oficial')}`)
+      .patch(
+        `/v1/admin/store/products/${productIdByName.get('Kimono Oficial')}`,
+      )
       .set(bearer(bravoAdmin.accessToken))
       .send({ priceCents: 1 });
     expect(foreign.status).toBe(404);
     // Alpha stock/price untouched (still 34 900 for the seeded kimono).
     const [kimono] = await withPlatform(t.platformDb.db, (tx) =>
       tx
-        .select({ priceCents: products.priceCents, tenantId: products.tenantId })
+        .select({
+          priceCents: products.priceCents,
+          tenantId: products.tenantId,
+        })
         .from(products)
         .where(eq(products.id, productIdByName.get('Kimono Oficial')!)),
     );
@@ -485,8 +580,13 @@ describe('store: admin console + orders lifecycle', () => {
       for (const wrapper of module.controllers.values()) {
         const metatype = wrapper.metatype as (new () => unknown) | undefined;
         if (!metatype) continue;
-        const controllerPath: string = Reflect.getMetadata('path', metatype) ?? '';
-        if (controllerPath !== 'store' && !controllerPath.startsWith('admin/store')) continue;
+        const controllerPath: string =
+          Reflect.getMetadata('path', metatype) ?? '';
+        if (
+          controllerPath !== 'store' &&
+          !controllerPath.startsWith('admin/store')
+        )
+          continue;
         const classRoles = Reflect.getMetadata(ROLES_KEY, metatype);
         const prototype = metatype.prototype as Record<string, unknown>;
         for (const name of Object.getOwnPropertyNames(prototype)) {
@@ -497,7 +597,8 @@ describe('store: admin console + orders lifecycle', () => {
           const method = Reflect.getMetadata('method', handler);
           if (path === undefined || method === undefined) continue;
           const full = `${controllerPath}/${path}`.replaceAll('//', '/');
-          const roles: string[] = Reflect.getMetadata(ROLES_KEY, handler) ?? classRoles ?? [];
+          const roles: string[] =
+            Reflect.getMetadata(ROLES_KEY, handler) ?? classRoles ?? [];
 
           if (controllerPath.startsWith('admin/store')) {
             adminRoutes.push(full);

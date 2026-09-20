@@ -16,9 +16,17 @@ import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
 import type { BeltView } from '../../graduation/graduation.types.js';
-import { mensalidadeAlerts, type MensalidadeAlert } from '../../billing/lib/alerts.js';
+import {
+  mensalidadeAlerts,
+  type MensalidadeAlert,
+} from '../../billing/lib/alerts.js';
 import { localDate } from '../../attendance/lib/time.js';
-import { ageOn, nextSlot, normalizeTime, type ScheduleSlotView } from '../lib/derive.js';
+import {
+  ageOn,
+  nextSlot,
+  normalizeTime,
+  type ScheduleSlotView,
+} from '../lib/derive.js';
 import { EnrollmentService } from './enrollment.service.js';
 
 export interface DependentClassView {
@@ -43,7 +51,10 @@ export interface DependentDetail {
   mensalidade: MensalidadeAlert | null;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Responsável surface (ENR.11). Ownership is service-level filtering by the
@@ -65,7 +76,12 @@ export class DependentsService {
       const rows = await tx
         .select()
         .from(students)
-        .where(and(eq(students.guardianId, guardianId), eq(students.status, 'active')))
+        .where(
+          and(
+            eq(students.guardianId, guardianId),
+            eq(students.status, 'active'),
+          ),
+        )
         .orderBy(asc(students.fullName));
       return this.withClasses(tx, rows);
     });
@@ -78,7 +94,12 @@ export class DependentsService {
         ? await tx
             .select()
             .from(students)
-            .where(and(eq(students.id, dependentId), eq(students.guardianId, guardianId)))
+            .where(
+              and(
+                eq(students.id, dependentId),
+                eq(students.guardianId, guardianId),
+              ),
+            )
         : [];
       const row = rows[0];
       // Foreign dependent (or no guardian record at all) = 404, never 403.
@@ -120,9 +141,17 @@ export class DependentsService {
           (found.ageMin == null || age >= found.ageMin) &&
           (found.ageMax == null || age <= found.ageMax);
         if (!matches) {
-          throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Class does not match the child age', [
-            { field: 'classId', messages: ['Class age range does not include this birth date'] },
-          ]);
+          throw problem(
+            422,
+            ErrorCodes.VALIDATION_FAILED,
+            'Class does not match the child age',
+            [
+              {
+                field: 'classId',
+                messages: ['Class age range does not include this birth date'],
+              },
+            ],
+          );
         }
       }
 
@@ -135,7 +164,12 @@ export class DependentsService {
           guardianId,
         })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Student insert returned no row');
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Student insert returned no row',
+        );
 
       let enrolled = false;
       if (input.classId) {
@@ -152,7 +186,10 @@ export class DependentsService {
     });
   }
 
-  private async guardianIdOf(tx: DbTransaction, userId: string): Promise<string | null> {
+  private async guardianIdOf(
+    tx: DbTransaction,
+    userId: string,
+  ): Promise<string | null> {
     const rows = await tx
       .select({ id: guardians.id })
       .from(guardians)
@@ -164,15 +201,27 @@ export class DependentsService {
    * A guardian membership may predate its registry record (Phase-2 invites).
    * Registering a child claims/creates the record from the account profile.
    */
-  private async ensureGuardianRecord(tx: DbTransaction, ctx: AuthContext): Promise<string> {
+  private async ensureGuardianRecord(
+    tx: DbTransaction,
+    ctx: AuthContext,
+  ): Promise<string> {
     const existing = await this.guardianIdOf(tx, ctx.userId);
     if (existing) return existing;
     const profile = await tx
-      .select({ fullName: users.fullName, email: users.email, phone: users.phone })
+      .select({
+        fullName: users.fullName,
+        email: users.email,
+        phone: users.phone,
+      })
       .from(users)
       .where(eq(users.id, ctx.userId));
     const user = profile[0];
-    if (!user) throw problem(500, ErrorCodes.INTERNAL, 'Authenticated user profile missing');
+    if (!user)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Authenticated user profile missing',
+      );
     const [row] = await tx
       .insert(guardians)
       .values({
@@ -183,7 +232,12 @@ export class DependentsService {
         phone: user.phone,
       })
       .returning({ id: guardians.id });
-    if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Guardian insert returned no row');
+    if (!row)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Guardian insert returned no row',
+      );
     return row.id;
   }
 
@@ -201,7 +255,10 @@ export class DependentsService {
       .from(enrollments)
       .innerJoin(
         classes,
-        and(eq(classes.tenantId, enrollments.tenantId), eq(classes.id, enrollments.classId)),
+        and(
+          eq(classes.tenantId, enrollments.tenantId),
+          eq(classes.id, enrollments.classId),
+        ),
       )
       .where(
         and(

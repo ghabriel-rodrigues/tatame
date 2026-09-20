@@ -22,7 +22,9 @@ const DEFAULT_DERIVED = derivePalette(TATAME_DEFAULT_BRAND, 'light');
 
 describe('session-driven branding (CFG.8)', () => {
   it('applies the academy brand from the session on an admin surface', async () => {
-    const session = makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+    const session = makeMeResponse({
+      memberships: [makeMembership({ role: 'admin' })],
+    });
     renderRoute('/admin/em-construcao', { session });
 
     await screen.findByText('Em construção');

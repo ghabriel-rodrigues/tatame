@@ -62,7 +62,11 @@ export class SessionService {
     `);
     const row = result.rows[0] as { session_id: string } | undefined;
     if (!row) throw new Error('auth_create_session_v2 returned no row');
-    return { sessionId: row.session_id, refreshToken, sessionExpiresAt: expiresAt };
+    return {
+      sessionId: row.session_id,
+      refreshToken,
+      sessionExpiresAt: expiresAt,
+    };
   }
 
   async rotate(rawRefreshToken: string): Promise<RotationResult> {
@@ -91,17 +95,27 @@ export class SessionService {
       membershipId: row.membership_id,
       impersonatorUserId: row.impersonator_user_id,
       impersonatedTenantId: row.impersonated_tenant_id,
-      sessionExpiresAt: row.session_expires_at ? new Date(row.session_expires_at) : null,
+      sessionExpiresAt: row.session_expires_at
+        ? new Date(row.session_expires_at)
+        : null,
       refreshToken: row.status === 'rotated' ? newToken : null,
     };
   }
 
   /** Self-revocation via the sessions self-update RLS policy. */
-  async revoke(userId: string, sessionId: string, reason: string): Promise<void> {
+  async revoke(
+    userId: string,
+    sessionId: string,
+    reason: string,
+  ): Promise<void> {
     await withTenant(this.appDb.db, { userId }, (tx) =>
       tx
         .update(sessions)
-        .set({ revokedAt: new Date(), revokedReason: reason, updatedAt: new Date() })
+        .set({
+          revokedAt: new Date(),
+          revokedReason: reason,
+          updatedAt: new Date(),
+        })
         .where(and(eq(sessions.id, sessionId), isNull(sessions.revokedAt))),
     );
   }
@@ -111,7 +125,11 @@ export class SessionService {
     await withTenant(this.appDb.db, { userId }, (tx) =>
       tx
         .update(sessions)
-        .set({ revokedAt: new Date(), revokedReason: reason, updatedAt: new Date() })
+        .set({
+          revokedAt: new Date(),
+          revokedReason: reason,
+          updatedAt: new Date(),
+        })
         .where(isNull(sessions.revokedAt)),
     );
   }

@@ -71,9 +71,30 @@ interface Metrics {
 
 /** Geometry scaled from the BrandLogo prior art (handoff prototypes). */
 const METRICS: Record<BeltBarSize, Metrics> = {
-  sm: { width: 44, height: 10, radius: 3, tipInset: 2, stripeW: 1.5, stripeGap: 1.5 },
-  md: { width: 72, height: 16, radius: 4, tipInset: 3, stripeW: 2, stripeGap: 2.5 },
-  lg: { width: 132, height: 26, radius: 6, tipInset: 5, stripeW: 3, stripeGap: 4 },
+  sm: {
+    width: 44,
+    height: 10,
+    radius: 3,
+    tipInset: 2,
+    stripeW: 1.5,
+    stripeGap: 1.5,
+  },
+  md: {
+    width: 72,
+    height: 16,
+    radius: 4,
+    tipInset: 3,
+    stripeW: 2,
+    stripeGap: 2.5,
+  },
+  lg: {
+    width: 132,
+    height: 26,
+    radius: 6,
+    tipInset: 5,
+    stripeW: 3,
+    stripeGap: 4,
+  },
 };
 
 /**
@@ -85,7 +106,9 @@ function beltColor(slug: string): { color: string; fallback: boolean } {
   const color = BELT_COLOR_VARS[key];
   if (color) return { color, fallback: false };
   // eslint-disable-next-line no-console
-  console.warn(`[BeltBar] unknown belt colorSlug "${slug}" — rendering gray fallback`);
+  console.warn(
+    `[BeltBar] unknown belt colorSlug "${slug}" — rendering gray fallback`,
+  );
   return { color: BELT_COLOR_VARS['gray'] as string, fallback: true };
 }
 
@@ -153,7 +176,11 @@ export function BeltBar({
         style={{ right: m.tipInset, gap: m.stripeGap, background: tip }}
       >
         {Array.from({ length: stripeCount }, (_, index) => (
-          <Stripe key={index} className="BeltBar-stripe" style={{ width: m.stripeW }} />
+          <Stripe
+            key={index}
+            className="BeltBar-stripe"
+            style={{ width: m.stripeW }}
+          />
         ))}
       </Tip>
     </Bar>
@@ -207,7 +234,11 @@ export function BeltChip({
   className,
 }: BeltChipProps) {
   const text = label ?? beltChipLabel(name, degrees);
-  const classes = ['BeltChip-root', dimmed ? 'BeltChip-dimmed' : null, className]
+  const classes = [
+    'BeltChip-root',
+    dimmed ? 'BeltChip-dimmed' : null,
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
   return (

@@ -36,7 +36,9 @@ export function makeCategories(): VitrineCategory[] {
 }
 
 /** aluno-16 grid card: Kimono oficial Horizonte (GI, R$ 389, Kimonos). */
-export function makeProductCard(overrides: Partial<ProductCard> = {}): ProductCard {
+export function makeProductCard(
+  overrides: Partial<ProductCard> = {},
+): ProductCard {
   return {
     id: KIMONO_ID,
     name: 'Kimono oficial Horizonte',
@@ -49,7 +51,9 @@ export function makeProductCard(overrides: Partial<ProductCard> = {}): ProductCa
   };
 }
 
-export function makeRashGuardCard(overrides: Partial<ProductCard> = {}): ProductCard {
+export function makeRashGuardCard(
+  overrides: Partial<ProductCard> = {},
+): ProductCard {
   return makeProductCard({
     id: RASH_GUARD_ID,
     name: 'Rash guard manga longa',
@@ -62,7 +66,9 @@ export function makeRashGuardCard(overrides: Partial<ProductCard> = {}): Product
   });
 }
 
-export function makeFaixaCard(overrides: Partial<ProductCard> = {}): ProductCard {
+export function makeFaixaCard(
+  overrides: Partial<ProductCard> = {},
+): ProductCard {
   return makeProductCard({
     id: FAIXA_ID,
     name: 'Faixa oficial bordada',
@@ -80,13 +86,19 @@ export function makeVitrine(
   categories?: VitrineCategory[],
 ): VitrineResponse {
   return {
-    products: products ?? [makeProductCard(), makeRashGuardCard(), makeFaixaCard()],
+    products: products ?? [
+      makeProductCard(),
+      makeRashGuardCard(),
+      makeFaixaCard(),
+    ],
     categories: categories ?? makeCategories(),
   };
 }
 
 /** aluno-17 detail: GI banner, #tags, P/M/G/GG pills, 12 em estoque. */
-export function makeProductDetail(overrides: Partial<ProductDetail> = {}): ProductDetail {
+export function makeProductDetail(
+  overrides: Partial<ProductDetail> = {},
+): ProductDetail {
   return {
     id: KIMONO_ID,
     name: 'Kimono oficial Horizonte',
@@ -105,7 +117,9 @@ export function makeProductDetail(overrides: Partial<ProductDetail> = {}): Produ
 }
 
 /** Sizeless product (Faixa) — no Tamanho section (spec 009 story 23). */
-export function makeSizelessDetail(overrides: Partial<ProductDetail> = {}): ProductDetail {
+export function makeSizelessDetail(
+  overrides: Partial<ProductDetail> = {},
+): ProductDetail {
   return makeProductDetail({
     id: FAIXA_ID,
     name: 'Faixa oficial bordada',
@@ -122,7 +136,9 @@ export function makeSizelessDetail(overrides: Partial<ProductDetail> = {}): Prod
   });
 }
 
-export function makeOrderItem(overrides: Partial<StoreOrderItem> = {}): StoreOrderItem {
+export function makeOrderItem(
+  overrides: Partial<StoreOrderItem> = {},
+): StoreOrderItem {
   return {
     productId: KIMONO_ID,
     productName: 'Kimono oficial Horizonte',

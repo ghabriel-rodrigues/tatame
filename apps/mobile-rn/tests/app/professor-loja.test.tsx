@@ -8,11 +8,22 @@
  * equipe" line is dropped per spec — never rendered.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeProfessorProfile } from '../helpers/graduation';
 import { makePixPayment } from '../helpers/billing';
 import {
@@ -42,7 +53,10 @@ function renderProfessorStore(override?: FetchHandler): StoreLog {
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
-    if (request.method === 'GET' && request.path === '/v1/professor/dashboard') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/professor/dashboard'
+    ) {
       return json(200, {
         alunosHoje: 0,
         presencaMediaPct: 0,
@@ -58,7 +72,10 @@ function renderProfessorStore(override?: FetchHandler): StoreLog {
     if (request.method === 'GET' && request.path === '/v1/store/products') {
       return json(200, makeVitrine());
     }
-    if (request.method === 'GET' && request.path === `/v1/store/products/${FAIXA_ID}`) {
+    if (
+      request.method === 'GET' &&
+      request.path === `/v1/store/products/${FAIXA_ID}`
+    ) {
       return json(200, detail);
     }
     if (request.method === 'POST' && request.path === '/v1/store/orders') {
@@ -89,20 +106,27 @@ function renderProfessorStore(override?: FetchHandler): StoreLog {
     ) {
       log.paymentPaths.push(request.path);
       return json(201, {
-        payment: makePixPayment({ chargeId: ORDER_CHARGE_ID, amountCents: 7_900 }),
+        payment: makePixPayment({
+          chargeId: ORDER_CHARGE_ID,
+          amountCents: 7_900,
+        }),
         charge: null,
         mandateCreated: false,
       });
     }
-    const simulateMatch = /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(
-      request.path,
-    );
+    const simulateMatch =
+      /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(request.path);
     if (request.method === 'POST' && simulateMatch) {
       log.simulated.push(simulateMatch[1] ?? '');
       orders = orders.map((order) =>
-        order.status === 'pending' ? { ...order, status: 'paid', chargeId: null } : order,
+        order.status === 'pending'
+          ? { ...order, status: 'paid', chargeId: null }
+          : order,
       );
-      return json(200, { payment: makePixPayment({ status: 'succeeded' }), charge: null });
+      return json(200, {
+        payment: makePixPayment({ status: 'succeeded' }),
+        charge: null,
+      });
     }
     return null;
   });
@@ -121,11 +145,15 @@ async function openVitrineFromPerfil(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Perfil'));
   });
-  await waitFor(() => expect(screen.getByTestId('perfil-loja-row')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('perfil-loja-row')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('perfil-loja-row'));
   });
-  await waitFor(() => expect(screen.getByText('Loja Alpha Jiu-Jitsu')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByText('Loja Alpha Jiu-Jitsu')).toBeTruthy(),
+  );
   await waitFor(() => expect(screen.getByTestId('product-grid')).toBeTruthy());
 }
 
@@ -158,7 +186,9 @@ describe('professor store (STO.10-11)', () => {
       fireEvent.press(screen.getByTestId(`product-${FAIXA_ID}`));
     });
     // The banner renders immediately; the thumbnails need the loaded product.
-    await waitFor(() => expect(screen.getByTestId('gallery-thumb-0')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('gallery-thumb-0')).toBeTruthy(),
+    );
     // Sizeless product: no Tamanho section, CTA live immediately; and the
     // dropped "desconto de equipe" promise is nowhere on screen.
     expect(screen.queryByText('Tamanho')).toBeNull();
@@ -171,10 +201,16 @@ describe('professor store (STO.10-11)', () => {
     await waitFor(() => expect(screen.getByTestId('pix-sheet')).toBeTruthy());
     expect(log.orderBodies).toEqual([{ productId: FAIXA_ID, quantity: 1 }]);
     // The professor pays on the store route — never the aluno wallet.
-    expect(log.paymentPaths).toEqual([`/v1/store/charges/${ORDER_CHARGE_ID}/payments`]);
-    expect(screen.getByText('Pedido #2440 · Faixa oficial bordada')).toBeTruthy();
+    expect(log.paymentPaths).toEqual([
+      `/v1/store/charges/${ORDER_CHARGE_ID}/payments`,
+    ]);
+    expect(
+      screen.getByText('Pedido #2440 · Faixa oficial bordada'),
+    ).toBeTruthy();
 
-    await waitFor(() => expect(screen.getByText('Simular pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Simular pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Simular pagamento'));
     });
@@ -192,7 +228,9 @@ describe('professor store (STO.10-11)', () => {
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Voltar'));
     });
-    await waitFor(() => expect(screen.getByTestId('my-orders-entry')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('my-orders-entry')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByTestId('my-orders-entry'));
     });

@@ -8,15 +8,24 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { BeltBar, BeltChip, beltChipLabel } from './BeltBar.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 afterEach(() => vi.restoreAllMocks());
 
 describe('BeltBar', () => {
   it('draws the bar + ponteira with one stripe per current degree', () => {
     const { container } = renderUi(
-      <BeltBar colorSlug="belt.blue" degrees={2} maxDegrees={4} name="Faixa azul · 2 graus" />,
+      <BeltBar
+        colorSlug="belt.blue"
+        degrees={2}
+        maxDegrees={4}
+        name="Faixa azul · 2 graus"
+      />,
     );
     const bar = screen.getByRole('img', { name: 'Faixa azul · 2 graus' });
     expect(bar.style.background).toContain('--belt-blue');
@@ -26,7 +35,12 @@ describe('BeltBar', () => {
 
   it('clamps stripes to maxDegrees', () => {
     const { container } = renderUi(
-      <BeltBar colorSlug="belt.green" degrees={9} maxDegrees={4} name="Verde" />,
+      <BeltBar
+        colorSlug="belt.green"
+        degrees={9}
+        maxDegrees={4}
+        name="Verde"
+      />,
     );
     expect(container.querySelectorAll('.BeltBar-stripe')).toHaveLength(4);
   });
@@ -48,18 +62,25 @@ describe('BeltBar', () => {
 
   it('renders the red belt solid — maxDegrees 0 means no stripes, default tip', () => {
     const { container } = renderUi(
-      <BeltBar colorSlug="belt.red" degrees={0} maxDegrees={0} name="Faixa vermelha" />,
+      <BeltBar
+        colorSlug="belt.red"
+        degrees={0}
+        maxDegrees={0}
+        name="Faixa vermelha"
+      />,
     );
     const bar = screen.getByRole('img', { name: 'Faixa vermelha' });
     expect(bar.style.background).toContain('--belt-red');
     expect(container.querySelectorAll('.BeltBar-stripe')).toHaveLength(0);
-    expect(container.querySelector<HTMLElement>('.BeltBar-tip')?.style.background).toContain(
-      '--belt-tip',
-    );
+    expect(
+      container.querySelector<HTMLElement>('.BeltBar-tip')?.style.background,
+    ).toContain('--belt-tip');
   });
 
   it('keeps the white belt visible via the inset belt.outline hairline', () => {
-    renderUi(<BeltBar colorSlug="belt.white" degrees={0} name="Faixa branca" />);
+    renderUi(
+      <BeltBar colorSlug="belt.white" degrees={0} name="Faixa branca" />,
+    );
     const bar = screen.getByRole('img', { name: 'Faixa branca' });
     expect(bar.style.background).toContain('--belt-white');
     // The outline is part of the component contract, not a per-surface fix.
@@ -87,7 +108,9 @@ describe('BeltBar', () => {
     const lg = screen.getByRole('img', { name: 'lg' });
     expect(sm.className).toContain('BeltBar-sm');
     expect(lg.className).toContain('BeltBar-lg');
-    expect(parseInt(lg.style.height, 10)).toBeGreaterThan(parseInt(sm.style.height, 10));
+    expect(parseInt(lg.style.height, 10)).toBeGreaterThan(
+      parseInt(sm.style.height, 10),
+    );
   });
 });
 
@@ -96,7 +119,9 @@ describe('BeltChip', () => {
     const { container } = renderUi(
       <BeltChip name="Azul" colorSlug="belt.blue" degrees={2} maxDegrees={4} />,
     );
-    expect(screen.getByRole('img', { name: 'Faixa azul · 2 graus' })).toBeTruthy();
+    expect(
+      screen.getByRole('img', { name: 'Faixa azul · 2 graus' }),
+    ).toBeTruthy();
     expect(container.querySelector('.BeltChip-label')?.textContent).toBe(
       'Faixa azul · 2 graus',
     );
@@ -107,9 +132,16 @@ describe('BeltChip', () => {
     expect(beltChipLabel('Branca')).toBe('Faixa branca');
     expect(beltChipLabel('Azul', 1)).toBe('Faixa azul · 1 grau');
     const { container } = renderUi(
-      <BeltChip name="Laranja" colorSlug="belt.orange" label="Laranja" dimmed />,
+      <BeltChip
+        name="Laranja"
+        colorSlug="belt.orange"
+        label="Laranja"
+        dimmed
+      />,
     );
-    expect(container.querySelector('.BeltChip-label')?.textContent).toBe('Laranja');
+    expect(container.querySelector('.BeltChip-label')?.textContent).toBe(
+      'Laranja',
+    );
     expect(container.querySelector('.BeltChip-dimmed')).toBeTruthy();
   });
 });

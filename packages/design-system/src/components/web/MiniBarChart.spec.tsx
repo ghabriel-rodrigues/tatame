@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { MiniBarChart } from './MiniBarChart.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 const SERIES = [
   { label: 'MAI', value: 50 },
@@ -57,14 +61,21 @@ describe('MiniBarChart', () => {
 
   it('keeps a minimum visible bar for zero values (empty months stay drawn)', () => {
     const { container } = renderUi(
-      <MiniBarChart data={[{ label: 'JAN', value: 0 }, { label: 'FEV', value: 10 }]} />,
+      <MiniBarChart
+        data={[
+          { label: 'JAN', value: 0 },
+          { label: 'FEV', value: 10 },
+        ]}
+      />,
     );
     const bars = container.querySelectorAll<HTMLElement>('.MiniBarChart-bar');
     expect(bars[0]!.style.height).toBe('4px');
   });
 
   it('is an accessible labeled image', () => {
-    const { getByRole } = renderUi(<MiniBarChart data={SERIES} ariaLabel="Receita mensal" />);
+    const { getByRole } = renderUi(
+      <MiniBarChart data={SERIES} ariaLabel="Receita mensal" />,
+    );
     expect(getByRole('img', { name: 'Receita mensal' })).toBeTruthy();
   });
 });

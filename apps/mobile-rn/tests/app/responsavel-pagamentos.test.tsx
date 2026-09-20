@@ -8,11 +8,22 @@
  * mensalidade alert (story 22).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeDependents } from '../helpers/enrollment';
 import {
   JULIA_PAYMENT_ID,
@@ -39,20 +50,34 @@ function renderResponsavel(
   options: { provider?: 'simulated' | 'stripe'; withHomeAlert?: boolean } = {},
   override?: FetchHandler,
 ): GuardianLog {
-  const log: GuardianLog = { paymentPaths: [], paymentBodies: [], simulated: [], listGets: 0 };
+  const log: GuardianLog = {
+    paymentPaths: [],
+    paymentBodies: [],
+    simulated: [],
+    listGets: 0,
+  };
   let pedroPaid = false;
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
-    if (request.method === 'GET' && request.path === '/v1/responsavel/dependents') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/responsavel/dependents'
+    ) {
       const dependents = makeDependents().map((dependent, index) =>
         options.withHomeAlert && index === 0
-          ? { ...dependent, mensalidade: makeMensalidadeAlert({ amountCents: 15_000 }) }
+          ? {
+              ...dependent,
+              mensalidade: makeMensalidadeAlert({ amountCents: 15_000 }),
+            }
           : dependent,
       );
       return json(200, { dependents });
     }
-    if (request.method === 'GET' && request.path === '/v1/responsavel/payments') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/responsavel/payments'
+    ) {
       log.listGets += 1;
       const data = makeGuardianPayments();
       if (pedroPaid && data.dependents[0]?.currentCharge) {
@@ -69,9 +94,10 @@ function renderResponsavel(
       }
       return json(200, data);
     }
-    const payMatch = /^\/v1\/responsavel\/payments\/charges\/([0-9a-f-]+)\/payments$/.exec(
-      request.path,
-    );
+    const payMatch =
+      /^\/v1\/responsavel\/payments\/charges\/([0-9a-f-]+)\/payments$/.exec(
+        request.path,
+      );
     if (request.method === 'POST' && payMatch) {
       log.paymentPaths.push(payMatch[1] ?? '');
       log.paymentBodies.push(request.body);
@@ -85,9 +111,8 @@ function renderResponsavel(
         mandateCreated: false,
       });
     }
-    const simulateMatch = /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(
-      request.path,
-    );
+    const simulateMatch =
+      /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(request.path);
     if (request.method === 'POST' && simulateMatch) {
       log.simulated.push(simulateMatch[1] ?? '');
       pedroPaid = true;
@@ -100,7 +125,10 @@ function renderResponsavel(
       request.method === 'GET' &&
       request.path === `/v1/billing/payments/${JULIA_PAYMENT_ID}/receipt`
     ) {
-      return json(200, makeReceipt({ studentName: 'Júlia Silveira', planName: 'Kids' }));
+      return json(
+        200,
+        makeReceipt({ studentName: 'Júlia Silveira', planName: 'Kids' }),
+      );
     }
     return null;
   });
@@ -137,14 +165,18 @@ describe('responsável Pagamentos (BIL.18)', () => {
     // Pedro: open charge per responsavel-04.
     expect(screen.getByText('Pedro · agosto')).toBeTruthy();
     expect(screen.getAllByText('R$ 150,00').length).toBeGreaterThan(1);
-    expect(screen.getByText('Vence em 10 de agosto · plano Kids mensal')).toBeTruthy();
+    expect(
+      screen.getByText('Vence em 10 de agosto · plano Kids mensal'),
+    ).toBeTruthy();
     expect(screen.getByText('Em aberto')).toBeTruthy();
     expect(screen.getByText('Pagar com Pix')).toBeTruthy();
 
     // Júlia: settled by the card mandate.
     expect(screen.getByText('Júlia · agosto')).toBeTruthy();
     expect(screen.getByText('Paga')).toBeTruthy();
-    expect(screen.getByText('Pago em 02/08 via recorrência no cartão')).toBeTruthy();
+    expect(
+      screen.getByText('Pago em 02/08 via recorrência no cartão'),
+    ).toBeTruthy();
     expect(screen.getAllByText('Ver comprovante').length).toBeGreaterThan(0);
   });
 
@@ -170,16 +202,22 @@ describe('responsável Pagamentos (BIL.18)', () => {
 
     // Addressed to the right child + posted to the guardian endpoint.
     await waitFor(() =>
-      expect(screen.getByText('Mensalidade de agosto · Pedro Silveira')).toBeTruthy(),
+      expect(
+        screen.getByText('Mensalidade de agosto · Pedro Silveira'),
+      ).toBeTruthy(),
     );
     expect(log.paymentPaths).toEqual([PEDRO_CHARGE_ID]);
     expect(log.paymentBodies).toContainEqual({ method: 'pix' });
 
-    await waitFor(() => expect(screen.getByText('Simular pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Simular pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Simular pagamento'));
     });
-    await waitFor(() => expect(screen.getByTestId('payment-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('payment-success-pop')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByText('Fechar'));
@@ -209,20 +247,28 @@ describe('responsável Pagamentos (BIL.18)', () => {
       fireEvent.press(screen.getAllByText('Ver comprovante')[0]!);
     });
 
-    await waitFor(() => expect(screen.getByTestId('receipt-sheet')).toBeTruthy());
-    await waitFor(() => expect(screen.getByText('Júlia Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('receipt-sheet')).toBeTruthy(),
+    );
+    await waitFor(() =>
+      expect(screen.getByText('Júlia Silveira')).toBeTruthy(),
+    );
     expect(screen.getByText('Comprovante')).toBeTruthy();
     expect(screen.getByText('Kids')).toBeTruthy();
   });
 
   it('home dependent cards carry the real mensalidade alert (story 22)', async () => {
     renderResponsavel({ withHomeAlert: true });
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
 
     const alert = screen.getByTestId(/dependent-mensalidade-/);
     expect(alert).toBeTruthy();
     expect(
-      screen.getByText('Mensalidade em aberto · vence em 10 de agosto · R$ 150,00'),
+      screen.getByText(
+        'Mensalidade em aberto · vence em 10 de agosto · R$ 150,00',
+      ),
     ).toBeTruthy();
     // Júlia has nothing open → no alert on her card.
     expect(screen.getAllByTestId(/dependent-mensalidade-/)).toHaveLength(1);

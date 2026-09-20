@@ -1,5 +1,13 @@
 import { sql } from 'drizzle-orm';
-import { index, jsonb, pgPolicy, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  index,
+  jsonb,
+  pgPolicy,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
 import { users } from './auth.js';
 import { currentTenantId, id } from './helpers.js';
@@ -31,7 +39,9 @@ export const auditLogs = pgTable(
     targetType: text('target_type'),
     targetId: text('target_id'),
     metadata: jsonb('metadata'),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     index('audit_logs_tenant_id_idx').on(t.tenantId),

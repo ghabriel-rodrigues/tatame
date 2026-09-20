@@ -31,17 +31,25 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
   };
 
   const putAcademy = (token: string, body: unknown) =>
-    t.http().put('/v1/admin/academy').set(bearer(token)).send(body as object);
+    t
+      .http()
+      .put('/v1/admin/academy')
+      .set(bearer(token))
+      .send(body as object);
 
   const feedTitles = async (token: string, title: string) => {
     const res = await t.http().get('/v1/notifications').set(bearer(token));
     expect(res.status).toBe(200);
-    return (res.body.notifications as Array<{ title: string }>).filter((n) => n.title === title)
-      .length;
+    return (res.body.notifications as Array<{ title: string }>).filter(
+      (n) => n.title === title,
+    ).length;
   };
 
   /** Fan-out runs post-commit off the request path — poll until it lands. */
-  const eventually = async (assert: () => Promise<void>, timeoutMs = 5_000): Promise<void> => {
+  const eventually = async (
+    assert: () => Promise<void>,
+    timeoutMs = 5_000,
+  ): Promise<void> => {
     const deadline = Date.now() + timeoutMs;
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -105,12 +113,21 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
       autoNotificationsEnabled: true,
     };
     const badBodies: Array<[string, Record<string, unknown>]> = [
-      ['bad hex (letters out of range)', { ...valid, brand: { ...OCEANO, deep: '#GGGGGG' } }],
+      [
+        'bad hex (letters out of range)',
+        { ...valid, brand: { ...OCEANO, deep: '#GGGGGG' } },
+      ],
       ['shorthand hex', { ...valid, brand: { ...OCEANO, vibrant: '#3af' } }],
       ['missing #', { ...valid, brand: { ...OCEANO, accent: 'E63946' } }],
-      ['partial triplet (accent missing)', { ...valid, brand: { deep: '#14213D', vibrant: '#3A5FA8' } }],
+      [
+        'partial triplet (accent missing)',
+        { ...valid, brand: { deep: '#14213D', vibrant: '#3A5FA8' } },
+      ],
       ['partial triplet (only deep)', { ...valid, brand: { deep: '#14213D' } }],
-      ['brand missing entirely', { name: valid.name, autoNotificationsEnabled: true }],
+      [
+        'brand missing entirely',
+        { name: valid.name, autoNotificationsEnabled: true },
+      ],
       ['name too short', { ...valid, name: 'A' }],
       ['name too long', { ...valid, name: 'x'.repeat(81) }],
       ['name only whitespace', { ...valid, name: '   ' }],
@@ -171,13 +188,21 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
 
     // Audit: academy.updated with the admin actor and before/after.
     const [adminUser] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, 'admin@tatame.dev')),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, 'admin@tatame.dev')),
     );
     const rows = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.tenantId, alphaId), eq(auditLogs.action, 'academy.updated')))
+        .where(
+          and(
+            eq(auditLogs.tenantId, alphaId),
+            eq(auditLogs.action, 'academy.updated'),
+          ),
+        )
         .orderBy(asc(auditLogs.id)),
     );
     expect(rows).toHaveLength(1);
@@ -207,7 +232,9 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
       .set(bearer(admin))
       .send({ kind: 'student' });
     expect(invite.status).toBe(201);
-    const landing = await t.http().get(`/v1/public/invites/${invite.body.token}`);
+    const landing = await t
+      .http()
+      .get(`/v1/public/invites/${invite.body.token}`);
     expect(landing.status).toBe(200);
     expect(landing.body.academy.theme).toEqual(OCEANO);
     expect(landing.body.academy.name).toBe('Alpha Jiu-Jitsu Renovada');
@@ -246,7 +273,12 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
       tx
         .select({ metadata: auditLogs.metadata })
         .from(auditLogs)
-        .where(and(eq(auditLogs.tenantId, alphaId), eq(auditLogs.action, 'academy.updated')))
+        .where(
+          and(
+            eq(auditLogs.tenantId, alphaId),
+            eq(auditLogs.action, 'academy.updated'),
+          ),
+        )
         .orderBy(asc(auditLogs.id)),
     );
     expect(rows).toHaveLength(2);
@@ -301,7 +333,10 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
     });
     expect(on.status).toBe(200);
 
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     const paulo = professors.body.professors.find(
       (p: { email: string }) => p.email === 'professor@tatame.dev',
     );
@@ -327,15 +362,29 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
   // ── permission matrix member counts (CFG.6) ─────────────────────────────
 
   it('GET /admin/permissions carries per-role ACTIVE member counts matching the seeds', async () => {
-    const alpha = await t.http().get('/v1/admin/permissions').set(bearer(admin));
+    const alpha = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(admin));
     expect(alpha.status).toBe(200);
     // Alpha seeds: professor@ + multi@ teach; aluno@ studies; responsavel@ guards.
-    expect(alpha.body.memberCounts).toEqual({ professor: 2, student: 1, guardian: 1 });
+    expect(alpha.body.memberCounts).toEqual({
+      professor: 2,
+      student: 1,
+      guardian: 1,
+    });
     expect(alpha.body.permissions.length).toBeGreaterThan(0);
 
     // Bravo seeds: multi@ is the only professor; no student/guardian logins.
-    const bravo = await t.http().get('/v1/admin/permissions').set(bearer(adminBravo));
-    expect(bravo.body.memberCounts).toEqual({ professor: 1, student: 0, guardian: 0 });
+    const bravo = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(adminBravo));
+    expect(bravo.body.memberCounts).toEqual({
+      professor: 1,
+      student: 0,
+      guardian: 0,
+    });
 
     // Counts are of ACTIVE memberships only: suspend bravo's professor row
     // out-of-band and the header count drops.
@@ -343,17 +392,34 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
       tx
         .update(memberships)
         .set({ status: 'suspended' })
-        .where(and(eq(memberships.tenantId, bravoId), eq(memberships.role, 'professor'))),
+        .where(
+          and(
+            eq(memberships.tenantId, bravoId),
+            eq(memberships.role, 'professor'),
+          ),
+        ),
     );
     try {
-      const suspended = await t.http().get('/v1/admin/permissions').set(bearer(adminBravo));
-      expect(suspended.body.memberCounts).toEqual({ professor: 0, student: 0, guardian: 0 });
+      const suspended = await t
+        .http()
+        .get('/v1/admin/permissions')
+        .set(bearer(adminBravo));
+      expect(suspended.body.memberCounts).toEqual({
+        professor: 0,
+        student: 0,
+        guardian: 0,
+      });
     } finally {
       await withPlatform(t.platformDb.db, (tx) =>
         tx
           .update(memberships)
           .set({ status: 'active' })
-          .where(and(eq(memberships.tenantId, bravoId), eq(memberships.role, 'professor'))),
+          .where(
+            and(
+              eq(memberships.tenantId, bravoId),
+              eq(memberships.role, 'professor'),
+            ),
+          ),
       );
     }
 
@@ -362,8 +428,14 @@ describe('admin academy settings: branding + toggles + permission counts', () =>
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin))
-      .send({ entries: [{ role: 'professor', key: 'invites.create', allowed: true }] });
+      .send({
+        entries: [{ role: 'professor', key: 'invites.create', allowed: true }],
+      });
     expect(put.status).toBe(200);
-    expect(put.body.memberCounts).toEqual({ professor: 2, student: 1, guardian: 1 });
+    expect(put.body.memberCounts).toEqual({
+      professor: 2,
+      student: 1,
+      guardian: 1,
+    });
   });
 });

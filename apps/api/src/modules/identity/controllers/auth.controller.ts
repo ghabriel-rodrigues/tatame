@@ -26,7 +26,11 @@ import {
   Roles,
 } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
-import { AuthService, type AuthenticatedPayload, type IssuedTokens } from '../services/auth.service.js';
+import {
+  AuthService,
+  type AuthenticatedPayload,
+  type IssuedTokens,
+} from '../services/auth.service.js';
 import { PasswordResetService } from '../services/password-reset.service.js';
 import { TotpService } from '../services/totp.service.js';
 import {
@@ -90,7 +94,10 @@ export class AuthController {
   ): { accessToken: string; accessExpiresIn: number; refreshToken?: string } {
     if ((transport ?? 'cookie') === 'cookie') {
       this.setRefreshCookie(res, tokens.refreshToken, tokens.refreshExpiresAt);
-      return { accessToken: tokens.accessToken, accessExpiresIn: tokens.accessExpiresIn };
+      return {
+        accessToken: tokens.accessToken,
+        accessExpiresIn: tokens.accessExpiresIn,
+      };
     }
     return {
       accessToken: tokens.accessToken,
@@ -115,10 +122,20 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Credentials → token pair (or TOTP challenge) + memberships' })
+  @ApiOperation({
+    summary: 'Credentials → token pair (or TOTP challenge) + memberships',
+  })
   @ApiOkResponse({ type: AuthSessionResponseDto })
-  @ApiResponse({ status: 202, type: MfaChallengeResponseDto, description: 'Platform 2FA challenge' })
-  async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  @ApiResponse({
+    status: 202,
+    type: MfaChallengeResponseDto,
+    description: 'Platform 2FA challenge',
+  })
+  async login(
+    @Body() dto: LoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.auth.login(dto.email, dto.password, meta(req));
     if (result.kind === 'mfa_required') {
       res.status(202);
@@ -137,14 +154,20 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const payload = await this.auth.completeTotpLogin(dto.challengeToken, dto.code, meta(req));
+    const payload = await this.auth.completeTotpLogin(
+      dto.challengeToken,
+      dto.code,
+      meta(req),
+    );
     return this.shapeAuthenticated(res, payload, dto.transport);
   }
 
   @Public()
   @Post('refresh')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Rotate the refresh token (family-reuse detection)' })
+  @ApiOperation({
+    summary: 'Rotate the refresh token (family-reuse detection)',
+  })
   @ApiOkResponse({ type: TokenPairResponseDto })
   async refresh(
     @Body() dto: RefreshDto,
@@ -153,9 +176,15 @@ export class AuthController {
   ) {
     const raw =
       dto.refreshToken ??
-      (req as Request & { cookies?: Record<string, string> }).cookies?.[REFRESH_COOKIE];
+      (req as Request & { cookies?: Record<string, string> }).cookies?.[
+        REFRESH_COOKIE
+      ];
     if (!raw) {
-      throw problem(401, ErrorCodes.AUTH_TOKEN_EXPIRED, 'No refresh token presented');
+      throw problem(
+        401,
+        ErrorCodes.AUTH_TOKEN_EXPIRED,
+        'No refresh token presented',
+      );
     }
     const tokens = await this.auth.refresh(raw);
     const transport = dto.transport ?? (dto.refreshToken ? 'body' : 'cookie');
@@ -167,10 +196,15 @@ export class AuthController {
   @Post('switch')
   @HttpCode(200)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Re-issue the access token for another owned membership' })
+  @ApiOperation({
+    summary: 'Re-issue the access token for another owned membership',
+  })
   @ApiOkResponse({ type: SwitchMembershipResponseDto })
   async switch(@Body() dto: SwitchMembershipDto) {
-    return this.auth.switchMembership(requireAuthContext(this.cls), dto.membershipId);
+    return this.auth.switchMembership(
+      requireAuthContext(this.cls),
+      dto.membershipId,
+    );
   }
 
   @AnyRole()
@@ -178,7 +212,9 @@ export class AuthController {
   @Post('logout')
   @HttpCode(204)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Revoke the current session (also ends impersonation)' })
+  @ApiOperation({
+    summary: 'Revoke the current session (also ends impersonation)',
+  })
   async logout(@Res({ passthrough: true }) res: Response): Promise<void> {
     await this.auth.logout(requireAuthContext(this.cls));
     this.clearRefreshCookie(res);
@@ -199,7 +235,9 @@ export class AuthController {
   @AllowSuspended()
   @Get('me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Session bootstrap: user, memberships, context, toggles' })
+  @ApiOperation({
+    summary: 'Session bootstrap: user, memberships, context, toggles',
+  })
   @ApiOkResponse({ type: MeResponseDto })
   async me() {
     return this.auth.me(requireAuthContext(this.cls));
@@ -208,7 +246,9 @@ export class AuthController {
   @Public()
   @Post('password/forgot')
   @HttpCode(202)
-  @ApiOperation({ summary: 'Request a reset email — 202 always (no enumeration)' })
+  @ApiOperation({
+    summary: 'Request a reset email — 202 always (no enumeration)',
+  })
   @ApiAcceptedResponse({ type: ForgotPasswordResponseDto })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     await this.resets.requestReset(dto.email);
@@ -218,7 +258,9 @@ export class AuthController {
   @Public()
   @Post('password/reset')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Consume the single-use token; revokes all sessions' })
+  @ApiOperation({
+    summary: 'Consume the single-use token; revokes all sessions',
+  })
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
     await this.resets.reset(dto.token, dto.newPassword);
   }
@@ -228,7 +270,9 @@ export class AuthController {
   @Post('totp/setup')
   @HttpCode(200)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Platform staff: generate the TOTP provisioning secret' })
+  @ApiOperation({
+    summary: 'Platform staff: generate the TOTP provisioning secret',
+  })
   @ApiOkResponse({ type: TotpSetupResponseDto })
   async totpSetup() {
     const ctx = requireAuthContext(this.cls);
@@ -241,7 +285,9 @@ export class AuthController {
   @Post('totp/enable')
   @HttpCode(200)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Platform staff: arm TOTP, returns one-time recovery codes' })
+  @ApiOperation({
+    summary: 'Platform staff: arm TOTP, returns one-time recovery codes',
+  })
   @ApiOkResponse({ type: TotpEnableResponseDto })
   async totpEnable(@Body() dto: TotpEnableDto) {
     return this.totp.enable(requireAuthContext(this.cls).userId, dto.code);

@@ -35,7 +35,9 @@ describe('Faturamento e repasses (BIL.15)', () => {
       await screen.findByRole('heading', { name: 'Faturamento e repasses' }),
     ).toBeInTheDocument();
     // R$ 19.240 assinaturas · R$ 8.410 taxa (plataforma-09).
-    expect(await screen.findByText(formatBRLWhole(1_924_000))).toBeInTheDocument();
+    expect(
+      await screen.findByText(formatBRLWhole(1_924_000)),
+    ).toBeInTheDocument();
     expect(screen.getByText('assinaturas · mês')).toBeInTheDocument();
     expect(screen.getByText(formatBRLWhole(841_000))).toBeInTheDocument();
     expect(screen.getByText('taxa de pagamento')).toBeInTheDocument();
@@ -47,7 +49,9 @@ describe('Faturamento e repasses (BIL.15)', () => {
     await screen.findByText('Repasses às academias');
 
     expect(screen.getByText('Gracie Vale Norte')).toBeInTheDocument();
-    expect(screen.getByText('Mensalidades de julho · 386 alunos')).toBeInTheDocument();
+    expect(
+      screen.getByText('Mensalidades de julho · 386 alunos'),
+    ).toBeInTheDocument();
     expect(screen.getByText(formatBRLWhole(5_432_000))).toBeInTheDocument();
     expect(screen.getByText('Horizonte BJJ')).toBeInTheDocument();
     expect(screen.getByText('Choque BJJ Kids')).toBeInTheDocument();
@@ -98,7 +102,9 @@ describe('Faturamento e repasses (BIL.15)', () => {
   it('shows the platform-RBAC denial copy when the API returns 403 (support role)', async () => {
     server.use(
       http.get('/v1/platform/billing/repasses', ({ response }) =>
-        response.untyped(problemResponse(403, 'authz.forbidden_role', 'finance only')),
+        response.untyped(
+          problemResponse(403, 'authz.forbidden_role', 'finance only'),
+        ),
       ),
     );
     renderRepasses();

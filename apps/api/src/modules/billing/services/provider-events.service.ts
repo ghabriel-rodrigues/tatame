@@ -84,7 +84,9 @@ export class ProviderEventsService {
         return this.onPaymentRefunded(event, actor);
       default:
         // subscription.* — platform SaaS side, owned by the platform slice.
-        this.logger.log(`Ignoring provider event ${event.type} (not consumed in v1)`);
+        this.logger.log(
+          `Ignoring provider event ${event.type} (not consumed in v1)`,
+        );
         return { applied: false };
     }
   }
@@ -101,21 +103,36 @@ export class ProviderEventsService {
       this.appDb.db,
       { tenantId: event.tenantId, userId: actor.userId },
       async (tx): Promise<ProviderEventOutcome> => {
-        const payment = await this.paymentByProviderId(tx, event.provider, event.providerPaymentId);
+        const payment = await this.paymentByProviderId(
+          tx,
+          event.provider,
+          event.providerPaymentId,
+        );
         if (!payment) {
-          this.logger.warn(`payment.succeeded for unknown ${event.providerPaymentId} — ignored`);
+          this.logger.warn(
+            `payment.succeeded for unknown ${event.providerPaymentId} — ignored`,
+          );
           return { applied: false };
         }
         // Idempotent re-delivery: a final payment never transitions again.
         if (payment.status !== 'pending') {
-          return { applied: false, paymentId: payment.id, chargeId: payment.chargeId };
+          return {
+            applied: false,
+            paymentId: payment.id,
+            chargeId: payment.chargeId,
+          };
         }
 
         const paidAt = new Date(event.paidAt);
         const receiptUrl = `/v1/billing/payments/${payment.id}/receipt`;
         await tx
           .update(payments)
-          .set({ status: 'succeeded', paidAt, receiptUrl, updatedAt: new Date() })
+          .set({
+            status: 'succeeded',
+            paidAt,
+            receiptUrl,
+            updatedAt: new Date(),
+          })
           .where(eq(payments.id, payment.id));
 
         const [charge] = await tx
@@ -129,12 +146,20 @@ export class ProviderEventsService {
             .update(charges)
             .set({ status: 'paid', updatedAt: new Date() })
             .where(eq(charges.id, charge.id));
-          await this.audit(tx, event.tenantId, actor, 'billing.charge.paid', 'charge', charge.id, {
-            payment_id: payment.id,
-            method: payment.method,
-            provider: event.provider,
-            provider_payment_id: event.providerPaymentId,
-          });
+          await this.audit(
+            tx,
+            event.tenantId,
+            actor,
+            'billing.charge.paid',
+            'charge',
+            charge.id,
+            {
+              payment_id: payment.id,
+              method: payment.method,
+              provider: event.provider,
+              provider_payment_id: event.providerPaymentId,
+            },
+          );
           paid = {
             tenantId: event.tenantId,
             chargeId: charge.id,
@@ -185,7 +210,8 @@ export class ProviderEventsService {
       this.events.emit(EVENTS_REGISTRATION_CONFIRMED, registrationConfirmed);
     }
     if (orderPaid) this.events.emit(STORE_ORDER_PAID, orderPaid);
-    for (const event_ of lowStock) this.events.emit(STORE_PRODUCT_LOW_STOCK, event_);
+    for (const event_ of lowStock)
+      this.events.emit(STORE_PRODUCT_LOW_STOCK, event_);
     return outcome;
   }
 
@@ -193,16 +219,28 @@ export class ProviderEventsService {
     event: Extract<ProviderEvent, { type: 'payment.failed' }>,
   ): Promise<ProviderEventOutcome> {
     return withTenant(this.appDb.db, event.tenantId, async (tx) => {
-      const payment = await this.paymentByProviderId(tx, event.provider, event.providerPaymentId);
+      const payment = await this.paymentByProviderId(
+        tx,
+        event.provider,
+        event.providerPaymentId,
+      );
       if (!payment || payment.status !== 'pending') {
-        return { applied: false, paymentId: payment?.id, chargeId: payment?.chargeId };
+        return {
+          applied: false,
+          paymentId: payment?.id,
+          chargeId: payment?.chargeId,
+        };
       }
       await tx
         .update(payments)
         .set({ status: 'failed', updatedAt: new Date() })
         .where(eq(payments.id, payment.id));
       // The charge stays open — the aluno simply tries again.
-      return { applied: true, paymentId: payment.id, chargeId: payment.chargeId };
+      return {
+        applied: true,
+        paymentId: payment.id,
+        chargeId: payment.chargeId,
+      };
     });
   }
 
@@ -217,11 +255,19 @@ export class ProviderEventsService {
       this.appDb.db,
       { tenantId: event.tenantId, userId: actor.userId },
       async (tx): Promise<ProviderEventOutcome> => {
-        const payment = await this.paymentByProviderId(tx, event.provider, event.providerPaymentId);
+        const payment = await this.paymentByProviderId(
+          tx,
+          event.provider,
+          event.providerPaymentId,
+        );
         if (!payment) return { applied: false };
         // Only settled payments refund; re-delivery no-ops.
         if (payment.status !== 'succeeded') {
-          return { applied: false, paymentId: payment.id, chargeId: payment.chargeId };
+          return {
+            applied: false,
+            paymentId: payment.id,
+            chargeId: payment.chargeId,
+          };
         }
 
         await tx
@@ -285,7 +331,12 @@ export class ProviderEventsService {
           // Spec 009: refunding an order-origin charge cancels its order and
           // restores the stock — cancellation and money never disagree, and
           // re-delivery no-ops on the already-canceled order.
-          orderCanceled = await this.cancelOrderFromRefund(tx, event.tenantId, actor, charge);
+          orderCanceled = await this.cancelOrderFromRefund(
+            tx,
+            event.tenantId,
+            actor,
+            charge,
+          );
         }
         return { applied: true, paymentId: payment.id, chargeId: charge.id };
       },
@@ -306,7 +357,10 @@ export class ProviderEventsService {
     charge: typeof charges.$inferSelect,
   ): Promise<RegistrationConfirmedEvent | null> {
     if (charge.origin !== 'event' || !charge.eventRegistrationId) return null;
-    const registration = await this.registrationOf(tx, charge.eventRegistrationId);
+    const registration = await this.registrationOf(
+      tx,
+      charge.eventRegistrationId,
+    );
     if (!registration || registration.status === 'confirmed') return null;
 
     await tx
@@ -320,7 +374,11 @@ export class ProviderEventsService {
       'events.registration.confirmed',
       'event_registration',
       registration.id,
-      { event_id: registration.eventId, student_id: registration.studentId, charge_id: charge.id },
+      {
+        event_id: registration.eventId,
+        student_id: registration.studentId,
+        charge_id: charge.id,
+      },
     );
     return {
       tenantId,
@@ -342,12 +400,19 @@ export class ProviderEventsService {
     charge: typeof charges.$inferSelect,
   ): Promise<RegistrationCanceledEvent | null> {
     if (charge.origin !== 'event' || !charge.eventRegistrationId) return null;
-    const registration = await this.registrationOf(tx, charge.eventRegistrationId);
+    const registration = await this.registrationOf(
+      tx,
+      charge.eventRegistrationId,
+    );
     if (!registration || registration.status === 'canceled') return null;
 
     await tx
       .update(eventRegistrations)
-      .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date(),
+      })
       .where(eq(eventRegistrations.id, registration.id));
     await this.audit(
       tx,
@@ -394,9 +459,15 @@ export class ProviderEventsService {
     charge: typeof charges.$inferSelect,
     paymentId: string,
     paidAt: Date,
-  ): Promise<{ paid: OrderPaidEvent; lowStock: ProductLowStockEvent[] } | null> {
+  ): Promise<{
+    paid: OrderPaidEvent;
+    lowStock: ProductLowStockEvent[];
+  } | null> {
     if (charge.origin !== 'order' || !charge.orderId) return null;
-    const [order] = await tx.select().from(orders).where(eq(orders.id, charge.orderId));
+    const [order] = await tx
+      .select()
+      .from(orders)
+      .where(eq(orders.id, charge.orderId));
     if (!order || order.status !== 'pending') return null;
 
     await tx
@@ -404,7 +475,10 @@ export class ProviderEventsService {
       .set({ status: 'paid', updatedAt: new Date() })
       .where(eq(orders.id, order.id));
 
-    const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+    const items = await tx
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
     const lowStock: ProductLowStockEvent[] = [];
     let productName = '';
     for (const item of items) {
@@ -434,13 +508,21 @@ export class ProviderEventsService {
       }
     }
 
-    await this.audit(tx, tenantId, actor, 'store.order.status_changed', 'order', order.id, {
-      from: 'pending',
-      to: 'paid',
-      via: 'payment',
-      charge_id: charge.id,
-      payment_id: paymentId,
-    });
+    await this.audit(
+      tx,
+      tenantId,
+      actor,
+      'store.order.status_changed',
+      'order',
+      order.id,
+      {
+        from: 'pending',
+        to: 'paid',
+        via: 'payment',
+        charge_id: charge.id,
+        payment_id: paymentId,
+      },
+    );
     return {
       paid: {
         tenantId,
@@ -470,15 +552,26 @@ export class ProviderEventsService {
     charge: typeof charges.$inferSelect,
   ): Promise<OrderCanceledEvent | null> {
     if (charge.origin !== 'order' || !charge.orderId) return null;
-    const [order] = await tx.select().from(orders).where(eq(orders.id, charge.orderId));
-    if (!order || order.status === 'canceled' || order.status === 'pending') return null;
+    const [order] = await tx
+      .select()
+      .from(orders)
+      .where(eq(orders.id, charge.orderId));
+    if (!order || order.status === 'canceled' || order.status === 'pending')
+      return null;
 
     await tx
       .update(orders)
-      .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date(),
+      })
       .where(eq(orders.id, order.id));
 
-    const items = await tx.select().from(orderItems).where(eq(orderItems.orderId, order.id));
+    const items = await tx
+      .select()
+      .from(orderItems)
+      .where(eq(orderItems.orderId, order.id));
     for (const item of items) {
       await tx
         .update(products)
@@ -489,12 +582,20 @@ export class ProviderEventsService {
         .where(eq(products.id, item.productId));
     }
 
-    await this.audit(tx, tenantId, actor, 'store.order.canceled', 'order', order.id, {
-      from: order.status,
-      via: 'refund',
-      charge_id: charge.id,
-      stock_restored: true,
-    });
+    await this.audit(
+      tx,
+      tenantId,
+      actor,
+      'store.order.canceled',
+      'order',
+      order.id,
+      {
+        from: order.status,
+        via: 'refund',
+        charge_id: charge.id,
+        stock_restored: true,
+      },
+    );
     return {
       tenantId,
       orderId: order.id,
@@ -536,7 +637,10 @@ export class ProviderEventsService {
       .select()
       .from(payments)
       .where(
-        and(eq(payments.provider, provider), eq(payments.providerPaymentId, providerPaymentId)),
+        and(
+          eq(payments.provider, provider),
+          eq(payments.providerPaymentId, providerPaymentId),
+        ),
       );
     return row ?? null;
   }

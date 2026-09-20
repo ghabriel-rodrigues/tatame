@@ -9,7 +9,7 @@ Follows the to-spec template. UI truth: admin-18-relatorios (5 report rows, each
 
 Phase 13 is the debt-collection phase: four features the handoff promises are still placeholders that every earlier spec explicitly deferred here.
 
-The admin has no reporting surface at all. Every number a report needs already exists as rows — charges and payments (Phase 6), attendances against materialized sessions (Phase 4), graduation history (Phase 5), events and registrations (Phase 8), orders and items (Phase 9) — but the only way to get data *out* of the product is screen-scraping the console. admin-18 shows five one-tap exports (Financeiro mensal, Frequência por turma, Inadimplência, Graduações, Vendas da loja), none of which exist.
+The admin has no reporting surface at all. Every number a report needs already exists as rows — charges and payments (Phase 6), attendances against materialized sessions (Phase 4), graduation history (Phase 5), events and registrations (Phase 8), orders and items (Phase 9) — but the only way to get data _out_ of the product is screen-scraping the console. admin-18 shows five one-tap exports (Financeiro mensal, Frequência por turma, Inadimplência, Graduações, Vendas da loja), none of which exist.
 
 The ranking screens are the oldest unpaid placeholder. Spec 004 shipped presença % and streak but left "ranking de presença" as an explicit placeholder on the professor dashboard; spec 008 did the same for the Por eventos segment. The aluno home has no ranking entry, and the four full-screen rankings (aluno-06/07, professor-05/06) have no endpoint to render: nothing computes per-student monthly attendance counts or semester event participation.
 
@@ -94,12 +94,12 @@ And "Ver certificado" on the graduation timeline is a disabled button on all thr
 
 A new `reports` module owns the cross-slice read models (the home spec 004 pointed at: "admin reports slice owns the console reporting surface... ranking tiles stay placeholders"). Profile endpoints land in the identity module (it owns `users`); the certificate flag is a graduation-module read-model fix.
 
-| Route | Roles |
-|---|---|
-| `GET /admin/reports/:report` (JSON) | admin |
-| `GET /admin/reports/:report/csv` (streamed file) | admin |
-| `GET /rankings?by=lessons\|events&month=` | student, professor |
-| `GET /aluno/profile` · `PUT /aluno/profile` | student |
+| Route                                            | Roles              |
+| ------------------------------------------------ | ------------------ |
+| `GET /admin/reports/:report` (JSON)              | admin              |
+| `GET /admin/reports/:report/csv` (streamed file) | admin              |
+| `GET /rankings?by=lessons\|events&month=`        | student, professor |
+| `GET /aluno/profile` · `PUT /aluno/profile`      | student            |
 
 - **Report slugs and windows**: `financeiro`, `frequencia`, `loja` take `month=YYYY-MM` (default: current month, tenant timezone); `graduacoes` takes `month` and reports the **semester containing it** (Jan–Jun / Jul–Dec, per "no semestre"); `inadimplencia` ignores `month` — it is an as-of-now snapshot ("cobranças vencidas" has no history without a snapshot table, recorded as the reason).
 - **Financeiro mensal** runs the existing idempotent charge-materialization pass first (spec 006's rule: every money-displaying entry point), then reuses the shipped overview formulas — receita = succeeded payments by `paid_at` in the month, previsto = open charges due in the month, inadimplência % = overdue-open ÷ total materialized plan-charge amount — as the summary block, plus one row per charge touching the month (student, origin, competência, due date, status, amount, paid at).

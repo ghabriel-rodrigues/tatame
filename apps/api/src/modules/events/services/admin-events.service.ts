@@ -96,7 +96,9 @@ export class AdminEventsService {
   ) {}
 
   /** GET /admin/events — drafts first, then chronological, with totals. */
-  async list(ctx: AuthContext & { tenantId: string }): Promise<{ events: AdminEventView[] }> {
+  async list(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<{ events: AdminEventView[] }> {
     return withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
       const rows = await tx.select().from(events);
       rows.sort((a, b) => {
@@ -118,42 +120,52 @@ export class AdminEventsService {
     input: CreateEventInput,
   ): Promise<AdminEventView> {
     let published: EventPublishedEvent | null = null;
-    const view = await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      await this.requireResponsible(tx, input.responsibleUserId);
-      const status = input.status ?? 'draft';
-      const startsAt = input.startsAt ? new Date(input.startsAt) : null;
-      if (status === 'published') this.assertPublishable(startsAt, input.location ?? null);
+    const view = await withTenant(
+      this.appDb.db,
+      this.tenantCtx(ctx),
+      async (tx) => {
+        await this.requireResponsible(tx, input.responsibleUserId);
+        const status = input.status ?? 'draft';
+        const startsAt = input.startsAt ? new Date(input.startsAt) : null;
+        if (status === 'published')
+          this.assertPublishable(startsAt, input.location ?? null);
 
-      const [row] = await tx
-        .insert(events)
-        .values({
-          tenantId: ctx.tenantId,
-          name: input.name,
-          description: input.description ?? null,
-          ...(input.bannerPreset ? { bannerPreset: input.bannerPreset } : {}),
-          location: input.location ?? null,
-          startsAt,
-          priceCents: input.priceCents ?? null,
-          responsibleUserId: input.responsibleUserId,
-          status,
-        })
-        .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Event insert returned no row');
+        const [row] = await tx
+          .insert(events)
+          .values({
+            tenantId: ctx.tenantId,
+            name: input.name,
+            description: input.description ?? null,
+            ...(input.bannerPreset ? { bannerPreset: input.bannerPreset } : {}),
+            location: input.location ?? null,
+            startsAt,
+            priceCents: input.priceCents ?? null,
+            responsibleUserId: input.responsibleUserId,
+            status,
+          })
+          .returning();
+        if (!row)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Event insert returned no row',
+          );
 
-      await this.audit(tx, ctx, 'events.event.created', 'event', row.id, {
-        name: row.name,
-        status: row.status,
-        price_cents: row.priceCents,
-      });
-      if (status === 'published') {
-        await this.audit(tx, ctx, 'events.event.published', 'event', row.id, {
-          starts_at: row.startsAt?.toISOString() ?? null,
+        await this.audit(tx, ctx, 'events.event.created', 'event', row.id, {
+          name: row.name,
+          status: row.status,
+          price_cents: row.priceCents,
         });
-        published = this.publishedEvent(ctx.tenantId, row);
-      }
-      const [view] = await this.toViews(tx, [row]);
-      return view!;
-    });
+        if (status === 'published') {
+          await this.audit(tx, ctx, 'events.event.published', 'event', row.id, {
+            starts_at: row.startsAt?.toISOString() ?? null,
+          });
+          published = this.publishedEvent(ctx.tenantId, row);
+        }
+        const [view] = await this.toViews(tx, [row]);
+        return view!;
+      },
+    );
     if (published) this.emitter.emit(EVENTS_EVENT_PUBLISHED, published);
     return view;
   }
@@ -167,7 +179,11 @@ export class AdminEventsService {
     return withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
       const event = await this.requireEvent(tx, eventId);
       if (event.status === 'canceled') {
-        throw problem(409, ErrorCodes.CONFLICT, 'A canceled event cannot be edited');
+        throw problem(
+          409,
+          ErrorCodes.CONFLICT,
+          'A canceled event cannot be edited',
+        );
       }
       if (input.responsibleUserId !== undefined) {
         await this.requireResponsible(tx, input.responsibleUserId);
@@ -179,20 +195,28 @@ export class AdminEventsService {
             ? new Date(input.startsAt)
             : null
           : event.startsAt;
-      const nextLocation = input.location !== undefined ? input.location : event.location;
+      const nextLocation =
+        input.location !== undefined ? input.location : event.location;
       // A published event must keep its date/local — the friendly face of
       // the events_published_ck constraint (story 4).
-      if (event.status === 'published') this.assertPublishable(nextStartsAt, nextLocation);
+      if (event.status === 'published')
+        this.assertPublishable(nextStartsAt, nextLocation);
 
       const [row] = await tx
         .update(events)
         .set({
           ...(input.name !== undefined ? { name: input.name } : {}),
-          ...(input.description !== undefined ? { description: input.description } : {}),
-          ...(input.bannerPreset !== undefined ? { bannerPreset: input.bannerPreset } : {}),
+          ...(input.description !== undefined
+            ? { description: input.description }
+            : {}),
+          ...(input.bannerPreset !== undefined
+            ? { bannerPreset: input.bannerPreset }
+            : {}),
           ...(input.location !== undefined ? { location: input.location } : {}),
           ...(input.startsAt !== undefined ? { startsAt: nextStartsAt } : {}),
-          ...(input.priceCents !== undefined ? { priceCents: input.priceCents } : {}),
+          ...(input.priceCents !== undefined
+            ? { priceCents: input.priceCents }
+            : {}),
           ...(input.responsibleUserId !== undefined
             ? { responsibleUserId: input.responsibleUserId }
             : {}),
@@ -200,7 +224,8 @@ export class AdminEventsService {
         })
         .where(eq(events.id, event.id))
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Event update returned no row');
+      if (!row)
+        throw problem(500, ErrorCodes.INTERNAL, 'Event update returned no row');
 
       await this.audit(tx, ctx, 'events.event.updated', 'event', row.id, {
         fields: Object.keys(input),
@@ -216,27 +241,40 @@ export class AdminEventsService {
     eventId: string,
   ): Promise<AdminEventView> {
     let published: EventPublishedEvent | null = null;
-    const view = await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      const event = await this.requireEvent(tx, eventId);
-      if (event.status !== 'draft') {
-        throw problem(409, ErrorCodes.CONFLICT, `Only drafts can be published (event is ${event.status})`);
-      }
-      this.assertPublishable(event.startsAt, event.location);
+    const view = await withTenant(
+      this.appDb.db,
+      this.tenantCtx(ctx),
+      async (tx) => {
+        const event = await this.requireEvent(tx, eventId);
+        if (event.status !== 'draft') {
+          throw problem(
+            409,
+            ErrorCodes.CONFLICT,
+            `Only drafts can be published (event is ${event.status})`,
+          );
+        }
+        this.assertPublishable(event.startsAt, event.location);
 
-      const [row] = await tx
-        .update(events)
-        .set({ status: 'published', updatedAt: new Date() })
-        .where(eq(events.id, event.id))
-        .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Event publish returned no row');
+        const [row] = await tx
+          .update(events)
+          .set({ status: 'published', updatedAt: new Date() })
+          .where(eq(events.id, event.id))
+          .returning();
+        if (!row)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Event publish returned no row',
+          );
 
-      await this.audit(tx, ctx, 'events.event.published', 'event', row.id, {
-        starts_at: row.startsAt?.toISOString() ?? null,
-      });
-      published = this.publishedEvent(ctx.tenantId, row);
-      const [view] = await this.toViews(tx, [row]);
-      return view!;
-    });
+        await this.audit(tx, ctx, 'events.event.published', 'event', row.id, {
+          starts_at: row.startsAt?.toISOString() ?? null,
+        });
+        published = this.publishedEvent(ctx.tenantId, row);
+        const [view] = await this.toViews(tx, [row]);
+        return view!;
+      },
+    );
     if (published) this.emitter.emit(EVENTS_EVENT_PUBLISHED, published);
     return view;
   }
@@ -251,68 +289,97 @@ export class AdminEventsService {
     eventId: string,
   ): Promise<AdminEventView> {
     let canceled: EventCanceledEvent | null = null;
-    const view = await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      const event = await this.requireEvent(tx, eventId);
-      if (event.status === 'canceled') {
-        throw problem(409, ErrorCodes.CONFLICT, 'Event is already canceled');
-      }
+    const view = await withTenant(
+      this.appDb.db,
+      this.tenantCtx(ctx),
+      async (tx) => {
+        const event = await this.requireEvent(tx, eventId);
+        if (event.status === 'canceled') {
+          throw problem(409, ErrorCodes.CONFLICT, 'Event is already canceled');
+        }
 
-      const registered = await this.audienceOf(tx, event.id);
-      const pending = await tx
-        .select({ id: eventRegistrations.id, studentId: eventRegistrations.studentId })
-        .from(eventRegistrations)
-        .where(
-          and(
-            eq(eventRegistrations.eventId, event.id),
-            eq(eventRegistrations.status, 'pending_payment'),
-          ),
-        );
-
-      // Nobody is billed for a dead event (story 8): void the open charges,
-      // then cancel the still-pending registrations.
-      await this.eventCharges.cancelOpenEventCharges(
-        tx,
-        asActor(ctx),
-        ctx.tenantId,
-        pending.map((p) => p.id),
-      );
-      if (pending.length > 0) {
-        await tx
-          .update(eventRegistrations)
-          .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+        const registered = await this.audienceOf(tx, event.id);
+        const pending = await tx
+          .select({
+            id: eventRegistrations.id,
+            studentId: eventRegistrations.studentId,
+          })
+          .from(eventRegistrations)
           .where(
-            inArray(
-              eventRegistrations.id,
-              pending.map((p) => p.id),
+            and(
+              eq(eventRegistrations.eventId, event.id),
+              eq(eventRegistrations.status, 'pending_payment'),
             ),
           );
-        for (const registration of pending) {
-          await this.audit(
-            tx,
-            ctx,
-            'events.registration.canceled',
-            'event_registration',
-            registration.id,
-            { event_id: event.id, student_id: registration.studentId, via: 'event_canceled' },
-          );
+
+        // Nobody is billed for a dead event (story 8): void the open charges,
+        // then cancel the still-pending registrations.
+        await this.eventCharges.cancelOpenEventCharges(
+          tx,
+          asActor(ctx),
+          ctx.tenantId,
+          pending.map((p) => p.id),
+        );
+        if (pending.length > 0) {
+          await tx
+            .update(eventRegistrations)
+            .set({
+              status: 'canceled',
+              canceledAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(
+              inArray(
+                eventRegistrations.id,
+                pending.map((p) => p.id),
+              ),
+            );
+          for (const registration of pending) {
+            await this.audit(
+              tx,
+              ctx,
+              'events.registration.canceled',
+              'event_registration',
+              registration.id,
+              {
+                event_id: event.id,
+                student_id: registration.studentId,
+                via: 'event_canceled',
+              },
+            );
+          }
         }
-      }
 
-      const [row] = await tx
-        .update(events)
-        .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
-        .where(eq(events.id, event.id))
-        .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Event cancel returned no row');
+        const [row] = await tx
+          .update(events)
+          .set({
+            status: 'canceled',
+            canceledAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(events.id, event.id))
+          .returning();
+        if (!row)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Event cancel returned no row',
+          );
 
-      await this.audit(tx, ctx, 'events.event.canceled', 'event', row.id, {
-        name: row.name,
-        canceled_open_charges: pending.length,
-      });
-      canceled = { tenantId: ctx.tenantId, eventId: row.id, name: row.name, audience: registered };
-      const [view] = await this.toViews(tx, [row]);
-      return view!;
-    });
+        await this.audit(tx, ctx, 'events.event.canceled', 'event', row.id, {
+          name: row.name,
+          canceled_open_charges: pending.length,
+        });
+        canceled = {
+          tenantId: ctx.tenantId,
+          eventId: row.id,
+          name: row.name,
+          audience: registered,
+        };
+        const [view] = await this.toViews(tx, [row]);
+        return view!;
+      },
+    );
     if (canceled) this.emitter.emit(EVENTS_EVENT_CANCELED, canceled);
     return view;
   }
@@ -371,13 +438,18 @@ export class AdminEventsService {
       const [view] = await this.toViews(tx, [event]);
       return {
         event: view!,
-        registrations: rows.map(({ registration, studentName, confirmedByName }) => ({
-          id: registration.id,
-          student: { id: registration.studentId, fullName: studentName },
-          status: registration.status,
-          confirmedBy: { userId: registration.confirmedByUserId, fullName: confirmedByName },
-          paidAmountCents: paidByRegistration.get(registration.id) ?? null,
-        })),
+        registrations: rows.map(
+          ({ registration, studentName, confirmedByName }) => ({
+            id: registration.id,
+            student: { id: registration.studentId, fullName: studentName },
+            status: registration.status,
+            confirmedBy: {
+              userId: registration.confirmedByUserId,
+              fullName: confirmedByName,
+            },
+            paidAmountCents: paidByRegistration.get(registration.id) ?? null,
+          }),
+        ),
         totals: view!.totals,
       };
     });
@@ -392,24 +464,34 @@ export class AdminEventsService {
     eventId: string,
   ): Promise<{ recipients: number }> {
     let announcement: AnnouncementRequestedEvent | null = null;
-    const result = await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      const event = await this.requireEvent(tx, eventId);
-      if (event.status !== 'published') {
-        throw problem(
-          422,
-          ErrorCodes.EVENT_NOT_PUBLISHED,
-          'Comunicar is only available on published events',
-        );
-      }
-      const audience = await this.audienceOf(tx, event.id);
-      await this.audit(tx, ctx, 'events.event.announced', 'event', event.id, {
-        name: event.name,
-        recipients: audience.length,
-      });
-      announcement = { tenantId: ctx.tenantId, eventId: event.id, name: event.name, audience };
-      return { recipients: audience.length };
-    });
-    if (announcement) this.emitter.emit(EVENTS_ANNOUNCEMENT_REQUESTED, announcement);
+    const result = await withTenant(
+      this.appDb.db,
+      this.tenantCtx(ctx),
+      async (tx) => {
+        const event = await this.requireEvent(tx, eventId);
+        if (event.status !== 'published') {
+          throw problem(
+            422,
+            ErrorCodes.EVENT_NOT_PUBLISHED,
+            'Comunicar is only available on published events',
+          );
+        }
+        const audience = await this.audienceOf(tx, event.id);
+        await this.audit(tx, ctx, 'events.event.announced', 'event', event.id, {
+          name: event.name,
+          recipients: audience.length,
+        });
+        announcement = {
+          tenantId: ctx.tenantId,
+          eventId: event.id,
+          name: event.name,
+          audience,
+        };
+        return { recipients: audience.length };
+      },
+    );
+    if (announcement)
+      this.emitter.emit(EVENTS_ANNOUNCEMENT_REQUESTED, announcement);
     return result;
   }
 
@@ -423,16 +505,24 @@ export class AdminEventsService {
     tx: DbTransaction,
     eventId: string,
   ): Promise<typeof events.$inferSelect> {
-    const [event] = await tx.select().from(events).where(eq(events.id, eventId));
+    const [event] = await tx
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
     if (!event) throw problem(404, ErrorCodes.NOT_FOUND, 'Event not found');
     return event;
   }
 
   /** Publishing (or staying published) requires date and local (story 4). */
-  private assertPublishable(startsAt: Date | null, location: string | null): void {
+  private assertPublishable(
+    startsAt: Date | null,
+    location: string | null,
+  ): void {
     const missing: Array<{ field: string; messages: string[] }> = [];
-    if (!startsAt) missing.push({ field: 'startsAt', messages: ['Required to publish'] });
-    if (!location) missing.push({ field: 'location', messages: ['Required to publish'] });
+    if (!startsAt)
+      missing.push({ field: 'startsAt', messages: ['Required to publish'] });
+    if (!location)
+      missing.push({ field: 'location', messages: ['Required to publish'] });
     if (missing.length > 0) {
       throw problem(
         422,
@@ -448,7 +538,10 @@ export class AdminEventsService {
    * admin membership of THIS academy (tenant membership validated in the
    * service, per the schema note).
    */
-  private async requireResponsible(tx: DbTransaction, userId: string): Promise<void> {
+  private async requireResponsible(
+    tx: DbTransaction,
+    userId: string,
+  ): Promise<void> {
     const [membership] = await tx
       .select({ id: memberships.id })
       .from(memberships)
@@ -460,19 +553,30 @@ export class AdminEventsService {
         ),
       );
     if (!membership) {
-      throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Request validation failed', [
-        {
-          field: 'responsibleUserId',
-          messages: ['Must be an active professor or admin of this academy'],
-        },
-      ]);
+      throw problem(
+        422,
+        ErrorCodes.VALIDATION_FAILED,
+        'Request validation failed',
+        [
+          {
+            field: 'responsibleUserId',
+            messages: ['Must be an active professor or admin of this academy'],
+          },
+        ],
+      );
     }
   }
 
   /** Registered (non-canceled) audience with the guardian variant resolved. */
-  private async audienceOf(tx: DbTransaction, eventId: string): Promise<EventAudienceEntry[]> {
+  private async audienceOf(
+    tx: DbTransaction,
+    eventId: string,
+  ): Promise<EventAudienceEntry[]> {
     const rows = await tx
-      .select({ studentId: eventRegistrations.studentId, guardianId: students.guardianId })
+      .select({
+        studentId: eventRegistrations.studentId,
+        guardianId: students.guardianId,
+      })
       .from(eventRegistrations)
       .innerJoin(
         students,
@@ -482,7 +586,10 @@ export class AdminEventsService {
         ),
       )
       .where(
-        and(eq(eventRegistrations.eventId, eventId), ne(eventRegistrations.status, 'canceled')),
+        and(
+          eq(eventRegistrations.eventId, eventId),
+          ne(eventRegistrations.status, 'canceled'),
+        ),
       );
     return rows.map((row) => ({
       studentId: row.studentId,
@@ -530,7 +637,9 @@ export class AdminEventsService {
         ),
       )
       .groupBy(eventRegistrations.eventId);
-    const arrecadadoByEvent = new Map(arrecadado.map((r) => [r.eventId, Number(r.total ?? 0)]));
+    const arrecadadoByEvent = new Map(
+      arrecadado.map((r) => [r.eventId, Number(r.total ?? 0)]),
+    );
 
     const totalsByEvent = new Map<string, EventTotalsView>();
     for (const id of eventIds) {
@@ -568,7 +677,11 @@ export class AdminEventsService {
         userId: row.responsibleUserId,
         fullName: nameById.get(row.responsibleUserId) ?? '',
       },
-      totals: totalsByEvent.get(row.id) ?? { inscritos: 0, confirmados: 0, arrecadadoCents: 0 },
+      totals: totalsByEvent.get(row.id) ?? {
+        inscritos: 0,
+        confirmados: 0,
+        arrecadadoCents: 0,
+      },
     }));
   }
 

@@ -33,11 +33,18 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
   }
 
   async function addStudent(classId: string, studentId: string) {
-    return t.http().post(`/v1/admin/classes/${classId}/students`).set(bearer(admin)).send({ studentId });
+    return t
+      .http()
+      .post(`/v1/admin/classes/${classId}/students`)
+      .set(bearer(admin))
+      .send({ studentId });
   }
 
   async function rosterIds(classId: string): Promise<string[]> {
-    const res = await t.http().get(`/v1/admin/classes/${classId}`).set(bearer(admin));
+    const res = await t
+      .http()
+      .get(`/v1/admin/classes/${classId}`)
+      .set(bearer(admin));
     expect(res.status).toBe(200);
     return res.body.class.roster.map((r: any) => r.studentId);
   }
@@ -45,7 +52,10 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
   beforeAll(async () => {
     t = await createTestApp();
     admin = (await t.login('admin@tatame.dev')).accessToken;
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
@@ -68,7 +78,10 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
     const adulto: any = byName.get('Adulto Gi');
     expect(adulto.lotada).toBe(false);
     expect(adulto.schedules).toHaveLength(3); // Seg · Qua · Sex 19:00
-    expect(adulto.schedules[0]).toMatchObject({ weekday: 1, startTime: '19:00' });
+    expect(adulto.schedules[0]).toMatchObject({
+      weekday: 1,
+      startTime: '19:00',
+    });
     expect(adulto.professor.fullName).toBe('Paulo Professor');
 
     const kids: any = byName.get('Kids');
@@ -95,7 +108,10 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
     expect(res.body.class.schedules).toHaveLength(3);
     expect(res.body.class.occupancy).toBe(0);
 
-    const detail = await t.http().get(`/v1/admin/classes/${res.body.class.id}`).set(bearer(admin));
+    const detail = await t
+      .http()
+      .get(`/v1/admin/classes/${res.body.class.id}`)
+      .set(bearer(admin));
     expect(detail.body.class.schedules).toHaveLength(3);
   });
 
@@ -104,7 +120,12 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
       .http()
       .post('/v1/admin/classes')
       .set(bearer(admin))
-      .send({ name: 'Sem Grade', professorUserId, capacity: 10, schedules: [] });
+      .send({
+        name: 'Sem Grade',
+        professorUserId,
+        capacity: 10,
+        schedules: [],
+      });
     expect(scheduleless.status).toBe(422);
     expect(scheduleless.body.code).toBe('validation.failed');
 
@@ -151,14 +172,25 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
     expect(renamed.status).toBe(200);
     expect(renamed.body.class.name).toBe('Descontinuada 2024');
 
-    const archived = await t.http().post(`/v1/admin/classes/${classId}/archive`).set(bearer(admin));
+    const archived = await t
+      .http()
+      .post(`/v1/admin/classes/${classId}/archive`)
+      .set(bearer(admin));
     expect(archived.status).toBe(204);
 
-    const activeList = await t.http().get('/v1/admin/classes').set(bearer(admin));
-    expect(activeList.body.classes.some((c: any) => c.id === classId)).toBe(false);
+    const activeList = await t
+      .http()
+      .get('/v1/admin/classes')
+      .set(bearer(admin));
+    expect(activeList.body.classes.some((c: any) => c.id === classId)).toBe(
+      false,
+    );
 
     // History survives: detail still resolves, roster emptied atomically.
-    const detail = await t.http().get(`/v1/admin/classes/${classId}`).set(bearer(admin));
+    const detail = await t
+      .http()
+      .get(`/v1/admin/classes/${classId}`)
+      .set(bearer(admin));
     expect(detail.body.class.status).toBe('archived');
     expect(detail.body.class.roster).toEqual([]);
 
@@ -198,7 +230,12 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
       tx
         .select({ total: count() })
         .from(enrollments)
-        .where(and(eq(enrollments.classId, classId), eq(enrollments.studentId, studentId))),
+        .where(
+          and(
+            eq(enrollments.classId, classId),
+            eq(enrollments.studentId, studentId),
+          ),
+        ),
     );
     expect(Number(row?.total)).toBe(1);
   });
@@ -219,7 +256,10 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
       createStudent('Corredor B'),
     ]);
 
-    const [resA, resB] = await Promise.all([addStudent(classId, a), addStudent(classId, b)]);
+    const [resA, resB] = await Promise.all([
+      addStudent(classId, a),
+      addStudent(classId, b),
+    ]);
     const statuses = [resA.status, resB.status].sort();
     expect(statuses).toEqual([201, 409]);
     const loser = resA.status === 409 ? resA : resB;
@@ -235,7 +275,8 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
       createStudent('Movido B'),
       createStudent('Ocupante C'),
     ]);
-    for (const s of [a, b]) expect((await addStudent(origin, s)).status).toBe(201);
+    for (const s of [a, b])
+      expect((await addStudent(origin, s)).status).toBe(201);
     expect((await addStudent(destination, c)).status).toBe(201);
 
     // 2 selected, 1 free seat → whole batch rejected with per-student detail.
@@ -267,7 +308,10 @@ describe('enrollment: turmas, capacity lock and the atomic move (ENR.8/ENR.9)', 
   it('move validates destination and selection', async () => {
     const studentId = await createStudent('Selecionado');
     const archivedClass = await createClass('Destino Arquivado', 5);
-    await t.http().post(`/v1/admin/classes/${archivedClass}/archive`).set(bearer(admin));
+    await t
+      .http()
+      .post(`/v1/admin/classes/${archivedClass}/archive`)
+      .set(bearer(admin));
 
     const toArchived = await t
       .http()

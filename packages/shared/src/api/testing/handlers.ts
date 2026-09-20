@@ -9,10 +9,22 @@ import { setupServer } from 'msw/node';
 import { createOpenApiHttp, type OpenApiHttpHandlers } from 'openapi-msw';
 import type { paths } from '../schema.js';
 import type { ApiProblem } from '../errors.js';
-import { makeAuthSession, makeMeResponse, type MeFixtureOptions, type SessionFixtureOptions } from './fixtures.js';
-import { makeEnrollmentRegistry, type EnrollmentRegistryFixture } from './enrollment-fixtures.js';
+import {
+  makeAuthSession,
+  makeMeResponse,
+  type MeFixtureOptions,
+  type SessionFixtureOptions,
+} from './fixtures.js';
+import {
+  makeEnrollmentRegistry,
+  type EnrollmentRegistryFixture,
+} from './enrollment-fixtures.js';
 import { makeGraduationRules } from './graduation-fixtures.js';
-import { makeAdminOverview, makePlanCatalog, makeRepasses } from './billing-fixtures.js';
+import {
+  makeAdminOverview,
+  makePlanCatalog,
+  makeRepasses,
+} from './billing-fixtures.js';
 import { makeAdminCalendar, type CalendarResponse } from './agenda-fixtures.js';
 import {
   makeAdminEventList,
@@ -93,7 +105,9 @@ export function setupTestServer(): TestServer {
 /** jsdom origin — web tests create their client with this baseUrl. */
 export const TEST_API_ORIGIN = 'http://localhost';
 
-export function createTestHttp(baseUrl: string = TEST_API_ORIGIN): OpenApiHttpHandlers<paths> {
+export function createTestHttp(
+  baseUrl: string = TEST_API_ORIGIN,
+): OpenApiHttpHandlers<paths> {
   return createOpenApiHttp<paths>({ baseUrl });
 }
 
@@ -166,7 +180,10 @@ export function defaultHandlers(options: DefaultHandlerOptions = {}) {
 export function enrollmentHandlers(
   registry: Partial<EnrollmentRegistryFixture> = {},
 ) {
-  const data: EnrollmentRegistryFixture = { ...makeEnrollmentRegistry(), ...registry };
+  const data: EnrollmentRegistryFixture = {
+    ...makeEnrollmentRegistry(),
+    ...registry,
+  };
 
   return [
     http.get('/v1/admin/students', ({ response }) =>
@@ -219,8 +236,12 @@ export function billingHandlers(options: BillingHandlerOptions = {}) {
   const plans = options.plans ?? makePlanCatalog();
 
   return [
-    http.get('/v1/admin/billing/overview', ({ response }) => response(200).json(overview)),
-    http.get('/v1/admin/billing/plans', ({ response }) => response(200).json({ plans })),
+    http.get('/v1/admin/billing/overview', ({ response }) =>
+      response(200).json(overview),
+    ),
+    http.get('/v1/admin/billing/plans', ({ response }) =>
+      response(200).json({ plans }),
+    ),
   ];
 }
 
@@ -242,20 +263,26 @@ export interface PlatformConsoleHandlerOptions {
  * Happy-path GET handlers for the plataforma console (PLT.10-14, spec 012).
  * Mutations stay per-test via `server.use(...)`.
  */
-export function platformConsoleHandlers(options: PlatformConsoleHandlerOptions = {}) {
+export function platformConsoleHandlers(
+  options: PlatformConsoleHandlerOptions = {},
+) {
   const academies = options.academies ?? makePlatformAcademyList();
   const detail = options.detail;
   return [
     http.get('/v1/platform/overview', ({ response }) =>
       response(200).json(options.overview ?? makePlatformOverview()),
     ),
-    http.get('/v1/platform/academies', ({ response }) => response(200).json(academies)),
+    http.get('/v1/platform/academies', ({ response }) =>
+      response(200).json(academies),
+    ),
     http.get('/v1/platform/academies/{id}', ({ response, params }) => {
       const id = String(params.id);
       const found =
         detail?.[id] ??
         (() => {
-          const row = academies.academies.find((candidate) => candidate.id === id);
+          const row = academies.academies.find(
+            (candidate) => candidate.id === id,
+          );
           return row ? makePlatformAcademyDetail(row) : undefined;
         })();
       if (!found) {
@@ -266,7 +293,9 @@ export function platformConsoleHandlers(options: PlatformConsoleHandlerOptions =
     http.get('/v1/platform/plans', ({ response }) =>
       response(200).json(options.plans ?? makePlatformPlanCatalog()),
     ),
-    http.get('/v1/platform/team', ({ response }) => response(200).json(options.team ?? makePlatformTeam())),
+    http.get('/v1/platform/team', ({ response }) =>
+      response(200).json(options.team ?? makePlatformTeam()),
+    ),
     http.get('/v1/platform/integrations', ({ response }) =>
       response(200).json(options.integrations ?? makePlatformIntegrations()),
     ),
@@ -276,7 +305,9 @@ export function platformConsoleHandlers(options: PlatformConsoleHandlerOptions =
 export function repassesHandlers(data?: RepassesResponse) {
   const body = data ?? makeRepasses();
   return [
-    http.get('/v1/platform/billing/repasses', ({ response }) => response(200).json(body)),
+    http.get('/v1/platform/billing/repasses', ({ response }) =>
+      response(200).json(body),
+    ),
   ];
 }
 
@@ -311,9 +342,13 @@ export function adminEventsHandlers(options: AdminEventsHandlerOptions = {}) {
   const professors = options.professors ?? makeEnrollmentRegistry().professors;
 
   return [
-    http.get('/v1/admin/events', ({ response }) => response(200).json({ events })),
+    http.get('/v1/admin/events', ({ response }) =>
+      response(200).json({ events }),
+    ),
     http.get('/v1/admin/events/{id}/registrations', ({ params, response }) =>
-      response(200).json(registrations[params.id] ?? makeAdminEventRegistrations()),
+      response(200).json(
+        registrations[params.id] ?? makeAdminEventRegistrations(),
+      ),
     ),
     http.get('/v1/admin/professors', ({ response }) =>
       response(200).json({ professors }),
@@ -344,14 +379,18 @@ export function adminStoreHandlers(options: AdminStoreHandlerOptions = {}) {
   const orders = options.orders ?? makeAdminStoreOrderBoard();
 
   return [
-    http.get('/v1/admin/store/overview', ({ response }) => response(200).json(overview)),
+    http.get('/v1/admin/store/overview', ({ response }) =>
+      response(200).json(overview),
+    ),
     http.get('/v1/admin/store/categories', ({ response }) =>
       response(200).json({ categories }),
     ),
     http.get('/v1/admin/store/products', ({ response }) =>
       response(200).json({ products }),
     ),
-    http.get('/v1/admin/store/orders', ({ response }) => response(200).json({ orders })),
+    http.get('/v1/admin/store/orders', ({ response }) =>
+      response(200).json({ orders }),
+    ),
   ];
 }
 
@@ -369,7 +408,9 @@ export interface NotificationsHandlerOptions {
  * feed list, unread-count badge, read-all/read-one and the settings pair.
  * Per-test overrides (read-all spies, mutated counts) via `server.use(...)`.
  */
-export function notificationsHandlers(options: NotificationsHandlerOptions = {}) {
+export function notificationsHandlers(
+  options: NotificationsHandlerOptions = {},
+) {
   const notifications = options.notifications ?? makeNotificationFeed();
   const unreadCount =
     options.unreadCount ?? notifications.filter((row) => !row.readAt).length;
@@ -387,9 +428,13 @@ export function notificationsHandlers(options: NotificationsHandlerOptions = {})
     ),
     http.post('/v1/notifications/{id}/read', ({ params, response }) => {
       const found = notifications.find((row) => row.id === params.id);
-      if (!found) return response.untyped(problemResponse(404, 'resource.not_found'));
+      if (!found)
+        return response.untyped(problemResponse(404, 'resource.not_found'));
       return response(200).json({
-        notification: { ...found, readAt: found.readAt ?? new Date().toISOString() },
+        notification: {
+          ...found,
+          readAt: found.readAt ?? new Date().toISOString(),
+        },
       });
     }),
     http.get('/v1/notifications/settings', ({ response }) =>
@@ -424,14 +469,22 @@ export function graduationHandlers(options: GraduationHandlerOptions = {}) {
     ),
     http.put('/v1/admin/graduation-rules', async ({ request, response }) => {
       const body = (await request.json()) as {
-        rules: Array<{ beltId: string; lessonsPerDegree: number; enabled: boolean }>;
+        rules: Array<{
+          beltId: string;
+          lessonsPerDegree: number;
+          enabled: boolean;
+        }>;
       };
       const byBelt = new Map(body.rules.map((entry) => [entry.beltId, entry]));
       return response(200).json({
         rules: rules.map((row) => {
           const entry = byBelt.get(row.beltId);
           return entry
-            ? { ...row, lessonsPerDegree: entry.lessonsPerDegree, enabled: entry.enabled }
+            ? {
+                ...row,
+                lessonsPerDegree: entry.lessonsPerDegree,
+                enabled: entry.enabled,
+              }
             : row;
         }),
       });
@@ -459,22 +512,29 @@ export function adminReportsHandlers(options: AdminReportsHandlerOptions = {}) {
   return [
     http.get('/v1/admin/reports/{report}', ({ params, request, response }) => {
       const month = new URL(request.url).searchParams.get('month') ?? undefined;
-      const body = options.reports?.[params.report] ?? makeAdminReport(params.report, month);
+      const body =
+        options.reports?.[params.report] ??
+        makeAdminReport(params.report, month);
       return response(200).json(body);
     }),
-    http.get('/v1/admin/reports/{report}/csv', ({ params, request, response }) => {
-      const month = new URL(request.url).searchParams.get('month') ?? '2026-07';
-      const body = options.csv?.[params.report] ?? makeReportCsvBody(params.report);
-      return response.untyped(
-        new HttpResponse(body, {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/csv; charset=utf-8',
-            'Content-Disposition': `attachment; filename="${params.report}-${month}.csv"`,
-          },
-        }),
-      );
-    }),
+    http.get(
+      '/v1/admin/reports/{report}/csv',
+      ({ params, request, response }) => {
+        const month =
+          new URL(request.url).searchParams.get('month') ?? '2026-07';
+        const body =
+          options.csv?.[params.report] ?? makeReportCsvBody(params.report);
+        return response.untyped(
+          new HttpResponse(body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/csv; charset=utf-8',
+              'Content-Disposition': `attachment; filename="${params.report}-${month}.csv"`,
+            },
+          }),
+        );
+      },
+    ),
   ];
 }
 
@@ -496,7 +556,9 @@ export function adminConfigHandlers(options: AdminConfigHandlerOptions = {}) {
   const matrix = options.matrix ?? makePermissionMatrix();
 
   return [
-    http.get('/v1/admin/academy', ({ response }) => response(200).json(academy)),
+    http.get('/v1/admin/academy', ({ response }) =>
+      response(200).json(academy),
+    ),
     http.put('/v1/admin/academy', async ({ request, response }) => {
       const body = (await request.json()) as UpdateAcademyRequest;
       return response(200).json({
@@ -506,10 +568,14 @@ export function adminConfigHandlers(options: AdminConfigHandlerOptions = {}) {
         autoNotificationsEnabled: body.autoNotificationsEnabled,
       });
     }),
-    http.get('/v1/admin/permissions', ({ response }) => response(200).json(matrix)),
+    http.get('/v1/admin/permissions', ({ response }) =>
+      response(200).json(matrix),
+    ),
     http.put('/v1/admin/permissions', async ({ request, response }) => {
       const body = (await request.json()) as UpdatePermissionsRequest;
-      const byKey = new Map(body.entries.map((e) => [`${e.role}:${e.key}`, e.allowed]));
+      const byKey = new Map(
+        body.entries.map((e) => [`${e.role}:${e.key}`, e.allowed]),
+      );
       return response(200).json({
         ...matrix,
         permissions: matrix.permissions.map((row) => {

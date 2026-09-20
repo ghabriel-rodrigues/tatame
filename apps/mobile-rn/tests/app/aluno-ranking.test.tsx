@@ -6,11 +6,22 @@
  * professor-06 copy bug fixed — each segment reads its own selo).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 import { rankingBySearch } from '../helpers/rankings';
 
@@ -30,7 +41,10 @@ function renderAluno(override?: FetchHandler): void {
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -42,7 +56,9 @@ async function openRanking(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByTestId('ranking-card'));
   });
-  await waitFor(() => expect(screen.getByTestId('ranking-segments')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('ranking-segments')).toBeTruthy(),
+  );
 }
 
 describe('aluno ranking (REP.11)', () => {
@@ -55,7 +71,9 @@ describe('aluno ranking (REP.11)', () => {
   it('home card shows the live position from `me` and opens the full screen', async () => {
     renderAluno();
 
-    await waitFor(() => expect(screen.getByTestId('ranking-card')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('ranking-card')).toBeTruthy(),
+    );
     expect(screen.getByText('Ranking do mês')).toBeTruthy();
     expect(
       screen.getByText('Você está em 2º em presença — continue assim'),
@@ -63,7 +81,9 @@ describe('aluno ranking (REP.11)', () => {
 
     await openRanking();
     // Full screen header + lessons subtitle "<Mês> · <academia>".
-    expect(screen.getAllByText('Ranking do mês').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Ranking do mês').length).toBeGreaterThanOrEqual(
+      1,
+    );
     expect(screen.getByText('Agosto · Alpha Jiu-Jitsu')).toBeTruthy();
   });
 
@@ -97,7 +117,9 @@ describe('aluno ranking (REP.11)', () => {
     });
 
     await waitFor(() => expect(screen.getByText('João Ferraz')).toBeTruthy());
-    expect(screen.getByText('Participações em eventos no semestre')).toBeTruthy();
+    expect(
+      screen.getByText('Participações em eventos no semestre'),
+    ).toBeTruthy();
     expect(screen.getByText('5 eventos')).toBeTruthy();
     // Singular unit on a 1-count row (professor-06 fixture parity).
     expect(screen.getByText('1 evento')).toBeTruthy();

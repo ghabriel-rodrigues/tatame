@@ -49,7 +49,10 @@ export interface ProfessorUpcomingEventView extends EventCardView {
   confirmedCount: number;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Read models of the events slice (spec 008): the aluno home/detail/agenda
@@ -171,7 +174,10 @@ export class EventsQueryService {
   ): Promise<AlunoEventDetailView> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const student = await this.requireStudent(tx, ctx.userId);
-      const [row] = await tx.select().from(events).where(eq(events.id, eventId));
+      const [row] = await tx
+        .select()
+        .from(events)
+        .where(eq(events.id, eventId));
       // Drafts and canceled events stay backstage; cross-tenant = RLS-hidden.
       if (!row || row.status !== 'published') {
         throw problem(404, ErrorCodes.NOT_FOUND, 'Event not found');
@@ -206,7 +212,12 @@ export class EventsQueryService {
         ? await tx
             .select({ id: students.id, fullName: students.fullName })
             .from(students)
-            .where(and(eq(students.guardianId, guardian.id), eq(students.status, 'active')))
+            .where(
+              and(
+                eq(students.guardianId, guardian.id),
+                eq(students.status, 'active'),
+              ),
+            )
             .orderBy(asc(students.fullName))
         : [];
 
@@ -230,7 +241,9 @@ export class EventsQueryService {
         : [];
       const chargeByRegistration = await this.openChargesFor(
         tx,
-        registrations.filter((r) => r.status === 'pending_payment').map((r) => r.id),
+        registrations
+          .filter((r) => r.status === 'pending_payment')
+          .map((r) => r.id),
       );
       const byKey = new Map(
         registrations.map((r) => [
@@ -278,7 +291,9 @@ export class EventsQueryService {
             )
             .groupBy(eventRegistrations.eventId)
         : [];
-      const confirmedByEvent = new Map(confirmed.map((c) => [c.eventId, Number(c.total)]));
+      const confirmedByEvent = new Map(
+        confirmed.map((c) => [c.eventId, Number(c.total)]),
+      );
       return {
         count: rows.length,
         items: rows.map((row) => ({
@@ -299,7 +314,9 @@ export class EventsQueryService {
     const query = tx
       .select()
       .from(events)
-      .where(and(eq(events.status, 'published'), gte(events.startsAt, new Date())))
+      .where(
+        and(eq(events.status, 'published'), gte(events.startsAt, new Date())),
+      )
       .orderBy(asc(events.startsAt));
     return limit ? query.limit(limit) : query;
   }
@@ -323,7 +340,10 @@ export class EventsQueryService {
     const map = new Map<string, string>();
     if (registrationIds.length === 0) return map;
     const rows = await tx
-      .select({ id: charges.id, eventRegistrationId: charges.eventRegistrationId })
+      .select({
+        id: charges.id,
+        eventRegistrationId: charges.eventRegistrationId,
+      })
       .from(charges)
       .where(
         and(
@@ -338,13 +358,20 @@ export class EventsQueryService {
     return map;
   }
 
-  private async requireStudent(tx: DbTransaction, userId: string): Promise<{ id: string }> {
+  private async requireStudent(
+    tx: DbTransaction,
+    userId: string,
+  ): Promise<{ id: string }> {
     const [student] = await tx
       .select({ id: students.id })
       .from(students)
       .where(and(eq(students.userId, userId), eq(students.status, 'active')));
     if (!student) {
-      throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
+      throw problem(
+        404,
+        ErrorCodes.NOT_FOUND,
+        'No active student record for this account',
+      );
     }
     return student;
   }

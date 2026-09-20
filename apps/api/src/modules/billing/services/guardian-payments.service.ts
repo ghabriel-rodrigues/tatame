@@ -48,7 +48,9 @@ export class GuardianPaymentsService {
     private readonly materialization: MaterializationService,
   ) {}
 
-  async getPayments(ctx: AuthContext & { tenantId: string }): Promise<GuardianPaymentsView> {
+  async getPayments(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<GuardianPaymentsView> {
     const today = localDate();
     const dependents = await withTenant(
       this.appDb.db,
@@ -66,14 +68,23 @@ export class GuardianPaymentsService {
             academyPlanId: students.academyPlanId,
           })
           .from(students)
-          .where(and(eq(students.guardianId, guardian.id), eq(students.status, 'active')))
+          .where(
+            and(
+              eq(students.guardianId, guardian.id),
+              eq(students.status, 'active'),
+            ),
+          )
           .orderBy(asc(students.fullName));
       },
     );
     if (dependents.length === 0) return { dependents: [], history: [] };
 
     await this.materialization.ensureCurrentCycleCharges(
-      { tenantId: ctx.tenantId, userId: ctx.userId, impersonatorUserId: ctx.impersonatorUserId },
+      {
+        tenantId: ctx.tenantId,
+        userId: ctx.userId,
+        impersonatorUserId: ctx.impersonatorUserId,
+      },
       { studentIds: dependents.map((d) => d.id) },
     );
 
@@ -83,10 +94,17 @@ export class GuardianPaymentsService {
       async (tx) => {
         const ids = dependents.map((d) => d.id);
         const planIds = [
-          ...new Set(dependents.map((d) => d.academyPlanId).filter((v): v is string => v != null)),
+          ...new Set(
+            dependents
+              .map((d) => d.academyPlanId)
+              .filter((v): v is string => v != null),
+          ),
         ];
         const plans = planIds.length
-          ? await tx.select().from(academyPlans).where(inArray(academyPlans.id, planIds))
+          ? await tx
+              .select()
+              .from(academyPlans)
+              .where(inArray(academyPlans.id, planIds))
           : [];
         const planById = new Map(plans.map((p) => [p.id, p]));
 

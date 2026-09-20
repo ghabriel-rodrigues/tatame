@@ -52,9 +52,14 @@ export const pop = () => ZoomIn.duration(durations.base).easing(easeSpring);
  */
 export function usePressScale() {
   const scale = useSharedValue(1);
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
   const onPressIn = () => {
-    scale.value = withTiming(0.97, { duration: durations.fast, easing: easeOut });
+    scale.value = withTiming(0.97, {
+      duration: durations.fast,
+      easing: easeOut,
+    });
   };
   const onPressOut = () => {
     scale.value = withTiming(1, { duration: durations.fast, easing: easeOut });

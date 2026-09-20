@@ -14,12 +14,15 @@ import { dirname, resolve } from 'node:path';
 process.env['DATABASE_URL'] ??= 'postgresql://emit:emit@localhost:5432/emit';
 process.env['JWT_ACCESS_SECRET'] ??= 'openapi-emit-placeholder-secret';
 
-const OUTPUT = resolve(process.argv[2] ?? '../../packages/shared/src/api/openapi.json');
+const OUTPUT = resolve(
+  process.argv[2] ?? '../../packages/shared/src/api/openapi.json',
+);
 
 async function emit(): Promise<void> {
   const { NestFactory } = await import('@nestjs/core');
   const { AppModule } = await import('../app/app.module.js');
-  const { buildOpenApiDocument, configureVersioning } = await import('../app/setup.js');
+  const { buildOpenApiDocument, configureVersioning } =
+    await import('../app/setup.js');
 
   const app = await NestFactory.create(AppModule, { logger: false });
   try {

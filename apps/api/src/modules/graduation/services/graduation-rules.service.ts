@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { graduationRules, withTenant, type DbHandle, type DbTransaction } from '@tatame/db';
+import {
+  graduationRules,
+  withTenant,
+  type DbHandle,
+  type DbTransaction,
+} from '@tatame/db';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
@@ -21,7 +26,10 @@ export interface RuleUpdateEntry {
   enabled: boolean;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Regras de graduação (GRD.9): per-academy lessons-per-degree + kids-belt
@@ -56,12 +64,20 @@ export class GraduationRulesService {
   /** Effective rule for one belt — the progress-engine read. */
   async ruleFor(tx: DbTransaction, beltId: string): Promise<EffectiveRule> {
     const rules = await this.effectiveRules(tx);
-    return rules.get(beltId) ?? { lessonsPerDegree: DEFAULT_LESSONS_PER_DEGREE, enabled: true };
+    return (
+      rules.get(beltId) ?? {
+        lessonsPerDegree: DEFAULT_LESSONS_PER_DEGREE,
+        enabled: true,
+      }
+    );
   }
 
   /** Merged régua rows in the handoff ladder display order (in-tx form). */
   async mergedRulesInTx(tx: DbTransaction): Promise<GraduationRuleRow[]> {
-    const [catalog, overrides] = [await this.query.mergedCatalog(tx), await this.effectiveRules(tx)];
+    const [catalog, overrides] = [
+      await this.query.mergedCatalog(tx),
+      await this.effectiveRules(tx),
+    ];
     return catalog.map((belt) => {
       const rule = overrides.get(belt.beltId);
       return {
@@ -79,8 +95,12 @@ export class GraduationRulesService {
   }
 
   /** GET /admin/graduation-rules — merged defaults + overrides. */
-  async adminView(ctx: AuthContext & { tenantId: string }): Promise<GraduationRuleRow[]> {
-    return withTenant(this.appDb.db, tenantCtx(ctx), (tx) => this.mergedRulesInTx(tx));
+  async adminView(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<GraduationRuleRow[]> {
+    return withTenant(this.appDb.db, tenantCtx(ctx), (tx) =>
+      this.mergedRulesInTx(tx),
+    );
   }
 
   /**
@@ -99,9 +119,17 @@ export class GraduationRulesService {
       for (const entry of entries) {
         const belt = catalog.get(entry.beltId);
         if (!belt) {
-          throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Unknown belt in rules payload', [
-            { field: 'rules', messages: [`Belt ${entry.beltId} is not in the catalog`] },
-          ]);
+          throw problem(
+            422,
+            ErrorCodes.VALIDATION_FAILED,
+            'Unknown belt in rules payload',
+            [
+              {
+                field: 'rules',
+                messages: [`Belt ${entry.beltId} is not in the catalog`],
+              },
+            ],
+          );
         }
         if (entry.lessonsPerDegree < MIN_LESSONS_PER_DEGREE) {
           throw problem(
@@ -126,7 +154,8 @@ export class GraduationRulesService {
           enabled: true,
         };
         const unchanged =
-          current.lessonsPerDegree === entry.lessonsPerDegree && current.enabled === entry.enabled;
+          current.lessonsPerDegree === entry.lessonsPerDegree &&
+          current.enabled === entry.enabled;
         // Lazy rows: a value identical to the effective one writes nothing.
         if (unchanged) continue;
         await tx

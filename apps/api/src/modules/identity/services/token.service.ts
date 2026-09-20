@@ -1,7 +1,10 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { APP_CONFIG, type AppConfig } from '../../../infra/config/app-config.js';
+import {
+  APP_CONFIG,
+  type AppConfig,
+} from '../../../infra/config/app-config.js';
 import type { AnyRoleName } from '../../../common/decorators.js';
 
 export const JWT_ISSUER = 'tatame';
@@ -88,7 +91,11 @@ export class TokenService {
   signChallengeToken(userId: string): string {
     return this.jwt.sign(
       { sub: userId, purpose: 'totp' },
-      { expiresIn: CHALLENGE_TTL_SECONDS, issuer: JWT_ISSUER, audience: CHALLENGE_AUDIENCE },
+      {
+        expiresIn: CHALLENGE_TTL_SECONDS,
+        issuer: JWT_ISSUER,
+        audience: CHALLENGE_AUDIENCE,
+      },
     );
   }
 

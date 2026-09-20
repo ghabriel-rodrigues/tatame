@@ -1,4 +1,8 @@
-import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  type CanActivate,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClsService } from 'nestjs-cls';
 import { getAuthContext } from '../auth-context.js';
@@ -21,16 +25,24 @@ export class PermissionsGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler(), context.getClass()] as const;
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [...targets]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
+      ...targets,
+    ]);
     if (isPublic) return true;
 
-    const key = this.reflector.getAllAndOverride<string>(PERMISSION_KEY, [...targets]);
+    const key = this.reflector.getAllAndOverride<string>(PERMISSION_KEY, [
+      ...targets,
+    ]);
     if (!key) return true;
 
     const ctx = getAuthContext(this.cls);
     if (!ctx?.tenantId) return true; // platform tokens are never toggle-gated
 
-    const allowed = await this.permissions.isAllowed(ctx.tenantId, ctx.role, key);
+    const allowed = await this.permissions.isAllowed(
+      ctx.tenantId,
+      ctx.role,
+      key,
+    );
     if (!allowed) {
       throw problem(
         403,

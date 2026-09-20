@@ -11,7 +11,10 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
-import { GRADUATION_AWARDED, type GraduationAwardedEvent } from '../graduation.events.js';
+import {
+  GRADUATION_AWARDED,
+  type GraduationAwardedEvent,
+} from '../graduation.events.js';
 import type { BeltView, GraduationEntry } from '../graduation.types.js';
 import { GraduationQueryService } from './graduation-query.service.js';
 import { GraduationRulesService } from './graduation-rules.service.js';
@@ -40,7 +43,10 @@ export interface RevokeResult {
 /** Notes text seeded on the optional initial-belt row (spec 005, resolved). */
 const INITIAL_BELT_NOTES = 'Início da jornada';
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * The one award/revocation write path (GRD.8/GRD.9) shared by the professor
@@ -69,66 +75,85 @@ export class GraduationAwardService {
     input: AwardInput,
   ): Promise<AwardResult> {
     let awarded: GraduationAwardedEvent | null = null;
-    const result = await withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
-      const [student] = await tx
-        .select({
-          id: students.id,
-          fullName: students.fullName,
-          guardianId: students.guardianId,
-        })
-        .from(students)
-        .where(and(eq(students.id, studentId), eq(students.status, 'active')));
-      // Cross-tenant ids are invisible under RLS — same 404 as nonexistent.
-      if (!student) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
-
-      const state = await this.query.currentState(tx, studentId);
-      let beltId: string;
-      let degree: number;
-      if (input.kind === 'degree') {
-        if (state.belt.degrees >= state.belt.maxDegrees) {
-          throw problem(
-            422,
-            ErrorCodes.GRADUATION_DEGREE_AT_MAX,
-            `${state.belt.name} holds at most ${state.belt.maxDegrees} degrees`,
+    const result = await withTenant(
+      this.appDb.db,
+      tenantCtx(ctx),
+      async (tx) => {
+        const [student] = await tx
+          .select({
+            id: students.id,
+            fullName: students.fullName,
+            guardianId: students.guardianId,
+          })
+          .from(students)
+          .where(
+            and(eq(students.id, studentId), eq(students.status, 'active')),
           );
+        // Cross-tenant ids are invisible under RLS — same 404 as nonexistent.
+        if (!student)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
+
+        const state = await this.query.currentState(tx, studentId);
+        let beltId: string;
+        let degree: number;
+        if (input.kind === 'degree') {
+          if (state.belt.degrees >= state.belt.maxDegrees) {
+            throw problem(
+              422,
+              ErrorCodes.GRADUATION_DEGREE_AT_MAX,
+              `${state.belt.name} holds at most ${state.belt.maxDegrees} degrees`,
+            );
+          }
+          beltId = state.belt.beltId;
+          degree = state.belt.degrees + 1;
+        } else {
+          beltId = await this.validateBeltTarget(
+            tx,
+            input.beltId,
+            state.belt.beltId,
+          );
+          degree = 0;
         }
-        beltId = state.belt.beltId;
-        degree = state.belt.degrees + 1;
-      } else {
-        beltId = await this.validateBeltTarget(tx, input.beltId, state.belt.beltId);
-        degree = 0;
-      }
 
-      const graduationId = await this.insertAward(tx, {
-        tenantId: ctx.tenantId,
-        studentId,
-        beltId,
-        kind: input.kind,
-        degree,
-        awardedByUserId: ctx.userId,
-        impersonatorUserId: ctx.impersonatorUserId,
-        notes: input.notes ?? null,
-      });
+        const graduationId = await this.insertAward(tx, {
+          tenantId: ctx.tenantId,
+          studentId,
+          beltId,
+          kind: input.kind,
+          degree,
+          awardedByUserId: ctx.userId,
+          impersonatorUserId: ctx.impersonatorUserId,
+          notes: input.notes ?? null,
+        });
 
-      const timeline = await this.query.timeline(tx, studentId);
-      const graduation = timeline.find((entry) => entry.id === graduationId);
-      if (!graduation) throw problem(500, ErrorCodes.INTERNAL, 'Award row missing after insert');
+        const timeline = await this.query.timeline(tx, studentId);
+        const graduation = timeline.find((entry) => entry.id === graduationId);
+        if (!graduation)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Award row missing after insert',
+          );
 
-      // The announcement payload (spec 010) — emitted post-commit below, so
-      // the notifications listener only ever sees committed awards. Never
-      // built for the initial-belt seed nor for revocations.
-      awarded = {
-        tenantId: ctx.tenantId,
-        studentId: student.id,
-        studentName: student.fullName,
-        guardianId: student.guardianId,
-        beltName: graduation.belt.name,
-        degree: graduation.degree,
-        kind: input.kind,
-        awardedByName: graduation.awardedBy.fullName,
-      };
-      return { graduation, belt: await this.query.currentBelt(tx, studentId) };
-    });
+        // The announcement payload (spec 010) — emitted post-commit below, so
+        // the notifications listener only ever sees committed awards. Never
+        // built for the initial-belt seed nor for revocations.
+        awarded = {
+          tenantId: ctx.tenantId,
+          studentId: student.id,
+          studentName: student.fullName,
+          guardianId: student.guardianId,
+          beltName: graduation.belt.name,
+          degree: graduation.degree,
+          kind: input.kind,
+          awardedByName: graduation.awardedBy.fullName,
+        };
+        return {
+          graduation,
+          belt: await this.query.currentBelt(tx, studentId),
+        };
+      },
+    );
     if (awarded) this.emitter.emit(GRADUATION_AWARDED, awarded);
     return result;
   }
@@ -178,11 +203,20 @@ export class GraduationAwardService {
         })
         .from(studentGraduations)
         .where(eq(studentGraduations.id, graduationId));
-      if (!target) throw problem(404, ErrorCodes.NOT_FOUND, 'Graduation not found');
+      if (!target)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Graduation not found');
       if (target.kind === 'revocation') {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'A revocation row cannot be revoked', [
-          { field: 'graduationId', messages: ['Only award rows (degree/belt) can be revoked'] },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'A revocation row cannot be revoked',
+          [
+            {
+              field: 'graduationId',
+              messages: ['Only award rows (degree/belt) can be revoked'],
+            },
+          ],
+        );
       }
 
       const [existing] = await tx
@@ -213,7 +247,12 @@ export class GraduationAwardService {
             reversesGraduationId: target.id,
           })
           .returning({ id: studentGraduations.id });
-        if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Revocation insert returned no row');
+        if (!row)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Revocation insert returned no row',
+          );
         revocationId = row.id;
       } catch (error) {
         if (isUniqueViolation(error)) {
@@ -263,14 +302,21 @@ export class GraduationAwardService {
     currentBeltId: string | null,
   ): Promise<string> {
     if (!beltId) {
-      throw problem(422, ErrorCodes.VALIDATION_FAILED, 'beltId is required for belt promotions', [
-        { field: 'beltId', messages: ['Required when kind is belt'] },
-      ]);
+      throw problem(
+        422,
+        ErrorCodes.VALIDATION_FAILED,
+        'beltId is required for belt promotions',
+        [{ field: 'beltId', messages: ['Required when kind is belt'] }],
+      );
     }
     const catalog = await this.query.catalogById(tx);
     const target = catalog.get(beltId);
     if (!target) {
-      throw problem(422, ErrorCodes.GRADUATION_BELT_INVALID_TARGET, 'Unknown target belt');
+      throw problem(
+        422,
+        ErrorCodes.GRADUATION_BELT_INVALID_TARGET,
+        'Unknown target belt',
+      );
     }
     if (currentBeltId && beltId === currentBeltId) {
       throw problem(
@@ -316,7 +362,12 @@ export class GraduationAwardService {
         notes: row.notes,
       })
       .returning({ id: studentGraduations.id });
-    if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Graduation insert returned no row');
+    if (!inserted)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Graduation insert returned no row',
+      );
 
     // `graduation.awarded` rides the same transaction — no exceptions
     // (resolved audit decision); impersonated mutations carry the actor pair.
@@ -344,7 +395,6 @@ export class GraduationAwardService {
 function isUniqueViolation(error: unknown): boolean {
   const cause = (error as { cause?: { code?: string } })?.cause;
   return (
-    (error as { code?: string })?.code === '23505' ||
-    cause?.code === '23505'
+    (error as { code?: string })?.code === '23505' || cause?.code === '23505'
   );
 }

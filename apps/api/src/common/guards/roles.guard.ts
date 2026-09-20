@@ -1,4 +1,8 @@
-import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  type CanActivate,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClsService } from 'nestjs-cls';
 import { getAuthContext } from '../auth-context.js';
@@ -25,21 +29,35 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const targets = [context.getHandler(), context.getClass()] as const;
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [...targets]);
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
+      ...targets,
+    ]);
     if (isPublic) return true;
 
-    const anyRole = this.reflector.getAllAndOverride<boolean>(ANY_ROLE_KEY, [...targets]);
+    const anyRole = this.reflector.getAllAndOverride<boolean>(ANY_ROLE_KEY, [
+      ...targets,
+    ]);
     if (anyRole) return true;
 
-    const roles = this.reflector.getAllAndOverride<AnyRoleName[]>(ROLES_KEY, [...targets]);
+    const roles = this.reflector.getAllAndOverride<AnyRoleName[]>(ROLES_KEY, [
+      ...targets,
+    ]);
     if (!roles || roles.length === 0) {
       // Default deny: no explicit stance = no access.
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'Route has no authorization stance');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'Route has no authorization stance',
+      );
     }
 
     const ctx = getAuthContext(this.cls);
     if (!ctx || !roles.includes(ctx.role)) {
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'Active role cannot access this route');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'Active role cannot access this route',
+      );
     }
     return true;
   }

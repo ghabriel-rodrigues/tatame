@@ -27,15 +27,30 @@ import {
   MaterializationService,
   type MaterializationResult,
 } from '../../billing/services/materialization.service.js';
-import { monthWindow, requireMonth, semesterWindow, type DateWindow } from '../lib/windows.js';
+import {
+  monthWindow,
+  requireMonth,
+  semesterWindow,
+  type DateWindow,
+} from '../lib/windows.js';
 
-export const REPORT_SLUGS = ['financeiro', 'frequencia', 'inadimplencia', 'graduacoes', 'loja'] as const;
+export const REPORT_SLUGS = [
+  'financeiro',
+  'frequencia',
+  'inadimplencia',
+  'graduacoes',
+  'loja',
+] as const;
 export type ReportSlug = (typeof REPORT_SLUGS)[number];
 
 export interface FinanceiroReport {
   report: 'financeiro';
   month: string;
-  summary: { receitaCents: number; previstoCents: number; inadimplenciaPct: number };
+  summary: {
+    receitaCents: number;
+    previstoCents: number;
+    inadimplenciaPct: number;
+  };
   rows: Array<{
     chargeId: string;
     studentName: string | null;
@@ -129,10 +144,14 @@ export type ReportView =
   | GraduacoesReport
   | LojaReport;
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /** Tenant-local date of a timestamptz column, as a SQL fragment. */
-const localDay = (column: unknown) => sql`(${column} AT TIME ZONE ${TENANT_TIMEZONE})::date`;
+const localDay = (column: unknown) =>
+  sql`(${column} AT TIME ZONE ${TENANT_TIMEZONE})::date`;
 
 /**
  * The five admin report read models (spec 013, REP.3) — pure derive-on-read
@@ -179,17 +198,20 @@ export class ReportsService {
     ctx: AuthContext & { tenantId: string },
     month: string,
   ): Promise<FinanceiroReport> {
-    const materialization = await this.materialization.ensureCurrentCycleCharges({
-      tenantId: ctx.tenantId,
-      userId: ctx.userId,
-      impersonatorUserId: ctx.impersonatorUserId,
-    });
+    const materialization =
+      await this.materialization.ensureCurrentCycleCharges({
+        tenantId: ctx.tenantId,
+        userId: ctx.userId,
+        impersonatorUserId: ctx.impersonatorUserId,
+      });
     const window = monthWindow(month);
     const today = localDate();
 
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const [receitaRow] = await tx
-        .select({ total: sql<string>`COALESCE(SUM(${payments.amountCents}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${payments.amountCents}), 0)`,
+        })
         .from(payments)
         .where(
           and(
@@ -201,7 +223,9 @@ export class ReportsService {
         );
 
       const [previstoRow] = await tx
-        .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+        })
         .from(charges)
         .where(
           and(
@@ -214,7 +238,9 @@ export class ReportsService {
       // Inadimplência % by value — overview formula: overdue-open plan amount
       // (predicate, as of today) ÷ the month's materialized plan total.
       const [overdueRow] = await tx
-        .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+        })
         .from(charges)
         .where(
           and(
@@ -224,7 +250,9 @@ export class ReportsService {
           ),
         );
       const [monthPlanRow] = await tx
-        .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+        })
         .from(charges)
         .where(
           and(
@@ -257,12 +285,21 @@ export class ReportsService {
         .from(charges)
         .leftJoin(
           students,
-          and(eq(students.tenantId, charges.tenantId), eq(students.id, charges.studentId)),
+          and(
+            eq(students.tenantId, charges.tenantId),
+            eq(students.id, charges.studentId),
+          ),
         )
         .where(
           or(
-            and(gte(charges.dueDate, window.start), lt(charges.dueDate, window.endExclusive)),
-            and(gte(charges.periodStart, window.start), lt(charges.periodStart, window.endExclusive)),
+            and(
+              gte(charges.dueDate, window.start),
+              lt(charges.dueDate, window.endExclusive),
+            ),
+            and(
+              gte(charges.periodStart, window.start),
+              lt(charges.periodStart, window.endExclusive),
+            ),
             sql`EXISTS (
               SELECT 1 FROM payments p
               WHERE p.tenant_id = ${charges.tenantId}
@@ -282,7 +319,9 @@ export class ReportsService {
           receitaCents: Number(receitaRow?.total ?? 0),
           previstoCents: Number(previstoRow?.total ?? 0),
           inadimplenciaPct:
-            monthPlanCents === 0 ? 0 : Math.round((overdueCents / monthPlanCents) * 100),
+            monthPlanCents === 0
+              ? 0
+              : Math.round((overdueCents / monthPlanCents) * 100),
         },
         rows: rows.map((r) => ({
           chargeId: r.chargeId,
@@ -337,9 +376,17 @@ export class ReportsService {
           .from(enrollments)
           .innerJoin(
             students,
-            and(eq(students.tenantId, enrollments.tenantId), eq(students.id, enrollments.studentId)),
+            and(
+              eq(students.tenantId, enrollments.tenantId),
+              eq(students.id, enrollments.studentId),
+            ),
           )
-          .where(and(eq(enrollments.classId, klass.id), eq(enrollments.status, 'active')))
+          .where(
+            and(
+              eq(enrollments.classId, klass.id),
+              eq(enrollments.status, 'active'),
+            ),
+          )
           .orderBy(asc(students.fullName));
 
         const attended = await tx
@@ -364,7 +411,9 @@ export class ReportsService {
             ),
           )
           .groupBy(attendances.studentId);
-        const attendedByStudent = new Map(attended.map((a) => [a.studentId, Number(a.total)]));
+        const attendedByStudent = new Map(
+          attended.map((a) => [a.studentId, Number(a.total)]),
+        );
 
         result.push({
           classId: klass.id,
@@ -378,13 +427,19 @@ export class ReportsService {
               presencas,
               faltas: Math.max(sessionsCount - presencas, 0),
               presencePct:
-                sessionsCount === 0 ? 0 : Math.round((presencas / sessionsCount) * 100),
+                sessionsCount === 0
+                  ? 0
+                  : Math.round((presencas / sessionsCount) * 100),
             };
           }),
         });
       }
 
-      return { report: 'frequencia' as const, month: window.label, classes: result };
+      return {
+        report: 'frequencia' as const,
+        month: window.label,
+        classes: result,
+      };
     });
   }
 
@@ -393,7 +448,9 @@ export class ReportsService {
    * origin), with days overdue and the payer's payment-category notification
    * count since the due date (the recorded honest approximation).
    */
-  private async inadimplencia(ctx: AuthContext & { tenantId: string }): Promise<InadimplenciaReport> {
+  private async inadimplencia(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<InadimplenciaReport> {
     const today = localDate();
 
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
@@ -410,13 +467,24 @@ export class ReportsService {
         .from(charges)
         .leftJoin(
           students,
-          and(eq(students.tenantId, charges.tenantId), eq(students.id, charges.studentId)),
+          and(
+            eq(students.tenantId, charges.tenantId),
+            eq(students.id, charges.studentId),
+          ),
         )
         .leftJoin(
           guardians,
-          and(eq(guardians.tenantId, charges.tenantId), eq(guardians.id, charges.guardianId)),
+          and(
+            eq(guardians.tenantId, charges.tenantId),
+            eq(guardians.id, charges.guardianId),
+          ),
         )
-        .where(and(inArray(charges.status, ['open', 'overdue']), lt(charges.dueDate, today)))
+        .where(
+          and(
+            inArray(charges.status, ['open', 'overdue']),
+            lt(charges.dueDate, today),
+          ),
+        )
         .orderBy(asc(charges.dueDate), asc(students.fullName));
 
       const out: InadimplenciaReport['rows'] = [];
@@ -447,7 +515,9 @@ export class ReportsService {
           amountCents: row.amountCents,
           dueDate: row.dueDate,
           daysOverdue: Math.round(
-            (Date.parse(`${today}T00:00:00Z`) - Date.parse(`${row.dueDate}T00:00:00Z`)) / 86_400_000,
+            (Date.parse(`${today}T00:00:00Z`) -
+              Date.parse(`${row.dueDate}T00:00:00Z`)) /
+              86_400_000,
           ),
           notificationsSent,
         });
@@ -526,7 +596,10 @@ export class ReportsService {
    * count only orders that reached `paid` or beyond and were not canceled
    * (pending and canceled rows stay listed with their status).
    */
-  private async loja(ctx: AuthContext & { tenantId: string }, month: string): Promise<LojaReport> {
+  private async loja(
+    ctx: AuthContext & { tenantId: string },
+    month: string,
+  ): Promise<LojaReport> {
     const window = monthWindow(month);
 
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
@@ -547,11 +620,17 @@ export class ReportsService {
         .innerJoin(users, eq(users.id, orders.buyerUserId))
         .innerJoin(
           orderItems,
-          and(eq(orderItems.tenantId, orders.tenantId), eq(orderItems.orderId, orders.id)),
+          and(
+            eq(orderItems.tenantId, orders.tenantId),
+            eq(orderItems.orderId, orders.id),
+          ),
         )
         .innerJoin(
           products,
-          and(eq(products.tenantId, orders.tenantId), eq(products.id, orderItems.productId)),
+          and(
+            eq(products.tenantId, orders.tenantId),
+            eq(products.id, orderItems.productId),
+          ),
         )
         .where(
           and(

@@ -124,7 +124,9 @@ export function ListRow({
       {leading ? <span className="ListRow-leading">{leading}</span> : null}
       <TextColumn>
         <Title className="ListRow-title">{title}</Title>
-        {subtitle ? <Subtitle className="ListRow-subtitle">{subtitle}</Subtitle> : null}
+        {subtitle ? (
+          <Subtitle className="ListRow-subtitle">{subtitle}</Subtitle>
+        ) : null}
       </TextColumn>
       {trailing ? <span className="ListRow-trailing">{trailing}</span> : null}
       {chevron ? <Chevron /> : null}

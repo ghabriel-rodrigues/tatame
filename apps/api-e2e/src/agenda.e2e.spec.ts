@@ -9,7 +9,9 @@ const spMonth = (at: Date = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(at).slice(0, 7);
 const spWeekday = (at: Date = new Date()) =>
   ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
-    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(at),
+    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short' }).format(
+      at,
+    ),
   );
 const spMinutes = (at: Date = new Date()) => {
   const [h, m] = new Intl.DateTimeFormat('en-GB', {
@@ -28,9 +30,9 @@ const hhmm = (mins: number) =>
 
 /** All class ids across the seven weekday buckets of a calendar payload. */
 const bucketClassIds = (body: any): string[] =>
-  Object.values(body.classesByWeekday as Record<string, Array<{ classId: string }>>).flatMap(
-    (items) => items.map((i) => i.classId),
-  );
+  Object.values(
+    body.classesByWeekday as Record<string, Array<{ classId: string }>>,
+  ).flatMap((items) => items.map((i) => i.classId));
 
 describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)', () => {
   let t: TestApp;
@@ -54,7 +56,11 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
 
   async function createClass(
     name: string,
-    schedules: Array<{ weekday: number; startTime: string; durationMinutes: number }>,
+    schedules: Array<{
+      weekday: number;
+      startTime: string;
+      durationMinutes: number;
+    }>,
     opts: { capacity?: number; professorUserId?: string } = {},
   ): Promise<string> {
     const res = await t
@@ -83,7 +89,9 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
   async function agenda(weekday?: number) {
     const res = await t
       .http()
-      .get(`/v1/aluno/agenda${weekday === undefined ? '' : `?weekday=${weekday}`}`)
+      .get(
+        `/v1/aluno/agenda${weekday === undefined ? '' : `?weekday=${weekday}`}`,
+      )
       .set(bearer(aluno));
     expect(res.status).toBe(200);
     return res.body;
@@ -107,7 +115,10 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     responsavel = (await t.login('responsavel@tatame.dev')).accessToken;
     bravoId = await t.academyIdBySlug('bravo-bjj');
 
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
@@ -115,11 +126,21 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
       (p: any) => p.email === 'multi@tatame.dev',
     ).userId;
 
-    const students = await t.http().get('/v1/admin/students').set(bearer(admin));
-    anaStudentId = students.body.students.find((s: any) => s.fullName === 'Ana Aluna').id;
+    const students = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    anaStudentId = students.body.students.find(
+      (s: any) => s.fullName === 'Ana Aluna',
+    ).id;
 
-    const classList = await t.http().get('/v1/admin/classes').set(bearer(admin));
-    adultoGiId = classList.body.classes.find((c: any) => c.name === 'Adulto Gi').id;
+    const classList = await t
+      .http()
+      .get('/v1/admin/classes')
+      .set(bearer(admin));
+    adultoGiId = classList.body.classes.find(
+      (c: any) => c.name === 'Adulto Gi',
+    ).id;
     kidsId = classList.body.classes.find((c: any) => c.name === 'Kids').id;
   });
 
@@ -164,7 +185,9 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     expect([...starts].sort()).toEqual(starts);
 
     const otherDay = await agenda(other);
-    expect(otherDay.classes.filter((c: any) => c.classId === classId)).toHaveLength(1);
+    expect(
+      otherDay.classes.filter((c: any) => c.classId === classId),
+    ).toHaveLength(1);
   });
 
   it('lists only actively enrolled classes with level fields and "N de M" occupancy', async () => {
@@ -183,9 +206,13 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     const tue = await agenda(2);
     expect(tue.classes.map((c: any) => c.classId)).not.toContain(kidsId);
     // An enrolled-nobody class on Monday is invisible too.
-    await createClass('AGD Ghost', [{ weekday: 1, startTime: '06:00', durationMinutes: 60 }]);
+    await createClass('AGD Ghost', [
+      { weekday: 1, startTime: '06:00', durationMinutes: 60 },
+    ]);
     const again = await agenda(1);
-    expect(again.classes.map((c: any) => c.className)).not.toContain('AGD Ghost');
+    expect(again.classes.map((c: any) => c.className)).not.toContain(
+      'AGD Ghost',
+    );
   });
 
   it('a removed enrollment and an archived class disappear from the agenda', async () => {
@@ -194,22 +221,33 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
       { weekday: w, startTime: '10:00', durationMinutes: 60 },
     ]);
     await enroll(goneId);
-    expect((await agenda(w)).classes.map((c: any) => c.classId)).toContain(goneId);
+    expect((await agenda(w)).classes.map((c: any) => c.classId)).toContain(
+      goneId,
+    );
     const removed = await t
       .http()
       .delete(`/v1/admin/classes/${goneId}/students/${anaStudentId}`)
       .set(bearer(admin));
     expect(removed.status).toBe(200);
-    expect((await agenda(w)).classes.map((c: any) => c.classId)).not.toContain(goneId);
+    expect((await agenda(w)).classes.map((c: any) => c.classId)).not.toContain(
+      goneId,
+    );
 
     const archId = await createClass('AGD Arch', [
       { weekday: w, startTime: '11:00', durationMinutes: 60 },
     ]);
     await enroll(archId);
-    expect((await agenda(w)).classes.map((c: any) => c.classId)).toContain(archId);
-    const archived = await t.http().post(`/v1/admin/classes/${archId}/archive`).set(bearer(admin));
+    expect((await agenda(w)).classes.map((c: any) => c.classId)).toContain(
+      archId,
+    );
+    const archived = await t
+      .http()
+      .post(`/v1/admin/classes/${archId}/archive`)
+      .set(bearer(admin));
     expect(archived.status).toBe(204);
-    expect((await agenda(w)).classes.map((c: any) => c.classId)).not.toContain(archId);
+    expect((await agenda(w)).classes.map((c: any) => c.classId)).not.toContain(
+      archId,
+    );
   });
 
   // ── checkedIn state — pure session/attendance read (AGD.1) ─────────────
@@ -242,7 +280,9 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     expect(item.checkedIn).toBe(true);
 
     // Off-today rows never carry the affordance state.
-    const offToday = (await agenda(tomorrow)).classes.find((c: any) => c.classId === hojeId);
+    const offToday = (await agenda(tomorrow)).classes.find(
+      (c: any) => c.classId === hojeId,
+    );
     expect(offToday.checkedIn).toBe(false);
 
     // A revoke (roll-call correction flow) brings the button back.
@@ -250,7 +290,9 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
       .http()
       .post(`/v1/professor/classes/${hojeId}/roll-call`)
       .set(bearer(professor));
-    const anaRow = rollCall.body.roster.find((r: any) => r.studentId === anaStudentId);
+    const anaRow = rollCall.body.roster.find(
+      (r: any) => r.studentId === anaStudentId,
+    );
     const revoke = await t
       .http()
       .post(`/v1/admin/attendances/${anaRow.attendance.id}/revoke`)
@@ -291,11 +333,19 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     // fixtures is date-dependent — pinned in events-agenda.e2e.spec.ts.
     expect(Array.isArray(res.body.events)).toBe(true);
     expect(Object.keys(res.body.classesByWeekday).sort()).toEqual([
-      '0', '1', '2', '3', '4', '5', '6',
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
     ]);
     // Adulto Gi recurs Mon/Wed/Fri; Kids (not enrolled) is nowhere.
     for (const day of ['1', '3', '5']) {
-      const item = res.body.classesByWeekday[day].find((i: any) => i.classId === adultoGiId);
+      const item = res.body.classesByWeekday[day].find(
+        (i: any) => i.classId === adultoGiId,
+      );
       expect(item, `weekday ${day}`).toBeTruthy();
       expect(item.startTime).toBe('19:00');
       expect(item.endTime).toBe('20:00');
@@ -311,7 +361,10 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
       [{ weekday: 0, startTime: '09:00', durationMinutes: 60 }],
       { professorUserId: multiUserId },
     );
-    const res = await t.http().get('/v1/professor/calendar').set(bearer(professor));
+    const res = await t
+      .http()
+      .get('/v1/professor/calendar')
+      .set(bearer(professor));
     expect(res.status).toBe(200);
     const ids = bucketClassIds(res.body);
     expect(ids).toContain(adultoGiId);
@@ -342,17 +395,26 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
 
   it('rejects malformed month and out-of-range weekday with the stable 422', async () => {
     for (const month of ['2026-13', '13-2026', '2026-1', 'abc']) {
-      const res = await t.http().get(`/v1/aluno/calendar?month=${month}`).set(bearer(aluno));
+      const res = await t
+        .http()
+        .get(`/v1/aluno/calendar?month=${month}`)
+        .set(bearer(aluno));
       expect(res.status, month).toBe(422);
       expect(res.body.code).toBe('validation.failed');
       expect(res.body.errors[0].field).toBe('month');
     }
-    const echoed = await t.http().get('/v1/admin/calendar?month=2026-02').set(bearer(admin));
+    const echoed = await t
+      .http()
+      .get('/v1/admin/calendar?month=2026-02')
+      .set(bearer(admin));
     expect(echoed.status).toBe(200);
     expect(echoed.body.month).toBe('2026-02');
 
     for (const weekday of ['7', '-1', 'x']) {
-      const res = await t.http().get(`/v1/aluno/agenda?weekday=${weekday}`).set(bearer(aluno));
+      const res = await t
+        .http()
+        .get(`/v1/aluno/agenda?weekday=${weekday}`)
+        .set(bearer(aluno));
       expect(res.status, weekday).toBe(422);
       expect(res.body.code).toBe('validation.failed');
     }
@@ -378,22 +440,30 @@ describe('agenda: aluno weekday view, persona calendars, read purity (AGD.1-3)',
     }
   });
 
-  it('RLS: another academy\'s classes never leak into agenda or calendars', async () => {
+  it("RLS: another academy's classes never leak into agenda or calendars", async () => {
     const bravoClassIds = (
       await withPlatform(t.platformDb.db, (tx) =>
-        tx.select({ id: classes.id }).from(classes).where(eq(classes.tenantId, bravoId)),
+        tx
+          .select({ id: classes.id })
+          .from(classes)
+          .where(eq(classes.tenantId, bravoId)),
       )
     ).map((r) => r.id);
     expect(bravoClassIds.length).toBeGreaterThan(0);
 
-    const adminCal = await t.http().get('/v1/admin/calendar').set(bearer(admin));
+    const adminCal = await t
+      .http()
+      .get('/v1/admin/calendar')
+      .set(bearer(admin));
     for (const id of bucketClassIds(adminCal.body)) {
       expect(bravoClassIds, 'admin calendar').not.toContain(id);
     }
     for (let weekday = 0; weekday <= 6; weekday += 1) {
       const body = await agenda(weekday);
       for (const item of body.classes) {
-        expect(bravoClassIds, `agenda weekday ${weekday}`).not.toContain(item.classId);
+        expect(bravoClassIds, `agenda weekday ${weekday}`).not.toContain(
+          item.classId,
+        );
       }
     }
   });

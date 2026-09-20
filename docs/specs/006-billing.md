@@ -114,9 +114,15 @@ The `billing` domain module is the **only** consumer of a `PaymentProviderPort` 
 
 ```ts
 interface PaymentProviderPort {
-  createPixCharge(i): Promise<{ providerPaymentId; qrPayload; copiaECola; expiresAt }>;
-  createBoletoCharge(i): Promise<{ providerPaymentId; linhaDigitavel; barcodePayload; dueDate }>;
-  createCardCharge(i /* + mandateId? */): Promise<{ providerPaymentId; status }>;
+  createPixCharge(
+    i,
+  ): Promise<{ providerPaymentId; qrPayload; copiaECola; expiresAt }>;
+  createBoletoCharge(
+    i,
+  ): Promise<{ providerPaymentId; linhaDigitavel; barcodePayload; dueDate }>;
+  createCardCharge(
+    i /* + mandateId? */,
+  ): Promise<{ providerPaymentId; status }>;
   createMandate(i): Promise<{ providerMandateId }>;
   refund(providerPaymentId): Promise<{ providerRefundId }>;
   verifyAndParseWebhook(rawBody, signature): ProviderEvent[];
@@ -134,6 +140,7 @@ interface PaymentProviderPort {
 1. An idempotent `ensureCurrentCycleCharges` pass runs at every money-displaying entry point — aluno/responsável wallet fetch (own charges), admin financial overview (tenant-wide, capped/paginated). Insert-on-conflict-do-nothing against the partial unique key; the same pass flips `open → overdue` where past due. Events `billing.charge.created`/`billing.charge.overdue` are emitted **only** for rows actually inserted/flipped.
 2. `POST /v1/admin/billing/charges/materialize` (admin role, audited) runs the tenant-wide pass on demand — the ops lever and the test seam.
 3. A real nightly cron is deferred to the infra map; when it exists, the same idempotent pass is scheduled and nothing in the module changes.
+
 - Plan charges materialize only for active students with an assigned active plan; `due_date` comes from the plan's `due_day` within the cycle's competência; charge subtitle data (month name, plan name) is derived client-side from the payload.
 
 ### Delinquency — two uncoupled derivations
@@ -159,20 +166,20 @@ interface PaymentProviderPort {
 - Everything lands in a new `billing` module behind the existing guard chain (default-deny roles, academy-status guard, RLS backstop); foreign charge/payment ids are 404, never 403. CI route-metadata assertions per the established pattern: no professor route exists in billing; payment-flow endpoints carry `@BypassReadOnly`; the future webhook route is `@Public`.
 - Endpoint surface (versioned prefix, generated into the OpenAPI spec):
 
-| Endpoint | Role | Purpose |
-|---|---|---|
-| `GET /aluno/wallet` | student | plan header, current-cycle charge (materializes), recurrence banner, histórico |
-| `POST /aluno/wallet/charges/:id/payments` | student | create payment attempt (pix/boleto/card; card accepts the mandate toggle) |
-| `DELETE /aluno/wallet/mandate` | student | cancel card recurrence |
-| `GET /responsavel/payments` | guardian | per-dependent current charges + consolidated histórico (materializes) |
-| `POST /responsavel/payments/charges/:id/payments` | guardian | pay a dependent's charge (same methods) |
-| `POST /billing/payments/:id/simulate` | student, guardian | simulated settlement (404 unless simulated provider) |
-| `GET /billing/payments/:id/receipt` | student, guardian, admin | comprovante render |
-| `GET /admin/billing/overview` | admin | receita mês/ano, previsão, inadimplência %, 6-month series, próximos vencimentos, inadimplentes |
-| `GET/POST/PATCH /admin/billing/plans` (+ archive) | admin | planos de mensalidade CRUD |
-| `POST /admin/billing/charges/materialize` | admin | tenant-wide materialization (audited) |
-| `POST /admin/billing/payments/:id/refund` | admin | full refund via provider port (audited) |
-| `GET /platform/billing/repasses` | platform owner/finance | repasse read model |
+| Endpoint                                          | Role                     | Purpose                                                                                         |
+| ------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
+| `GET /aluno/wallet`                               | student                  | plan header, current-cycle charge (materializes), recurrence banner, histórico                  |
+| `POST /aluno/wallet/charges/:id/payments`         | student                  | create payment attempt (pix/boleto/card; card accepts the mandate toggle)                       |
+| `DELETE /aluno/wallet/mandate`                    | student                  | cancel card recurrence                                                                          |
+| `GET /responsavel/payments`                       | guardian                 | per-dependent current charges + consolidated histórico (materializes)                           |
+| `POST /responsavel/payments/charges/:id/payments` | guardian                 | pay a dependent's charge (same methods)                                                         |
+| `POST /billing/payments/:id/simulate`             | student, guardian        | simulated settlement (404 unless simulated provider)                                            |
+| `GET /billing/payments/:id/receipt`               | student, guardian, admin | comprovante render                                                                              |
+| `GET /admin/billing/overview`                     | admin                    | receita mês/ano, previsão, inadimplência %, 6-month series, próximos vencimentos, inadimplentes |
+| `GET/POST/PATCH /admin/billing/plans` (+ archive) | admin                    | planos de mensalidade CRUD                                                                      |
+| `POST /admin/billing/charges/materialize`         | admin                    | tenant-wide materialization (audited)                                                           |
+| `POST /admin/billing/payments/:id/refund`         | admin                    | full refund via provider port (audited)                                                         |
+| `GET /platform/billing/repasses`                  | platform owner/finance   | repasse read model                                                                              |
 
 - Existing endpoints extended, not duplicated: aluno home gains the real mensalidade-em-aberto flag + charge deep-link data; responsável dependents keep their per-child alert fed by the same derivation; admin student create/update accepts `academyPlanId`; invite create accepts a plan and invite-accept persists it.
 - New stable problem+json codes: charge not payable (already paid/canceled), method-mandate mismatch, mandate already active, refund on unsettled payment, simulate unavailable (when not 404-hidden), plan archived/invalid on assignment.

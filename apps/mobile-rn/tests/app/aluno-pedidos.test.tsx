@@ -8,7 +8,13 @@
  * competência) as "Pagamento avulso" with the comprovante affordance.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
@@ -21,7 +27,12 @@ import {
 } from '../helpers/session';
 import { makeAlunoHome, STUDENT_ID } from '../helpers/attendance';
 import { makePixPayment, makeWallet } from '../helpers/billing';
-import { ORDER_CHARGE_ID, makeOrder, makePaidOrder, makeVitrine } from '../helpers/store';
+import {
+  ORDER_CHARGE_ID,
+  makeOrder,
+  makePaidOrder,
+  makeVitrine,
+} from '../helpers/store';
 import type { StoreOrder } from '../../src/features/store/types';
 
 jest.useFakeTimers();
@@ -57,7 +68,9 @@ function renderPedidos(
     if (request.method === 'GET' && request.path === '/v1/store/orders') {
       return json(200, { orders });
     }
-    const cancelMatch = /^\/v1\/store\/orders\/([0-9a-f-]+)$/.exec(request.path);
+    const cancelMatch = /^\/v1\/store\/orders\/([0-9a-f-]+)$/.exec(
+      request.path,
+    );
     if (request.method === 'DELETE' && cancelMatch) {
       log.cancels.push(cancelMatch[1] ?? '');
       if (options.cancelResponse) return options.cancelResponse;
@@ -79,22 +92,29 @@ function renderPedidos(
         mandateCreated: false,
       });
     }
-    const simulateMatch = /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(
-      request.path,
-    );
+    const simulateMatch =
+      /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(request.path);
     if (request.method === 'POST' && simulateMatch) {
       log.simulated.push(simulateMatch[1] ?? '');
       orders = orders.map((order) =>
-        order.status === 'pending' ? { ...order, status: 'paid', chargeId: null } : order,
+        order.status === 'pending'
+          ? { ...order, status: 'paid', chargeId: null }
+          : order,
       );
-      return json(200, { payment: makePixPayment({ status: 'succeeded' }), charge: null });
+      return json(200, {
+        payment: makePixPayment({ status: 'succeeded' }),
+        charge: null,
+      });
     }
     if (request.method === 'GET' && request.path === '/v1/aluno/wallet') {
       return json(200, makeWallet({ empty: true }));
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -108,11 +128,15 @@ async function openMeusPedidos(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Perfil'));
   });
-  await waitFor(() => expect(screen.getByTestId('perfil-loja-row')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('perfil-loja-row')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('perfil-loja-row'));
   });
-  await waitFor(() => expect(screen.getByTestId('my-orders-entry')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('my-orders-entry')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('my-orders-entry'));
   });
@@ -162,17 +186,25 @@ describe('aluno Meus pedidos (STO.11)', () => {
     const log = renderPedidos([makeOrder()]);
     await openMeusPedidos();
 
-    await waitFor(() => expect(screen.getByText('Aguardando pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Aguardando pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Pagar'));
     });
 
     // The open order charge drives the sheet — no new order is created.
     await waitFor(() => expect(screen.getByTestId('pix-sheet')).toBeTruthy());
-    expect(log.paymentPaths).toEqual([`/v1/store/charges/${ORDER_CHARGE_ID}/payments`]);
-    expect(screen.getByText('Pedido #2431 · Kimono oficial Horizonte')).toBeTruthy();
+    expect(log.paymentPaths).toEqual([
+      `/v1/store/charges/${ORDER_CHARGE_ID}/payments`,
+    ]);
+    expect(
+      screen.getByText('Pedido #2431 · Kimono oficial Horizonte'),
+    ).toBeTruthy();
 
-    await waitFor(() => expect(screen.getByText('Simular pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Simular pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Simular pagamento'));
     });
@@ -197,7 +229,9 @@ describe('aluno Meus pedidos (STO.11)', () => {
     const log = renderPedidos([order]);
     await openMeusPedidos();
 
-    await waitFor(() => expect(screen.getByText('Cancelar pedido')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Cancelar pedido')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Cancelar pedido'));
     });
@@ -223,7 +257,9 @@ describe('aluno Meus pedidos (STO.11)', () => {
     });
     await openMeusPedidos();
 
-    await waitFor(() => expect(screen.getByText('Cancelar pedido')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Cancelar pedido')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Cancelar pedido'));
     });
@@ -239,7 +275,9 @@ describe('aluno Meus pedidos (STO.11)', () => {
     renderPedidos([]);
     await openMeusPedidos();
 
-    await waitFor(() => expect(screen.getByTestId('orders-empty')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('orders-empty')).toBeTruthy(),
+    );
     expect(screen.getByText('Nenhum pedido ainda')).toBeTruthy();
   });
 
@@ -277,7 +315,9 @@ describe('aluno Meus pedidos (STO.11)', () => {
       fireEvent.press(screen.getByLabelText('Carteira'));
     });
 
-    await waitFor(() => expect(screen.getByText('Pagamento avulso')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pagamento avulso')).toBeTruthy(),
+    );
     expect(screen.getByText('Pago em 08/08 · Pix')).toBeTruthy();
     expect(screen.getByText('R$ 389,00')).toBeTruthy();
     expect(screen.getByText('Ver comprovante')).toBeTruthy();

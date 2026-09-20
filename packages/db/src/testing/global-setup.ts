@@ -12,7 +12,8 @@ if (!process.env['DOCKER_HOST']) {
     process.env['DOCKER_HOST'] = `unix://${colimaSocket}`;
     // Ryuk mounts the docker socket from inside the colima VM, where it
     // lives at the default path.
-    process.env['TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE'] ??= '/var/run/docker.sock';
+    process.env['TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE'] ??=
+      '/var/run/docker.sock';
   }
 }
 

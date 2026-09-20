@@ -4,12 +4,12 @@ name: Tatame
 options:
   bundleIdPrefix: app.tatame
   deploymentTarget:
-    iOS: "17.0"
+    iOS: '17.0'
   createIntermediateGroups: true
 
 settings:
   base:
-    SWIFT_VERSION: "6.0"
+    SWIFT_VERSION: '6.0'
     # Swift 6 language mode == strict concurrency by default; keep the flag
     # explicit so it survives any language-mode fiddling (ticket 01, decision 2).
     SWIFT_STRICT_CONCURRENCY: complete
@@ -29,7 +29,7 @@ targets:
   Tatame:
     type: application
     platform: iOS
-    deploymentTarget: "17.0"
+    deploymentTarget: '17.0'
     sources:
       - Tatame
     dependencies:
@@ -72,6 +72,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.tatame.ios
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: '1'
         # Simulator/CI builds need no signing; device signing is ticket 08+.
         CODE_SIGNING_ALLOWED: NO

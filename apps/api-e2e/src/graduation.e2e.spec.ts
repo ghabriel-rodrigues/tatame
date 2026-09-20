@@ -34,7 +34,10 @@ describe('graduation: derivation, progress, awards, profiles', () => {
     responsavel = (await t.login('responsavel@tatame.dev')).accessToken;
     alphaId = await t.academyIdBySlug('alpha-jj');
 
-    const rules = await t.http().get('/v1/admin/graduation-rules').set(bearer(admin));
+    const rules = await t
+      .http()
+      .get('/v1/admin/graduation-rules')
+      .set(bearer(admin));
     expect(rules.status).toBe(200);
     for (const row of rules.body.rules) beltId[row.name] = row.beltId;
 
@@ -42,7 +45,12 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Ana Aluna'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Ana Aluna'),
+          ),
+        ),
     );
     anaId = ana!.id;
   });
@@ -54,10 +62,15 @@ describe('graduation: derivation, progress, awards, profiles', () => {
   /** Independent progress numerator: active lessons after Ana's last award. */
   async function expectedCurrentLessons(): Promise<number> {
     const rows = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select().from(studentGraduations).where(eq(studentGraduations.studentId, anaId)),
+      tx
+        .select()
+        .from(studentGraduations)
+        .where(eq(studentGraduations.studentId, anaId)),
     );
     const reversed = new Set(
-      rows.filter((r) => r.reversesGraduationId != null).map((r) => r.reversesGraduationId),
+      rows
+        .filter((r) => r.reversesGraduationId != null)
+        .map((r) => r.reversesGraduationId),
     );
     const awards = rows
       .filter((r) => r.kind !== 'revocation' && !reversed.has(r.id))
@@ -93,7 +106,10 @@ describe('graduation: derivation, progress, awards, profiles', () => {
     // Progress: seeded Azul-45 override + active lessons after the last award.
     expect(res.body.progress.target).toBe(45);
     expect(res.body.progress.label).toBe('Próximo 3º grau');
-    expect(res.body.progress.nextMilestone).toEqual({ kind: 'degree', degree: 3 });
+    expect(res.body.progress.nextMilestone).toEqual({
+      kind: 'degree',
+      degree: 3,
+    });
     expect(res.body.progress.current).toBe(await expectedCurrentLessons());
 
     // Timeline: belt + 3 degrees + 1 revocation, newest first, full context.
@@ -115,26 +131,46 @@ describe('graduation: derivation, progress, awards, profiles', () => {
   it('aluno home: graduation card uses the real rule target, not the 40 placeholder', async () => {
     const res = await t.http().get('/v1/aluno/home').set(bearer(aluno));
     expect(res.status).toBe(200);
-    expect(res.body.graduation.belt).toMatchObject({ name: 'Azul', degrees: 2 });
+    expect(res.body.graduation.belt).toMatchObject({
+      name: 'Azul',
+      degrees: 2,
+    });
     expect(res.body.graduation.progress.target).toBe(45);
-    expect(res.body.graduation.progress.current).toBe(await expectedCurrentLessons());
+    expect(res.body.graduation.progress.current).toBe(
+      await expectedCurrentLessons(),
+    );
   });
 
   it('belt exposure: registry rows, professor students, rosters, roll-call, dependents', async () => {
-    const registry = await t.http().get('/v1/admin/students').set(bearer(admin));
+    const registry = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
     expect(registry.status).toBe(200);
     const anaRow = registry.body.students.find((s: any) => s.id === anaId);
-    expect(anaRow.belt).toMatchObject({ name: 'Azul', colorSlug: 'belt.blue', degrees: 2 });
+    expect(anaRow.belt).toMatchObject({
+      name: 'Azul',
+      colorSlug: 'belt.blue',
+      degrees: 2,
+    });
     // Historyless students default to white — never a missing payload.
     for (const s of registry.body.students) expect(s.belt.name).toBeTruthy();
 
-    const profStudents = await t.http().get('/v1/professor/students').set(bearer(professor));
+    const profStudents = await t
+      .http()
+      .get('/v1/professor/students')
+      .set(bearer(professor));
     expect(profStudents.status).toBe(200);
     const anaProf = profStudents.body.students.find((s: any) => s.id === anaId);
     expect(anaProf.belt).toMatchObject({ name: 'Azul', degrees: 2 });
 
-    const classes = await t.http().get('/v1/professor/classes').set(bearer(professor));
-    const adulto = classes.body.classes.find((c: any) => c.name === 'Adulto Gi');
+    const classes = await t
+      .http()
+      .get('/v1/professor/classes')
+      .set(bearer(professor));
+    const adulto = classes.body.classes.find(
+      (c: any) => c.name === 'Adulto Gi',
+    );
     // Turma belt range (Phase-3 deferral): "Branca a Azul" chips data.
     expect(adulto.minBelt).toMatchObject({ name: 'Branca' });
     expect(adulto.maxBelt).toMatchObject({ name: 'Azul' });
@@ -142,7 +178,9 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .http()
       .get(`/v1/professor/classes/${adulto.id}`)
       .set(bearer(professor));
-    const rosterAna = detail.body.class.roster.find((r: any) => r.studentId === anaId);
+    const rosterAna = detail.body.class.roster.find(
+      (r: any) => r.studentId === anaId,
+    );
     expect(rosterAna.belt).toMatchObject({ name: 'Azul', degrees: 2 });
 
     const kids = classes.body.classes.find((c: any) => c.name === 'Kids');
@@ -155,11 +193,18 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       expect(row.belt).toMatchObject({ name: 'Branca', degrees: 0 }); // white default
     }
 
-    const dependents = await t.http().get('/v1/responsavel/dependents').set(bearer(responsavel));
+    const dependents = await t
+      .http()
+      .get('/v1/responsavel/dependents')
+      .set(bearer(responsavel));
     expect(dependents.status).toBe(200);
     expect(dependents.body.dependents.length).toBeGreaterThan(0);
     for (const dep of dependents.body.dependents) {
-      expect(dep.belt).toMatchObject({ name: 'Branca', colorSlug: 'belt.white', degrees: 0 });
+      expect(dep.belt).toMatchObject({
+        name: 'Branca',
+        colorSlug: 'belt.white',
+        degrees: 0,
+      });
     }
   });
 
@@ -169,13 +214,19 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .get(`/v1/professor/students/${anaId}/profile`)
       .set(bearer(professor));
     expect(res.status).toBe(200);
-    expect(res.body.student).toMatchObject({ id: anaId, fullName: 'Ana Aluna', badge: 'ativo' });
+    expect(res.body.student).toMatchObject({
+      id: anaId,
+      fullName: 'Ana Aluna',
+      badge: 'ativo',
+    });
     expect(res.body.belt).toMatchObject({ name: 'Azul', degrees: 2 });
     expect(res.body.progress.target).toBe(45);
     expect(typeof res.body.stats.monthPresencePct).toBe('number');
     expect(typeof res.body.stats.totalLessons).toBe('number');
     expect(res.body.notes.length).toBeGreaterThan(0);
-    expect(res.body.notes.some((n: any) => n.body.includes('guarda fechada'))).toBe(true);
+    expect(
+      res.body.notes.some((n: any) => n.body.includes('guarda fechada')),
+    ).toBe(true);
 
     // Foreign (other tenant) student behaves as nonexistent.
     const [bravoStudent] = await withPlatform(t.platformDb.db, (tx) =>
@@ -187,7 +238,8 @@ describe('graduation: derivation, progress, awards, profiles', () => {
     const bravoRows = await withPlatform(t.platformDb.db, (tx) =>
       tx.select().from(students).where(eq(students.fullName, 'Fabio Fila')),
     );
-    const foreign = bravoRows.find((r) => r.tenantId !== alphaId) ?? bravoStudent;
+    const foreign =
+      bravoRows.find((r) => r.tenantId !== alphaId) ?? bravoStudent;
     const denied = await t
       .http()
       .get(`/v1/professor/students/${foreign!.id}/profile`)
@@ -196,7 +248,10 @@ describe('graduation: derivation, progress, awards, profiles', () => {
   });
 
   it('professor profile: own belt chip + Graduações válidas in régua order', async () => {
-    const res = await t.http().get('/v1/professor/profile').set(bearer(professor));
+    const res = await t
+      .http()
+      .get('/v1/professor/profile')
+      .set(bearer(professor));
     expect(res.status).toBe(200);
     // Seeded display-only rank: Faixa preta · 2º dan with the red ponteira.
     expect(res.body.belt).toMatchObject({
@@ -208,12 +263,24 @@ describe('graduation: derivation, progress, awards, profiles', () => {
     });
     const names = res.body.validGraduations.map((b: any) => b.name);
     expect(names).toEqual([
-      'Branca', 'Cinza', 'Amarela', 'Laranja', 'Verde',
-      'Azul', 'Roxa', 'Marrom', 'Preta', 'Vermelha',
+      'Branca',
+      'Cinza',
+      'Amarela',
+      'Laranja',
+      'Verde',
+      'Azul',
+      'Roxa',
+      'Marrom',
+      'Preta',
+      'Vermelha',
     ]);
-    const laranja = res.body.validGraduations.find((b: any) => b.name === 'Laranja');
+    const laranja = res.body.validGraduations.find(
+      (b: any) => b.name === 'Laranja',
+    );
     expect(laranja.enabled).toBe(false); // seeded kids toggle off
-    expect(res.body.validGraduations.filter((b: any) => b.enabled)).toHaveLength(9);
+    expect(
+      res.body.validGraduations.filter((b: any) => b.enabled),
+    ).toHaveLength(9);
   });
 
   it('notes: professor and admin write and share one memory, newest first', async () => {
@@ -244,7 +311,10 @@ describe('graduation: derivation, progress, awards, profiles', () => {
     // Newest first: the seeded (oldest) observação closes the list.
     expect(bodies[bodies.length - 1]).toContain('guarda fechada');
 
-    const adminList = await t.http().get(`/v1/admin/students/${anaId}/notes`).set(bearer(admin));
+    const adminList = await t
+      .http()
+      .get(`/v1/admin/students/${anaId}/notes`)
+      .set(bearer(admin));
     expect(adminList.body.notes.map((n: any) => n.id)).toEqual(
       list.body.notes.map((n: any) => n.id),
     );
@@ -277,9 +347,16 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .http()
       .post('/v1/admin/students')
       .set(bearer(admin))
-      .send({ fullName: 'Tia Transferida', birthDate: '1988-02-02', initialBeltId: beltId['Roxa'] });
+      .send({
+        fullName: 'Tia Transferida',
+        birthDate: '1988-02-02',
+        initialBeltId: beltId['Roxa'],
+      });
     expect(created.status).toBe(201);
-    expect(created.body.student.belt).toMatchObject({ name: 'Roxa', degrees: 0 });
+    expect(created.body.student.belt).toMatchObject({
+      name: 'Roxa',
+      degrees: 0,
+    });
 
     const history = await t
       .http()
@@ -309,7 +386,11 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .http()
       .post('/v1/admin/students')
       .set(bearer(admin))
-      .send({ fullName: 'Lino Laranja', birthDate: '1994-01-01', initialBeltId: beltId['Laranja'] });
+      .send({
+        fullName: 'Lino Laranja',
+        birthDate: '1994-01-01',
+        initialBeltId: beltId['Laranja'],
+      });
     expect(rejected.status).toBe(422);
     expect(rejected.body.code).toBe('graduation.belt_invalid_target');
   });
@@ -379,7 +460,10 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .get(`/v1/professor/students/${studentId}/profile`)
       .set(bearer(professor));
     expect(profile.body.progress.label).toBe('Próxima faixa');
-    expect(profile.body.progress.nextMilestone).toEqual({ kind: 'belt', degree: null });
+    expect(profile.body.progress.nextMilestone).toEqual({
+      kind: 'belt',
+      degree: null,
+    });
 
     // Target validations: disabled kids belt, current belt, unknown id.
     for (const [target, label] of [
@@ -419,7 +503,10 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .set(bearer(admin))
       .send({ reason: 'Grau lançado em duplicidade.' });
     expect(revoked.status).toBe(200);
-    expect(revoked.body).toMatchObject({ status: 'revoked', graduationId: fourth.id });
+    expect(revoked.body).toMatchObject({
+      status: 'revoked',
+      graduationId: fourth.id,
+    });
     expect(revoked.body.belt).toMatchObject({ name: 'Azul', degrees: 3 });
 
     const revokeAudits = await withPlatform(t.platformDb.db, (tx) =>
@@ -473,7 +560,11 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin))
-      .send({ entries: [{ role: 'professor', key: 'graduation.update', allowed: false }] });
+      .send({
+        entries: [
+          { role: 'professor', key: 'graduation.update', allowed: false },
+        ],
+      });
     expect(off.status).toBe(200);
 
     const denied = await t
@@ -497,7 +588,11 @@ describe('graduation: derivation, progress, awards, profiles', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin))
-      .send({ entries: [{ role: 'professor', key: 'graduation.update', allowed: true }] });
+      .send({
+        entries: [
+          { role: 'professor', key: 'graduation.update', allowed: true },
+        ],
+      });
     const restored = await t
       .http()
       .post(`/v1/professor/students/${studentId}/graduations`)

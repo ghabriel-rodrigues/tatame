@@ -18,7 +18,13 @@ import Animated from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, Check, ChevronLeft, MapPin, User } from 'lucide-react-native';
+import {
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  MapPin,
+  User,
+} from 'lucide-react-native';
 import {
   Card,
   TatameButton,
@@ -42,7 +48,13 @@ import { QueryState } from '../enrollment/ui';
 function InfoRow({ icon, label }: { icon: ReactNode; label: string }) {
   const theme = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.space['3'],
+      }}
+    >
       {icon}
       <Text variant="caption" style={{ flex: 1, fontSize: 12.5 }}>
         {label}
@@ -61,8 +73,14 @@ export function EventDetailScreen() {
   const detailQuery = api.useQuery('get', '/v1/aluno/events/{id}', {
     params: { path: { id: eventId } },
   });
-  const register = api.useMutation('post', '/v1/aluno/events/{id}/registration');
-  const cancel = api.useMutation('delete', '/v1/aluno/events/{id}/registration');
+  const register = api.useMutation(
+    'post',
+    '/v1/aluno/events/{id}/registration',
+  );
+  const cancel = api.useMutation(
+    'delete',
+    '/v1/aluno/events/{id}/registration',
+  );
 
   const [pixChargeId, setPixChargeId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,10 +89,16 @@ export function EventDetailScreen() {
 
   /** Every aluno surface that renders this event's state (spec 008). */
   const invalidateEventQueries = () => {
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/events/{id}'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/aluno/events/{id}'],
+    });
     void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/agenda'] });
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/calendar'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/aluno/agenda'],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/aluno/calendar'],
+    });
   };
 
   const confirmOrPay = () => {
@@ -105,7 +129,9 @@ export function EventDetailScreen() {
     );
   };
 
-  const action = event ? detailAction(event.priceCents, event.registration) : null;
+  const action = event
+    ? detailAction(event.priceCents, event.registration)
+    : null;
   const gradient = eventGradientColors(theme, event?.bannerPreset);
 
   return (
@@ -121,7 +147,9 @@ export function EventDetailScreen() {
               style={StyleSheet.absoluteFill}
             />
             <SafeAreaView edges={['top']}>
-              <View style={{ padding: theme.space['5'], gap: theme.space['3'] }}>
+              <View
+                style={{ padding: theme.space['5'], gap: theme.space['3'] }}
+              >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Voltar"
@@ -138,7 +166,12 @@ export function EventDetailScreen() {
                 >
                   <ChevronLeft size={18} color={theme.color.fg.onColor} />
                 </Pressable>
-                <View style={{ gap: theme.space['2'], paddingTop: theme.space['4'] }}>
+                <View
+                  style={{
+                    gap: theme.space['2'],
+                    paddingTop: theme.space['4'],
+                  }}
+                >
                   <View style={{ flexDirection: 'row' }}>
                     <View
                       testID="event-price-pill"
@@ -168,18 +201,28 @@ export function EventDetailScreen() {
           </View>
 
           <View style={{ padding: theme.space['5'], gap: theme.space['4'] }}>
-            <QueryState loading={detailQuery.isPending} error={detailQuery.isError}>
+            <QueryState
+              loading={detailQuery.isPending}
+              error={detailQuery.isError}
+            >
               {event ? (
                 <>
                   <Card padding={theme.space['4']} testID="event-info-card">
                     <View style={{ gap: theme.space['3'] }}>
                       <InfoRow
-                        icon={<CalendarDays size={15} color={theme.color.brand['2']} />}
+                        icon={
+                          <CalendarDays
+                            size={15}
+                            color={theme.color.brand['2']}
+                          />
+                        }
                         label={eventDateLine(event.date, event.time)}
                       />
                       {event.location ? (
                         <InfoRow
-                          icon={<MapPin size={15} color={theme.color.brand['2']} />}
+                          icon={
+                            <MapPin size={15} color={theme.color.brand['2']} />
+                          }
                           label={event.location}
                         />
                       ) : null}
@@ -203,7 +246,11 @@ export function EventDetailScreen() {
                   ) : null}
 
                   {action?.kind === 'confirmed' ? (
-                    <Card variant="tinted" testID="confirmed-banner" padding={theme.space['4']}>
+                    <Card
+                      variant="tinted"
+                      testID="confirmed-banner"
+                      padding={theme.space['4']}
+                    >
                       <View
                         style={{
                           flexDirection: 'row',
@@ -222,7 +269,11 @@ export function EventDetailScreen() {
                             justifyContent: 'center',
                           }}
                         >
-                          <Check size={15} color={theme.color.success['500']} strokeWidth={3} />
+                          <Check
+                            size={15}
+                            color={theme.color.success['500']}
+                            strokeWidth={3}
+                          />
                         </View>
                         <Text
                           variant="label"
@@ -269,7 +320,9 @@ export function EventDetailScreen() {
                     <TatameButton
                       fullWidth
                       label={action.label}
-                      onPress={() => setPixChargeId(event.registration?.chargeId ?? null)}
+                      onPress={() =>
+                        setPixChargeId(event.registration?.chargeId ?? null)
+                      }
                     />
                   ) : null}
 

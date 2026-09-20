@@ -20,10 +20,17 @@ import {
   students,
   users,
 } from '../schema/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
 /** Drizzle wraps pg errors; the interesting message lives on the cause chain. */
-async function expectRejection(promise: Promise<unknown>, pattern: RegExp): Promise<void> {
+async function expectRejection(
+  promise: Promise<unknown>,
+  pattern: RegExp,
+): Promise<void> {
   await expect(promise).rejects.toSatisfy((error: unknown) => {
     let current = error as (Error & { cause?: unknown }) | undefined;
     while (current) {
@@ -73,11 +80,21 @@ describe('attendance slice (spec 004 DB)', () => {
     await withPlatform(platform.db, async (tx) => {
       const [a] = await tx
         .insert(academies)
-        .values({ name: 'Tenant A', slug: 'tenant-a', contactEmail: 'a@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant A',
+          slug: 'tenant-a',
+          contactEmail: 'a@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       const [b] = await tx
         .insert(academies)
-        .values({ name: 'Tenant B', slug: 'tenant-b', contactEmail: 'b@t.dev', status: 'active' })
+        .values({
+          name: 'Tenant B',
+          slug: 'tenant-b',
+          contactEmail: 'b@t.dev',
+          status: 'active',
+        })
         .returning({ id: academies.id });
       tenantA = a!.id;
       tenantB = b!.id;
@@ -102,28 +119,49 @@ describe('attendance slice (spec 004 DB)', () => {
       ]);
       const [c] = await tx
         .insert(classes)
-        .values({ tenantId: tenantA, name: 'Adulto Gi', professorUserId: professorA, capacity: 20 })
+        .values({
+          tenantId: tenantA,
+          name: 'Adulto Gi',
+          professorUserId: professorA,
+          capacity: 20,
+        })
         .returning({ id: classes.id });
       classA = c!.id;
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantA, fullName: 'Aluno A', birthDate: '1999-01-01', userId: alunoA })
+        .values({
+          tenantId: tenantA,
+          fullName: 'Aluno A',
+          birthDate: '1999-01-01',
+          userId: alunoA,
+        })
         .returning({ id: students.id });
       studentA = s!.id;
       const [s2] = await tx
         .insert(students)
-        .values({ tenantId: tenantA, fullName: 'Aluno A2', birthDate: '1997-06-06' })
+        .values({
+          tenantId: tenantA,
+          fullName: 'Aluno A2',
+          birthDate: '1997-06-06',
+        })
         .returning({ id: students.id });
       studentA2 = s2!.id;
     });
 
     await withTenant(app.db, tenantB, async (tx) => {
-      await tx
-        .insert(classes)
-        .values({ tenantId: tenantB, name: 'B Class', professorUserId: professorA, capacity: 20 });
+      await tx.insert(classes).values({
+        tenantId: tenantB,
+        name: 'B Class',
+        professorUserId: professorA,
+        capacity: 20,
+      });
       const [s] = await tx
         .insert(students)
-        .values({ tenantId: tenantB, fullName: 'Aluno B', birthDate: '1998-01-01' })
+        .values({
+          tenantId: tenantB,
+          fullName: 'Aluno B',
+          birthDate: '1998-01-01',
+        })
         .returning({ id: students.id });
       studentB = s!.id;
     });
@@ -136,13 +174,21 @@ describe('attendance slice (spec 004 DB)', () => {
     await fresh?.drop();
   });
 
-  async function createSession(tenantId: string, classId: string, sessionDate: string) {
+  async function createSession(
+    tenantId: string,
+    classId: string,
+    sessionDate: string,
+  ) {
     return withTenant(app.db, tenantId, async (tx) => {
       const [row] = await tx
         .insert(classSessions)
         .values({ tenantId, classId, sessionDate, startsAt: new Date() })
         .onConflictDoNothing({
-          target: [classSessions.tenantId, classSessions.classId, classSessions.sessionDate],
+          target: [
+            classSessions.tenantId,
+            classSessions.classId,
+            classSessions.sessionDate,
+          ],
         })
         .returning({ id: classSessions.id });
       if (row) return row.id;
@@ -169,7 +215,13 @@ describe('attendance slice (spec 004 DB)', () => {
     return withTenant(app.db, tenantId, async (tx) => {
       const [row] = await tx
         .insert(attendances)
-        .values({ tenantId, classSessionId, studentId, method, recordedByUserId })
+        .values({
+          tenantId,
+          classSessionId,
+          studentId,
+          method,
+          recordedByUserId,
+        })
         .returning({ id: attendances.id });
       return row!.id;
     });
@@ -209,16 +261,20 @@ describe('attendance slice (spec 004 DB)', () => {
       expect(await app.db.select().from(attendances)).toHaveLength(0);
 
       // Tenant B sees nothing of tenant A — foreign sessions do not exist.
-      const fromB = await withTenant(app.db, tenantB, (tx) => tx.select().from(classSessions));
+      const fromB = await withTenant(app.db, tenantB, (tx) =>
+        tx.select().from(classSessions),
+      );
       expect(fromB.every((s) => s.tenantId === tenantB)).toBe(true);
       expect(fromB.some((s) => s.id === sessionId)).toBe(false);
 
       // WITH CHECK blocks writing a row into the other tenant.
       await expectRejection(
         withTenant(app.db, tenantB, (tx) =>
-          tx
-            .insert(classSessions)
-            .values({ tenantId: tenantA, classId: classA, sessionDate: '2026-01-06' }),
+          tx.insert(classSessions).values({
+            tenantId: tenantA,
+            classId: classA,
+            sessionDate: '2026-01-06',
+          }),
         ),
         /row-level security/,
       );
@@ -265,7 +321,10 @@ describe('attendance slice (spec 004 DB)', () => {
 
       await expectRejection(
         withTenant(app.db, tenantA, (tx) =>
-          tx.update(attendances).set({ method: 'manual' }).where(eq(attendances.id, attendanceId)),
+          tx
+            .update(attendances)
+            .set({ method: 'manual' })
+            .where(eq(attendances.id, attendanceId)),
         ),
         /permission denied/,
       );
@@ -279,7 +338,10 @@ describe('attendance slice (spec 004 DB)', () => {
       // Platform reads only: INSERT, UPDATE and DELETE all refused.
       await expectRejection(
         withPlatform(platform.db, (tx) =>
-          tx.update(attendances).set({ method: 'manual' }).where(eq(attendances.id, attendanceId)),
+          tx
+            .update(attendances)
+            .set({ method: 'manual' })
+            .where(eq(attendances.id, attendanceId)),
         ),
         /permission denied/,
       );
@@ -308,7 +370,9 @@ describe('attendance slice (spec 004 DB)', () => {
 
       // History columns can never change, and rows can never disappear.
       await expect(
-        owner.query(`UPDATE attendances SET method = 'manual' WHERE id = $1`, [attendanceId]),
+        owner.query(`UPDATE attendances SET method = 'manual' WHERE id = $1`, [
+          attendanceId,
+        ]),
       ).rejects.toThrow(/append-only/);
       await expect(
         owner.query(`DELETE FROM attendances WHERE id = $1`, [attendanceId]),
@@ -345,7 +409,9 @@ describe('attendance slice (spec 004 DB)', () => {
       );
       const auditId = inserted.rows[0].id;
       await expect(
-        owner.query(`UPDATE audit_logs SET action = 'forged' WHERE id = $1`, [auditId]),
+        owner.query(`UPDATE audit_logs SET action = 'forged' WHERE id = $1`, [
+          auditId,
+        ]),
       ).rejects.toThrow(/append-only/);
       await expect(
         owner.query(`DELETE FROM audit_logs WHERE id = $1`, [auditId]),
@@ -366,7 +432,13 @@ describe('attendance slice (spec 004 DB)', () => {
       // Revoke (professor, same day) unlocks the sanctioned re-check-in…
       const res = await revoke(tenantA, firstId, professorA, 'mis-tap');
       expect(res['status']).toBe('revoked');
-      const secondId = await checkIn(tenantA, sessionId, studentA, 'manual', professorA);
+      const secondId = await checkIn(
+        tenantA,
+        sessionId,
+        studentA,
+        'manual',
+        professorA,
+      );
       expect(secondId).not.toBe(firstId);
 
       // …and the active-uniqueness gate closes again.
@@ -380,7 +452,12 @@ describe('attendance slice (spec 004 DB)', () => {
         tx
           .select()
           .from(attendances)
-          .where(and(eq(attendances.classSessionId, sessionId), eq(attendances.studentId, studentA))),
+          .where(
+            and(
+              eq(attendances.classSessionId, sessionId),
+              eq(attendances.studentId, studentA),
+            ),
+          ),
       );
       expect(rows).toHaveLength(2);
       expect(rows.filter((r) => r.revokedAt === null)).toHaveLength(1);
@@ -418,7 +495,10 @@ describe('attendance slice (spec 004 DB)', () => {
 
       await mint('4321');
       // A second active code for the same session is impossible…
-      await expectRejection(mint('8765'), /checkin_codes_one_active_per_session_uq/);
+      await expectRejection(
+        mint('8765'),
+        /checkin_codes_one_active_per_session_uq/,
+      );
 
       // …until "Encerrar chamada" (an UPDATE the app role CAN do here —
       // checkin_codes is not append-only) closes the window; reopening then
@@ -427,7 +507,12 @@ describe('attendance slice (spec 004 DB)', () => {
         tx
           .update(checkinCodes)
           .set({ revokedAt: new Date() })
-          .where(and(eq(checkinCodes.classSessionId, sessionId), sql`${checkinCodes.revokedAt} IS NULL`)),
+          .where(
+            and(
+              eq(checkinCodes.classSessionId, sessionId),
+              sql`${checkinCodes.revokedAt} IS NULL`,
+            ),
+          ),
       );
       await mint('8765');
 
@@ -456,7 +541,12 @@ describe('attendance slice (spec 004 DB)', () => {
       const sessionId = await createSession(tenantA, classA, today);
       const attendanceId = await checkIn(tenantA, sessionId, studentA2, 'qr');
 
-      const res = await revoke(tenantA, attendanceId, professorA, 'wrong student');
+      const res = await revoke(
+        tenantA,
+        attendanceId,
+        professorA,
+        'wrong student',
+      );
       expect(res['status']).toBe('revoked');
       expect(res['revoke_window']).toBe('same_day');
 
@@ -471,11 +561,18 @@ describe('attendance slice (spec 004 DB)', () => {
         tx
           .select()
           .from(auditLogs)
-          .where(and(eq(auditLogs.action, 'attendance.revoked'), eq(auditLogs.targetId, attendanceId))),
+          .where(
+            and(
+              eq(auditLogs.action, 'attendance.revoked'),
+              eq(auditLogs.targetId, attendanceId),
+            ),
+          ),
       );
       expect(audit).toHaveLength(1);
       expect(audit[0]!.actorUserId).toBe(professorA);
-      expect((audit[0]!.metadata as Record<string, unknown>)['window']).toBe('same_day');
+      expect((audit[0]!.metadata as Record<string, unknown>)['window']).toBe(
+        'same_day',
+      );
     });
 
     it('refuses the professor after the session day closes; admin may revoke any time', async () => {
@@ -489,7 +586,12 @@ describe('attendance slice (spec 004 DB)', () => {
       );
       expect(untouched!.revokedAt).toBeNull();
 
-      const adminRes = await revoke(tenantA, attendanceId, adminA, 'late correction');
+      const adminRes = await revoke(
+        tenantA,
+        attendanceId,
+        adminA,
+        'late correction',
+      );
       expect(adminRes['status']).toBe('revoked');
       expect(adminRes['revoke_window']).toBe('admin_late');
 
@@ -497,15 +599,28 @@ describe('attendance slice (spec 004 DB)', () => {
         tx
           .select()
           .from(auditLogs)
-          .where(and(eq(auditLogs.action, 'attendance.revoked'), eq(auditLogs.targetId, attendanceId))),
+          .where(
+            and(
+              eq(auditLogs.action, 'attendance.revoked'),
+              eq(auditLogs.targetId, attendanceId),
+            ),
+          ),
       );
       expect(audit).toHaveLength(1);
-      expect((audit[0]!.metadata as Record<string, unknown>)['window']).toBe('admin_late');
+      expect((audit[0]!.metadata as Record<string, unknown>)['window']).toBe(
+        'admin_late',
+      );
     });
 
     it('refuses cross-tenant ids, non-privileged actors and double revokes', async () => {
       const sessionId = await createSession(tenantA, classA, '2026-01-15');
-      const attendanceId = await checkIn(tenantA, sessionId, studentA, 'manual', professorA);
+      const attendanceId = await checkIn(
+        tenantA,
+        sessionId,
+        studentA,
+        'manual',
+        professorA,
+      );
 
       // Foreign tenant: the row behaves as nonexistent.
       const cross = await revoke(tenantB, attendanceId, adminA);

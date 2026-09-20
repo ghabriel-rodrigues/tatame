@@ -8,10 +8,18 @@
 
 import type { ChipTone } from '@tatame/design-system/native';
 import { formatBRL, shortDayMonth } from '../billing/format';
-import type { ProductDetail, StoreOrder, StoreOrderItem, StoreOrderStatus } from './types';
+import type {
+  ProductDetail,
+  StoreOrder,
+  StoreOrderItem,
+  StoreOrderStatus,
+} from './types';
 
 /** PT-BR status chips (spec 009 label registry — buyer side). */
-export function orderStatusChip(status: StoreOrderStatus): { label: string; tone: ChipTone } {
+export function orderStatusChip(status: StoreOrderStatus): {
+  label: string;
+  tone: ChipTone;
+} {
   switch (status) {
     case 'pending':
       return { label: 'Aguardando pagamento', tone: 'warning' };

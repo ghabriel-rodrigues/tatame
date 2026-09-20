@@ -25,7 +25,9 @@ import {
 import { useAuth } from '../auth/auth-store';
 import { useThemeState } from './theme-store';
 
-function sessionBrand(theme: { deep: string; vibrant: string; accent: string } | null | undefined): BrandInput | null {
+function sessionBrand(
+  theme: { deep: string; vibrant: string; accent: string } | null | undefined,
+): BrandInput | null {
   if (!theme) return null;
   const { deep, vibrant, accent } = theme;
   return { deep, vibrant, accent };
@@ -36,7 +38,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const { mode, preview } = useThemeState();
 
   // Preview (admin-15 live picker) > session academy brand > Tatame default.
-  const brand = preview ?? sessionBrand(session?.academy?.theme) ?? TATAME_DEFAULT_BRAND;
+  const brand =
+    preview ?? sessionBrand(session?.academy?.theme) ?? TATAME_DEFAULT_BRAND;
   const brandKey = `${brand.deep}:${brand.vibrant}:${brand.accent}`;
 
   const { derived, theme } = useMemo(() => {

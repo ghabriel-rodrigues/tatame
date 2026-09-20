@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -9,7 +17,10 @@ import {
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
-import { AlunoEventDetailResponseDto, RegisterEventResponseDto } from '../dto/responses.dto.js';
+import {
+  AlunoEventDetailResponseDto,
+  RegisterEventResponseDto,
+} from '../dto/responses.dto.js';
 import { EventRegistrationsService } from '../services/event-registrations.service.js';
 import { EventsQueryService } from '../services/events-query.service.js';
 
@@ -33,8 +44,10 @@ export class AlunoEventsController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Event detail: banner, data/local/responsável, valor chip, own state',
-    description: 'Published events only — drafts and canceled events behave as 404.',
+    summary:
+      'Event detail: banner, data/local/responsável, valor chip, own state',
+    description:
+      'Published events only — drafts and canceled events behave as 404.',
   })
   @ApiOkResponse({ type: AlunoEventDetailResponseDto })
   async detail(@Param('id', ParseUUIDPipe) id: string) {

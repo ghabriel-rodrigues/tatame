@@ -1,10 +1,27 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Req, Res } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { Public } from '../../../common/decorators.js';
 import { InviteService } from '../services/invite.service.js';
 import { AcceptInviteDto } from '../dto/invite.dto.js';
-import { InviteAcceptResponseDto, InviteLandingResponseDto } from '../dto/responses.dto.js';
+import {
+  InviteAcceptResponseDto,
+  InviteLandingResponseDto,
+} from '../dto/responses.dto.js';
 
 @ApiTags('public')
 @Controller('public/invites')
@@ -13,7 +30,9 @@ export class PublicInvitesController {
 
   @Public()
   @Get(':token')
-  @ApiOperation({ summary: 'Invite landing: academy branding + inherited bindings' })
+  @ApiOperation({
+    summary: 'Invite landing: academy branding + inherited bindings',
+  })
   @ApiOkResponse({ type: InviteLandingResponseDto })
   async landing(@Param('token') token: string) {
     return this.invitesService.landing(token);

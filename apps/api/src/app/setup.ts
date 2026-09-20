@@ -1,5 +1,9 @@
 import { VersioningType, type INestApplication } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
+import {
+  DocumentBuilder,
+  SwaggerModule,
+  type OpenAPIObject,
+} from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
 /** URI versioning (/v1) — must be enabled before the OpenAPI scan. */

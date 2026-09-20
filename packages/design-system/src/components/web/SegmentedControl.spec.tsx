@@ -8,8 +8,12 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { SegmentedControl } from './SegmentedControl.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 const OPTIONS = [
   { value: 'alunos', label: 'Alunos' },
@@ -27,8 +31,12 @@ describe('SegmentedControl', () => {
       />,
     );
     expect(getByRole('tablist', { name: 'Tipo de cadastro' })).toBeTruthy();
-    expect(getByRole('tab', { name: 'Alunos' }).getAttribute('aria-selected')).toBe('true');
-    expect(getByRole('tab', { name: 'Turmas' }).getAttribute('aria-selected')).toBe('false');
+    expect(
+      getByRole('tab', { name: 'Alunos' }).getAttribute('aria-selected'),
+    ).toBe('true');
+    expect(
+      getByRole('tab', { name: 'Turmas' }).getAttribute('aria-selected'),
+    ).toBe('false');
   });
 
   it('emits the tapped segment value', () => {

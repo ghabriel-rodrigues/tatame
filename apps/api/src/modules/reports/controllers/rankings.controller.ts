@@ -1,11 +1,20 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { IsIn, IsOptional } from 'class-validator';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
 import { RankingResponseDto } from '../dto/responses.dto.js';
-import { RankingsService, type RankingBy } from '../services/rankings.service.js';
+import {
+  RankingsService,
+  type RankingBy,
+} from '../services/rankings.service.js';
 
 class RankingQueryDto {
   @IsOptional()

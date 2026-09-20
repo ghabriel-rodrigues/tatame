@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, inArray } from 'drizzle-orm';
-import { memberships, rolePermissions, withTenant, type DbHandle } from '@tatame/db';
+import {
+  memberships,
+  rolePermissions,
+  withTenant,
+  type DbHandle,
+} from '@tatame/db';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AcademyRole } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
@@ -46,13 +51,19 @@ export class PermissionsService {
         })
         .from(rolePermissions),
     );
-    const overrides = new Map(rows.map((r) => [`${r.role}:${r.key}`, r.allowed]));
+    const overrides = new Map(
+      rows.map((r) => [`${r.role}:${r.key}`, r.allowed]),
+    );
     this.cache.set(tenantId, { overrides, expiresAt: Date.now() + TTL_MS });
     return overrides;
   }
 
   /** Roles without a registry entry for `key` are governed by RolesGuard only. */
-  async isAllowed(tenantId: string, role: string, key: string): Promise<boolean> {
+  async isAllowed(
+    tenantId: string,
+    role: string,
+    key: string,
+  ): Promise<boolean> {
     const definition = findDefinition(role, key);
     if (!definition) return true;
     const overrides = await this.loadOverrides(tenantId);
@@ -100,9 +111,14 @@ export class PermissionsService {
   }
 
   /** Resolved toggle map for one role — the `/auth/me` bootstrap shape. */
-  async resolveForRole(tenantId: string, role: string): Promise<Record<string, boolean>> {
+  async resolveForRole(
+    tenantId: string,
+    role: string,
+  ): Promise<Record<string, boolean>> {
     const all = await this.resolveAll(tenantId);
-    return Object.fromEntries(all.filter((p) => p.role === role).map((p) => [p.key, p.allowed]));
+    return Object.fromEntries(
+      all.filter((p) => p.role === role).map((p) => [p.key, p.allowed]),
+    );
   }
 
   /** Admin PUT: upserts toggles; unknown (role, key) pairs are rejected. */
@@ -132,7 +148,11 @@ export class PermissionsService {
             allowed: entry.allowed,
           })
           .onConflictDoUpdate({
-            target: [rolePermissions.tenantId, rolePermissions.role, rolePermissions.permissionKey],
+            target: [
+              rolePermissions.tenantId,
+              rolePermissions.role,
+              rolePermissions.permissionKey,
+            ],
             set: { allowed: entry.allowed, updatedAt: new Date() },
           });
       }

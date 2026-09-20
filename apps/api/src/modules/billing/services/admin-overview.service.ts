@@ -70,12 +70,15 @@ export class AdminOverviewService {
     private readonly materialization: MaterializationService,
   ) {}
 
-  async overview(ctx: AuthContext & { tenantId: string }): Promise<OverviewView> {
-    const materialization = await this.materialization.ensureCurrentCycleCharges({
-      tenantId: ctx.tenantId,
-      userId: ctx.userId,
-      impersonatorUserId: ctx.impersonatorUserId,
-    });
+  async overview(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<OverviewView> {
+    const materialization =
+      await this.materialization.ensureCurrentCycleCharges({
+        tenantId: ctx.tenantId,
+        userId: ctx.userId,
+        impersonatorUserId: ctx.impersonatorUserId,
+      });
 
     const today = localDate();
     const thisMonthStart = monthStart(today, 0);
@@ -103,13 +106,16 @@ export class AdminOverviewService {
             ),
           )
           .groupBy(sql`1`);
-        const byMonth = new Map(buckets.map((b) => [b.month, Number(b.totalCents)]));
+        const byMonth = new Map(
+          buckets.map((b) => [b.month, Number(b.totalCents)]),
+        );
 
         const currentMonth = monthKey(today, 0);
         const receitaMesCents = byMonth.get(currentMonth) ?? 0;
         let receitaAnoCents = 0;
         for (const [month, total] of byMonth) {
-          if (month >= yearStart.slice(0, 7) && month <= currentMonth) receitaAnoCents += total;
+          if (month >= yearStart.slice(0, 7) && month <= currentMonth)
+            receitaAnoCents += total;
         }
         const series = Array.from({ length: 6 }, (_, i) => {
           const month = monthKey(today, i - 5);
@@ -118,7 +124,9 @@ export class AdminOverviewService {
 
         // Previsão: open charges due inside the next tenant-local month.
         const [previsao] = await tx
-          .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+          .select({
+            total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+          })
           .from(charges)
           .where(
             and(
@@ -131,7 +139,9 @@ export class AdminOverviewService {
         // Inadimplência % by value: overdue-open (predicate!) ÷ current-month
         // materialized plan total.
         const [overdueRow] = await tx
-          .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+          .select({
+            total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+          })
           .from(charges)
           .where(
             and(
@@ -141,13 +151,22 @@ export class AdminOverviewService {
             ),
           );
         const [monthPlanRow] = await tx
-          .select({ total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)` })
+          .select({
+            total: sql<string>`COALESCE(SUM(${charges.amountCents}), 0)`,
+          })
           .from(charges)
-          .where(and(eq(charges.origin, 'plan'), eq(charges.periodStart, thisMonthStart)));
+          .where(
+            and(
+              eq(charges.origin, 'plan'),
+              eq(charges.periodStart, thisMonthStart),
+            ),
+          );
         const overdueCents = Number(overdueRow?.total ?? 0);
         const monthPlanCents = Number(monthPlanRow?.total ?? 0);
         const inadimplenciaPct =
-          monthPlanCents === 0 ? 0 : Math.round((overdueCents / monthPlanCents) * 100);
+          monthPlanCents === 0
+            ? 0
+            : Math.round((overdueCents / monthPlanCents) * 100);
 
         return {
           month: currentMonth,
@@ -165,7 +184,10 @@ export class AdminOverviewService {
   }
 
   /** Upcoming open charges grouped by due date (the 5/10/15 day chips). */
-  private async upcoming(tx: DbTransaction, today: string): Promise<OverviewView['proximosVencimentos']> {
+  private async upcoming(
+    tx: DbTransaction,
+    today: string,
+  ): Promise<OverviewView['proximosVencimentos']> {
     const rows = await tx
       .select({
         chargeId: charges.id,
@@ -179,7 +201,10 @@ export class AdminOverviewService {
       .from(charges)
       .innerJoin(
         students,
-        and(eq(students.tenantId, charges.tenantId), eq(students.id, charges.studentId)),
+        and(
+          eq(students.tenantId, charges.tenantId),
+          eq(students.id, charges.studentId),
+        ),
       )
       .leftJoin(
         academyPlans,
@@ -188,7 +213,12 @@ export class AdminOverviewService {
           eq(academyPlans.id, charges.academyPlanId),
         ),
       )
-      .where(and(inArray(charges.status, ['open', 'overdue']), gte(charges.dueDate, today)))
+      .where(
+        and(
+          inArray(charges.status, ['open', 'overdue']),
+          gte(charges.dueDate, today),
+        ),
+      )
       .orderBy(asc(charges.dueDate), asc(students.fullName));
 
     const groups: OverviewView['proximosVencimentos'] = [];
@@ -212,7 +242,10 @@ export class AdminOverviewService {
   }
 
   /** Students with past-due open plan charges (derived, never a column). */
-  private async delinquents(tx: DbTransaction, today: string): Promise<OverviewView['inadimplentes']> {
+  private async delinquents(
+    tx: DbTransaction,
+    today: string,
+  ): Promise<OverviewView['inadimplentes']> {
     const rows = await tx
       .select({
         // The inner join guarantees the student — select its non-null id.
@@ -225,7 +258,10 @@ export class AdminOverviewService {
       .from(charges)
       .innerJoin(
         students,
-        and(eq(students.tenantId, charges.tenantId), eq(students.id, charges.studentId)),
+        and(
+          eq(students.tenantId, charges.tenantId),
+          eq(students.id, charges.studentId),
+        ),
       )
       .where(
         and(

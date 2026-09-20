@@ -1,8 +1,26 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { RequiresPermission, Roles } from '../../../common/decorators.js';
-import { ClassSuggestionQueryDto, RegisterDependentDto } from '../dto/requests.dto.js';
+import {
+  ClassSuggestionQueryDto,
+  RegisterDependentDto,
+} from '../dto/requests.dto.js';
 import {
   ClassSuggestionResponseDto,
   DependentListResponseDto,
@@ -38,7 +56,9 @@ export class ResponsavelDependentsController {
   }
 
   @Get('dependents/:id')
-  @ApiOperation({ summary: 'Child detail (foreign dependent → 404, no existence leak)' })
+  @ApiOperation({
+    summary: 'Child detail (foreign dependent → 404, no existence leak)',
+  })
   @ApiOkResponse({ type: DependentResponseDto })
   async get(@Param('id', ParseUUIDPipe) id: string) {
     const ctx = requireTenantContext(this.cls);
@@ -49,7 +69,8 @@ export class ResponsavelDependentsController {
   @RequiresPermission('dependents.register')
   @HttpCode(201)
   @ApiOperation({
-    summary: 'Cadastrar filho: auto guardian link + enrollment into the accepted suggestion',
+    summary:
+      'Cadastrar filho: auto guardian link + enrollment into the accepted suggestion',
   })
   @ApiCreatedResponse({ type: RegisterDependentResponseDto })
   async register(@Body() dto: RegisterDependentDto) {
@@ -58,10 +79,14 @@ export class ResponsavelDependentsController {
   }
 
   @Get('class-suggestion')
-  @ApiOperation({ summary: 'Age-suggested class for a birth date (null when no match/room)' })
+  @ApiOperation({
+    summary: 'Age-suggested class for a birth date (null when no match/room)',
+  })
   @ApiOkResponse({ type: ClassSuggestionResponseDto })
   async suggestion(@Query() query: ClassSuggestionQueryDto) {
     const ctx = requireTenantContext(this.cls);
-    return { suggestion: await this.classService.suggest(ctx, query.birthDate) };
+    return {
+      suggestion: await this.classService.suggest(ctx, query.birthDate),
+    };
   }
 }

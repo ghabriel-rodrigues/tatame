@@ -43,9 +43,39 @@ interface Metrics {
 
 /** Geometry from the handoff prototypes (login 56px squircle, splash belt). */
 const METRICS: Record<BrandLogoSize, Metrics> = {
-  sm: { badge: 40, badgeRadius: 13, beltW: 24, beltH: 7, beltRadius: 2, tipW: 8, tipRight: 4, stripeW: 1.5, stripeGap: 1.5 },
-  md: { badge: 56, badgeRadius: 18, beltW: 32, beltH: 9, beltRadius: 2.5, tipW: 10, tipRight: 5, stripeW: 2, stripeGap: 2 },
-  lg: { badge: 80, badgeRadius: 26, beltW: 52, beltH: 14, beltRadius: 4, tipW: 16, tipRight: 8, stripeW: 2.5, stripeGap: 2 },
+  sm: {
+    badge: 40,
+    badgeRadius: 13,
+    beltW: 24,
+    beltH: 7,
+    beltRadius: 2,
+    tipW: 8,
+    tipRight: 4,
+    stripeW: 1.5,
+    stripeGap: 1.5,
+  },
+  md: {
+    badge: 56,
+    badgeRadius: 18,
+    beltW: 32,
+    beltH: 9,
+    beltRadius: 2.5,
+    tipW: 10,
+    tipRight: 5,
+    stripeW: 2,
+    stripeGap: 2,
+  },
+  lg: {
+    badge: 80,
+    badgeRadius: 26,
+    beltW: 52,
+    beltH: 14,
+    beltRadius: 4,
+    tipW: 16,
+    tipRight: 8,
+    stripeW: 2.5,
+    stripeGap: 2,
+  },
 };
 
 export function BrandLogo({
@@ -83,8 +113,22 @@ export function BrandLogo({
           backgroundColor: theme.color.purple['950'],
         }}
       >
-        <View testID="brandlogo-stripe" style={{ width: m.stripeW, height: '100%', backgroundColor: theme.color.white }} />
-        <View testID="brandlogo-stripe" style={{ width: m.stripeW, height: '100%', backgroundColor: theme.color.white }} />
+        <View
+          testID="brandlogo-stripe"
+          style={{
+            width: m.stripeW,
+            height: '100%',
+            backgroundColor: theme.color.white,
+          }}
+        />
+        <View
+          testID="brandlogo-stripe"
+          style={{
+            width: m.stripeW,
+            height: '100%',
+            backgroundColor: theme.color.white,
+          }}
+        />
       </View>
     </View>
   );

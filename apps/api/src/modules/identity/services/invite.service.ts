@@ -1,13 +1,23 @@
 import { randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
-import { academyPlans, classes, invites, withTenant, type DbHandle } from '@tatame/db';
+import {
+  academyPlans,
+  classes,
+  invites,
+  withTenant,
+  type DbHandle,
+} from '@tatame/db';
 import { eq } from 'drizzle-orm';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { themeFromColumns, type BrandTheme } from '../lib/brand.js';
-import { AuthService, type AuthenticatedPayload, type RequestMeta } from './auth.service.js';
+import {
+  AuthService,
+  type AuthenticatedPayload,
+  type RequestMeta,
+} from './auth.service.js';
 import { PasswordService } from './password.service.js';
 import { TokenService } from './token.service.js';
 
@@ -56,9 +66,17 @@ interface LandingRow {
 
 function throwInviteProblem(status: string): never {
   if (status === 'not_found') {
-    throw problem(404, ErrorCodes.INVITE_INVALID_OR_EXPIRED, 'Invite not found');
+    throw problem(
+      404,
+      ErrorCodes.INVITE_INVALID_OR_EXPIRED,
+      'Invite not found',
+    );
   }
-  throw problem(410, ErrorCodes.INVITE_INVALID_OR_EXPIRED, `Invite is ${status}`);
+  throw problem(
+    410,
+    ErrorCodes.INVITE_INVALID_OR_EXPIRED,
+    `Invite is ${status}`,
+  );
 }
 
 /**
@@ -86,53 +104,77 @@ export class InviteService {
     },
   ): Promise<{ token: string; expiresAt: Date; kind: string }> {
     if (!ctx.tenantId) {
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'Invites are created inside an academy');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'Invites are created inside an academy',
+      );
     }
     const raw = randomBytes(32).toString('base64url');
     const expiresAt = new Date(Date.now() + INVITE_TTL_MS);
-    await withTenant(this.appDb.db, { tenantId: ctx.tenantId, userId: ctx.userId }, async (tx) => {
-      // Story 40: the composite tenant FK makes dead/foreign bindings
-      // impossible at the constraint level; this pre-check turns the
-      // violation into a clean problem instead of a 500.
-      if (input.classId) {
-        const bound = await tx
-          .select({ id: classes.id, status: classes.status })
-          .from(classes)
-          .where(eq(classes.id, input.classId));
-        if (!bound[0]) {
-          throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found in this academy');
+    await withTenant(
+      this.appDb.db,
+      { tenantId: ctx.tenantId, userId: ctx.userId },
+      async (tx) => {
+        // Story 40: the composite tenant FK makes dead/foreign bindings
+        // impossible at the constraint level; this pre-check turns the
+        // violation into a clean problem instead of a 500.
+        if (input.classId) {
+          const bound = await tx
+            .select({ id: classes.id, status: classes.status })
+            .from(classes)
+            .where(eq(classes.id, input.classId));
+          if (!bound[0]) {
+            throw problem(
+              404,
+              ErrorCodes.NOT_FOUND,
+              'Class not found in this academy',
+            );
+          }
+          if (bound[0].status !== 'active') {
+            throw problem(
+              409,
+              ErrorCodes.CLASS_ARCHIVED,
+              'Cannot bind an invite to an archived class',
+            );
+          }
         }
-        if (bound[0].status !== 'active') {
-          throw problem(409, ErrorCodes.CLASS_ARCHIVED, 'Cannot bind an invite to an archived class');
+        // Spec 006 (BIL.10, closes the Phase-1/3 stub): the composite tenant FK
+        // now makes dead/foreign plan bindings impossible at the constraint
+        // level; this pre-check turns the violation into a clean problem
+        // (plan.not_found / plan.archived) instead of a 500.
+        if (input.academyPlanId) {
+          const plan = await tx
+            .select({ id: academyPlans.id, isActive: academyPlans.isActive })
+            .from(academyPlans)
+            .where(eq(academyPlans.id, input.academyPlanId));
+          if (!plan[0]) {
+            throw problem(
+              404,
+              ErrorCodes.PLAN_NOT_FOUND,
+              'Plan not found in this academy',
+            );
+          }
+          if (!plan[0].isActive) {
+            throw problem(
+              409,
+              ErrorCodes.PLAN_ARCHIVED,
+              'Cannot bind an invite to an archived plan',
+            );
+          }
         }
-      }
-      // Spec 006 (BIL.10, closes the Phase-1/3 stub): the composite tenant FK
-      // now makes dead/foreign plan bindings impossible at the constraint
-      // level; this pre-check turns the violation into a clean problem
-      // (plan.not_found / plan.archived) instead of a 500.
-      if (input.academyPlanId) {
-        const plan = await tx
-          .select({ id: academyPlans.id, isActive: academyPlans.isActive })
-          .from(academyPlans)
-          .where(eq(academyPlans.id, input.academyPlanId));
-        if (!plan[0]) {
-          throw problem(404, ErrorCodes.PLAN_NOT_FOUND, 'Plan not found in this academy');
-        }
-        if (!plan[0].isActive) {
-          throw problem(409, ErrorCodes.PLAN_ARCHIVED, 'Cannot bind an invite to an archived plan');
-        }
-      }
-      await tx.insert(invites).values({
-        tenantId: ctx.tenantId as string,
-        tokenHash: this.tokens.hashToken(raw),
-        kind: input.kind,
-        classId: input.classId ?? null,
-        academyPlanId: input.academyPlanId ?? null,
-        createdByUserId: ctx.userId,
-        expiresAt,
-        maxUses: input.maxUses ?? null,
-      });
-    });
+        await tx.insert(invites).values({
+          tenantId: ctx.tenantId as string,
+          tokenHash: this.tokens.hashToken(raw),
+          kind: input.kind,
+          classId: input.classId ?? null,
+          academyPlanId: input.academyPlanId ?? null,
+          createdByUserId: ctx.userId,
+          expiresAt,
+          maxUses: input.maxUses ?? null,
+        });
+      },
+    );
     return { token: raw, expiresAt, kind: input.kind };
   }
 
@@ -199,11 +241,18 @@ export class InviteService {
     switch (row.status) {
       case 'accepted': {
         const payload = await this.auth.establishSession(
-          { id: row.user_id as string, email: input.email.toLowerCase(), fullName: input.fullName },
+          {
+            id: row.user_id as string,
+            email: input.email.toLowerCase(),
+            fullName: input.fullName,
+          },
           meta,
           row.membership_id ?? undefined,
         );
-        return { ...payload, enrollmentSkipped: row.enrollment_skipped === true };
+        return {
+          ...payload,
+          enrollmentSkipped: row.enrollment_skipped === true,
+        };
       }
       case 'email_exists':
         throw problem(
@@ -218,13 +267,29 @@ export class InviteService {
           'Minors must be registered by a guardian (responsável invite)',
         );
       case 'birth_date_required':
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Birth date is required', [
-          { field: 'birthDate', messages: ['Student signups require a birth date'] },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Birth date is required',
+          [
+            {
+              field: 'birthDate',
+              messages: ['Student signups require a birth date'],
+            },
+          ],
+        );
       case 'invalid_dependent':
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Invalid dependent payload', [
-          { field: 'dependents', messages: ['Each dependent needs a full name and birth date'] },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Invalid dependent payload',
+          [
+            {
+              field: 'dependents',
+              messages: ['Each dependent needs a full name and birth date'],
+            },
+          ],
+        );
       default:
         throwInviteProblem(row.status);
     }
@@ -261,7 +326,11 @@ export class InviteService {
           'This account already holds that membership',
         );
       case 'user_not_found':
-        throw problem(401, ErrorCodes.AUTH_TOKEN_EXPIRED, 'Account no longer exists');
+        throw problem(
+          401,
+          ErrorCodes.AUTH_TOKEN_EXPIRED,
+          'Account no longer exists',
+        );
       default:
         throwInviteProblem(row.status);
     }

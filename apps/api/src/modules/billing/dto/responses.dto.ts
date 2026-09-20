@@ -2,7 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /** "Mensalidade em aberto" alert data — aluno home + responsável child cards. */
 export class MensalidadeAlertDto {
-  @ApiProperty({ format: 'uuid', description: 'Deep-link target: the Carteira charge' })
+  @ApiProperty({
+    format: 'uuid',
+    description: 'Deep-link target: the Carteira charge',
+  })
   chargeId!: string;
 
   @ApiProperty()
@@ -14,7 +17,9 @@ export class MensalidadeAlertDto {
   @ApiProperty({ example: '2026-08-10' })
   dueDate!: string;
 
-  @ApiProperty({ description: 'Derived truth: past due (never the lazy status flip)' })
+  @ApiProperty({
+    description: 'Derived truth: past due (never the lazy status flip)',
+  })
   overdue!: boolean;
 
   @ApiPropertyOptional({ example: '2026-08-01', nullable: true, type: String })
@@ -40,7 +45,9 @@ export class PlanDto {
   @ApiProperty({ minimum: 1, maximum: 28 })
   dueDay!: number;
 
-  @ApiProperty({ description: 'false = soft-archived (refuses new assignment)' })
+  @ApiProperty({
+    description: 'false = soft-archived (refuses new assignment)',
+  })
   isActive!: boolean;
 }
 
@@ -89,7 +96,8 @@ export class ChargeDto {
     format: 'uuid',
     nullable: true,
     type: String,
-    description: 'Null only on order-origin charges of a professor buyer (spec 009)',
+    description:
+      'Null only on order-origin charges of a professor buyer (spec 009)',
   })
   studentId!: string | null;
 
@@ -99,7 +107,9 @@ export class ChargeDto {
   @ApiProperty({ enum: ['open', 'paid', 'overdue', 'canceled', 'refunded'] })
   status!: string;
 
-  @ApiProperty({ description: 'Derived truth: open AND past due (never the lazy flip)' })
+  @ApiProperty({
+    description: 'Derived truth: open AND past due (never the lazy flip)',
+  })
   overdue!: boolean;
 
   @ApiProperty()
@@ -207,7 +217,9 @@ export class PaymentCreatedResponseDto {
   @ApiProperty({ type: ChargeDto })
   charge!: ChargeDto;
 
-  @ApiProperty({ description: 'True when the recurrence toggle created a mandate' })
+  @ApiProperty({
+    description: 'True when the recurrence toggle created a mandate',
+  })
   mandateCreated!: boolean;
 }
 
@@ -229,7 +241,8 @@ export class ReceiptResponseDto {
   @ApiPropertyOptional({
     nullable: true,
     type: String,
-    description: 'Null on order-origin receipts of a professor buyer (no student row)',
+    description:
+      'Null on order-origin receipts of a professor buyer (no student row)',
   })
   studentName!: string | null;
 
@@ -253,7 +266,9 @@ export class DependentPaymentsDto {
   @ApiPropertyOptional({ type: ChargeWithPaymentsDto, nullable: true })
   currentCharge!: ChargeWithPaymentsDto | null;
 
-  @ApiProperty({ description: '"Pago via recorrência no cartão" mandate switch' })
+  @ApiProperty({
+    description: '"Pago via recorrência no cartão" mandate switch',
+  })
   recurrenceActive!: boolean;
 }
 
@@ -319,7 +334,10 @@ export class DelinquentStudentDto {
   @ApiProperty()
   totalCents!: number;
 
-  @ApiProperty({ example: '2026-07-05', description: 'Since when (oldest due date)' })
+  @ApiProperty({
+    example: '2026-07-05',
+    description: 'Since when (oldest due date)',
+  })
   oldestDueDate!: string;
 
   @ApiProperty()
@@ -333,7 +351,9 @@ export class MaterializationResultDto {
   @ApiProperty({ description: 'Charges lazily flipped open → overdue' })
   flippedOverdue!: number;
 
-  @ApiProperty({ description: 'Due charges auto-settled by active card mandates' })
+  @ApiProperty({
+    description: 'Due charges auto-settled by active card mandates',
+  })
   autoSettled!: number;
 }
 
@@ -350,10 +370,15 @@ export class AdminOverviewResponseDto {
   @ApiProperty()
   previsaoProximoMesCents!: number;
 
-  @ApiProperty({ description: 'By value: overdue-open ÷ current-month plan total (0-100)' })
+  @ApiProperty({
+    description: 'By value: overdue-open ÷ current-month plan total (0-100)',
+  })
   inadimplenciaPct!: number;
 
-  @ApiProperty({ type: [RevenueMonthDto], description: 'Last 6 months incl. current' })
+  @ApiProperty({
+    type: [RevenueMonthDto],
+    description: 'Last 6 months incl. current',
+  })
   series!: RevenueMonthDto[];
 
   @ApiProperty({ type: [UpcomingGroupDto] })
@@ -394,13 +419,17 @@ export class RepasseRowDto {
   @ApiProperty({ example: '2026-08' })
   period!: string;
 
-  @ApiProperty({ description: 'Distinct students with settled payments in the period' })
+  @ApiProperty({
+    description: 'Distinct students with settled payments in the period',
+  })
   studentCount!: number;
 
   @ApiProperty()
   grossCents!: number;
 
-  @ApiProperty({ description: 'Platform take in basis points (fee_bps NULL → 0)' })
+  @ApiProperty({
+    description: 'Platform take in basis points (fee_bps NULL → 0)',
+  })
   feeBps!: number;
 
   @ApiProperty()
@@ -420,7 +449,9 @@ export class RepasseTotalsDto {
   @ApiProperty({ description: '"assinaturas · mês" — live SaaS subscriptions' })
   subscriptionsMonthCents!: number;
 
-  @ApiProperty({ description: '"taxa de pagamento" — current-period platform fees' })
+  @ApiProperty({
+    description: '"taxa de pagamento" — current-period platform fees',
+  })
   paymentFeesMonthCents!: number;
 }
 

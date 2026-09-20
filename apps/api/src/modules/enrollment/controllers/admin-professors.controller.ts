@@ -1,9 +1,18 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { RegisterProfessorDto } from '../dto/requests.dto.js';
-import { ProfessorListResponseDto, RegisterProfessorResponseDto } from '../dto/responses.dto.js';
+import {
+  ProfessorListResponseDto,
+  RegisterProfessorResponseDto,
+} from '../dto/responses.dto.js';
 import { ProfessorRegistryService } from '../services/professor-registry.service.js';
 import { requireTenantContext } from './context.js';
 
@@ -29,7 +38,8 @@ export class AdminProfessorsController {
   @Post()
   @HttpCode(201)
   @ApiOperation({
-    summary: 'Register a professor: reuse-or-create user by email + membership + set-password email',
+    summary:
+      'Register a professor: reuse-or-create user by email + membership + set-password email',
   })
   @ApiCreatedResponse({ type: RegisterProfessorResponseDto })
   async register(@Body() dto: RegisterProfessorDto) {

@@ -15,23 +15,86 @@ export interface PermissionDefinition {
 }
 
 export const PERMISSION_REGISTRY: readonly PermissionDefinition[] = [
-  { role: 'professor', key: 'attendance.record', label: 'registrar presença', defaultAllowed: true },
-  { role: 'professor', key: 'graduation.update', label: 'atualizar graduações', defaultAllowed: true },
-  { role: 'professor', key: 'payments.view_class', label: 'ver pagamentos das turmas', defaultAllowed: false },
-  { role: 'professor', key: 'invites.create', label: 'gerar convite', defaultAllowed: true },
-  { role: 'professor', key: 'events.create', label: 'criar eventos', defaultAllowed: false },
-  { role: 'student', key: 'checkin.self', label: 'check-in', defaultAllowed: true },
+  {
+    role: 'professor',
+    key: 'attendance.record',
+    label: 'registrar presença',
+    defaultAllowed: true,
+  },
+  {
+    role: 'professor',
+    key: 'graduation.update',
+    label: 'atualizar graduações',
+    defaultAllowed: true,
+  },
+  {
+    role: 'professor',
+    key: 'payments.view_class',
+    label: 'ver pagamentos das turmas',
+    defaultAllowed: false,
+  },
+  {
+    role: 'professor',
+    key: 'invites.create',
+    label: 'gerar convite',
+    defaultAllowed: true,
+  },
+  {
+    role: 'professor',
+    key: 'events.create',
+    label: 'criar eventos',
+    defaultAllowed: false,
+  },
+  {
+    role: 'student',
+    key: 'checkin.self',
+    label: 'check-in',
+    defaultAllowed: true,
+  },
   // Display toggle only (spec 004): when off the API omits streak values and
   // clients hide the streak tile + success-pop line. Attendance data unaffected.
-  { role: 'student', key: 'gamification.streak', label: 'gamificação de aulas seguidas', defaultAllowed: true },
-  { role: 'student', key: 'agenda.view', label: 'agenda', defaultAllowed: true },
+  {
+    role: 'student',
+    key: 'gamification.streak',
+    label: 'gamificação de aulas seguidas',
+    defaultAllowed: true,
+  },
+  {
+    role: 'student',
+    key: 'agenda.view',
+    label: 'agenda',
+    defaultAllowed: true,
+  },
   { role: 'student', key: 'store.access', label: 'loja', defaultAllowed: true },
-  { role: 'student', key: 'store.purchase', label: 'comprar na loja', defaultAllowed: true },
-  { role: 'guardian', key: 'dependents.register', label: 'cadastrar dependentes', defaultAllowed: true },
-  { role: 'guardian', key: 'payments.pay', label: 'pagar', defaultAllowed: true },
-  { role: 'guardian', key: 'events.confirm', label: 'confirmar eventos', defaultAllowed: true },
+  {
+    role: 'student',
+    key: 'store.purchase',
+    label: 'comprar na loja',
+    defaultAllowed: true,
+  },
+  {
+    role: 'guardian',
+    key: 'dependents.register',
+    label: 'cadastrar dependentes',
+    defaultAllowed: true,
+  },
+  {
+    role: 'guardian',
+    key: 'payments.pay',
+    label: 'pagar',
+    defaultAllowed: true,
+  },
+  {
+    role: 'guardian',
+    key: 'events.confirm',
+    label: 'confirmar eventos',
+    defaultAllowed: true,
+  },
 ] as const;
 
-export function findDefinition(role: string, key: string): PermissionDefinition | undefined {
+export function findDefinition(
+  role: string,
+  key: string,
+): PermissionDefinition | undefined {
   return PERMISSION_REGISTRY.find((d) => d.role === role && d.key === key);
 }

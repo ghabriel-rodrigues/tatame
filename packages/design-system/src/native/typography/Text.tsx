@@ -10,11 +10,17 @@
  * Android uses the embedded file basenames.
  */
 
-import { Platform, Text as RNText, type TextProps as RNTextProps, type TextStyle } from 'react-native';
+import {
+  Platform,
+  Text as RNText,
+  type TextProps as RNTextProps,
+  type TextStyle,
+} from 'react-native';
 import { useTheme } from '../theme/ThemeProvider.tsx';
 import type { Theme } from '../theme/theme.ts';
 
-export type FontWeightName = 'light' | 'regular' | 'medium' | 'semibold' | 'bold';
+export type FontWeightName =
+  'light' | 'regular' | 'medium' | 'semibold' | 'bold';
 
 /** iOS: PostScript names embedded in the Quicksand ttf files. */
 const IOS_FAMILY: Record<FontWeightName, string> = {
@@ -59,13 +65,56 @@ interface VariantSpec {
 
 const VARIANTS: Record<TextVariant, VariantSpec> = {
   // 25 = handoff screen-title size (between xl 24 and 2xl 30; web h1 parity).
-  display: { fontSize: 25, weight: 'bold', lineHeightKey: 'tight', trackingKey: 'tight', colorOf: (t) => t.color.fg['1'] },
-  title: { fontSize: 20, weight: 'bold', lineHeightKey: 'snug', trackingKey: 'tight', colorOf: (t) => t.color.fg['1'] },
-  subtitle: { fontSize: 16, weight: 'semibold', lineHeightKey: 'snug', trackingKey: 'normal', colorOf: (t) => t.color.fg['1'] },
-  body: { fontSize: 14, weight: 'regular', lineHeightKey: 'normal', trackingKey: 'normal', colorOf: (t) => t.color.fg['2'] },
-  label: { fontSize: 13, weight: 'semibold', lineHeightKey: 'snug', trackingKey: 'normal', colorOf: (t) => t.color.fg['1'] },
-  caption: { fontSize: 12, weight: 'regular', lineHeightKey: 'snug', trackingKey: 'normal', colorOf: (t) => t.color.fg['3'] },
-  overline: { fontSize: 11, weight: 'semibold', lineHeightKey: 'snug', trackingKey: 'caps', uppercase: true, colorOf: (t) => t.color.brand['2'] },
+  display: {
+    fontSize: 25,
+    weight: 'bold',
+    lineHeightKey: 'tight',
+    trackingKey: 'tight',
+    colorOf: (t) => t.color.fg['1'],
+  },
+  title: {
+    fontSize: 20,
+    weight: 'bold',
+    lineHeightKey: 'snug',
+    trackingKey: 'tight',
+    colorOf: (t) => t.color.fg['1'],
+  },
+  subtitle: {
+    fontSize: 16,
+    weight: 'semibold',
+    lineHeightKey: 'snug',
+    trackingKey: 'normal',
+    colorOf: (t) => t.color.fg['1'],
+  },
+  body: {
+    fontSize: 14,
+    weight: 'regular',
+    lineHeightKey: 'normal',
+    trackingKey: 'normal',
+    colorOf: (t) => t.color.fg['2'],
+  },
+  label: {
+    fontSize: 13,
+    weight: 'semibold',
+    lineHeightKey: 'snug',
+    trackingKey: 'normal',
+    colorOf: (t) => t.color.fg['1'],
+  },
+  caption: {
+    fontSize: 12,
+    weight: 'regular',
+    lineHeightKey: 'snug',
+    trackingKey: 'normal',
+    colorOf: (t) => t.color.fg['3'],
+  },
+  overline: {
+    fontSize: 11,
+    weight: 'semibold',
+    lineHeightKey: 'snug',
+    trackingKey: 'caps',
+    uppercase: true,
+    colorOf: (t) => t.color.brand['2'],
+  },
 };
 
 export interface TextProps extends RNTextProps {
@@ -76,14 +125,23 @@ export interface TextProps extends RNTextProps {
   color?: string;
 }
 
-export function Text({ variant = 'body', weight, color, style, children, ...rest }: TextProps) {
+export function Text({
+  variant = 'body',
+  weight,
+  color,
+  style,
+  children,
+  ...rest
+}: TextProps) {
   const theme = useTheme();
   const spec = VARIANTS[variant];
   const w = weight ?? spec.weight;
   const base: TextStyle = {
     fontFamily: quicksandFamily(w),
     fontSize: spec.fontSize,
-    lineHeight: Math.round(spec.fontSize * theme.text.lineHeight[spec.lineHeightKey]),
+    lineHeight: Math.round(
+      spec.fontSize * theme.text.lineHeight[spec.lineHeightKey],
+    ),
     // Tracking tokens are em values — multiply by fontSize for RN px.
     letterSpacing: spec.fontSize * theme.text.tracking[spec.trackingKey],
     color: color ?? spec.colorOf(theme),

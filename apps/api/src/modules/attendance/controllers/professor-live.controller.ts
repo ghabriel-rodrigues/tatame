@@ -21,7 +21,11 @@ import {
 } from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { interval, map, merge, type Observable } from 'rxjs';
-import { Public, RequiresPermission, Roles } from '../../../common/decorators.js';
+import {
+  Public,
+  RequiresPermission,
+  Roles,
+} from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
 import {
   LiveCodeResponseDto,
@@ -59,7 +63,7 @@ export class ProfessorLiveController {
   @HttpCode(201)
   @RequiresPermission('attendance.record')
   @ApiOperation({
-    summary: 'Iniciar chamada — materialize today\'s session + mint code/QR',
+    summary: "Iniciar chamada — materialize today's session + mint code/QR",
     description:
       'Idempotent: an already-open chamada benignly returns its active code. Reopening ' +
       'after encerrar mints a fresh code for the same session (one active per session).',
@@ -72,7 +76,9 @@ export class ProfessorLiveController {
 
   @Post('live-codes/:id/close')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Encerrar chamada — invalidate code + QR, session → done' })
+  @ApiOperation({
+    summary: 'Encerrar chamada — invalidate code + QR, session → done',
+  })
   @ApiOkResponse({ type: LiveCodeResponseDto })
   async close(@Param('id', ParseUUIDPipe) liveCodeId: string) {
     const ctx = requireTenantContext(this.cls);
@@ -124,10 +130,14 @@ export class ProfessorLiveController {
   @Public()
   @Sse('live-codes/:id/stream')
   @ApiProduces('text/event-stream')
-  @ApiQuery({ name: 'ticket', description: 'Ticket from POST /professor/live-codes/{id}/stream-ticket' })
+  @ApiQuery({
+    name: 'ticket',
+    description: 'Ticket from POST /professor/live-codes/{id}/stream-ticket',
+  })
   @ApiExtraModels(LiveStreamCheckinEventDto, LiveStreamRevokeEventDto)
   @ApiOperation({
-    summary: 'SSE stream: checkin / revoke events + 20 s heartbeat (contract exception)',
+    summary:
+      'SSE stream: checkin / revoke events + 20 s heartbeat (contract exception)',
     description:
       'Server-Sent Events, not JSON. Protocol: fetch the snapshot first, then attach ' +
       '(no replay; Last-Event-ID unused in v1). `event: checkin` carries ' +
@@ -156,11 +166,17 @@ export class ProfessorLiveController {
     const claims = this.tickets.verify(ticket, liveCodeId);
     // Belt & braces: the room lookup re-checks existence under the ticket's
     // tenant (RLS enforced) — a revoked/deleted live code cannot be attached.
-    const room = await this.liveCodes.roomForTicket(claims.ten, claims.uid, liveCodeId);
+    const room = await this.liveCodes.roomForTicket(
+      claims.ten,
+      claims.uid,
+      liveCodeId,
+    );
 
     const events$ = this.rooms
       .subscribe(room.classSessionId)
-      .pipe(map((event): MessageEvent => ({ type: event.type, data: event.data })));
+      .pipe(
+        map((event): MessageEvent => ({ type: event.type, data: event.data })),
+      );
     const heartbeat$ = interval(STREAM_HEARTBEAT_MS).pipe(
       map((): MessageEvent => ({ type: 'heartbeat', data: 'ping' })),
     );

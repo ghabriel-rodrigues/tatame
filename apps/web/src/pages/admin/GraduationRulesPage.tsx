@@ -12,7 +12,13 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
-import { BeltBar, Card, ScreenHeader, TatameButton, Toast } from '@tatame/design-system';
+import {
+  BeltBar,
+  Card,
+  ScreenHeader,
+  TatameButton,
+  Toast,
+} from '@tatame/design-system';
 import type { GraduationRuleRow } from '@tatame/shared';
 import { $api, queryClient } from '../../api/api';
 import { graduationErrorMessage, useToastState } from './common';
@@ -55,7 +61,10 @@ export function GraduationRulesPage() {
 
   function valueOf(row: GraduationRuleRow): RuleDraft {
     return (
-      draft[row.beltId] ?? { lessonsPerDegree: row.lessonsPerDegree, enabled: row.enabled }
+      draft[row.beltId] ?? {
+        lessonsPerDegree: row.lessonsPerDegree,
+        enabled: row.enabled,
+      }
     );
   }
 
@@ -112,7 +121,9 @@ export function GraduationRulesPage() {
         />
 
         {rulesQuery.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando regras…
           </Typography>
         ) : null}
@@ -125,7 +136,10 @@ export function GraduationRulesPage() {
                 <Stack
                   direction="row"
                   spacing="12px"
-                  sx={{ alignItems: 'center', opacity: value.enabled ? 1 : 0.45 }}
+                  sx={{
+                    alignItems: 'center',
+                    opacity: value.enabled ? 1 : 0.45,
+                  }}
                 >
                   <BeltBar
                     colorSlug={row.colorSlug}
@@ -136,7 +150,13 @@ export function GraduationRulesPage() {
                     name={beltLabel(row)}
                   />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 13.5, fontWeight: 650, color: 'var(--fg-1)' }}>
+                    <Typography
+                      sx={{
+                        fontSize: 13.5,
+                        fontWeight: 650,
+                        color: 'var(--fg-1)',
+                      }}
+                    >
                       {row.name}
                     </Typography>
                     <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
@@ -152,7 +172,11 @@ export function GraduationRulesPage() {
                     </Typography>
                   </Box>
                   {value.enabled ? (
-                    <Stack direction="row" spacing="4px" sx={{ alignItems: 'center' }}>
+                    <Stack
+                      direction="row"
+                      spacing="4px"
+                      sx={{ alignItems: 'center' }}
+                    >
                       <IconButton
                         size="small"
                         aria-label={`Diminuir aulas por grau da faixa ${row.name}`}
@@ -185,7 +209,8 @@ export function GraduationRulesPage() {
                         aria-label={`Aumentar aulas por grau da faixa ${row.name}`}
                         onClick={() =>
                           patch(row, {
-                            lessonsPerDegree: value.lessonsPerDegree + LESSONS_STEP,
+                            lessonsPerDegree:
+                              value.lessonsPerDegree + LESSONS_STEP,
                           })
                         }
                       >
@@ -197,7 +222,9 @@ export function GraduationRulesPage() {
                     <Switch
                       size="small"
                       checked={value.enabled}
-                      onChange={(event) => patch(row, { enabled: event.target.checked })}
+                      onChange={(event) =>
+                        patch(row, { enabled: event.target.checked })
+                      }
                       slotProps={{
                         input: { 'aria-label': `Habilitar faixa ${row.name}` },
                       }}
@@ -219,7 +246,11 @@ export function GraduationRulesPage() {
         ) : null}
       </Stack>
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

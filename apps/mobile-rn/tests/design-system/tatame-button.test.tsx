@@ -26,7 +26,9 @@ describe('TatameButton', () => {
 
   it('disabled blocks presses and exposes accessibilityState', () => {
     const onPress = jest.fn();
-    render(<TatameButton label="Entrar" disabled onPress={onPress} testID="btn" />);
+    render(
+      <TatameButton label="Entrar" disabled onPress={onPress} testID="btn" />,
+    );
     const btn = screen.getByTestId('btn');
     fireEvent.press(btn);
     expect(onPress).not.toHaveBeenCalled();
@@ -35,9 +37,14 @@ describe('TatameButton', () => {
 
   it('loading shows a spinner, keeps the label and blocks presses', () => {
     const onPress = jest.fn();
-    render(<TatameButton label="Entrar" loading onPress={onPress} testID="btn" />);
+    render(
+      <TatameButton label="Entrar" loading onPress={onPress} testID="btn" />,
+    );
     const btn = screen.getByTestId('btn');
-    expect(btn.props.accessibilityState).toMatchObject({ disabled: true, busy: true });
+    expect(btn.props.accessibilityState).toMatchObject({
+      disabled: true,
+      busy: true,
+    });
     expect(screen.getByText('Entrar')).toBeTruthy();
     fireEvent.press(btn);
     expect(onPress).not.toHaveBeenCalled();
@@ -52,6 +59,7 @@ describe('TatameButton', () => {
         <TatameButton variant="danger" label="d" />
       </>,
     );
-    for (const l of ['p', 's', 'g', 'd']) expect(screen.getByText(l)).toBeTruthy();
+    for (const l of ['p', 's', 'g', 'd'])
+      expect(screen.getByText(l)).toBeTruthy();
   });
 });

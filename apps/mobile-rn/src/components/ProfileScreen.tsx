@@ -9,7 +9,13 @@ import { useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
-import { Card, TatameButton, Text, fadeUp, useTheme } from '@tatame/design-system/native';
+import {
+  Card,
+  TatameButton,
+  Text,
+  fadeUp,
+  useTheme,
+} from '@tatame/design-system/native';
 import { ROLE_LABELS } from '../session/role-labels';
 import { logout, useSession } from '../session/session-store';
 
@@ -35,7 +41,12 @@ export function ProfileScreen({ children, identityExtra }: ProfileScreenProps) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <Text variant="display">Perfil</Text>
           <Card>

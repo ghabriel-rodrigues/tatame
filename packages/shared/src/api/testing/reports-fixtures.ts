@@ -24,8 +24,16 @@ export function makeSemesterWindow(month: string): ReportWindow {
   const year = Number(month.slice(0, 4));
   const first = Number(month.slice(5, 7)) <= 6;
   return first
-    ? { label: `${year}-S1`, start: `${year}-01-01`, endExclusive: `${year}-07-01` }
-    : { label: `${year}-S2`, start: `${year}-07-01`, endExclusive: `${year + 1}-01-01` };
+    ? {
+        label: `${year}-S1`,
+        start: `${year}-01-01`,
+        endExclusive: `${year}-07-01`,
+      }
+    : {
+        label: `${year}-S2`,
+        start: `${year}-07-01`,
+        endExclusive: `${year + 1}-01-01`,
+      };
 }
 
 export function makeFinanceiroReport(
@@ -34,7 +42,11 @@ export function makeFinanceiroReport(
   return {
     report: 'financeiro',
     month: '2026-07',
-    summary: { receitaCents: 2_436_000, previstoCents: 2_590_000, inadimplenciaPct: 6.4 },
+    summary: {
+      receitaCents: 2_436_000,
+      previstoCents: 2_590_000,
+      inadimplenciaPct: 6.4,
+    },
     rows: [
       {
         chargeId: uuid('8020', 1),
@@ -181,7 +193,9 @@ export function makeGraduacoesReport(
   };
 }
 
-export function makeLojaReport(overrides: Partial<LojaReport> = {}): LojaReport {
+export function makeLojaReport(
+  overrides: Partial<LojaReport> = {},
+): LojaReport {
   return {
     report: 'loja',
     month: '2026-07',
@@ -219,7 +233,10 @@ export function makeLojaReport(overrides: Partial<LojaReport> = {}): LojaReport 
  * follows the requested month the way the backend does (inadimplência stays
  * an as-of-now snapshot and ignores it).
  */
-export function makeAdminReport(slug: AdminReportSlug, month?: string): AdminReport {
+export function makeAdminReport(
+  slug: AdminReportSlug,
+  month?: string,
+): AdminReport {
   switch (slug) {
     case 'financeiro':
       return makeFinanceiroReport(month ? { month } : {});

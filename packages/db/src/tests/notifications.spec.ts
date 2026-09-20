@@ -8,7 +8,12 @@ import {
   withTenant,
   type DbHandle,
 } from '../lib/client.js';
-import { academies, memberships, notifications, users } from '../schema/index.js';
+import {
+  academies,
+  memberships,
+  notifications,
+  users,
+} from '../schema/index.js';
 import {
   seedBeltCatalog,
   seedBillingFixtures,
@@ -17,9 +22,19 @@ import {
   seedNotificationFixtures,
   seedPlatformPlans,
 } from '../seed/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
-const CATEGORIES = ['payment', 'event', 'graduation', 'attendance', 'store'] as const;
+const CATEGORIES = [
+  'payment',
+  'event',
+  'graduation',
+  'attendance',
+  'store',
+] as const;
 
 describe('notifications schema + seeds (spec 010, NOT.1–NOT.2)', () => {
   let fresh: FreshDb;
@@ -63,16 +78,24 @@ describe('notifications schema + seeds (spec 010, NOT.1–NOT.2)', () => {
       `SELECT indexname, indexdef FROM pg_indexes
        WHERE schemaname = 'public' AND tablename = 'notifications'`,
     );
-    const byName = Object.fromEntries(res.rows.map((r) => [r.indexname, r.indexdef]));
+    const byName = Object.fromEntries(
+      res.rows.map((r) => [r.indexname, r.indexdef]),
+    );
 
-    expect(byName['notifications_tenant_user_created_idx']).toContain('created_at DESC');
+    expect(byName['notifications_tenant_user_created_idx']).toContain(
+      'created_at DESC',
+    );
     // The badge count rides a partial index over unread rows only.
-    expect(byName['notifications_tenant_user_unread_idx']).toContain('read_at IS NULL');
+    expect(byName['notifications_tenant_user_unread_idx']).toContain(
+      'read_at IS NULL',
+    );
   });
 
   it('memberships.notifications_enabled defaults to true on every seeded row', async () => {
     const rows = await withPlatform(platform.db, (tx) =>
-      tx.select({ enabled: memberships.notificationsEnabled }).from(memberships),
+      tx
+        .select({ enabled: memberships.notificationsEnabled })
+        .from(memberships),
     );
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((r) => r.enabled)).toBe(true);
@@ -92,9 +115,16 @@ describe('notifications schema + seeds (spec 010, NOT.1–NOT.2)', () => {
       );
       expect(rows.length).toBeGreaterThanOrEqual(5);
       const seeded = new Set(rows.map((r) => r.category));
-      for (const category of CATEGORIES) expect(seeded, `category ${category}`).toContain(category);
-      expect(rows.some((r) => r.readAt === null), 'has unread rows').toBe(true);
-      expect(rows.some((r) => r.readAt !== null), 'has read rows').toBe(true);
+      for (const category of CATEGORIES)
+        expect(seeded, `category ${category}`).toContain(category);
+      expect(
+        rows.some((r) => r.readAt === null),
+        'has unread rows',
+      ).toBe(true);
+      expect(
+        rows.some((r) => r.readAt !== null),
+        'has read rows',
+      ).toBe(true);
     }
   });
 
@@ -137,7 +167,9 @@ describe('notifications schema + seeds (spec 010, NOT.1–NOT.2)', () => {
     expect(bravoRows).toHaveLength(0);
 
     // Fail-closed: no tenant GUC, no rows.
-    const bare = await app.db.execute(sql`SELECT count(*)::int AS n FROM notifications`);
+    const bare = await app.db.execute(
+      sql`SELECT count(*)::int AS n FROM notifications`,
+    );
     expect(bare.rows[0]?.['n']).toBe(0);
   });
 
@@ -158,7 +190,9 @@ describe('notifications schema + seeds (spec 010, NOT.1–NOT.2)', () => {
   it('re-running the notification seed changes no row counts (idempotent)', async () => {
     const count = async () =>
       withPlatform(platform.db, async (tx) => {
-        const [n] = await tx.select({ n: sql<number>`count(*)::int` }).from(notifications);
+        const [n] = await tx
+          .select({ n: sql<number>`count(*)::int` })
+          .from(notifications);
         return n!.n;
       });
     const before = await count();

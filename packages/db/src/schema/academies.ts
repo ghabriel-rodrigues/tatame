@@ -1,5 +1,13 @@
 import { sql } from 'drizzle-orm';
-import { boolean, char, check, pgPolicy, pgTable, text, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  char,
+  check,
+  pgPolicy,
+  pgTable,
+  text,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { academyStatus } from './enums.js';
 import { id, timestamps } from './helpers.js';
 import { appRole } from './roles.js';
@@ -38,7 +46,9 @@ export const academies = pgTable(
      * closing the 010 deferral): when off, the notification fan-out listeners
      * skip insertion tenant-wide. Per-user mute lives on memberships.
      */
-    autoNotificationsEnabled: boolean('auto_notifications_enabled').notNull().default(true),
+    autoNotificationsEnabled: boolean('auto_notifications_enabled')
+      .notNull()
+      .default(true),
     /**
      * Stripe connected account (`acct_…`) for stage-2 Connect destination
      * charges + repasse payouts. NULL in v1 (simulated provider only).
@@ -47,7 +57,10 @@ export const academies = pgTable(
     ...timestamps,
   },
   (t) => [
-    check('academies_brand_deep_hex_ck', sql`${t.brandDeep} IS NULL OR ${t.brandDeep} ~ '^#[0-9A-F]{6}$'`),
+    check(
+      'academies_brand_deep_hex_ck',
+      sql`${t.brandDeep} IS NULL OR ${t.brandDeep} ~ '^#[0-9A-F]{6}$'`,
+    ),
     check(
       'academies_brand_vibrant_hex_ck',
       sql`${t.brandVibrant} IS NULL OR ${t.brandVibrant} ~ '^#[0-9A-F]{6}$'`,

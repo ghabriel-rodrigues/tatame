@@ -21,7 +21,10 @@ import {
 import { renderRoute } from '../test/render-route';
 import { server } from '../test/setup';
 
-async function fillCredentials(email = 'admin@tatame.dev', password = 'TatameDev!123') {
+async function fillCredentials(
+  email = 'admin@tatame.dev',
+  password = 'TatameDev!123',
+) {
   const user = userEvent.setup();
   await user.type(screen.getByLabelText('Email'), email);
   await user.type(screen.getByLabelText('Senha'), password);
@@ -55,7 +58,11 @@ describe('login page', () => {
     server.use(
       http.post('/v1/auth/login', ({ response }) =>
         response.untyped(
-          problemResponse(401, 'auth.invalid_credentials', 'Invalid email or password'),
+          problemResponse(
+            401,
+            'auth.invalid_credentials',
+            'Invalid email or password',
+          ),
         ),
       ),
     );
@@ -63,7 +70,9 @@ describe('login page', () => {
     const { router } = renderRoute('/login');
     await fillCredentials('admin@tatame.dev', 'senha-errada');
 
-    expect(await screen.findByText('Email ou senha inválidos.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Email ou senha inválidos.'),
+    ).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/login');
   });
 
@@ -80,7 +89,9 @@ describe('login page', () => {
         response(200).json(makeAuthSession({ memberships: [platform] })),
       ),
       http.get('/v1/auth/me', ({ response }) =>
-        response(200).json(makeMeResponse({ memberships: [platform], academy: null })),
+        response(200).json(
+          makeMeResponse({ memberships: [platform], academy: null }),
+        ),
       ),
       ...repassesHandlers(),
     );
@@ -88,12 +99,18 @@ describe('login page', () => {
     const { router } = renderRoute('/login');
     const user = await fillCredentials('owner@tatame.dev');
 
-    expect(await screen.findByText('Verificação em duas etapas')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Verificação em duas etapas'),
+    ).toBeInTheDocument();
     await user.type(screen.getByLabelText('Código'), '123456');
     await user.click(screen.getByRole('button', { name: 'Confirmar' }));
 
-    await waitFor(() => expect(router.state.location.pathname).toBe('/plataforma'));
-    expect(await screen.findByText('Console da plataforma')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/plataforma'),
+    );
+    expect(
+      await screen.findByText('Console da plataforma'),
+    ).toBeInTheDocument();
   });
 
   it('rejects a wrong TOTP code with the inline error', async () => {
@@ -112,17 +129,27 @@ describe('login page', () => {
     renderRoute('/login');
     const user = await fillCredentials('owner@tatame.dev');
 
-    expect(await screen.findByText('Verificação em duas etapas')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Verificação em duas etapas'),
+    ).toBeInTheDocument();
     await user.type(screen.getByLabelText('Código'), '000000');
     await user.click(screen.getByRole('button', { name: 'Confirmar' }));
 
-    expect(await screen.findByText('Código inválido. Tente novamente.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Código inválido. Tente novamente.'),
+    ).toBeInTheDocument();
   });
 
   it('offers the academy chooser for multi-admin accounts and switches on pick', async () => {
     const student = makeMembership({ role: 'student' });
-    const adminAlpha = makeMembership({ role: 'admin', academyName: 'Alpha Jiu-Jitsu' });
-    const adminBravo = makeMembership({ role: 'admin', academyName: 'Bravo BJJ Team' });
+    const adminAlpha = makeMembership({
+      role: 'admin',
+      academyName: 'Alpha Jiu-Jitsu',
+    });
+    const adminBravo = makeMembership({
+      role: 'admin',
+      academyName: 'Bravo BJJ Team',
+    });
     const memberships = [student, adminAlpha, adminBravo];
     let switchedTo: string | null = null;
 

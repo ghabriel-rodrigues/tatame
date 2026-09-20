@@ -84,7 +84,11 @@ export function ListRow({
           </Text>
         ) : null}
       </View>
-      {trailing ? <View style={{ flexDirection: 'row', alignItems: 'center' }}>{trailing}</View> : null}
+      {trailing ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {trailing}
+        </View>
+      ) : null}
       {chevron ? <ChevronRight size={14} color={theme.color.fg['4']} /> : null}
     </>
   );

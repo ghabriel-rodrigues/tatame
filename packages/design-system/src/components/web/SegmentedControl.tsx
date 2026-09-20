@@ -67,7 +67,9 @@ export function SegmentedControl<V extends string = string>({
   ariaLabel,
   className,
 }: SegmentedControlProps<V>) {
-  const classes = ['SegmentedControl-root', className].filter(Boolean).join(' ');
+  const classes = ['SegmentedControl-root', className]
+    .filter(Boolean)
+    .join(' ');
   return (
     <Track className={classes} role="tablist" aria-label={ariaLabel}>
       {options.map((option) => (

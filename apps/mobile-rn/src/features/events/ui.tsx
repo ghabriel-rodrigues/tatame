@@ -36,7 +36,12 @@ export function EventDateSquare({
   return (
     <View
       testID={testID}
-      style={{ width: size, height: size, borderRadius: theme.radius.md, overflow: 'hidden' }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: theme.radius.md,
+        overflow: 'hidden',
+      }}
     >
       <LinearGradient
         colors={colors}
@@ -82,7 +87,13 @@ export function EventCard({
 }: {
   item: Pick<
     AlunoEventItem,
-    'id' | 'name' | 'bannerPreset' | 'date' | 'time' | 'priceCents' | 'registration'
+    | 'id'
+    | 'name'
+    | 'bannerPreset'
+    | 'date'
+    | 'time'
+    | 'priceCents'
+    | 'registration'
   >;
   onPress?: () => void;
   testID?: string;
@@ -91,7 +102,13 @@ export function EventCard({
   const chip = eventStateChip(item.priceCents, item.registration);
   const body = (
     <Card padding={theme.space['4']} testID={testID}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: theme.space['3'],
+        }}
+      >
         <EventDateSquare date={item.date} bannerPreset={item.bannerPreset} />
         <View style={{ flex: 1, gap: 3 }}>
           <Text variant="label" numberOfLines={1}>
@@ -100,15 +117,25 @@ export function EventCard({
           <Text variant="caption" numberOfLines={1} style={{ fontSize: 11.5 }}>
             {eventDateLine(item.date, item.time)}
           </Text>
-          <Chip label={chip.label} tone={chip.tone} testID={testID ? `${testID}-chip` : undefined} />
+          <Chip
+            label={chip.label}
+            tone={chip.tone}
+            testID={testID ? `${testID}-chip` : undefined}
+          />
         </View>
-        {onPress ? <ChevronRight size={16} color={theme.color.fg['4']} /> : null}
+        {onPress ? (
+          <ChevronRight size={16} color={theme.color.fg['4']} />
+        ) : null}
       </View>
     </Card>
   );
   if (!onPress) return body;
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={item.name} onPress={onPress}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={item.name}
+      onPress={onPress}
+    >
       {body}
     </Pressable>
   );
@@ -160,7 +187,9 @@ export function DependentChip({
 }) {
   const theme = useTheme();
   const status =
-    !registration || registration.status === 'canceled' ? 'none' : registration.status;
+    !registration || registration.status === 'canceled'
+      ? 'none'
+      : registration.status;
   const confirmed = status === 'confirmed';
   const pending = status === 'pending_payment';
   const background = confirmed
@@ -189,7 +218,8 @@ export function DependentChip({
         gap: 6,
         borderRadius: theme.radius.pill,
         borderWidth: 1,
-        borderColor: confirmed || pending ? 'transparent' : theme.color.border['1'],
+        borderColor:
+          confirmed || pending ? 'transparent' : theme.color.border['1'],
         backgroundColor: background,
         paddingVertical: 8,
         paddingHorizontal: 14,
@@ -201,7 +231,13 @@ export function DependentChip({
           <Check size={13} color={color} strokeWidth={3} />
         </View>
       ) : null}
-      <Text variant="caption" weight="bold" color={color} style={{ fontSize: 12 }} numberOfLines={1}>
+      <Text
+        variant="caption"
+        weight="bold"
+        color={color}
+        style={{ fontSize: 12 }}
+        numberOfLines={1}
+      >
         {name}
       </Text>
     </Pressable>

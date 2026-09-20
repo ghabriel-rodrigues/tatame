@@ -5,7 +5,7 @@ Personas covered: Aluno, Responsável, Admin da academia, Professor
 
 ## Problem Statement
 
-Events are the last designed surface with zero substrate. The admin has no way to create the "Open mat de verão" or the "Exame de faixa" the handoff renders as gradient cards with Gratuito/R$ chips and a Comunicar button; the aluno home's "Próximos eventos" section was never built; the Agenda's "Eventos do mês" ships the honest empty state Phase 7 recorded as debt; every persona calendar renders a pink-dot legend for events that can never appear because all four AGD endpoints return `events: []` by contract. The responsável's Eventos tab is still the Phase-1 placeholder shell, so per-dependent confirmation — a charter-level rule — exists only as prototype JS. The professor dashboard's "eventos futuros" tile reads "—  · Em breve".
+Events are the last designed surface with zero substrate. The admin has no way to create the "Open mat de verão" or the "Exame de faixa" the handoff renders as gradient cards with Gratuito/R$ chips and a Comunicar button; the aluno home's "Próximos eventos" section was never built; the Agenda's "Eventos do mês" ships the honest empty state Phase 7 recorded as debt; every persona calendar renders a pink-dot legend for events that can never appear because all four AGD endpoints return `events: []` by contract. The responsável's Eventos tab is still the Phase-1 placeholder shell, so per-dependent confirmation — a charter-level rule — exists only as prototype JS. The professor dashboard's "eventos futuros" tile reads "— · Em breve".
 
 The plumbing on the money side is already waiting: `charge_origin` includes `event`, and `charges.event_registration_id` has been a plain nullable uuid since BIL.2, explicitly recorded as pending this slice's table for its composite-FK hardening. Until this phase lands, "gratuito = confirmar direto; pago = sheet Pix" is a README rule with no rows behind it.
 
@@ -79,19 +79,19 @@ The flows are exactly the handoff's: free event → "Confirmar presença" flips 
 - A new `events` backend module behind the existing guard chain (JWT → persona role → academy status), owning event CRUD, lifecycle, registrations and the announce action. Money stays in billing: the events service asks billing to issue/cancel event-origin charges through the same internal service seam billing already exposes to itself — events never touches the provider port.
 - Endpoint surface (versioned prefix, generated into the OpenAPI spec):
 
-| Endpoint | Role | Purpose |
-|---|---|---|
-| `GET /admin/events` | admin | all events (drafts first, then chronological) with confirmados/inscritos/arrecadado |
-| `POST /admin/events` · `PATCH /admin/events/:id` | admin | create (draft or published) / edit |
-| `POST /admin/events/:id/publish` · `POST /admin/events/:id/cancel` | admin | lifecycle transitions (audited) |
-| `GET /admin/events/:id/registrations` | admin | inscritos list + totals |
-| `POST /admin/events/:id/announce` | admin | Comunicar — domain event + audit only |
-| `GET /aluno/events/:id` | student | detail + own registration state |
-| `POST /aluno/events/:id/registration` | student | free ⇒ confirmed; paid ⇒ pending_payment + event charge (returns chargeId) |
-| `DELETE /aluno/events/:id/registration` | student | cancel free/pending (cancels the open charge) |
-| `GET /responsavel/events` | guardian | published events + per-dependent registration states |
-| `POST /responsavel/events/:id/registrations/:studentId` | guardian | same free/paid semantics per dependent (guardian bill-to) |
-| `DELETE /responsavel/events/:id/registrations/:studentId` | guardian | cancel per dependent |
+| Endpoint                                                           | Role     | Purpose                                                                             |
+| ------------------------------------------------------------------ | -------- | ----------------------------------------------------------------------------------- |
+| `GET /admin/events`                                                | admin    | all events (drafts first, then chronological) with confirmados/inscritos/arrecadado |
+| `POST /admin/events` · `PATCH /admin/events/:id`                   | admin    | create (draft or published) / edit                                                  |
+| `POST /admin/events/:id/publish` · `POST /admin/events/:id/cancel` | admin    | lifecycle transitions (audited)                                                     |
+| `GET /admin/events/:id/registrations`                              | admin    | inscritos list + totals                                                             |
+| `POST /admin/events/:id/announce`                                  | admin    | Comunicar — domain event + audit only                                               |
+| `GET /aluno/events/:id`                                            | student  | detail + own registration state                                                     |
+| `POST /aluno/events/:id/registration`                              | student  | free ⇒ confirmed; paid ⇒ pending_payment + event charge (returns chargeId)          |
+| `DELETE /aluno/events/:id/registration`                            | student  | cancel free/pending (cancels the open charge)                                       |
+| `GET /responsavel/events`                                          | guardian | published events + per-dependent registration states                                |
+| `POST /responsavel/events/:id/registrations/:studentId`            | guardian | same free/paid semantics per dependent (guardian bill-to)                           |
+| `DELETE /responsavel/events/:id/registrations/:studentId`          | guardian | cancel per dependent                                                                |
 
 - Existing endpoints extended, not duplicated: `GET /aluno/home` gains `upcomingEvents` (next 2 published events with own state — the prototype's card count); the professor dashboard payload gains the eventos-futuros count and list; the four AGD endpoints fill their `events` arrays (below). No professor event route exists; the admin "Criar eventos" permission toggle for professors stays render-only.
 
@@ -99,7 +99,7 @@ The flows are exactly the handoff's: free event → "Confirmar presença" flips 
 
 - **Free** (`price_cents NULL`): POST flips (or creates) the row to `confirmed` immediately — "gratuito = confirmar direto". DELETE flips it to `canceled`; re-confirming reuses the same row.
 - **Paid**: POST creates/reuses the row as `pending_payment` and asks billing for a charge — `origin = 'event'`, `event_registration_id` set, `amount_cents = price_cents`, `due_date` = the event date in the tenant timezone, `guardian_id` bill-to when a guardian registers a dependent. The response carries the chargeId; the client then drives the **existing** payment endpoints (`POST /aluno/wallet/charges/:id/payments` or the responsável twin, plus the gated simulate endpoint) and the existing Pix sheet, labeled "Inscrição · <evento>" (guardian variant adds the child's name). Payment routes keep their `@BypassReadOnly`.
-- **The normalized provider-event handler is extended, not forked**: `payment.succeeded` on an event-origin charge settles the charge (existing behavior) *and* flips its registration to `confirmed`; `payment.refunded` flips it to `canceled`. This is the only settlement path — the simulate endpoint and the future Stripe webhook both land here, preserving the driver-only-swap invariant.
+- **The normalized provider-event handler is extended, not forked**: `payment.succeeded` on an event-origin charge settles the charge (existing behavior) _and_ flips its registration to `confirmed`; `payment.refunded` flips it to `canceled`. This is the only settlement path — the simulate endpoint and the future Stripe webhook both land here, preserving the driver-only-swap invariant.
 - Self-cancel is allowed only for free or still-pending registrations (canceling a `pending_payment` row cancels its open charge). A paid, confirmed registration is undone only by the audited admin refund, which cancels it through the refund event — recorded, not silently dropped.
 - Event canceling (admin): open event charges are canceled, `events.event.canceled` is emitted with the registered audience; confirmed rows keep their history. Unpaid registrations of past events simply stay `pending_payment` — no auto-expiry in v1.
 - Read-only (delinquent) academies: admin event CRUD and new registrations are blocked like every write; paying an **existing** event charge still works via the bypass on payment routes — consistent with "the academy's debt never blocks students paying theirs".
@@ -125,7 +125,7 @@ The flows are exactly the handoff's: free event → "Confirmar presença" flips 
 
 - Same doctrine as specs 001–007 (their suites are the prior art): behavior through the API against real Postgres with RLS active; assertions on status codes, stable error codes and observable state — never on SQL or driver internals.
 - Lifecycle e2e: draft creation without date/local; publish rejected until both present; edit; cancel cancels open charges and emits the canceled event; drafts and canceled events invisible to aluno/responsável/professor/calendars.
-- Registration e2e: free confirm → confirmed row + audit; cancel → same row canceled; re-confirm reuses the row (unique holds); paid register → pending_payment + event-origin charge with hardened FK and correct bill-to → Pix payment → simulate → charge paid *and* registration confirmed through the handler; refund → registration canceled; self-cancel of a paid confirmed registration rejected with its stable code; cancel of pending cancels the charge.
+- Registration e2e: free confirm → confirmed row + audit; cancel → same row canceled; re-confirm reuses the row (unique holds); paid register → pending_payment + event-origin charge with hardened FK and correct bill-to → Pix payment → simulate → charge paid _and_ registration confirmed through the handler; refund → registration canceled; self-cancel of a paid confirmed registration rejected with its stable code; cancel of pending cancels the charge.
 - Contract tests pin the extended normalized-event handler (event-origin succeeded/refunded transitions, idempotent re-delivery) so the Stripe swap stays a driver-only PR.
 - Scoping: guardian can register only own dependents (foreign student → 404); per-dependent states independent; aluno home shows next-2 window; agenda/calendar month bucketing asserted across a month boundary in the tenant timezone; admin totals (confirmados, inscritos, arrecadado) against seeded fixtures.
 - RBAC + RLS: professor has no event write route (CI metadata assertion); cross-tenant event/registration ids → 404 via the fail-closed meta-test pattern; read-only academy blocks CRUD and new registrations but pays existing event charges; announce emits exactly one domain event + audit row and requires published.

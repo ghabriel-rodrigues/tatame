@@ -80,10 +80,13 @@ export function resolveBeltColor(theme: Theme, slug: string): string {
   const colors = theme.color.belt as Record<string, string>;
   const hex = colors[key];
   if (hex && key !== 'tip' && key !== 'stripe' && key !== 'outline') return hex;
-  if (key === 'tip' || key === 'stripe' || key === 'outline') return colors[key] as string;
+  if (key === 'tip' || key === 'stripe' || key === 'outline')
+    return colors[key] as string;
   if (!warnedSlugs.has(slug)) {
     warnedSlugs.add(slug);
-    console.warn(`BeltBar: unknown belt color slug "${slug}" — falling back to gray.`);
+    console.warn(
+      `BeltBar: unknown belt color slug "${slug}" — falling back to gray.`,
+    );
   }
   return colors['gray'] as string;
 }
@@ -92,7 +95,13 @@ function degreesLabel(degrees: number): string {
   return `${degrees} ${degrees === 1 ? 'grau' : 'graus'}`;
 }
 
-export function BeltBar({ belt, size = 'md', label, style, testID }: BeltBarProps) {
+export function BeltBar({
+  belt,
+  size = 'md',
+  label,
+  style,
+  testID,
+}: BeltBarProps) {
   const theme = useTheme();
   const m = METRICS[size];
   const degrees = Math.max(0, Math.min(belt.degrees ?? 0, belt.maxDegrees));
@@ -101,7 +110,8 @@ export function BeltBar({ belt, size = 'md', label, style, testID }: BeltBarProp
     ? resolveBeltColor(theme, belt.tipColorSlug)
     : theme.color.belt.tip;
   const accessibleLabel =
-    label ?? `Faixa ${belt.name}${degrees > 0 ? ` · ${degreesLabel(degrees)}` : ''}`;
+    label ??
+    `Faixa ${belt.name}${degrees > 0 ? ` · ${degreesLabel(degrees)}` : ''}`;
 
   return (
     <View
@@ -138,7 +148,11 @@ export function BeltBar({ belt, size = 'md', label, style, testID }: BeltBarProp
           <View
             key={index}
             testID="beltbar-stripe"
-            style={{ width: m.stripeW, height: '100%', backgroundColor: theme.color.belt.stripe }}
+            style={{
+              width: m.stripeW,
+              height: '100%',
+              backgroundColor: theme.color.belt.stripe,
+            }}
           />
         ))}
       </View>
@@ -174,7 +188,13 @@ export interface BeltChipProps {
  * Belt chip variant — mini frozen-sm belt swatch + label in a pill
  * (professor-12 "Graduações válidas", registry rows, profile rank chip).
  */
-export function BeltChip({ belt, label, dimmed = false, style, testID }: BeltChipProps) {
+export function BeltChip({
+  belt,
+  label,
+  dimmed = false,
+  style,
+  testID,
+}: BeltChipProps) {
   const theme = useTheme();
   const text = label ?? belt.name;
   return (
@@ -200,8 +220,15 @@ export function BeltChip({ belt, label, dimmed = false, style, testID }: BeltChi
       ]}
     >
       {/* Decorative swatch — the chip itself carries the accessible name. */}
-      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <BeltBar belt={belt} size="sm" style={{ width: 26, alignSelf: 'center', height: 8 }} />
+      <View
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <BeltBar
+          belt={belt}
+          size="sm"
+          style={{ width: 26, alignSelf: 'center', height: 8 }}
+        />
       </View>
       <Text
         variant="caption"

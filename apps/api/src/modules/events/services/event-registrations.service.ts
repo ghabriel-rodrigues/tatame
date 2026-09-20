@@ -25,7 +25,8 @@ import {
 import type { EventRegistrationStateView } from '../events.types.js';
 
 /** Who the registration is for: the caller themself or an owned dependent. */
-export type RegistrationTarget = { kind: 'self' } | { kind: 'dependent'; studentId: string };
+export type RegistrationTarget =
+  { kind: 'self' } | { kind: 'dependent'; studentId: string };
 
 export interface RegisterResult {
   registration: EventRegistrationStateView;
@@ -68,7 +69,11 @@ export class EventRegistrationsService {
       this.appDb.db,
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx): Promise<RegisterResult> => {
-        const { student, guardianId } = await this.resolveTarget(tx, ctx, target);
+        const { student, guardianId } = await this.resolveTarget(
+          tx,
+          ctx,
+          target,
+        );
         const event = await this.registrableEvent(tx, eventId);
         const existing = await this.registrationOf(tx, eventId, student.id);
 
@@ -76,14 +81,24 @@ export class EventRegistrationsService {
         // (free re-confirm and paid re-pay are both no-ops).
         if (existing?.status === 'confirmed') {
           return {
-            registration: { id: existing.id, status: 'confirmed', chargeId: null },
+            registration: {
+              id: existing.id,
+              status: 'confirmed',
+              chargeId: null,
+            },
             chargeId: null,
           };
         }
 
         if (event.priceCents === null) {
           // Gratuito = confirmar direto (story 12/19).
-          const row = await this.upsert(tx, ctx, event.id, student.id, 'confirmed');
+          const row = await this.upsert(
+            tx,
+            ctx,
+            event.id,
+            student.id,
+            'confirmed',
+          );
           await this.audit(tx, ctx, 'events.registration.confirmed', row.id, {
             event_id: event.id,
             student_id: student.id,
@@ -99,23 +114,40 @@ export class EventRegistrationsService {
             audience: guardianId ? 'guardian' : 'student',
             priceCents: null,
           };
-          return { registration: { id: row.id, status: 'confirmed', chargeId: null }, chargeId: null };
+          return {
+            registration: { id: row.id, status: 'confirmed', chargeId: null },
+            chargeId: null,
+          };
         }
 
         // Paid: pending_payment + the event-origin charge on the billing seam
         // (guardian bill-to when the responsável registers a dependent). The
         // client then rides the existing Pix sheet / simulate rails.
-        const row = await this.upsert(tx, ctx, event.id, student.id, 'pending_payment');
-        const charge = await this.eventCharges.issueEventCharge(tx, asActor(ctx), {
-          tenantId: ctx.tenantId,
-          studentId: student.id,
-          guardianId,
-          eventRegistrationId: row.id,
-          amountCents: event.priceCents,
-          dueDate: event.startsAt ? localDate(event.startsAt) : localDate(),
-        });
+        const row = await this.upsert(
+          tx,
+          ctx,
+          event.id,
+          student.id,
+          'pending_payment',
+        );
+        const charge = await this.eventCharges.issueEventCharge(
+          tx,
+          asActor(ctx),
+          {
+            tenantId: ctx.tenantId,
+            studentId: student.id,
+            guardianId,
+            eventRegistrationId: row.id,
+            amountCents: event.priceCents,
+            dueDate: event.startsAt ? localDate(event.startsAt) : localDate(),
+          },
+        );
         return {
-          registration: { id: row.id, status: 'pending_payment', chargeId: charge.id },
+          registration: {
+            id: row.id,
+            status: 'pending_payment',
+            chargeId: charge.id,
+          },
           chargeId: charge.id,
         };
       },
@@ -141,15 +173,26 @@ export class EventRegistrationsService {
       this.appDb.db,
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx) => {
-        const { student, guardianId } = await this.resolveTarget(tx, ctx, target);
-        const [event] = await tx.select().from(events).where(eq(events.id, eventId));
+        const { student, guardianId } = await this.resolveTarget(
+          tx,
+          ctx,
+          target,
+        );
+        const [event] = await tx
+          .select()
+          .from(events)
+          .where(eq(events.id, eventId));
         // Drafts stay backstage — same 404 shape as a foreign id.
         if (!event || event.status === 'draft') {
           throw problem(404, ErrorCodes.NOT_FOUND, 'Event not found');
         }
         const existing = await this.registrationOf(tx, eventId, student.id);
         if (!existing || existing.status === 'canceled') {
-          throw problem(404, ErrorCodes.NOT_FOUND, 'No active registration for this event');
+          throw problem(
+            404,
+            ErrorCodes.NOT_FOUND,
+            'No active registration for this event',
+          );
         }
         if (event.priceCents !== null && existing.status === 'confirmed') {
           throw problem(
@@ -161,12 +204,19 @@ export class EventRegistrationsService {
 
         await tx
           .update(eventRegistrations)
-          .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+          .set({
+            status: 'canceled',
+            canceledAt: new Date(),
+            updatedAt: new Date(),
+          })
           .where(eq(eventRegistrations.id, existing.id));
         if (existing.status === 'pending_payment') {
-          await this.eventCharges.cancelOpenEventCharges(tx, asActor(ctx), ctx.tenantId, [
-            existing.id,
-          ]);
+          await this.eventCharges.cancelOpenEventCharges(
+            tx,
+            asActor(ctx),
+            ctx.tenantId,
+            [existing.id],
+          );
         }
         await this.audit(tx, ctx, 'events.registration.canceled', existing.id, {
           event_id: event.id,
@@ -205,9 +255,15 @@ export class EventRegistrationsService {
       const [student] = await tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
+        .where(
+          and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+        );
       if (!student) {
-        throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
+        throw problem(
+          404,
+          ErrorCodes.NOT_FOUND,
+          'No active student record for this account',
+        );
       }
       return { student, guardianId: null };
     }
@@ -242,7 +298,10 @@ export class EventRegistrationsService {
     tx: DbTransaction,
     eventId: string,
   ): Promise<typeof events.$inferSelect> {
-    const [event] = await tx.select().from(events).where(eq(events.id, eventId));
+    const [event] = await tx
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
     if (!event || event.status === 'draft') {
       throw problem(404, ErrorCodes.NOT_FOUND, 'Event not found');
     }
@@ -256,12 +315,19 @@ export class EventRegistrationsService {
     return event;
   }
 
-  private async registrationOf(tx: DbTransaction, eventId: string, studentId: string) {
+  private async registrationOf(
+    tx: DbTransaction,
+    eventId: string,
+    studentId: string,
+  ) {
     const [row] = await tx
       .select()
       .from(eventRegistrations)
       .where(
-        and(eq(eventRegistrations.eventId, eventId), eq(eventRegistrations.studentId, studentId)),
+        and(
+          eq(eventRegistrations.eventId, eventId),
+          eq(eventRegistrations.studentId, studentId),
+        ),
       );
     return row ?? null;
   }
@@ -286,7 +352,12 @@ export class EventRegistrationsService {
         })
         .where(eq(eventRegistrations.id, existing.id))
         .returning();
-      if (!updated) throw problem(500, ErrorCodes.INTERNAL, 'Registration update returned no row');
+      if (!updated)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Registration update returned no row',
+        );
       return updated;
     }
     const [inserted] = await tx
@@ -299,7 +370,12 @@ export class EventRegistrationsService {
         status,
       })
       .returning();
-    if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Registration insert returned no row');
+    if (!inserted)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Registration insert returned no row',
+      );
     return inserted;
   }
 

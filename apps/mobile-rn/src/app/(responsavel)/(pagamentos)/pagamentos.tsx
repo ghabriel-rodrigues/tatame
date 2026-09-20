@@ -83,7 +83,10 @@ function DependentChargeCard({
   const paidViaMandate = dependent.recurrenceActive && paid?.method === 'card';
 
   return (
-    <Card testID={`dependent-charge-${dependent.studentId}`} padding={theme.space['5']}>
+    <Card
+      testID={`dependent-charge-${dependent.studentId}`}
+      padding={theme.space['5']}
+    >
       <View style={{ gap: theme.space['3'] }}>
         <View
           style={{
@@ -105,7 +108,9 @@ function DependentChargeCard({
               {RECURRENCE_LABELS[plan.recurrence]}
             </Text>
           ) : paid ? (
-            <Text variant="caption">{paidLine(paid.method, paid.paidAt, paidViaMandate)}</Text>
+            <Text variant="caption">
+              {paidLine(paid.method, paid.paidAt, paidViaMandate)}
+            </Text>
           ) : null}
         </View>
         {isPayable(charge) ? (
@@ -143,9 +148,17 @@ export default function ResponsavelPagamentosScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
-          <ScreenHeader title="Pagamentos" subtitle="Mensalidades dos seus dependentes" />
+          <ScreenHeader
+            title="Pagamentos"
+            subtitle="Mensalidades dos seus dependentes"
+          />
 
           <QueryState loading={query.isPending} error={query.isError}>
             {dependents.length === 0 ? (
@@ -153,8 +166,8 @@ export default function ResponsavelPagamentosScreen() {
                 <View style={{ gap: 4 }}>
                   <Text variant="label">Nenhuma mensalidade por aqui</Text>
                   <Text variant="caption">
-                    As cobranças dos seus dependentes aparecem aqui quando a academia
-                    atribuir um plano.
+                    As cobranças dos seus dependentes aparecem aqui quando a
+                    academia atribuir um plano.
                   </Text>
                 </View>
               </Card>

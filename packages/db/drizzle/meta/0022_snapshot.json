@@ -98,9 +98,7 @@
       "uniqueConstraints": {
         "academies_slug_unique": {
           "name": "academies_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "nullsNotDistinct": false
         }
       },
@@ -109,9 +107,7 @@
           "name": "academies_own_row_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"academies\".\"id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -196,13 +192,9 @@
         "credentials_user_id_users_id_fk": {
           "name": "credentials_user_id_users_id_fk",
           "tableFrom": "credentials",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -214,18 +206,14 @@
           "name": "credentials_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"credentials\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
         "credentials_self_update": {
           "name": "credentials_self_update",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"credentials\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid",
           "withCheck": "\"credentials\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
@@ -296,13 +284,9 @@
         "password_reset_tokens_user_id_users_id_fk": {
           "name": "password_reset_tokens_user_id_users_id_fk",
           "tableFrom": "password_reset_tokens",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -311,9 +295,7 @@
       "uniqueConstraints": {
         "password_reset_tokens_token_hash_unique": {
           "name": "password_reset_tokens_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -322,9 +304,7 @@
           "name": "password_reset_tokens_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"password_reset_tokens\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
       },
@@ -400,26 +380,18 @@
         "refresh_tokens_session_id_sessions_id_fk": {
           "name": "refresh_tokens_session_id_sessions_id_fk",
           "tableFrom": "refresh_tokens",
-          "columnsFrom": [
-            "session_id"
-          ],
+          "columnsFrom": ["session_id"],
           "tableTo": "sessions",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "refresh_tokens_replaced_by_id_refresh_tokens_id_fk": {
           "name": "refresh_tokens_replaced_by_id_refresh_tokens_id_fk",
           "tableFrom": "refresh_tokens",
-          "columnsFrom": [
-            "replaced_by_id"
-          ],
+          "columnsFrom": ["replaced_by_id"],
           "tableTo": "refresh_tokens",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -428,9 +400,7 @@
       "uniqueConstraints": {
         "refresh_tokens_token_hash_unique": {
           "name": "refresh_tokens_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -439,9 +409,7 @@
           "name": "refresh_tokens_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "EXISTS (\n        SELECT 1 FROM sessions s\n        WHERE s.id = \"refresh_tokens\".\"session_id\"\n          AND s.user_id = NULLIF(current_setting('app.user_id', true), '')::uuid\n      )"
         }
       },
@@ -554,39 +522,27 @@
         "sessions_user_id_users_id_fk": {
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "sessions_impersonator_user_id_users_id_fk": {
           "name": "sessions_impersonator_user_id_users_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "impersonator_user_id"
-          ],
+          "columnsFrom": ["impersonator_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "sessions_impersonated_tenant_id_academies_id_fk": {
           "name": "sessions_impersonated_tenant_id_academies_id_fk",
           "tableFrom": "sessions",
-          "columnsFrom": [
-            "impersonated_tenant_id"
-          ],
+          "columnsFrom": ["impersonated_tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -598,18 +554,14 @@
           "name": "sessions_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"sessions\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
         "sessions_self_update": {
           "name": "sessions_self_update",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"sessions\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid",
           "withCheck": "\"sessions\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
@@ -712,18 +664,14 @@
           "name": "users_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"users\".\"id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
         "users_self_update": {
           "name": "users_self_update",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"users\".\"id\" = NULLIF(current_setting('app.user_id', true), '')::uuid",
           "withCheck": "\"users\".\"id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         },
@@ -731,9 +679,7 @@
           "name": "users_tenant_member_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "EXISTS (\n        SELECT 1 FROM memberships m\n        WHERE m.user_id = \"users\".\"id\"\n          AND m.tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid\n      )"
         }
       },
@@ -789,13 +735,9 @@
         "belt_ladders_martial_art_id_martial_arts_id_fk": {
           "name": "belt_ladders_martial_art_id_martial_arts_id_fk",
           "tableFrom": "belt_ladders",
-          "columnsFrom": [
-            "martial_art_id"
-          ],
+          "columnsFrom": ["martial_art_id"],
           "tableTo": "martial_arts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -804,10 +746,7 @@
       "uniqueConstraints": {
         "belt_ladders_art_kind_uq": {
           "name": "belt_ladders_art_kind_uq",
-          "columns": [
-            "martial_art_id",
-            "kind"
-          ],
+          "columns": ["martial_art_id", "kind"],
           "nullsNotDistinct": false
         }
       },
@@ -816,9 +755,7 @@
           "name": "belt_ladders_public_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "true"
         }
       },
@@ -891,13 +828,9 @@
         "belts_ladder_id_belt_ladders_id_fk": {
           "name": "belts_ladder_id_belt_ladders_id_fk",
           "tableFrom": "belts",
-          "columnsFrom": [
-            "ladder_id"
-          ],
+          "columnsFrom": ["ladder_id"],
           "tableTo": "belt_ladders",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -906,10 +839,7 @@
       "uniqueConstraints": {
         "belts_ladder_position_uq": {
           "name": "belts_ladder_position_uq",
-          "columns": [
-            "ladder_id",
-            "position"
-          ],
+          "columns": ["ladder_id", "position"],
           "nullsNotDistinct": false
         }
       },
@@ -918,9 +848,7 @@
           "name": "belts_public_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "true"
         }
       },
@@ -979,9 +907,7 @@
       "uniqueConstraints": {
         "martial_arts_key_unique": {
           "name": "martial_arts_key_unique",
-          "columns": [
-            "key"
-          ],
+          "columns": ["key"],
           "nullsNotDistinct": false
         }
       },
@@ -990,9 +916,7 @@
           "name": "martial_arts_public_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "true"
         }
       },
@@ -1090,13 +1014,9 @@
         "academy_plans_tenant_id_academies_id_fk": {
           "name": "academy_plans_tenant_id_academies_id_fk",
           "tableFrom": "academy_plans",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1105,18 +1025,12 @@
       "uniqueConstraints": {
         "academy_plans_tenant_id_id_uq": {
           "name": "academy_plans_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "academy_plans_tenant_name_uq": {
           "name": "academy_plans_tenant_name_uq",
-          "columns": [
-            "tenant_id",
-            "name"
-          ],
+          "columns": ["tenant_id", "name"],
           "nullsNotDistinct": false
         }
       },
@@ -1125,9 +1039,7 @@
           "name": "academy_plans_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"academy_plans\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"academy_plans\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -1204,28 +1116,18 @@
         "class_schedules_tenant_id_academies_id_fk": {
           "name": "class_schedules_tenant_id_academies_id_fk",
           "tableFrom": "class_schedules",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "class_schedules_class_fk": {
           "name": "class_schedules_class_fk",
           "tableFrom": "class_schedules",
-          "columnsFrom": [
-            "tenant_id",
-            "class_id"
-          ],
+          "columnsFrom": ["tenant_id", "class_id"],
           "tableTo": "classes",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1234,20 +1136,12 @@
       "uniqueConstraints": {
         "class_schedules_tenant_id_id_uq": {
           "name": "class_schedules_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "class_schedules_tenant_class_weekday_time_uq": {
           "name": "class_schedules_tenant_class_weekday_time_uq",
-          "columns": [
-            "tenant_id",
-            "class_id",
-            "weekday",
-            "start_time"
-          ],
+          "columns": ["tenant_id", "class_id", "weekday", "start_time"],
           "nullsNotDistinct": false
         }
       },
@@ -1256,9 +1150,7 @@
           "name": "class_schedules_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"class_schedules\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"class_schedules\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -1373,52 +1265,36 @@
         "classes_tenant_id_academies_id_fk": {
           "name": "classes_tenant_id_academies_id_fk",
           "tableFrom": "classes",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "classes_professor_user_id_users_id_fk": {
           "name": "classes_professor_user_id_users_id_fk",
           "tableFrom": "classes",
-          "columnsFrom": [
-            "professor_user_id"
-          ],
+          "columnsFrom": ["professor_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "classes_min_belt_id_belts_id_fk": {
           "name": "classes_min_belt_id_belts_id_fk",
           "tableFrom": "classes",
-          "columnsFrom": [
-            "min_belt_id"
-          ],
+          "columnsFrom": ["min_belt_id"],
           "tableTo": "belts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "classes_max_belt_id_belts_id_fk": {
           "name": "classes_max_belt_id_belts_id_fk",
           "tableFrom": "classes",
-          "columnsFrom": [
-            "max_belt_id"
-          ],
+          "columnsFrom": ["max_belt_id"],
           "tableTo": "belts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1427,10 +1303,7 @@
       "uniqueConstraints": {
         "classes_tenant_id_id_uq": {
           "name": "classes_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -1439,9 +1312,7 @@
           "name": "classes_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"classes\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"classes\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -1527,43 +1398,27 @@
         "enrollments_tenant_id_academies_id_fk": {
           "name": "enrollments_tenant_id_academies_id_fk",
           "tableFrom": "enrollments",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "enrollments_class_fk": {
           "name": "enrollments_class_fk",
           "tableFrom": "enrollments",
-          "columnsFrom": [
-            "tenant_id",
-            "class_id"
-          ],
+          "columnsFrom": ["tenant_id", "class_id"],
           "tableTo": "classes",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "enrollments_student_fk": {
           "name": "enrollments_student_fk",
           "tableFrom": "enrollments",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1572,19 +1427,12 @@
       "uniqueConstraints": {
         "enrollments_tenant_id_id_uq": {
           "name": "enrollments_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "enrollments_tenant_class_student_uq": {
           "name": "enrollments_tenant_class_student_uq",
-          "columns": [
-            "tenant_id",
-            "class_id",
-            "student_id"
-          ],
+          "columns": ["tenant_id", "class_id", "student_id"],
           "nullsNotDistinct": false
         }
       },
@@ -1593,9 +1441,7 @@
           "name": "enrollments_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"enrollments\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"enrollments\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -1679,26 +1525,18 @@
         "guardians_tenant_id_academies_id_fk": {
           "name": "guardians_tenant_id_academies_id_fk",
           "tableFrom": "guardians",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "guardians_user_id_users_id_fk": {
           "name": "guardians_user_id_users_id_fk",
           "tableFrom": "guardians",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1707,18 +1545,12 @@
       "uniqueConstraints": {
         "guardians_tenant_id_id_uq": {
           "name": "guardians_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "guardians_tenant_user_uq": {
           "name": "guardians_tenant_user_uq",
-          "columns": [
-            "tenant_id",
-            "user_id"
-          ],
+          "columns": ["tenant_id", "user_id"],
           "nullsNotDistinct": false
         }
       },
@@ -1727,9 +1559,7 @@
           "name": "guardians_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"guardians\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"guardians\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -1848,56 +1678,36 @@
         "students_tenant_id_academies_id_fk": {
           "name": "students_tenant_id_academies_id_fk",
           "tableFrom": "students",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "students_user_id_users_id_fk": {
           "name": "students_user_id_users_id_fk",
           "tableFrom": "students",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "students_guardian_fk": {
           "name": "students_guardian_fk",
           "tableFrom": "students",
-          "columnsFrom": [
-            "tenant_id",
-            "guardian_id"
-          ],
+          "columnsFrom": ["tenant_id", "guardian_id"],
           "tableTo": "guardians",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "students_academy_plan_fk": {
           "name": "students_academy_plan_fk",
           "tableFrom": "students",
-          "columnsFrom": [
-            "tenant_id",
-            "academy_plan_id"
-          ],
+          "columnsFrom": ["tenant_id", "academy_plan_id"],
           "tableTo": "academy_plans",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -1906,18 +1716,12 @@
       "uniqueConstraints": {
         "students_tenant_id_id_uq": {
           "name": "students_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "students_tenant_user_uq": {
           "name": "students_tenant_user_uq",
-          "columns": [
-            "tenant_id",
-            "user_id"
-          ],
+          "columns": ["tenant_id", "user_id"],
           "nullsNotDistinct": false
         }
       },
@@ -1926,9 +1730,7 @@
           "name": "students_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"students\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"students\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -2025,56 +1827,36 @@
         "event_registrations_tenant_id_academies_id_fk": {
           "name": "event_registrations_tenant_id_academies_id_fk",
           "tableFrom": "event_registrations",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "event_registrations_confirmed_by_user_id_users_id_fk": {
           "name": "event_registrations_confirmed_by_user_id_users_id_fk",
           "tableFrom": "event_registrations",
-          "columnsFrom": [
-            "confirmed_by_user_id"
-          ],
+          "columnsFrom": ["confirmed_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "event_registrations_event_fk": {
           "name": "event_registrations_event_fk",
           "tableFrom": "event_registrations",
-          "columnsFrom": [
-            "tenant_id",
-            "event_id"
-          ],
+          "columnsFrom": ["tenant_id", "event_id"],
           "tableTo": "events",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "event_registrations_student_fk": {
           "name": "event_registrations_student_fk",
           "tableFrom": "event_registrations",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -2083,19 +1865,12 @@
       "uniqueConstraints": {
         "event_registrations_tenant_id_id_uq": {
           "name": "event_registrations_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "event_registrations_tenant_event_student_uq": {
           "name": "event_registrations_tenant_event_student_uq",
-          "columns": [
-            "tenant_id",
-            "event_id",
-            "student_id"
-          ],
+          "columns": ["tenant_id", "event_id", "student_id"],
           "nullsNotDistinct": false
         }
       },
@@ -2104,9 +1879,7 @@
           "name": "event_registrations_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"event_registrations\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"event_registrations\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -2235,26 +2008,18 @@
         "events_tenant_id_academies_id_fk": {
           "name": "events_tenant_id_academies_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "events_responsible_user_id_users_id_fk": {
           "name": "events_responsible_user_id_users_id_fk",
           "tableFrom": "events",
-          "columnsFrom": [
-            "responsible_user_id"
-          ],
+          "columnsFrom": ["responsible_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -2263,10 +2028,7 @@
       "uniqueConstraints": {
         "events_tenant_id_id_uq": {
           "name": "events_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -2275,9 +2037,7 @@
           "name": "events_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"events\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"events\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -2403,43 +2163,27 @@
         "order_items_tenant_id_academies_id_fk": {
           "name": "order_items_tenant_id_academies_id_fk",
           "tableFrom": "order_items",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "order_items_order_fk": {
           "name": "order_items_order_fk",
           "tableFrom": "order_items",
-          "columnsFrom": [
-            "tenant_id",
-            "order_id"
-          ],
+          "columnsFrom": ["tenant_id", "order_id"],
           "tableTo": "orders",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "order_items_product_fk": {
           "name": "order_items_product_fk",
           "tableFrom": "order_items",
-          "columnsFrom": [
-            "tenant_id",
-            "product_id"
-          ],
+          "columnsFrom": ["tenant_id", "product_id"],
           "tableTo": "products",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -2448,10 +2192,7 @@
       "uniqueConstraints": {
         "order_items_tenant_id_id_uq": {
           "name": "order_items_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -2460,9 +2201,7 @@
           "name": "order_items_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"order_items\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"order_items\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -2599,26 +2338,18 @@
         "orders_tenant_id_academies_id_fk": {
           "name": "orders_tenant_id_academies_id_fk",
           "tableFrom": "orders",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "orders_buyer_user_id_users_id_fk": {
           "name": "orders_buyer_user_id_users_id_fk",
           "tableFrom": "orders",
-          "columnsFrom": [
-            "buyer_user_id"
-          ],
+          "columnsFrom": ["buyer_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -2627,18 +2358,12 @@
       "uniqueConstraints": {
         "orders_tenant_id_id_uq": {
           "name": "orders_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "orders_tenant_number_uq": {
           "name": "orders_tenant_number_uq",
-          "columns": [
-            "tenant_id",
-            "number"
-          ],
+          "columns": ["tenant_id", "number"],
           "nullsNotDistinct": false
         }
       },
@@ -2647,9 +2372,7 @@
           "name": "orders_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"orders\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"orders\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -2699,13 +2422,9 @@
         "product_categories_tenant_id_academies_id_fk": {
           "name": "product_categories_tenant_id_academies_id_fk",
           "tableFrom": "product_categories",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -2714,18 +2433,12 @@
       "uniqueConstraints": {
         "product_categories_tenant_id_id_uq": {
           "name": "product_categories_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "product_categories_tenant_name_uq": {
           "name": "product_categories_tenant_name_uq",
-          "columns": [
-            "tenant_id",
-            "name"
-          ],
+          "columns": ["tenant_id", "name"],
           "nullsNotDistinct": false
         }
       },
@@ -2734,9 +2447,7 @@
           "name": "product_categories_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"product_categories\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"product_categories\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -2880,28 +2591,18 @@
         "products_tenant_id_academies_id_fk": {
           "name": "products_tenant_id_academies_id_fk",
           "tableFrom": "products",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "products_category_fk": {
           "name": "products_category_fk",
           "tableFrom": "products",
-          "columnsFrom": [
-            "tenant_id",
-            "category_id"
-          ],
+          "columnsFrom": ["tenant_id", "category_id"],
           "tableTo": "product_categories",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -2910,10 +2611,7 @@
       "uniqueConstraints": {
         "products_tenant_id_id_uq": {
           "name": "products_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -2922,9 +2620,7 @@
           "name": "products_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"products\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"products\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -3000,26 +2696,18 @@
         "billing_customers_tenant_id_academies_id_fk": {
           "name": "billing_customers_tenant_id_academies_id_fk",
           "tableFrom": "billing_customers",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "billing_customers_user_id_users_id_fk": {
           "name": "billing_customers_user_id_users_id_fk",
           "tableFrom": "billing_customers",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -3028,19 +2716,12 @@
       "uniqueConstraints": {
         "billing_customers_tenant_id_id_uq": {
           "name": "billing_customers_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "billing_customers_tenant_user_provider_uq": {
           "name": "billing_customers_tenant_user_provider_uq",
-          "columns": [
-            "tenant_id",
-            "user_id",
-            "provider"
-          ],
+          "columns": ["tenant_id", "user_id", "provider"],
           "nullsNotDistinct": false
         }
       },
@@ -3049,9 +2730,7 @@
           "name": "billing_customers_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"billing_customers\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"billing_customers\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -3260,88 +2939,54 @@
         "charges_tenant_id_academies_id_fk": {
           "name": "charges_tenant_id_academies_id_fk",
           "tableFrom": "charges",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "charges_student_fk": {
           "name": "charges_student_fk",
           "tableFrom": "charges",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "charges_guardian_fk": {
           "name": "charges_guardian_fk",
           "tableFrom": "charges",
-          "columnsFrom": [
-            "tenant_id",
-            "guardian_id"
-          ],
+          "columnsFrom": ["tenant_id", "guardian_id"],
           "tableTo": "guardians",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "charges_academy_plan_fk": {
           "name": "charges_academy_plan_fk",
           "tableFrom": "charges",
-          "columnsFrom": [
-            "tenant_id",
-            "academy_plan_id"
-          ],
+          "columnsFrom": ["tenant_id", "academy_plan_id"],
           "tableTo": "academy_plans",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "charges_event_registration_fk": {
           "name": "charges_event_registration_fk",
           "tableFrom": "charges",
-          "columnsFrom": [
-            "tenant_id",
-            "event_registration_id"
-          ],
+          "columnsFrom": ["tenant_id", "event_registration_id"],
           "tableTo": "event_registrations",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "charges_order_fk": {
           "name": "charges_order_fk",
           "tableFrom": "charges",
-          "columnsFrom": [
-            "tenant_id",
-            "order_id"
-          ],
+          "columnsFrom": ["tenant_id", "order_id"],
           "tableTo": "orders",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -3350,10 +2995,7 @@
       "uniqueConstraints": {
         "charges_tenant_id_id_uq": {
           "name": "charges_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -3362,9 +3004,7 @@
           "name": "charges_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"charges\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"charges\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -3511,41 +3151,27 @@
         "payment_mandates_tenant_id_academies_id_fk": {
           "name": "payment_mandates_tenant_id_academies_id_fk",
           "tableFrom": "payment_mandates",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "payment_mandates_payer_user_id_users_id_fk": {
           "name": "payment_mandates_payer_user_id_users_id_fk",
           "tableFrom": "payment_mandates",
-          "columnsFrom": [
-            "payer_user_id"
-          ],
+          "columnsFrom": ["payer_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "payment_mandates_student_fk": {
           "name": "payment_mandates_student_fk",
           "tableFrom": "payment_mandates",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -3554,10 +3180,7 @@
       "uniqueConstraints": {
         "payment_mandates_tenant_id_id_uq": {
           "name": "payment_mandates_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -3566,9 +3189,7 @@
           "name": "payment_mandates_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"payment_mandates\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"payment_mandates\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -3739,28 +3360,18 @@
         "payments_tenant_id_academies_id_fk": {
           "name": "payments_tenant_id_academies_id_fk",
           "tableFrom": "payments",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "payments_charge_fk": {
           "name": "payments_charge_fk",
           "tableFrom": "payments",
-          "columnsFrom": [
-            "tenant_id",
-            "charge_id"
-          ],
+          "columnsFrom": ["tenant_id", "charge_id"],
           "tableTo": "charges",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -3769,10 +3380,7 @@
       "uniqueConstraints": {
         "payments_tenant_id_id_uq": {
           "name": "payments_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -3781,9 +3389,7 @@
           "name": "payments_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"payments\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"payments\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -3948,69 +3554,45 @@
         "attendances_tenant_id_academies_id_fk": {
           "name": "attendances_tenant_id_academies_id_fk",
           "tableFrom": "attendances",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "attendances_recorded_by_user_id_users_id_fk": {
           "name": "attendances_recorded_by_user_id_users_id_fk",
           "tableFrom": "attendances",
-          "columnsFrom": [
-            "recorded_by_user_id"
-          ],
+          "columnsFrom": ["recorded_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "attendances_revoked_by_user_id_users_id_fk": {
           "name": "attendances_revoked_by_user_id_users_id_fk",
           "tableFrom": "attendances",
-          "columnsFrom": [
-            "revoked_by_user_id"
-          ],
+          "columnsFrom": ["revoked_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "attendances_session_fk": {
           "name": "attendances_session_fk",
           "tableFrom": "attendances",
-          "columnsFrom": [
-            "tenant_id",
-            "class_session_id"
-          ],
+          "columnsFrom": ["tenant_id", "class_session_id"],
           "tableTo": "class_sessions",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "attendances_student_fk": {
           "name": "attendances_student_fk",
           "tableFrom": "attendances",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -4019,10 +3601,7 @@
       "uniqueConstraints": {
         "attendances_tenant_id_id_uq": {
           "name": "attendances_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -4031,18 +3610,14 @@
           "name": "attendances_tenant_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"attendances\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         },
         "attendances_tenant_insert": {
           "name": "attendances_tenant_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "withCheck": "\"attendances\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -4166,41 +3741,27 @@
         "checkin_codes_tenant_id_academies_id_fk": {
           "name": "checkin_codes_tenant_id_academies_id_fk",
           "tableFrom": "checkin_codes",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "checkin_codes_opened_by_user_id_users_id_fk": {
           "name": "checkin_codes_opened_by_user_id_users_id_fk",
           "tableFrom": "checkin_codes",
-          "columnsFrom": [
-            "opened_by_user_id"
-          ],
+          "columnsFrom": ["opened_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "checkin_codes_session_fk": {
           "name": "checkin_codes_session_fk",
           "tableFrom": "checkin_codes",
-          "columnsFrom": [
-            "tenant_id",
-            "class_session_id"
-          ],
+          "columnsFrom": ["tenant_id", "class_session_id"],
           "tableTo": "class_sessions",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -4209,17 +3770,12 @@
       "uniqueConstraints": {
         "checkin_codes_qr_token_unique": {
           "name": "checkin_codes_qr_token_unique",
-          "columns": [
-            "qr_token"
-          ],
+          "columns": ["qr_token"],
           "nullsNotDistinct": false
         },
         "checkin_codes_tenant_id_id_uq": {
           "name": "checkin_codes_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -4228,9 +3784,7 @@
           "name": "checkin_codes_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"checkin_codes\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"checkin_codes\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -4327,28 +3881,18 @@
         "class_sessions_tenant_id_academies_id_fk": {
           "name": "class_sessions_tenant_id_academies_id_fk",
           "tableFrom": "class_sessions",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "class_sessions_class_fk": {
           "name": "class_sessions_class_fk",
           "tableFrom": "class_sessions",
-          "columnsFrom": [
-            "tenant_id",
-            "class_id"
-          ],
+          "columnsFrom": ["tenant_id", "class_id"],
           "tableTo": "classes",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -4357,19 +3901,12 @@
       "uniqueConstraints": {
         "class_sessions_tenant_id_id_uq": {
           "name": "class_sessions_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "class_sessions_tenant_class_date_uq": {
           "name": "class_sessions_tenant_class_date_uq",
-          "columns": [
-            "tenant_id",
-            "class_id",
-            "session_date"
-          ],
+          "columns": ["tenant_id", "class_id", "session_date"],
           "nullsNotDistinct": false
         }
       },
@@ -4378,9 +3915,7 @@
           "name": "class_sessions_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"class_sessions\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"class_sessions\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -4444,26 +3979,18 @@
         "graduation_rules_tenant_id_academies_id_fk": {
           "name": "graduation_rules_tenant_id_academies_id_fk",
           "tableFrom": "graduation_rules",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "graduation_rules_belt_id_belts_id_fk": {
           "name": "graduation_rules_belt_id_belts_id_fk",
           "tableFrom": "graduation_rules",
-          "columnsFrom": [
-            "belt_id"
-          ],
+          "columnsFrom": ["belt_id"],
           "tableTo": "belts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -4472,18 +3999,12 @@
       "uniqueConstraints": {
         "graduation_rules_tenant_id_id_uq": {
           "name": "graduation_rules_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         },
         "graduation_rules_tenant_belt_uq": {
           "name": "graduation_rules_tenant_belt_uq",
-          "columns": [
-            "tenant_id",
-            "belt_id"
-          ],
+          "columns": ["tenant_id", "belt_id"],
           "nullsNotDistinct": false
         }
       },
@@ -4492,9 +4013,7 @@
           "name": "graduation_rules_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"graduation_rules\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"graduation_rules\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -4644,69 +4163,45 @@
         "student_graduations_tenant_id_academies_id_fk": {
           "name": "student_graduations_tenant_id_academies_id_fk",
           "tableFrom": "student_graduations",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "student_graduations_belt_id_belts_id_fk": {
           "name": "student_graduations_belt_id_belts_id_fk",
           "tableFrom": "student_graduations",
-          "columnsFrom": [
-            "belt_id"
-          ],
+          "columnsFrom": ["belt_id"],
           "tableTo": "belts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "student_graduations_awarded_by_user_id_users_id_fk": {
           "name": "student_graduations_awarded_by_user_id_users_id_fk",
           "tableFrom": "student_graduations",
-          "columnsFrom": [
-            "awarded_by_user_id"
-          ],
+          "columnsFrom": ["awarded_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "student_graduations_student_fk": {
           "name": "student_graduations_student_fk",
           "tableFrom": "student_graduations",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "student_graduations_reverses_fk": {
           "name": "student_graduations_reverses_fk",
           "tableFrom": "student_graduations",
-          "columnsFrom": [
-            "tenant_id",
-            "reverses_graduation_id"
-          ],
+          "columnsFrom": ["tenant_id", "reverses_graduation_id"],
           "tableTo": "student_graduations",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -4715,10 +4210,7 @@
       "uniqueConstraints": {
         "student_graduations_tenant_id_id_uq": {
           "name": "student_graduations_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -4727,18 +4219,14 @@
           "name": "student_graduations_tenant_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"student_graduations\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         },
         "student_graduations_tenant_insert": {
           "name": "student_graduations_tenant_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "withCheck": "\"student_graduations\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -4830,41 +4318,27 @@
         "student_notes_tenant_id_academies_id_fk": {
           "name": "student_notes_tenant_id_academies_id_fk",
           "tableFrom": "student_notes",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "student_notes_author_user_id_users_id_fk": {
           "name": "student_notes_author_user_id_users_id_fk",
           "tableFrom": "student_notes",
-          "columnsFrom": [
-            "author_user_id"
-          ],
+          "columnsFrom": ["author_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "student_notes_student_fk": {
           "name": "student_notes_student_fk",
           "tableFrom": "student_notes",
-          "columnsFrom": [
-            "tenant_id",
-            "student_id"
-          ],
+          "columnsFrom": ["tenant_id", "student_id"],
           "tableTo": "students",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -4873,10 +4347,7 @@
       "uniqueConstraints": {
         "student_notes_tenant_id_id_uq": {
           "name": "student_notes_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -4885,9 +4356,7 @@
           "name": "student_notes_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"student_notes\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"student_notes\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -5003,56 +4472,36 @@
         "invites_tenant_id_academies_id_fk": {
           "name": "invites_tenant_id_academies_id_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "invites_created_by_user_id_users_id_fk": {
           "name": "invites_created_by_user_id_users_id_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "invites_class_fk": {
           "name": "invites_class_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "tenant_id",
-            "class_id"
-          ],
+          "columnsFrom": ["tenant_id", "class_id"],
           "tableTo": "classes",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "invites_academy_plan_fk": {
           "name": "invites_academy_plan_fk",
           "tableFrom": "invites",
-          "columnsFrom": [
-            "tenant_id",
-            "academy_plan_id"
-          ],
+          "columnsFrom": ["tenant_id", "academy_plan_id"],
           "tableTo": "academy_plans",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -5061,17 +4510,12 @@
       "uniqueConstraints": {
         "invites_token_hash_unique": {
           "name": "invites_token_hash_unique",
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false
         },
         "invites_tenant_id_id_uq": {
           "name": "invites_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -5080,9 +4524,7 @@
           "name": "invites_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"invites\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"invites\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -5181,54 +4623,36 @@
         "memberships_tenant_id_academies_id_fk": {
           "name": "memberships_tenant_id_academies_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "memberships_user_id_users_id_fk": {
           "name": "memberships_user_id_users_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "memberships_belt_id_belts_id_fk": {
           "name": "memberships_belt_id_belts_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "belt_id"
-          ],
+          "columnsFrom": ["belt_id"],
           "tableTo": "belts",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "memberships_invite_fk": {
           "name": "memberships_invite_fk",
           "tableFrom": "memberships",
-          "columnsFrom": [
-            "tenant_id",
-            "invite_id"
-          ],
+          "columnsFrom": ["tenant_id", "invite_id"],
           "tableTo": "invites",
-          "columnsTo": [
-            "tenant_id",
-            "id"
-          ],
+          "columnsTo": ["tenant_id", "id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -5237,19 +4661,12 @@
       "uniqueConstraints": {
         "memberships_tenant_user_role_uq": {
           "name": "memberships_tenant_user_role_uq",
-          "columns": [
-            "tenant_id",
-            "user_id",
-            "role"
-          ],
+          "columns": ["tenant_id", "user_id", "role"],
           "nullsNotDistinct": false
         },
         "memberships_tenant_id_id_uq": {
           "name": "memberships_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -5258,9 +4675,7 @@
           "name": "memberships_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"memberships\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"memberships\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         },
@@ -5268,9 +4683,7 @@
           "name": "memberships_self_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"memberships\".\"user_id\" = NULLIF(current_setting('app.user_id', true), '')::uuid"
         }
       },
@@ -5332,13 +4745,9 @@
         "role_permissions_tenant_id_academies_id_fk": {
           "name": "role_permissions_tenant_id_academies_id_fk",
           "tableFrom": "role_permissions",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -5347,19 +4756,12 @@
       "uniqueConstraints": {
         "role_permissions_tenant_role_key_uq": {
           "name": "role_permissions_tenant_role_key_uq",
-          "columns": [
-            "tenant_id",
-            "role",
-            "permission_key"
-          ],
+          "columns": ["tenant_id", "role", "permission_key"],
           "nullsNotDistinct": false
         },
         "role_permissions_tenant_id_id_uq": {
           "name": "role_permissions_tenant_id_id_uq",
-          "columns": [
-            "tenant_id",
-            "id"
-          ],
+          "columns": ["tenant_id", "id"],
           "nullsNotDistinct": false
         }
       },
@@ -5368,9 +4770,7 @@
           "name": "role_permissions_tenant_all",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"role_permissions\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid",
           "withCheck": "\"role_permissions\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
@@ -5488,39 +4888,27 @@
         "academy_subscriptions_academy_id_academies_id_fk": {
           "name": "academy_subscriptions_academy_id_academies_id_fk",
           "tableFrom": "academy_subscriptions",
-          "columnsFrom": [
-            "academy_id"
-          ],
+          "columnsFrom": ["academy_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "academy_subscriptions_platform_plan_id_platform_plans_id_fk": {
           "name": "academy_subscriptions_platform_plan_id_platform_plans_id_fk",
           "tableFrom": "academy_subscriptions",
-          "columnsFrom": [
-            "platform_plan_id"
-          ],
+          "columnsFrom": ["platform_plan_id"],
           "tableTo": "platform_plans",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "academy_subscriptions_pending_platform_plan_id_platform_plans_id_fk": {
           "name": "academy_subscriptions_pending_platform_plan_id_platform_plans_id_fk",
           "tableFrom": "academy_subscriptions",
-          "columnsFrom": [
-            "pending_platform_plan_id"
-          ],
+          "columnsFrom": ["pending_platform_plan_id"],
           "tableTo": "platform_plans",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -5532,9 +4920,7 @@
           "name": "academy_subscriptions_own_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"academy_subscriptions\".\"academy_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -5623,9 +5009,7 @@
       "uniqueConstraints": {
         "platform_plans_name_unique": {
           "name": "platform_plans_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "nullsNotDistinct": false
         }
       },
@@ -5634,9 +5018,7 @@
           "name": "platform_plans_public_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "true"
         }
       },
@@ -5712,13 +5094,9 @@
         "platform_users_user_id_users_id_fk": {
           "name": "platform_users_user_id_users_id_fk",
           "tableFrom": "platform_users",
-          "columnsFrom": [
-            "user_id"
-          ],
+          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -5727,9 +5105,7 @@
       "uniqueConstraints": {
         "platform_users_user_id_unique": {
           "name": "platform_users_user_id_unique",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "nullsNotDistinct": false
         }
       },
@@ -5833,39 +5209,27 @@
         "audit_logs_tenant_id_academies_id_fk": {
           "name": "audit_logs_tenant_id_academies_id_fk",
           "tableFrom": "audit_logs",
-          "columnsFrom": [
-            "tenant_id"
-          ],
+          "columnsFrom": ["tenant_id"],
           "tableTo": "academies",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "audit_logs_actor_user_id_users_id_fk": {
           "name": "audit_logs_actor_user_id_users_id_fk",
           "tableFrom": "audit_logs",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
+          "columnsFrom": ["actor_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         },
         "audit_logs_impersonator_user_id_users_id_fk": {
           "name": "audit_logs_impersonator_user_id_users_id_fk",
           "tableFrom": "audit_logs",
-          "columnsFrom": [
-            "impersonator_user_id"
-          ],
+          "columnsFrom": ["impersonator_user_id"],
           "tableTo": "users",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "no action"
         }
@@ -5877,9 +5241,7 @@
           "name": "audit_logs_tenant_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "tatame_app"
-          ],
+          "to": ["tatame_app"],
           "using": "\"audit_logs\".\"tenant_id\" = NULLIF(current_setting('app.tenant_id', true), '')::uuid"
         }
       },
@@ -5891,233 +5253,132 @@
     "public.academy_status": {
       "name": "academy_status",
       "schema": "public",
-      "values": [
-        "trial",
-        "active",
-        "delinquent",
-        "suspended"
-      ]
+      "values": ["trial", "active", "delinquent", "suspended"]
     },
     "public.belt_ladder_kind": {
       "name": "belt_ladder_kind",
       "schema": "public",
-      "values": [
-        "adult",
-        "kids"
-      ]
+      "values": ["adult", "kids"]
     },
     "public.billing_recurrence": {
       "name": "billing_recurrence",
       "schema": "public",
-      "values": [
-        "monthly",
-        "quarterly",
-        "semiannual",
-        "yearly"
-      ]
+      "values": ["monthly", "quarterly", "semiannual", "yearly"]
     },
     "public.charge_origin": {
       "name": "charge_origin",
       "schema": "public",
-      "values": [
-        "plan",
-        "event",
-        "order"
-      ]
+      "values": ["plan", "event", "order"]
     },
     "public.charge_status": {
       "name": "charge_status",
       "schema": "public",
-      "values": [
-        "open",
-        "paid",
-        "overdue",
-        "canceled",
-        "refunded"
-      ]
+      "values": ["open", "paid", "overdue", "canceled", "refunded"]
     },
     "public.checkin_method": {
       "name": "checkin_method",
       "schema": "public",
-      "values": [
-        "qr",
-        "code",
-        "manual"
-      ]
+      "values": ["qr", "code", "manual"]
     },
     "public.class_session_status": {
       "name": "class_session_status",
       "schema": "public",
-      "values": [
-        "scheduled",
-        "done",
-        "canceled"
-      ]
+      "values": ["scheduled", "done", "canceled"]
     },
     "public.class_status": {
       "name": "class_status",
       "schema": "public",
-      "values": [
-        "active",
-        "archived"
-      ]
+      "values": ["active", "archived"]
     },
     "public.credential_provider": {
       "name": "credential_provider",
       "schema": "public",
-      "values": [
-        "password"
-      ]
+      "values": ["password"]
     },
     "public.enrollment_status": {
       "name": "enrollment_status",
       "schema": "public",
-      "values": [
-        "active",
-        "removed"
-      ]
+      "values": ["active", "removed"]
     },
     "public.event_registration_status": {
       "name": "event_registration_status",
       "schema": "public",
-      "values": [
-        "pending_payment",
-        "confirmed",
-        "canceled"
-      ]
+      "values": ["pending_payment", "confirmed", "canceled"]
     },
     "public.event_status": {
       "name": "event_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "published",
-        "canceled"
-      ]
+      "values": ["draft", "published", "canceled"]
     },
     "public.graduation_kind": {
       "name": "graduation_kind",
       "schema": "public",
-      "values": [
-        "degree",
-        "belt",
-        "revocation"
-      ]
+      "values": ["degree", "belt", "revocation"]
     },
     "public.invite_kind": {
       "name": "invite_kind",
       "schema": "public",
-      "values": [
-        "student",
-        "guardian"
-      ]
+      "values": ["student", "guardian"]
     },
     "public.mandate_status": {
       "name": "mandate_status",
       "schema": "public",
-      "values": [
-        "active",
-        "canceled"
-      ]
+      "values": ["active", "canceled"]
     },
     "public.membership_role": {
       "name": "membership_role",
       "schema": "public",
-      "values": [
-        "student",
-        "professor",
-        "admin",
-        "guardian"
-      ]
+      "values": ["student", "professor", "admin", "guardian"]
     },
     "public.membership_status": {
       "name": "membership_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended"
-      ]
+      "values": ["active", "suspended"]
     },
     "public.order_status": {
       "name": "order_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "paid",
-        "ready",
-        "delivered",
-        "canceled"
-      ]
+      "values": ["pending", "paid", "ready", "delivered", "canceled"]
     },
     "public.payment_method": {
       "name": "payment_method",
       "schema": "public",
-      "values": [
-        "pix",
-        "boleto",
-        "card"
-      ]
+      "values": ["pix", "boleto", "card"]
     },
     "public.payment_provider": {
       "name": "payment_provider",
       "schema": "public",
-      "values": [
-        "simulated",
-        "stripe"
-      ]
+      "values": ["simulated", "stripe"]
     },
     "public.payment_status": {
       "name": "payment_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "succeeded",
-        "failed",
-        "refunded"
-      ]
+      "values": ["pending", "succeeded", "failed", "refunded"]
     },
     "public.platform_role": {
       "name": "platform_role",
       "schema": "public",
-      "values": [
-        "owner",
-        "support",
-        "finance"
-      ]
+      "values": ["owner", "support", "finance"]
     },
     "public.product_status": {
       "name": "product_status",
       "schema": "public",
-      "values": [
-        "active",
-        "archived"
-      ]
+      "values": ["active", "archived"]
     },
     "public.student_status": {
       "name": "student_status",
       "schema": "public",
-      "values": [
-        "active",
-        "inactive"
-      ]
+      "values": ["active", "inactive"]
     },
     "public.subscription_status": {
       "name": "subscription_status",
       "schema": "public",
-      "values": [
-        "trialing",
-        "active",
-        "past_due",
-        "canceled"
-      ]
+      "values": ["trialing", "active", "past_due", "canceled"]
     },
     "public.user_status": {
       "name": "user_status",
       "schema": "public",
-      "values": [
-        "active",
-        "disabled"
-      ]
+      "values": ["active", "disabled"]
     }
   },
   "schemas": {},

@@ -51,7 +51,9 @@ export class StripePaymentProvider implements PaymentProviderPort {
     this.notConfigured();
   }
 
-  async createMandate(_intent: MandateIntent): Promise<{ providerMandateId: string }> {
+  async createMandate(
+    _intent: MandateIntent,
+  ): Promise<{ providerMandateId: string }> {
     this.notConfigured();
   }
 
@@ -59,7 +61,9 @@ export class StripePaymentProvider implements PaymentProviderPort {
     this.notConfigured();
   }
 
-  async refund(_providerPaymentId: string): Promise<{ providerRefundId: string }> {
+  async refund(
+    _providerPaymentId: string,
+  ): Promise<{ providerRefundId: string }> {
     this.notConfigured();
   }
 

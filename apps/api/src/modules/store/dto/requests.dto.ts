@@ -14,7 +14,10 @@ import {
 } from 'class-validator';
 
 export class CreateCategoryDto {
-  @ApiProperty({ example: 'Kimonos', description: '"+ Nova categoria" — unique per academy' })
+  @ApiProperty({
+    example: 'Kimonos',
+    description: '"+ Nova categoria" — unique per academy',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(60)
@@ -42,7 +45,10 @@ export class CreateProductDto {
   @MaxLength(2000)
   description?: string | null;
 
-  @ApiProperty({ minimum: 1, description: 'Integer cents — a product always costs something' })
+  @ApiProperty({
+    minimum: 1,
+    description: 'Integer cents — a product always costs something',
+  })
   @IsInt()
   @Min(1)
   priceCents!: number;
@@ -68,7 +74,10 @@ export class CreateProductDto {
   @IsUUID()
   categoryId?: string | null;
 
-  @ApiPropertyOptional({ type: [String], description: 'Rendered as #chips, searched by the vitrine' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Rendered as #chips, searched by the vitrine',
+  })
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(20)
@@ -76,7 +85,10 @@ export class CreateProductDto {
   @MaxLength(40, { each: true })
   tags?: string[];
 
-  @ApiPropertyOptional({ type: [String], description: 'Size pills; empty = product has no sizes' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Size pills; empty = product has no sizes',
+  })
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(12)
@@ -84,7 +96,10 @@ export class CreateProductDto {
   @MaxLength(10, { each: true })
   sizes?: string[];
 
-  @ApiPropertyOptional({ example: 'GI', description: '1–3 letters; derived from the name when omitted' })
+  @ApiPropertyOptional({
+    example: 'GI',
+    description: '1–3 letters; derived from the name when omitted',
+  })
   @IsOptional()
   @IsString()
   @Length(1, 3)
@@ -92,7 +107,8 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     example: 'store-blue-purple',
-    description: 'Design-system gradient catalog slug; cycles the catalog when omitted',
+    description:
+      'Design-system gradient catalog slug; cycles the catalog when omitted',
   })
   @IsOptional()
   @IsString()
@@ -175,14 +191,18 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     nullable: true,
     type: String,
-    description: 'Required iff the product defines sizes; must be one of its pills',
+    description:
+      'Required iff the product defines sizes; must be one of its pills',
   })
   @IsOptional()
   @IsString()
   @MaxLength(10)
   size?: string | null;
 
-  @ApiProperty({ minimum: 1, description: 'Capped by available stock at creation' })
+  @ApiProperty({
+    minimum: 1,
+    description: 'Capped by available stock at creation',
+  })
   @IsInt()
   @Min(1)
   quantity!: number;

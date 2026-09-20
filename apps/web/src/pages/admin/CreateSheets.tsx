@@ -42,10 +42,12 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
 
   function submit() {
     const next: Record<string, string> = {};
-    if (fullName.trim().length < 2) next['fullName'] = 'Informe o nome completo.';
+    if (fullName.trim().length < 2)
+      next['fullName'] = 'Informe o nome completo.';
     if (!birthDate) next['birthDate'] = 'Informe a data de nascimento.';
     if (birthDate && isMinor(birthDate) && !guardianId) {
-      next['guardianId'] = 'Aluno menor de idade precisa de um responsável vinculado.';
+      next['guardianId'] =
+        'Aluno menor de idade precisa de um responsável vinculado.';
     }
     setErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -64,7 +66,9 @@ export function NewStudentSheet({ open, onClose, onSuccess }: SheetProps) {
       },
       {
         onSuccess: () => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/students'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/students'],
+          });
           onSuccess('Aluno cadastrado.');
           onClose();
         },
@@ -197,8 +201,10 @@ export function NewProfessorSheet({ open, onClose, onSuccess }: SheetProps) {
 
   function submit() {
     const next: Record<string, string> = {};
-    if (fullName.trim().length < 2) next['fullName'] = 'Informe o nome completo.';
-    if (!/^\S+@\S+\.\S+$/.test(email)) next['email'] = 'Informe um email válido.';
+    if (fullName.trim().length < 2)
+      next['fullName'] = 'Informe o nome completo.';
+    if (!/^\S+@\S+\.\S+$/.test(email))
+      next['email'] = 'Informe um email válido.';
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -206,8 +212,12 @@ export function NewProfessorSheet({ open, onClose, onSuccess }: SheetProps) {
       { body: { fullName: fullName.trim(), email } },
       {
         onSuccess: () => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/professors'] });
-          onSuccess('Professor cadastrado. Enviamos um email para definir a senha.');
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/professors'],
+          });
+          onSuccess(
+            'Professor cadastrado. Enviamos um email para definir a senha.',
+          );
           onClose();
         },
         onError: (error) => setApiError(enrollmentErrorMessage(error)),
@@ -261,8 +271,10 @@ export function NewGuardianSheet({ open, onClose, onSuccess }: SheetProps) {
 
   function submit() {
     const next: Record<string, string> = {};
-    if (fullName.trim().length < 2) next['fullName'] = 'Informe o nome completo.';
-    if (email && !/^\S+@\S+\.\S+$/.test(email)) next['email'] = 'Informe um email válido.';
+    if (fullName.trim().length < 2)
+      next['fullName'] = 'Informe o nome completo.';
+    if (email && !/^\S+@\S+\.\S+$/.test(email))
+      next['email'] = 'Informe um email válido.';
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -276,7 +288,9 @@ export function NewGuardianSheet({ open, onClose, onSuccess }: SheetProps) {
       },
       {
         onSuccess: () => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/guardians'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/guardians'],
+          });
           onSuccess('Responsável cadastrado.');
           onClose();
         },
@@ -300,7 +314,12 @@ export function NewGuardianSheet({ open, onClose, onSuccess }: SheetProps) {
           error={errors['fullName']}
           required
         />
-        <FormField label="Telefone" type="tel" value={phone} onChangeText={setPhone} />
+        <FormField
+          label="Telefone"
+          type="tel"
+          value={phone}
+          onChangeText={setPhone}
+        />
         <FormField
           label="Email"
           type="email"

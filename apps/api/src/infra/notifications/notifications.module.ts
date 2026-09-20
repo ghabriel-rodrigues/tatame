@@ -52,7 +52,9 @@ class ResendNotificationDriver implements NotificationPort {
         }),
       });
       if (!response.ok) {
-        this.logger.error(`Resend API error ${response.status}: ${await response.text()}`);
+        this.logger.error(
+          `Resend API error ${response.status}: ${await response.text()}`,
+        );
       }
     } catch (error) {
       this.logger.error(`Resend request failed: ${(error as Error).message}`);
@@ -67,7 +69,10 @@ class ResendNotificationDriver implements NotificationPort {
       inject: [APP_CONFIG],
       useFactory: (config: AppConfig): NotificationPort =>
         config.resendApiKey
-          ? new ResendNotificationDriver(config.resendApiKey, config.resendFromEmail)
+          ? new ResendNotificationDriver(
+              config.resendApiKey,
+              config.resendFromEmail,
+            )
           : new ConsoleNotificationDriver(),
     },
   ],

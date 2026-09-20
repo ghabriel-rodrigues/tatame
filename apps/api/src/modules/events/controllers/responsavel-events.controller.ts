@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -9,7 +17,10 @@ import {
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
-import { RegisterEventResponseDto, ResponsavelEventsResponseDto } from '../dto/responses.dto.js';
+import {
+  RegisterEventResponseDto,
+  ResponsavelEventsResponseDto,
+} from '../dto/responses.dto.js';
 import { EventRegistrationsService } from '../services/event-registrations.service.js';
 import { EventsQueryService } from '../services/events-query.service.js';
 
@@ -55,7 +66,10 @@ export class ResponsavelEventsController {
     @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {
     const ctx = requireTenantContext(this.cls);
-    return this.registrations.register(ctx, id, { kind: 'dependent', studentId });
+    return this.registrations.register(ctx, id, {
+      kind: 'dependent',
+      studentId,
+    });
   }
 
   @Delete(':id/registrations/:studentId')

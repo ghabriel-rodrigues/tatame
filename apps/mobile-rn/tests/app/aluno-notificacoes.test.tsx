@@ -5,11 +5,22 @@
  * taps through the aluno shell map and the perfil settings switch.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 import { makeWallet } from '../helpers/billing';
 import { OPEN_MAT_EVENT_ID } from '../helpers/events';
@@ -41,7 +52,10 @@ function renderAluno(
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -50,7 +64,9 @@ function renderAluno(
 }
 
 async function openNotificacoes(): Promise<void> {
-  await waitFor(() => expect(screen.getByTestId('notifications-bell')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('notifications-bell')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('notifications-bell'));
   });
@@ -71,7 +87,9 @@ describe('aluno Notificações (NOT.8)', () => {
     });
 
     // Unread → the pink dot on the home-header bell.
-    await waitFor(() => expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('notifications-bell-dot')).toBeTruthy(),
+    );
 
     await openNotificacoes();
 
@@ -106,7 +124,9 @@ describe('aluno Notificações (NOT.8)', () => {
 
     await openNotificacoes();
 
-    await waitFor(() => expect(screen.getByText('Novidades na loja')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Novidades na loja')).toBeTruthy(),
+    );
     expect(screen.getByTestId('notification-icon-store')).toBeTruthy();
 
     // route: null → no navigation; the screen stays put.
@@ -134,7 +154,9 @@ describe('aluno Notificações (NOT.8)', () => {
     });
 
     await openNotificacoes();
-    await waitFor(() => expect(screen.getByText('Open mat de verão')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Open mat de verão')).toBeTruthy(),
+    );
     expect(screen.queryByText('Pedido pronto para retirada')).toBeNull();
 
     await act(async () => {
@@ -147,7 +169,9 @@ describe('aluno Notificações (NOT.8)', () => {
       });
     });
 
-    await waitFor(() => expect(screen.getByText('Pedido pronto para retirada')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedido pronto para retirada')).toBeTruthy(),
+    );
     expect(log.listCursors).toEqual([null, 'cursor-2']);
     // First page keeps rendering above the appended one.
     expect(screen.getByText('Mensalidade de agosto disponível')).toBeTruthy();
@@ -155,9 +179,14 @@ describe('aluno Notificações (NOT.8)', () => {
 
   it('routes a wallet row into the Carteira (semantic hint → aluno shell)', async () => {
     renderAluno(
-      { count: 1, pages: [makeNotificationsPage(makeAlunoFeed(OPEN_MAT_EVENT_ID))] },
+      {
+        count: 1,
+        pages: [makeNotificationsPage(makeAlunoFeed(OPEN_MAT_EVENT_ID))],
+      },
       ({ method, path }) =>
-        method === 'GET' && path === '/v1/aluno/wallet' ? json(200, makeWallet()) : null,
+        method === 'GET' && path === '/v1/aluno/wallet'
+          ? json(200, makeWallet())
+          : null,
     );
 
     await openNotificacoes();
@@ -166,25 +195,37 @@ describe('aluno Notificações (NOT.8)', () => {
     );
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText('Mensalidade de agosto disponível'));
+      fireEvent.press(
+        screen.getByLabelText('Mensalidade de agosto disponível'),
+      );
     });
 
-    await waitFor(() => expect(screen.getByTestId('mensalidade-card')).toBeTruthy());
-    expect(screen.getByText('Plano mensal recorrente · R$ 180,00')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByTestId('mensalidade-card')).toBeTruthy(),
+    );
+    expect(
+      screen.getByText('Plano mensal recorrente · R$ 180,00'),
+    ).toBeTruthy();
   });
 
   it('renders the empty state without a dot', async () => {
     renderAluno();
 
-    await waitFor(() => expect(screen.getByTestId('notifications-bell')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('notifications-bell')).toBeTruthy(),
+    );
     expect(screen.queryByTestId('notifications-bell-dot')).toBeNull();
 
     await openNotificacoes();
 
-    await waitFor(() => expect(screen.getByTestId('notifications-empty')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('notifications-empty')).toBeTruthy(),
+    );
     expect(screen.getByText('Nenhuma notificação')).toBeTruthy();
     expect(
-      screen.getByText('Avisos de pagamentos, eventos, graduação e loja aparecem aqui.'),
+      screen.getByText(
+        'Avisos de pagamentos, eventos, graduação e loja aparecem aqui.',
+      ),
     ).toBeTruthy();
   });
 
@@ -199,18 +240,28 @@ describe('aluno Notificações (NOT.8)', () => {
     await waitFor(() =>
       expect(screen.getByTestId('perfil-notifications-switch')).toBeTruthy(),
     );
-    expect(screen.getByText('Silencia o alerta do sino no início')).toBeTruthy();
+    expect(
+      screen.getByText('Silencia o alerta do sino no início'),
+    ).toBeTruthy();
     await waitFor(() =>
-      expect(screen.getByTestId('perfil-notifications-switch').props.value).toBe(true),
+      expect(
+        screen.getByTestId('perfil-notifications-switch').props.value,
+      ).toBe(true),
     );
 
     await act(async () => {
-      fireEvent(screen.getByTestId('perfil-notifications-switch'), 'valueChange', false);
+      fireEvent(
+        screen.getByTestId('perfil-notifications-switch'),
+        'valueChange',
+        false,
+      );
     });
 
     await waitFor(() => expect(log.settingsPuts).toEqual([{ enabled: false }]));
     await waitFor(() =>
-      expect(screen.getByTestId('perfil-notifications-switch').props.value).toBe(false),
+      expect(
+        screen.getByTestId('perfil-notifications-switch').props.value,
+      ).toBe(false),
     );
   });
 });

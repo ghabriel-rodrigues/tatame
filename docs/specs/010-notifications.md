@@ -4,11 +4,11 @@ Follows the to-spec template. UI truth: aluno-20-notificacoes, responsavel-09-no
 
 ## Problem Statement
 
-Everything that matters to a persona already *happens* in the product — a mensalidade materializes, a charge goes overdue, a payment settles, a professor awards a degree, an event opens inscriptions, an order becomes ready for pickup — but nothing *tells* anyone. The aluno discovers the mensalidade by opening the Carteira; the responsável discovers the child's new grau by scrolling a timeline; the admin's Comunicar button emits an event into the void. Every phase since 4 has ended domain flows with "notifications stay listener-only, delivery is its own phase". This is that phase: the central in-app notification feed each prototype already renders, with an unread badge on the bell every mobile home header carries.
+Everything that matters to a persona already _happens_ in the product — a mensalidade materializes, a charge goes overdue, a payment settles, a professor awards a degree, an event opens inscriptions, an order becomes ready for pickup — but nothing _tells_ anyone. The aluno discovers the mensalidade by opening the Carteira; the responsável discovers the child's new grau by scrolling a timeline; the admin's Comunicar button emits an event into the void. Every phase since 4 has ended domain flows with "notifications stay listener-only, delivery is its own phase". This is that phase: the central in-app notification feed each prototype already renders, with an unread badge on the bell every mobile home header carries.
 
 ## Solution
 
-A tenant-scoped `notifications` table (one row per recipient user), filled by a new backend `notifications` module that only *listens*: it subscribes to the post-commit domain events the other modules already emit (billing.\*, events.\*, attendance.\*, store.\*, plus a new `graduation.awarded` event this phase adds) and synchronously inserts PT-BR notification rows for the right audience — payer, guardian variant, registered inscritos, tenant-wide on publish, admins on low stock. The emitting modules are not touched beyond two additive payload fields; the be-01 "notifications is a listener-only concern" rule finally lands as real code.
+A tenant-scoped `notifications` table (one row per recipient user), filled by a new backend `notifications` module that only _listens_: it subscribes to the post-commit domain events the other modules already emit (billing.\*, events.\*, attendance.\*, store.\*, plus a new `graduation.awarded` event this phase adds) and synchronously inserts PT-BR notification rows for the right audience — payer, guardian variant, registered inscritos, tenant-wide on publish, admins on low stock. The emitting modules are not touched beyond two additive payload fields; the be-01 "notifications is a listener-only concern" rule finally lands as real code.
 
 Clients get a persona-neutral read API — cursor list, unread count, mark-read (single and all) — and each mobile shell gets the prototype's bell-with-dot in the home header opening the Notificações screen (card rows with icon chips and relative timestamps), which marks everything read on open. The perfil "Notificações" switch becomes a real per-user mute: rows are still written, the badge goes quiet. The admin console gets a header bell with a dropdown panel. No push, no e-mail, no realtime — v1 is pull-based in-app feed; everything else is recorded debt.
 
@@ -73,36 +73,36 @@ Clients get a persona-neutral read API — cursor list, unread count, mark-read 
 
 PT-BR templates composed server-side at insert time (product is BR-only in v1; locale-aware templates are recorded debt). Copy anchored to the prototype fixtures.
 
-| Domain event | Recipients | Cat. | Chip | Title / body (guardian variant) | Route |
-|---|---|---|---|---|---|
-| `billing.charge.created` (origin=plan) | payer per `audience` | payment | `R$` | "Mensalidade de {mês} disponível" / "Vence em {data} · R$ {valor}" — g: "Mensalidade de {aluno} disponível" | `wallet` |
-| `billing.charge.overdue` (origin=plan) | payer | payment | `R$` | "Mensalidade em aberto" / "R$ {valor} · venceu em {data} · pague com Pix em 1 toque" — g: "Mensalidade de {aluno} em aberto" | `wallet` |
-| `billing.charge.paid` (origin=plan) | payer | payment | `R$` | "Pagamento confirmado" / "Mensalidade de {mês} · R$ {valor}" | `wallet` |
-| `billing.charge.refunded` (origin=plan) | payer | payment | `R$` | "Pagamento estornado" / "Mensalidade de {mês} · R$ {valor}" | `wallet` |
-| `events.event.published` | all active student/professor/guardian memberships (dedup by user) | event | day-of-month | "{nome}" / "{data} às {hora} — confirme sua presença" (+ " · R$ {valor}" when paid) | `event/{id}` |
-| `events.event.canceled` | payload audience (registered) | event | day | "{nome} foi cancelado" / "Inscrições canceladas — pagamentos serão estornados" | `event/{id}` |
-| `events.registration.confirmed` | acting audience | event | day | "Presença confirmada — {nome}" — g: "{aluno} confirmado em {nome}" | `event/{id}` |
-| `events.registration.canceled` (`via` ≠ `self`) | audience | event | day | "Inscrição cancelada — {nome}" / body per `via` (evento cancelado / estorno) | `event/{id}` |
-| `events.announcement.requested` | payload audience (inscritos) | event | day | "Lembrete: {nome}" / "Comunicado da academia — confira os detalhes do evento" | `event/{id}` |
-| `attendance.checkin.recorded` | guardian of the student (minors with linked guardian only) | attendance | student initials | "{aluno} fez check-in" / "Presença registrada às {hora}" | — |
-| `attendance.revoked` | nobody (internal correction) | — | — | — | — |
-| `graduation.awarded` (new) | student + guardian | graduation | `{n}º` / belt | degree: "Você recebeu o {n}º grau" / "Registrado pelo Prof. {nome}" — belt: "Nova faixa: {faixa}" — g: "{aluno} recebeu o {n}º grau na faixa {faixa}" | `graduation` |
-| `store.order.paid` | buyer | store | `R$` | "Pedido #{n} pago" / "{produto} — retire na recepção da academia" | `orders` |
-| `store.order.ready` | buyer | store | `#{n}` | "Pedido #{n} pronto para retirada" / "Passe na recepção da academia" | `orders` |
-| `store.order.delivered` | buyer | store | `#{n}` | "Pedido #{n} entregue" / "Bom treino com o equipamento novo!" | `orders` |
-| `store.order.canceled` (`refunded=true` only; buyer self-cancel is not news) | buyer | store | `#{n}` | "Pedido #{n} cancelado" / "Estorno do Pix em até 1 dia útil" | `orders` |
-| `store.product.low_stock` | all active admin memberships | store | `!` | "Estoque baixo: {produto}" / "{qty} unidades restantes (alerta em {threshold})" | `store` |
+| Domain event                                                                 | Recipients                                                        | Cat.       | Chip             | Title / body (guardian variant)                                                                                                                       | Route        |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `billing.charge.created` (origin=plan)                                       | payer per `audience`                                              | payment    | `R$`             | "Mensalidade de {mês} disponível" / "Vence em {data} · R$ {valor}" — g: "Mensalidade de {aluno} disponível"                                           | `wallet`     |
+| `billing.charge.overdue` (origin=plan)                                       | payer                                                             | payment    | `R$`             | "Mensalidade em aberto" / "R$ {valor} · venceu em {data} · pague com Pix em 1 toque" — g: "Mensalidade de {aluno} em aberto"                          | `wallet`     |
+| `billing.charge.paid` (origin=plan)                                          | payer                                                             | payment    | `R$`             | "Pagamento confirmado" / "Mensalidade de {mês} · R$ {valor}"                                                                                          | `wallet`     |
+| `billing.charge.refunded` (origin=plan)                                      | payer                                                             | payment    | `R$`             | "Pagamento estornado" / "Mensalidade de {mês} · R$ {valor}"                                                                                           | `wallet`     |
+| `events.event.published`                                                     | all active student/professor/guardian memberships (dedup by user) | event      | day-of-month     | "{nome}" / "{data} às {hora} — confirme sua presença" (+ " · R$ {valor}" when paid)                                                                   | `event/{id}` |
+| `events.event.canceled`                                                      | payload audience (registered)                                     | event      | day              | "{nome} foi cancelado" / "Inscrições canceladas — pagamentos serão estornados"                                                                        | `event/{id}` |
+| `events.registration.confirmed`                                              | acting audience                                                   | event      | day              | "Presença confirmada — {nome}" — g: "{aluno} confirmado em {nome}"                                                                                    | `event/{id}` |
+| `events.registration.canceled` (`via` ≠ `self`)                              | audience                                                          | event      | day              | "Inscrição cancelada — {nome}" / body per `via` (evento cancelado / estorno)                                                                          | `event/{id}` |
+| `events.announcement.requested`                                              | payload audience (inscritos)                                      | event      | day              | "Lembrete: {nome}" / "Comunicado da academia — confira os detalhes do evento"                                                                         | `event/{id}` |
+| `attendance.checkin.recorded`                                                | guardian of the student (minors with linked guardian only)        | attendance | student initials | "{aluno} fez check-in" / "Presença registrada às {hora}"                                                                                              | —            |
+| `attendance.revoked`                                                         | nobody (internal correction)                                      | —          | —                | —                                                                                                                                                     | —            |
+| `graduation.awarded` (new)                                                   | student + guardian                                                | graduation | `{n}º` / belt    | degree: "Você recebeu o {n}º grau" / "Registrado pelo Prof. {nome}" — belt: "Nova faixa: {faixa}" — g: "{aluno} recebeu o {n}º grau na faixa {faixa}" | `graduation` |
+| `store.order.paid`                                                           | buyer                                                             | store      | `R$`             | "Pedido #{n} pago" / "{produto} — retire na recepção da academia"                                                                                     | `orders`     |
+| `store.order.ready`                                                          | buyer                                                             | store      | `#{n}`           | "Pedido #{n} pronto para retirada" / "Passe na recepção da academia"                                                                                  | `orders`     |
+| `store.order.delivered`                                                      | buyer                                                             | store      | `#{n}`           | "Pedido #{n} entregue" / "Bom treino com o equipamento novo!"                                                                                         | `orders`     |
+| `store.order.canceled` (`refunded=true` only; buyer self-cancel is not news) | buyer                                                             | store      | `#{n}`           | "Pedido #{n} cancelado" / "Estorno do Pix em até 1 dia útil"                                                                                          | `orders`     |
+| `store.product.low_stock`                                                    | all active admin memberships                                      | store      | `!`              | "Estoque baixo: {produto}" / "{qty} unidades restantes (alerta em {threshold})"                                                                       | `store`      |
 
 ### Endpoints
 
 Persona-neutral (any authenticated tenant membership), versioned prefix, in the OpenAPI document:
 
-| Endpoint | Purpose |
-|---|---|
-| `GET /notifications?cursor=` | own rows, newest first, cursor-paged (~30) |
-| `GET /notifications/unread-count` | `{ count }` — returns 0 when the membership is muted |
-| `POST /notifications/:id/read` | mark one read (idempotent; foreign/cross-tenant id → 404) |
-| `POST /notifications/read-all` | mark all own rows read |
+| Endpoint                                                      | Purpose                                                    |
+| ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `GET /notifications?cursor=`                                  | own rows, newest first, cursor-paged (~30)                 |
+| `GET /notifications/unread-count`                             | `{ count }` — returns 0 when the membership is muted       |
+| `POST /notifications/:id/read`                                | mark one read (idempotent; foreign/cross-tenant id → 404)  |
+| `POST /notifications/read-all`                                | mark all own rows read                                     |
 | `GET /notifications/settings` · `PUT /notifications/settings` | read/flip `notifications_enabled` on the active membership |
 
 Mark-read and settings routes carry `@BypassReadOnly` (payment-routes precedent): a delinquent academy's members still read and clear their own inbox. Platform sessions have no tenant context — the platform console renders no bell in v1 (no platform-scoped events exist yet; platform notifications — academy delinquency, new signups — are recorded debt).

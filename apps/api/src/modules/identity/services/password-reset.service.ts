@@ -2,7 +2,10 @@ import { randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
 import type { DbHandle } from '@tatame/db';
-import { APP_CONFIG, type AppConfig } from '../../../infra/config/app-config.js';
+import {
+  APP_CONFIG,
+  type AppConfig,
+} from '../../../infra/config/app-config.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import {
   NOTIFICATION_PORT,
@@ -38,7 +41,8 @@ export class PasswordResetService {
         ${email}, ${this.tokens.hashToken(raw)}, ${expiresAt.toISOString()}::timestamptz
       )
     `);
-    const row = result.rows[0] as { email: string; full_name: string } | undefined;
+    const row = result.rows[0] as
+      { email: string; full_name: string } | undefined;
     if (!row) return; // unknown email — same outward behavior
 
     await this.notifications.sendPasswordReset({
@@ -56,7 +60,11 @@ export class PasswordResetService {
     `);
     const row = result.rows[0] as { status: string } | undefined;
     if (row?.status !== 'reset') {
-      throw problem(400, ErrorCodes.RESET_INVALID_OR_EXPIRED, 'Reset token is invalid or expired');
+      throw problem(
+        400,
+        ErrorCodes.RESET_INVALID_OR_EXPIRED,
+        'Reset token is invalid or expired',
+      );
     }
   }
 }

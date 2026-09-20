@@ -60,8 +60,12 @@ describe('purchase state machine (spec 009 stories 23-25)', () => {
   });
 
   it('multiplies the CTA total by the quantity (price snapshot × qty)', () => {
-    expect(purchaseState(sized, 'M', 1).ctaLabel).toBe('Comprar com Pix · R$ 389,00');
-    expect(purchaseState(sized, 'M', 3).ctaLabel).toBe('Comprar com Pix · R$ 1.167,00');
+    expect(purchaseState(sized, 'M', 1).ctaLabel).toBe(
+      'Comprar com Pix · R$ 389,00',
+    );
+    expect(purchaseState(sized, 'M', 3).ctaLabel).toBe(
+      'Comprar com Pix · R$ 1.167,00',
+    );
     expect(buyLabel(38_900, 2)).toBe('Comprar com Pix · R$ 778,00');
   });
 });
@@ -89,7 +93,9 @@ describe('order status chips (spec 009 PT-BR label registry)', () => {
     expect(canCancelOrder(makeOrder())).toBe(true);
     expect(canResumePayment(makeOrder())).toBe(true);
     expect(canCancelOrder(makeOrder({ status: 'paid' }))).toBe(false);
-    expect(canResumePayment(makeOrder({ status: 'paid', chargeId: null }))).toBe(false);
+    expect(
+      canResumePayment(makeOrder({ status: 'paid', chargeId: null })),
+    ).toBe(false);
     expect(canResumePayment(makeOrder({ chargeId: null }))).toBe(false);
   });
 });
@@ -97,12 +103,16 @@ describe('order status chips (spec 009 PT-BR label registry)', () => {
 describe('fixed-copy formatters', () => {
   it('renders the order lines per the prototype', () => {
     expect(orderTitle(makeOrder())).toBe('Pedido #2431');
-    expect(orderItemLine(makeOrderItem())).toBe('Kimono oficial Horizonte · Tam M · 1 un');
+    expect(orderItemLine(makeOrderItem())).toBe(
+      'Kimono oficial Horizonte · Tam M · 1 un',
+    );
     expect(orderItemLine(makeOrderItem({ size: null, quantity: 2 }))).toBe(
       'Kimono oficial Horizonte · 2 un',
     );
     expect(orderDateLine('2026-08-08T14:00:00.000Z')).toBe('Feito em 08/08');
-    expect(stockLine(12)).toBe('12 em estoque · retirada na recepção da academia');
+    expect(stockLine(12)).toBe(
+      '12 em estoque · retirada na recepção da academia',
+    );
     expect(galleryLabel(1)).toBe('Foto 2 de 3');
   });
 });
@@ -122,21 +132,23 @@ describe('gallery derivation (spec 009 — derivation, not schema)', () => {
   });
 
   it('falls back to the catalog head on unknown slugs (catalog may lag the server)', () => {
-    expect(storeGalleryPresets('store-future-preset')[0]).toBe('store-blue-purple');
+    expect(storeGalleryPresets('store-future-preset')[0]).toBe(
+      'store-blue-purple',
+    );
     expect(storeGalleryPresets(null)[0]).toBe('store-blue-purple');
   });
 });
 
 describe('carteira histórico title (spec 009 story 29)', () => {
   it('keeps the mensalidade label for plan charges (competência present)', () => {
-    expect(historyTitle({ periodStart: '2026-07-01', paidAt: '2026-07-08' })).toBe(
-      'Mensalidade · julho',
-    );
+    expect(
+      historyTitle({ periodStart: '2026-07-01', paidAt: '2026-07-08' }),
+    ).toBe('Mensalidade · julho');
   });
 
   it('labels order/event payments (no competência) as pagamento avulso', () => {
-    expect(historyTitle({ periodStart: null, paidAt: '2026-08-08T14:00:00.000Z' })).toBe(
-      'Pagamento avulso',
-    );
+    expect(
+      historyTitle({ periodStart: null, paidAt: '2026-08-08T14:00:00.000Z' }),
+    ).toBe('Pagamento avulso');
   });
 });

@@ -12,7 +12,10 @@ import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { badgeFor } from '../../enrollment/lib/derive.js';
-import { StatsService, type AlunoStats } from '../../attendance/services/stats.service.js';
+import {
+  StatsService,
+  type AlunoStats,
+} from '../../attendance/services/stats.service.js';
 import type {
   BeltView,
   GraduationEntry,
@@ -54,12 +57,21 @@ export interface ProfessorProfileView {
   validGraduations: Array<
     Pick<
       GraduationRuleRow,
-      'beltId' | 'name' | 'colorSlug' | 'tipColorSlug' | 'maxDegrees' | 'ladderKind' | 'enabled'
+      | 'beltId'
+      | 'name'
+      | 'colorSlug'
+      | 'tipColorSlug'
+      | 'maxDegrees'
+      | 'ladderKind'
+      | 'enabled'
     >
   >;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Read-side screen assemblies (GRD.7/GRD.10): the aluno Graduação screen, the
@@ -79,14 +91,22 @@ export class GraduationProfileService {
   ) {}
 
   /** GET /aluno/graduation — hero, progress bar, evolution timeline. */
-  async alunoGraduation(ctx: AuthContext & { tenantId: string }): Promise<AlunoGraduationView> {
+  async alunoGraduation(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<AlunoGraduationView> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const [student] = await tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
+        .where(
+          and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+        );
       if (!student) {
-        throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
+        throw problem(
+          404,
+          ErrorCodes.NOT_FOUND,
+          'No active student record for this account',
+        );
       }
       const state = await this.query.currentState(tx, student.id);
       return {
@@ -117,7 +137,8 @@ export class GraduationProfileService {
         })
         .from(students)
         .where(eq(students.id, studentId));
-      if (!student) throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
+      if (!student)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Student not found');
 
       const state = await this.query.currentState(tx, student.id);
       return {
@@ -137,7 +158,9 @@ export class GraduationProfileService {
   }
 
   /** GET /professor/profile — own belt chip + Graduações válidas card. */
-  async professorProfile(ctx: AuthContext & { tenantId: string }): Promise<ProfessorProfileView> {
+  async professorProfile(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<ProfessorProfileView> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const [row] = await tx
         .select({
@@ -160,7 +183,12 @@ export class GraduationProfileService {
             eq(memberships.status, 'active'),
           ),
         );
-      if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Professor membership not found');
+      if (!row)
+        throw problem(
+          404,
+          ErrorCodes.NOT_FOUND,
+          'Professor membership not found',
+        );
 
       const belt: BeltView | null =
         row.beltId && row.beltName && row.colorSlug

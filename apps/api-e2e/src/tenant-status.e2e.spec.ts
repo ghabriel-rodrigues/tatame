@@ -17,7 +17,10 @@ describe('tenant status: suspension blocks, delinquency is read-only, reactivati
     const admin = await t.login('admin.bravo@tatame.dev');
     await t.setAcademyStatus('bravo-bjj', 'suspended');
 
-    const blockedRead = await t.http().get('/v1/admin/permissions').set(bearer(admin.accessToken));
+    const blockedRead = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(admin.accessToken));
     expect(blockedRead.status).toBe(403);
     expect(blockedRead.body.code).toBe('tenant.suspended');
 
@@ -35,7 +38,10 @@ describe('tenant status: suspension blocks, delinquency is read-only, reactivati
     expect(me.body.academy.status).toBe('suspended');
 
     // …and the user can still sign out.
-    const logout = await t.http().post('/v1/auth/logout').set(bearer(admin.accessToken));
+    const logout = await t
+      .http()
+      .post('/v1/auth/logout')
+      .set(bearer(admin.accessToken));
     expect(logout.status).toBe(204);
   });
 
@@ -44,11 +50,17 @@ describe('tenant status: suspension blocks, delinquency is read-only, reactivati
     const admin = await t.login('admin.bravo@tatame.dev');
 
     await t.setAcademyStatus('bravo-bjj', 'suspended');
-    const blocked = await t.http().get('/v1/admin/permissions').set(bearer(admin.accessToken));
+    const blocked = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(admin.accessToken));
     expect(blocked.status).toBe(403);
 
     await t.setAcademyStatus('bravo-bjj', 'active');
-    const restored = await t.http().get('/v1/admin/permissions').set(bearer(admin.accessToken));
+    const restored = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(admin.accessToken));
     expect(restored.status).toBe(200); // same token, no re-login
   });
 
@@ -56,14 +68,19 @@ describe('tenant status: suspension blocks, delinquency is read-only, reactivati
     const admin = await t.login('admin.bravo@tatame.dev');
     await t.setAcademyStatus('bravo-bjj', 'delinquent');
 
-    const read = await t.http().get('/v1/admin/permissions').set(bearer(admin.accessToken));
+    const read = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(admin.accessToken));
     expect(read.status).toBe(200);
 
     const write = await t
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin.accessToken))
-      .send({ entries: [{ role: 'professor', key: 'events.create', allowed: false }] });
+      .send({
+        entries: [{ role: 'professor', key: 'events.create', allowed: false }],
+      });
     expect(write.status).toBe(403);
     expect(write.body.code).toBe('tenant.read_only');
 
@@ -83,7 +100,10 @@ describe('tenant status: suspension blocks, delinquency is read-only, reactivati
   it('status never leaks across tenants: alpha stays fully functional', async () => {
     await t.setAcademyStatus('bravo-bjj', 'suspended');
     const alphaAdmin = await t.login('admin@tatame.dev');
-    const res = await t.http().get('/v1/admin/permissions').set(bearer(alphaAdmin.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(alphaAdmin.accessToken));
     expect(res.status).toBe(200);
   });
 });

@@ -1,4 +1,10 @@
-import { auditLogs, charges, guardians, students, withPlatform } from '@tatame/db';
+import {
+  auditLogs,
+  charges,
+  guardians,
+  students,
+  withPlatform,
+} from '@tatame/db';
 import { and, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bearer, createTestApp, type TestApp } from './support/test-app.js';
@@ -24,7 +30,9 @@ describe('events: responsável per-dependent confirmation', () => {
     admin = (await t.login('admin@tatame.dev')).accessToken;
 
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
-    openMatId = list.body.events.find((e: any) => e.name === 'Open Mat de Verao').id;
+    openMatId = list.body.events.find(
+      (e: any) => e.name === 'Open Mat de Verao',
+    ).id;
     exameId = list.body.events.find((e: any) => e.name === 'Exame de Faixa').id;
   });
 
@@ -33,7 +41,10 @@ describe('events: responsável per-dependent confirmation', () => {
   });
 
   const eventsList = async () => {
-    const res = await t.http().get('/v1/responsavel/events').set(bearer(responsavel));
+    const res = await t
+      .http()
+      .get('/v1/responsavel/events')
+      .set(bearer(responsavel));
     expect(res.status).toBe(200);
     return res.body.events as any[];
   };
@@ -49,12 +60,17 @@ describe('events: responsável per-dependent confirmation', () => {
     const openMat = events.find((e: any) => e.id === openMatId);
     expect(openMat.bannerPreset).toBe('event-purple-pink');
     expect(openMat.priceCents).toBeNull();
-    expect(openMat.dependents.map((d: any) => d.fullName)).toEqual(['Kiko Kids', 'Lara Kids']);
+    expect(openMat.dependents.map((d: any) => d.fullName)).toEqual([
+      'Kiko Kids',
+      'Lara Kids',
+    ]);
     kikoId = openMat.dependents[0].studentId;
     laraId = openMat.dependents[1].studentId;
 
     // Free event: Kiko was confirmed by the guardian in the fixtures.
-    expect(chipOf(events, openMatId, kikoId).registration.status).toBe('confirmed');
+    expect(chipOf(events, openMatId, kikoId).registration.status).toBe(
+      'confirmed',
+    );
     expect(chipOf(events, openMatId, laraId).registration).toBeNull();
 
     // Paid event: Lara pending with the guardian-billed open charge attached.
@@ -74,8 +90,12 @@ describe('events: responsável per-dependent confirmation', () => {
     expect(confirmed.body.chargeId).toBeNull();
 
     let events = await eventsList();
-    expect(chipOf(events, openMatId, laraId).registration.status).toBe('confirmed');
-    expect(chipOf(events, openMatId, kikoId).registration.status).toBe('confirmed');
+    expect(chipOf(events, openMatId, laraId).registration.status).toBe(
+      'confirmed',
+    );
+    expect(chipOf(events, openMatId, kikoId).registration.status).toBe(
+      'confirmed',
+    );
 
     // The acting user recorded is the guardian (audit + row shape).
     const audits = await withPlatform(t.platformDb.db, (tx) =>
@@ -98,8 +118,12 @@ describe('events: responsável per-dependent confirmation', () => {
       .set(bearer(responsavel));
     expect(canceled.status).toBe(204);
     events = await eventsList();
-    expect(chipOf(events, openMatId, laraId).registration.status).toBe('canceled');
-    expect(chipOf(events, openMatId, kikoId).registration.status).toBe('confirmed');
+    expect(chipOf(events, openMatId, laraId).registration.status).toBe(
+      'canceled',
+    );
+    expect(chipOf(events, openMatId, kikoId).registration.status).toBe(
+      'confirmed',
+    );
   });
 
   it('pays the seeded pending inscription (guardian bill-to) over the responsável rails', async () => {
@@ -181,7 +205,10 @@ describe('events: responsável per-dependent confirmation', () => {
   it('scoping: a non-dependent or foreign student behaves as 404, never 403', async () => {
     // Ana is an alpha student but NOT Renata's dependent.
     const [ana] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: students.id }).from(students).where(eq(students.fullName, 'Ana Aluna')),
+      tx
+        .select({ id: students.id })
+        .from(students)
+        .where(eq(students.fullName, 'Ana Aluna')),
     );
     for (const studentId of [ana!.id, '00000000-0000-0000-0000-000000000009']) {
       const res = await t
@@ -191,7 +218,9 @@ describe('events: responsável per-dependent confirmation', () => {
       expect(res.status, studentId).toBe(404);
       const cancel = await t
         .http()
-        .delete(`/v1/responsavel/events/${openMatId}/registrations/${studentId}`)
+        .delete(
+          `/v1/responsavel/events/${openMatId}/registrations/${studentId}`,
+        )
         .set(bearer(responsavel));
       expect(cancel.status, studentId).toBe(404);
     }

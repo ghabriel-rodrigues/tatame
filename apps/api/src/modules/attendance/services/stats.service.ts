@@ -1,5 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, countDistinct, desc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
+import {
+  and,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lte,
+  sql,
+} from 'drizzle-orm';
 import {
   attendances,
   classSchedules,
@@ -17,9 +28,19 @@ import { APP_DB } from '../../../infra/db/db.module.js';
 import { PermissionsService } from '../../identity/services/permissions.service.js';
 import { GraduationProgressService } from '../../graduation/services/graduation-progress.service.js';
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
-import type { BeltView, ProgressView } from '../../graduation/graduation.types.js';
-import { nextSlot, normalizeTime, type ScheduleSlotView } from '../../enrollment/lib/derive.js';
-import { mensalidadeAlerts, type MensalidadeAlert } from '../../billing/lib/alerts.js';
+import type {
+  BeltView,
+  ProgressView,
+} from '../../graduation/graduation.types.js';
+import {
+  nextSlot,
+  normalizeTime,
+  type ScheduleSlotView,
+} from '../../enrollment/lib/derive.js';
+import {
+  mensalidadeAlerts,
+  type MensalidadeAlert,
+} from '../../billing/lib/alerts.js';
 import { localDate, localMonthStart, localWeekday } from '../lib/time.js';
 import { SessionService } from './session.service.js';
 
@@ -80,7 +101,10 @@ export interface ProfessorDashboard {
   }>;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Derived attendance statistics (spec 004, ATT.11) — computed on read from
@@ -113,13 +137,23 @@ export class StatsService {
     const enrolled = await tx
       .select({ classId: enrollments.classId })
       .from(enrollments)
-      .where(and(eq(enrollments.studentId, studentId), eq(enrollments.status, 'active')));
+      .where(
+        and(
+          eq(enrollments.studentId, studentId),
+          eq(enrollments.status, 'active'),
+        ),
+      );
     const classIds = enrolled.map((r) => r.classId);
 
     const [totalRow] = await tx
       .select({ total: count() })
       .from(attendances)
-      .where(and(eq(attendances.studentId, studentId), isNull(attendances.revokedAt)));
+      .where(
+        and(
+          eq(attendances.studentId, studentId),
+          isNull(attendances.revokedAt),
+        ),
+      );
     const totalLessons = Number(totalRow?.total ?? 0);
 
     if (classIds.length === 0) {
@@ -182,8 +216,15 @@ export class StatsService {
   }
 
   /** Omits (nulls) the streak when the academy turned the gamification off. */
-  async applyGamificationToggle(tenantId: string, stats: AlunoStats): Promise<AlunoStats> {
-    const allowed = await this.permissions.isAllowed(tenantId, 'student', 'gamification.streak');
+  async applyGamificationToggle(
+    tenantId: string,
+    stats: AlunoStats,
+  ): Promise<AlunoStats> {
+    const allowed = await this.permissions.isAllowed(
+      tenantId,
+      'student',
+      'gamification.streak',
+    );
     return allowed ? stats : { ...stats, streak: null };
   }
 
@@ -215,9 +256,17 @@ export class StatsService {
         )`.as('attended'),
       })
       .from(classSessions)
-      .where(and(inArray(classSessions.classId, classIds), lte(classSessions.sessionDate, today)))
+      .where(
+        and(
+          inArray(classSessions.classId, classIds),
+          lte(classSessions.sessionDate, today),
+        ),
+      )
       // NULLS LAST: a slot-less occurrence sorts after timed ones on the day.
-      .orderBy(desc(classSessions.sessionDate), sql`${classSessions.startsAt} DESC NULLS LAST`)
+      .orderBy(
+        desc(classSessions.sessionDate),
+        sql`${classSessions.startsAt} DESC NULLS LAST`,
+      )
       .limit(365);
     let streak = 0;
     for (const row of rows) {
@@ -234,9 +283,15 @@ export class StatsService {
       const [student] = await tx
         .select({ id: students.id, fullName: students.fullName })
         .from(students)
-        .where(and(eq(students.userId, ctx.userId), eq(students.status, 'active')));
+        .where(
+          and(eq(students.userId, ctx.userId), eq(students.status, 'active')),
+        );
       if (!student) {
-        throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
+        throw problem(
+          404,
+          ErrorCodes.NOT_FOUND,
+          'No active student record for this account',
+        );
       }
 
       const enrolledClasses = await tx
@@ -244,7 +299,10 @@ export class StatsService {
         .from(enrollments)
         .innerJoin(
           classes,
-          and(eq(classes.tenantId, enrollments.tenantId), eq(classes.id, enrollments.classId)),
+          and(
+            eq(classes.tenantId, enrollments.tenantId),
+            eq(classes.id, enrollments.classId),
+          ),
         )
         .where(
           and(
@@ -293,19 +351,31 @@ export class StatsService {
       const state = await this.graduationQuery.currentState(tx, student.id);
       const graduation = {
         belt: state.belt,
-        progress: await this.graduationProgress.progressFor(tx, student.id, state),
+        progress: await this.graduationProgress.progressFor(
+          tx,
+          student.id,
+          state,
+        ),
       };
       // Real mensalidade-em-aberto alert (spec 006) — pure predicate read,
       // no materialization side effects at the home entry point.
       const alerts = await mensalidadeAlerts(tx, [student.id], localDate(now));
-      return { student, todayClass, stats, graduation, mensalidade: alerts.get(student.id) ?? null };
+      return {
+        student,
+        todayClass,
+        stats,
+        graduation,
+        mensalidade: alerts.get(student.id) ?? null,
+      };
     });
     home.stats = await this.applyGamificationToggle(ctx.tenantId, home.stats);
     return home;
   }
 
   /** GET /professor/dashboard — alunos hoje, presença média, next-class hero. */
-  async professorDashboard(ctx: AuthContext & { tenantId: string }): Promise<ProfessorDashboard> {
+  async professorDashboard(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<ProfessorDashboard> {
     const now = new Date();
     const today = localDate(now);
     const monthStart = localMonthStart(now);
@@ -314,10 +384,20 @@ export class StatsService {
       const own = await tx
         .select({ id: classes.id, name: classes.name })
         .from(classes)
-        .where(and(eq(classes.professorUserId, ctx.userId), eq(classes.status, 'active')));
+        .where(
+          and(
+            eq(classes.professorUserId, ctx.userId),
+            eq(classes.status, 'active'),
+          ),
+        );
       const classIds = own.map((c) => c.id);
       if (classIds.length === 0) {
-        return { alunosHoje: 0, presencaMediaPct: 0, nextClass: null, todayClasses: [] };
+        return {
+          alunosHoje: 0,
+          presencaMediaPct: 0,
+          nextClass: null,
+          todayClasses: [],
+        };
       }
 
       // alunos hoje — distinct active check-ins on today's sessions.
@@ -361,7 +441,12 @@ export class StatsService {
         const [enrolledRow] = await tx
           .select({ total: count() })
           .from(enrollments)
-          .where(and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')));
+          .where(
+            and(
+              eq(enrollments.classId, classId),
+              eq(enrollments.status, 'active'),
+            ),
+          );
         const enrolledCount = Number(enrolledRow?.total ?? 0);
         if (enrolledCount === 0) continue;
 
@@ -383,16 +468,24 @@ export class StatsService {
               lte(classSessions.sessionDate, today),
             ),
           );
-        rates.push(Number(attendedRow?.total ?? 0) / (sessionCount * enrolledCount));
+        rates.push(
+          Number(attendedRow?.total ?? 0) / (sessionCount * enrolledCount),
+        );
       }
       const presencaMediaPct =
         rates.length === 0
           ? 0
-          : Math.round((rates.reduce((sum, r) => sum + r, 0) / rates.length) * 100);
+          : Math.round(
+              (rates.reduce((sum, r) => sum + r, 0) / rates.length) * 100,
+            );
 
       // Today's classes with counts + the next-class hero.
       const todayClasses: ProfessorDashboard['todayClasses'] = [];
-      const allSlots: Array<{ classId: string; className: string; slot: ScheduleSlotView }> = [];
+      const allSlots: Array<{
+        classId: string;
+        className: string;
+        slot: ScheduleSlotView;
+      }> = [];
       for (const klass of own) {
         const schedules = await tx
           .select()
@@ -413,27 +506,47 @@ export class StatsService {
         const slot = await this.sessions.todaySlot(tx, klass.id, now);
         if (!slot) continue;
         const session = await this.sessions.findToday(tx, klass.id, now);
-        const checkedInCount = session ? await this.sessions.presentCount(tx, session.id) : 0;
+        const checkedInCount = session
+          ? await this.sessions.presentCount(tx, session.id)
+          : 0;
         const [enrolledRow] = await tx
           .select({ total: count() })
           .from(enrollments)
-          .where(and(eq(enrollments.classId, klass.id), eq(enrollments.status, 'active')));
+          .where(
+            and(
+              eq(enrollments.classId, klass.id),
+              eq(enrollments.status, 'active'),
+            ),
+          );
         todayClasses.push({
           classId: klass.id,
           className: klass.name,
-          slot: { weekday: localWeekday(now), startTime: slot.startTime, durationMinutes: slot.durationMinutes },
+          slot: {
+            weekday: localWeekday(now),
+            startTime: slot.startTime,
+            durationMinutes: slot.durationMinutes,
+          },
           checkedInCount,
           enrolledCount: Number(enrolledRow?.total ?? 0),
         });
       }
-      todayClasses.sort((a, b) => a.slot.startTime.localeCompare(b.slot.startTime));
+      todayClasses.sort((a, b) =>
+        a.slot.startTime.localeCompare(b.slot.startTime),
+      );
 
-      const best = nextSlot(allSlots.map((s) => s.slot), now);
+      const best = nextSlot(
+        allSlots.map((s) => s.slot),
+        now,
+      );
       let nextClass: ProfessorDashboard['nextClass'] = null;
       if (best) {
         const holder = allSlots.find((s) => s.slot === best);
         if (holder) {
-          const session = await this.sessions.findToday(tx, holder.classId, now);
+          const session = await this.sessions.findToday(
+            tx,
+            holder.classId,
+            now,
+          );
           const checkedInCount =
             best.weekday === localWeekday(now) && session
               ? await this.sessions.presentCount(tx, session.id)

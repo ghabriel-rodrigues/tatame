@@ -9,7 +9,12 @@ import type { ApiSchemas } from '@tatame/shared';
 type RankingResponse = ApiSchemas['RankingResponseDto'];
 type RankingRow = ApiSchemas['RankingRowDto'];
 
-const row = (position: number, name: string, count: number, isMe = false): RankingRow => ({
+const row = (
+  position: number,
+  name: string,
+  count: number,
+  isMe = false,
+): RankingRow => ({
   position,
   name,
   count,
@@ -35,7 +40,9 @@ export interface RankingFixtureOptions {
 }
 
 /** aluno-06 / professor-05: Por aulas, Marina leads with 17. */
-export function makeLessonsRanking(options: RankingFixtureOptions = {}): RankingResponse {
+export function makeLessonsRanking(
+  options: RankingFixtureOptions = {},
+): RankingResponse {
   const isMe = options.isMe ?? true;
   return {
     by: 'lessons',
@@ -49,13 +56,20 @@ export function makeLessonsRanking(options: RankingFixtureOptions = {}): Ranking
       row(6, 'Bia Andrade', 9),
       row(7, 'Tiago Mota', 8),
     ],
-    me: options.me !== undefined ? options.me : isMe ? { position: 2, count: 14 } : null,
+    me:
+      options.me !== undefined
+        ? options.me
+        : isMe
+          ? { position: 2, count: 14 }
+          : null,
     totalRanked: 24,
   };
 }
 
 /** aluno-07 / professor-06: Por eventos, João leads with 5, Tiago has 1. */
-export function makeEventsRanking(options: RankingFixtureOptions = {}): RankingResponse {
+export function makeEventsRanking(
+  options: RankingFixtureOptions = {},
+): RankingResponse {
   const isMe = options.isMe ?? true;
   return {
     by: 'events',
@@ -69,7 +83,12 @@ export function makeEventsRanking(options: RankingFixtureOptions = {}): RankingR
       row(6, 'Pedro Silveira', 2),
       row(7, 'Tiago Mota', 1),
     ],
-    me: options.me !== undefined ? options.me : isMe ? { position: 2, count: 4 } : null,
+    me:
+      options.me !== undefined
+        ? options.me
+        : isMe
+          ? { position: 2, count: 4 }
+          : null,
     totalRanked: 24,
   };
 }

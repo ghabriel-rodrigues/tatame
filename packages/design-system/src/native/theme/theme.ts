@@ -52,7 +52,10 @@ function deepClone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function deepMerge(target: Record<string, unknown>, patch: Record<string, unknown>): void {
+function deepMerge(
+  target: Record<string, unknown>,
+  patch: Record<string, unknown>,
+): void {
   for (const [key, value] of Object.entries(patch)) {
     const current = target[key];
     if (
@@ -63,7 +66,10 @@ function deepMerge(target: Record<string, unknown>, patch: Record<string, unknow
       typeof current === 'object' &&
       !Array.isArray(current)
     ) {
-      deepMerge(current as Record<string, unknown>, value as Record<string, unknown>);
+      deepMerge(
+        current as Record<string, unknown>,
+        value as Record<string, unknown>,
+      );
     } else {
       target[key] = value as unknown;
     }
@@ -89,7 +95,10 @@ export function createTheme(options: CreateThemeOptions = {}): Theme {
 
   const t = deepClone(tokens) as unknown as ThemeTokens;
   if (mode === 'dark') {
-    deepMerge(t as unknown as Record<string, unknown>, darkTokens as unknown as Record<string, unknown>);
+    deepMerge(
+      t as unknown as Record<string, unknown>,
+      darkTokens as unknown as Record<string, unknown>,
+    );
   }
 
   if (brand) {

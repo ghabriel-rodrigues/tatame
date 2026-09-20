@@ -37,7 +37,9 @@ describe('notifications: fan-out through real flows + read API', () => {
   const feed = async (token: string, cursor?: string) => {
     const res = await t
       .http()
-      .get(`/v1/notifications${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`)
+      .get(
+        `/v1/notifications${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`,
+      )
       .set(bearer(token));
     expect(res.status).toBe(200);
     return res.body as { notifications: any[]; nextCursor: string | null };
@@ -47,7 +49,10 @@ describe('notifications: fan-out through real flows + read API', () => {
     (await feed(token)).notifications.filter((n) => n.title === title).length;
 
   /** Fan-out runs post-commit off the request path — poll until it lands. */
-  const eventually = async (assert: () => Promise<void>, timeoutMs = 5_000): Promise<void> => {
+  const eventually = async (
+    assert: () => Promise<void>,
+    timeoutMs = 5_000,
+  ): Promise<void> => {
     const deadline = Date.now() + timeoutMs;
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -85,22 +90,33 @@ describe('notifications: fan-out through real flows + read API', () => {
   it('serves the seeded feed newest-first with render-ready rows', async () => {
     const body = await feed(aluno);
     expect(body.notifications.length).toBeGreaterThanOrEqual(5);
-    const stamps = body.notifications.map((n: any) => new Date(n.createdAt).getTime());
+    const stamps = body.notifications.map((n: any) =>
+      new Date(n.createdAt).getTime(),
+    );
     expect([...stamps].sort((a, b) => b - a)).toEqual(stamps);
 
     const categories = new Set(body.notifications.map((n: any) => n.category));
     for (const category of ['payment', 'event', 'graduation', 'store']) {
       expect(categories).toContain(category);
     }
-    const paid = body.notifications.find((n: any) => n.title === 'Pagamento confirmado');
-    expect(paid).toMatchObject({ category: 'payment', chip: 'R$', route: 'wallet' });
+    const paid = body.notifications.find(
+      (n: any) => n.title === 'Pagamento confirmado',
+    );
+    expect(paid).toMatchObject({
+      category: 'payment',
+      chip: 'R$',
+      route: 'wallet',
+    });
     expect(paid.readAt).toBeTruthy();
   });
 
   it('pages with a keyset cursor: no overlap, stable order, null at the end', async () => {
     // Grow bravo admin's feed past one page (out-of-band setup rows).
     const [bruno] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, 'admin.bravo@tatame.dev')),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, 'admin.bravo@tatame.dev')),
     );
     await withPlatform(t.platformDb.db, (tx) =>
       tx.insert(notifications).values(
@@ -164,12 +180,19 @@ describe('notifications: fan-out through real flows + read API', () => {
     const row = (await feed(aluno)).notifications.find(
       (n: any) => n.title === 'Pagamento confirmado' && n.readAt === null,
     );
-    expect(row).toMatchObject({ category: 'payment', chip: 'R$', route: 'wallet' });
+    expect(row).toMatchObject({
+      category: 'payment',
+      chip: 'R$',
+      route: 'wallet',
+    });
     expect(row.body).toMatch(/^Mensalidade de .+ · R\$ 180,00$/);
   });
 
-  it('materializing a fresh student\'s first charge notifies them (invite + wallet open)', async () => {
-    const plans = await t.http().get('/v1/admin/billing/plans').set(bearer(admin));
+  it("materializing a fresh student's first charge notifies them (invite + wallet open)", async () => {
+    const plans = await t
+      .http()
+      .get('/v1/admin/billing/plans')
+      .set(bearer(admin));
     const mensal = plans.body.plans.find((p: any) => p.name === 'Mensal');
 
     const invite = await t
@@ -189,15 +212,22 @@ describe('notifications: fan-out through real flows + read API', () => {
       });
     expect(accept.status).toBe(201);
 
-    const nina = (await t.login('notifee@tatame.dev', 'notifee-pass-123')).accessToken;
+    const nina = (await t.login('notifee@tatame.dev', 'notifee-pass-123'))
+      .accessToken;
     const wallet = await t.http().get('/v1/aluno/wallet').set(bearer(nina));
     expect(wallet.status).toBe(200);
 
     await eventually(async () => {
       const rows = (await feed(nina)).notifications;
-      const created = rows.find((n: any) => /^Mensalidade de .+ disponível$/.test(n.title));
+      const created = rows.find((n: any) =>
+        /^Mensalidade de .+ disponível$/.test(n.title),
+      );
       expect(created).toBeTruthy();
-      expect(created).toMatchObject({ category: 'payment', chip: 'R$', route: 'wallet' });
+      expect(created).toMatchObject({
+        category: 'payment',
+        chip: 'R$',
+        route: 'wallet',
+      });
       expect(created.body).toMatch(/^Vence em \d{2}\/\d{2} · R\$ 180,00$/);
     });
   });
@@ -207,7 +237,10 @@ describe('notifications: fan-out through real flows + read API', () => {
   let professorUserId: string;
 
   it('publishing an event notifies every member once (dedup) and no admin', async () => {
-    const professors = await t.http().get('/v1/admin/professors').set(bearer(admin));
+    const professors = await t
+      .http()
+      .get('/v1/admin/professors')
+      .set(bearer(admin));
     professorUserId = professors.body.professors.find(
       (p: any) => p.email === 'professor@tatame.dev',
     ).userId;
@@ -248,11 +281,15 @@ describe('notifications: fan-out through real flows + read API', () => {
     await settle();
     expect(await countTitled(admin, title)).toBe(0); // admins are excluded
 
-    const row = (await feed(aluno)).notifications.find((n: any) => n.title === title);
+    const row = (await feed(aluno)).notifications.find(
+      (n: any) => n.title === title,
+    );
     expect(row.category).toBe('event');
     expect(row.route).toMatch(/^event\//);
     expect(row.chip).toMatch(/^\d{1,2}$/);
-    expect(row.body).toMatch(/^\d{2}\/\d{2} às \d{2}:\d{2} — confirme sua presença · R\$ 25,00$/);
+    expect(row.body).toMatch(
+      /^\d{2}\/\d{2} às \d{2}:\d{2} — confirme sua presença · R\$ 25,00$/,
+    );
   });
 
   it('an event-origin payment confirms the inscription and does NOT double-notify as a mensalidade', async () => {
@@ -293,7 +330,9 @@ describe('notifications: fan-out through real flows + read API', () => {
     expect(simulate.status).toBe(200);
 
     await eventually(async () => {
-      expect(await countTitled(aluno, `Presença confirmada — ${title}`)).toBe(1);
+      expect(await countTitled(aluno, `Presença confirmada — ${title}`)).toBe(
+        1,
+      );
     });
     await settle();
     // The origin filter pinned: event money never renders as a mensalidade.
@@ -302,7 +341,9 @@ describe('notifications: fan-out through real flows + read API', () => {
 
   it('Comunicar reaches exactly the inscritos', async () => {
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
-    const openMat = list.body.events.find((e: any) => e.name === 'Open Mat de Verao');
+    const openMat = list.body.events.find(
+      (e: any) => e.name === 'Open Mat de Verao',
+    );
 
     const announce = await t
       .http()
@@ -323,7 +364,9 @@ describe('notifications: fan-out through real flows + read API', () => {
 
   it('canceling an event notifies its registered audience with the refund copy', async () => {
     const list = await t.http().get('/v1/admin/events').set(bearer(admin));
-    const exame = list.body.events.find((e: any) => e.name === 'Exame de Faixa');
+    const exame = list.body.events.find(
+      (e: any) => e.name === 'Exame de Faixa',
+    );
 
     const cancel = await t
       .http()
@@ -336,8 +379,12 @@ describe('notifications: fan-out through real flows + read API', () => {
       expect(await countTitled(aluno, title)).toBe(1); // settled inscrito
       expect(await countTitled(responsavel, title)).toBe(1); // pending dependent
     });
-    const row = (await feed(aluno)).notifications.find((n: any) => n.title === title);
-    expect(row.body).toBe('Inscrições canceladas — pagamentos serão estornados');
+    const row = (await feed(aluno)).notifications.find(
+      (n: any) => n.title === title,
+    );
+    expect(row.body).toBe(
+      'Inscrições canceladas — pagamentos serão estornados',
+    );
   });
 
   // ── attendance fan-out (guardian of minors only) ────────────────────────
@@ -374,10 +421,14 @@ describe('notifications: fan-out through real flows + read API', () => {
     }
   };
 
-  it('a minor\'s check-in notifies the guardian; an adult\'s notifies nobody', async () => {
+  it("a minor's check-in notifies the guardian; an adult's notifies nobody", async () => {
     const roster = await withPlatform(t.platformDb.db, (tx) =>
       tx
-        .select({ id: students.id, fullName: students.fullName, guardianId: students.guardianId })
+        .select({
+          id: students.id,
+          fullName: students.fullName,
+          guardianId: students.guardianId,
+        })
         .from(students)
         .where(eq(students.tenantId, alphaId)),
     );
@@ -385,11 +436,17 @@ describe('notifications: fan-out through real flows + read API', () => {
     const ana = roster.find((s) => s.fullName === 'Ana Aluna')!;
 
     const classes = await t.http().get('/v1/admin/classes').set(bearer(admin));
-    const kidsClassId = classes.body.classes.find((c: any) => c.name === 'Kids').id;
-    const adultoClassId = classes.body.classes.find((c: any) => c.name === 'Adulto Gi').id;
+    const kidsClassId = classes.body.classes.find(
+      (c: any) => c.name === 'Kids',
+    ).id;
+    const adultoClassId = classes.body.classes.find(
+      (c: any) => c.name === 'Adulto Gi',
+    ).id;
 
     const attendanceRowsOf = async (token: string) =>
-      (await feed(token)).notifications.filter((n: any) => n.category === 'attendance').length;
+      (await feed(token)).notifications.filter(
+        (n: any) => n.category === 'attendance',
+      ).length;
     const guardianBefore = await attendanceRowsOf(responsavel);
 
     await markPresent(kidsClassId, kiko.id);
@@ -397,7 +454,10 @@ describe('notifications: fan-out through real flows + read API', () => {
       expect(await attendanceRowsOf(responsavel)).toBe(guardianBefore + 1);
     });
     const row = (await feed(responsavel)).notifications.find(
-      (n: any) => n.category === 'attendance' && n.readAt === null && n.title === 'Kiko Kids fez check-in',
+      (n: any) =>
+        n.category === 'attendance' &&
+        n.readAt === null &&
+        n.title === 'Kiko Kids fez check-in',
     );
     expect(row).toMatchObject({ chip: 'KK', route: null });
     expect(row.body).toMatch(/^Presença registrada às \d{2}:\d{2}$/);
@@ -411,9 +471,15 @@ describe('notifications: fan-out through real flows + read API', () => {
 
   // ── store fan-out ───────────────────────────────────────────────────────
 
-  const buyAndSettle = async (productName: string, quantity: number, size: string | null) => {
+  const buyAndSettle = async (
+    productName: string,
+    quantity: number,
+    size: string | null,
+  ) => {
     const vitrine = await t.http().get('/v1/store/products').set(bearer(aluno));
-    const product = vitrine.body.products.find((p: any) => p.name === productName);
+    const product = vitrine.body.products.find(
+      (p: any) => p.name === productName,
+    );
     expect(product).toBeTruthy();
 
     const order = await t
@@ -445,24 +511,43 @@ describe('notifications: fan-out through real flows + read API', () => {
 
     await eventually(async () => {
       expect(await countTitled(aluno, `Pedido #${mochilaNumber} pago`)).toBe(1);
-      expect(await countTitled(admin, 'Estoque baixo: Mochila de Treino')).toBe(1);
+      expect(await countTitled(admin, 'Estoque baixo: Mochila de Treino')).toBe(
+        1,
+      );
     });
     const paidRow = (await feed(aluno)).notifications.find(
       (n: any) => n.title === `Pedido #${mochilaNumber} pago`,
     );
-    expect(paidRow).toMatchObject({ category: 'store', chip: 'R$', route: 'orders' });
-    expect(paidRow.body).toBe('Mochila de Treino — retire na recepção da academia');
+    expect(paidRow).toMatchObject({
+      category: 'store',
+      chip: 'R$',
+      route: 'orders',
+    });
+    expect(paidRow.body).toBe(
+      'Mochila de Treino — retire na recepção da academia',
+    );
 
     const lowStock = (await feed(admin)).notifications.find(
       (n: any) => n.title === 'Estoque baixo: Mochila de Treino',
     );
-    expect(lowStock).toMatchObject({ category: 'store', chip: '!', route: 'store' });
+    expect(lowStock).toMatchObject({
+      category: 'store',
+      chip: '!',
+      route: 'store',
+    });
     expect(lowStock.body).toBe('4 unidades restantes (alerta em 5)');
     await settle();
-    expect(await countTitled(aluno, 'Estoque baixo: Mochila de Treino')).toBe(0); // admins only
+    expect(await countTitled(aluno, 'Estoque baixo: Mochila de Treino')).toBe(
+      0,
+    ); // admins only
 
-    const board = await t.http().get('/v1/admin/store/orders').set(bearer(admin));
-    mochilaOrderId = board.body.orders.find((o: any) => o.number === mochilaNumber).id;
+    const board = await t
+      .http()
+      .get('/v1/admin/store/orders')
+      .set(bearer(admin));
+    mochilaOrderId = board.body.orders.find(
+      (o: any) => o.number === mochilaNumber,
+    ).id;
   });
 
   it('ready and delivered transitions notify the buyer with the board copy', async () => {
@@ -473,7 +558,12 @@ describe('notifications: fan-out through real flows + read API', () => {
       .send({ status: 'ready' });
     expect(ready.status).toBe(200);
     await eventually(async () => {
-      expect(await countTitled(aluno, `Pedido #${mochilaNumber} pronto para retirada`)).toBe(1);
+      expect(
+        await countTitled(
+          aluno,
+          `Pedido #${mochilaNumber} pronto para retirada`,
+        ),
+      ).toBe(1);
     });
 
     const delivered = await t
@@ -483,18 +573,29 @@ describe('notifications: fan-out through real flows + read API', () => {
       .send({ status: 'delivered' });
     expect(delivered.status).toBe(200);
     await eventually(async () => {
-      expect(await countTitled(aluno, `Pedido #${mochilaNumber} entregue`)).toBe(1);
+      expect(
+        await countTitled(aluno, `Pedido #${mochilaNumber} entregue`),
+      ).toBe(1);
     });
     const chips = (await feed(aluno)).notifications
-      .filter((n: any) => n.title.startsWith(`Pedido #${mochilaNumber} `) && n.title !== `Pedido #${mochilaNumber} pago`)
+      .filter(
+        (n: any) =>
+          n.title.startsWith(`Pedido #${mochilaNumber} `) &&
+          n.title !== `Pedido #${mochilaNumber} pago`,
+      )
       .map((n: any) => n.chip);
     expect(chips).toEqual([`#${mochilaNumber}`, `#${mochilaNumber}`]);
   });
 
   it('an admin refund-cancel notifies the buyer; a buyer self-cancel stays silent', async () => {
     const refundedNumber = await buyAndSettle('Camiseta da Academia', 1, 'M');
-    const board = await t.http().get('/v1/admin/store/orders').set(bearer(admin));
-    const orderId = board.body.orders.find((o: any) => o.number === refundedNumber).id;
+    const board = await t
+      .http()
+      .get('/v1/admin/store/orders')
+      .set(bearer(admin));
+    const orderId = board.body.orders.find(
+      (o: any) => o.number === refundedNumber,
+    ).id;
 
     const cancel = await t
       .http()
@@ -503,7 +604,9 @@ describe('notifications: fan-out through real flows + read API', () => {
       .send({ status: 'canceled' });
     expect(cancel.status).toBe(200);
     await eventually(async () => {
-      expect(await countTitled(aluno, `Pedido #${refundedNumber} cancelado`)).toBe(1);
+      expect(
+        await countTitled(aluno, `Pedido #${refundedNumber} cancelado`),
+      ).toBe(1);
     });
     const row = (await feed(aluno)).notifications.find(
       (n: any) => n.title === `Pedido #${refundedNumber} cancelado`,
@@ -512,7 +615,9 @@ describe('notifications: fan-out through real flows + read API', () => {
 
     // Buyer cancel of a still-pending order: money never moved — not news.
     const vitrine = await t.http().get('/v1/store/products').set(bearer(aluno));
-    const faixa = vitrine.body.products.find((p: any) => p.name === 'Faixa Oficial');
+    const faixa = vitrine.body.products.find(
+      (p: any) => p.name === 'Faixa Oficial',
+    );
     const pending = await t
       .http()
       .post('/v1/store/orders')
@@ -526,7 +631,9 @@ describe('notifications: fan-out through real flows + read API', () => {
       .set(bearer(aluno));
     expect(drop.status).toBe(204);
     await settle();
-    expect(await countTitled(aluno, `Pedido #${pendingNumber} cancelado`)).toBe(0);
+    expect(await countTitled(aluno, `Pedido #${pendingNumber} cancelado`)).toBe(
+      0,
+    );
   });
 
   // ── graduation fan-out ──────────────────────────────────────────────────
@@ -554,7 +661,11 @@ describe('notifications: fan-out through real flows + read API', () => {
     const anaRow = (await feed(aluno)).notifications.find(
       (n: any) => n.title === 'Você recebeu o 3º grau',
     );
-    expect(anaRow).toMatchObject({ category: 'graduation', chip: '3º', route: 'graduation' });
+    expect(anaRow).toMatchObject({
+      category: 'graduation',
+      chip: '3º',
+      route: 'graduation',
+    });
     expect(anaRow.body).toBe('Registrado pelo Prof. Paulo Professor');
 
     // Kiko has no login — only the guardian variant lands, faixa included.
@@ -566,7 +677,9 @@ describe('notifications: fan-out through real flows + read API', () => {
     expect(kikoAward.status).toBe(201);
     await eventually(async () => {
       const rows = (await feed(responsavel)).notifications.filter(
-        (n: any) => n.category === 'graduation' && /^Kiko Kids recebeu o 1º grau na faixa .+$/.test(n.title),
+        (n: any) =>
+          n.category === 'graduation' &&
+          /^Kiko Kids recebeu o 1º grau na faixa .+$/.test(n.title),
       );
       expect(rows).toHaveLength(1);
       expect(rows[0].chip).toBe('1º');
@@ -574,7 +687,9 @@ describe('notifications: fan-out through real flows + read API', () => {
 
     // Revocation: audit-only — a correction is not news.
     const gradRowsOf = async (token: string) =>
-      (await feed(token)).notifications.filter((n: any) => n.category === 'graduation').length;
+      (await feed(token)).notifications.filter(
+        (n: any) => n.category === 'graduation',
+      ).length;
     const before = await gradRowsOf(aluno);
     const revoke = await t
       .http()
@@ -594,7 +709,12 @@ describe('notifications: fan-out through real flows + read API', () => {
       tx
         .select({ id: guardians.id })
         .from(guardians)
-        .where(and(eq(guardians.tenantId, alphaId), eq(guardians.fullName, 'Renata Responsavel'))),
+        .where(
+          and(
+            eq(guardians.tenantId, alphaId),
+            eq(guardians.fullName, 'Renata Responsavel'),
+          ),
+        ),
     );
     const created = await t
       .http()
@@ -614,7 +734,10 @@ describe('notifications: fan-out through real flows + read API', () => {
   // ── mute semantics ──────────────────────────────────────────────────────
 
   it('mute zeroes the badge while rows keep inserting; re-enabling restores the truth', async () => {
-    const settings = await t.http().get('/v1/notifications/settings').set(bearer(responsavel));
+    const settings = await t
+      .http()
+      .get('/v1/notifications/settings')
+      .set(bearer(responsavel));
     expect(settings.status).toBe(200);
     expect(settings.body).toEqual({ enabled: true });
 
@@ -626,22 +749,34 @@ describe('notifications: fan-out through real flows + read API', () => {
     expect(mute.status).toBe(200);
     expect(mute.body).toEqual({ enabled: false });
 
-    const muted = await t.http().get('/v1/notifications/unread-count').set(bearer(responsavel));
+    const muted = await t
+      .http()
+      .get('/v1/notifications/unread-count')
+      .set(bearer(responsavel));
     expect(muted.body).toEqual({ count: 0 });
 
     // Fan-out is mute-blind: drive a real flow, the row still lands.
     const classes = await t.http().get('/v1/admin/classes').set(bearer(admin));
-    const kidsClassId = classes.body.classes.find((c: any) => c.name === 'Kids').id;
+    const kidsClassId = classes.body.classes.find(
+      (c: any) => c.name === 'Kids',
+    ).id;
     const [lara] = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Lara Kids'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Lara Kids'),
+          ),
+        ),
     );
     const before = await countTitled(responsavel, 'Lara Kids fez check-in');
     await markPresent(kidsClassId, lara!.id);
     await eventually(async () => {
-      expect(await countTitled(responsavel, 'Lara Kids fez check-in')).toBe(before + 1);
+      expect(await countTitled(responsavel, 'Lara Kids fez check-in')).toBe(
+        before + 1,
+      );
     });
     const stillMuted = await t
       .http()
@@ -666,11 +801,14 @@ describe('notifications: fan-out through real flows + read API', () => {
 
   it('mark-read is idempotent and arithmetic; read-all clears the badge', async () => {
     const countOf = async () =>
-      (await t.http().get('/v1/notifications/unread-count').set(bearer(aluno))).body.count;
+      (await t.http().get('/v1/notifications/unread-count').set(bearer(aluno)))
+        .body.count;
     const before = await countOf();
     expect(before).toBeGreaterThan(0);
 
-    const unread = (await feed(aluno)).notifications.find((n: any) => n.readAt === null);
+    const unread = (await feed(aluno)).notifications.find(
+      (n: any) => n.readAt === null,
+    );
     const read = await t
       .http()
       .post(`/v1/notifications/${unread.id}/read`)
@@ -688,7 +826,10 @@ describe('notifications: fan-out through real flows + read API', () => {
     expect(again.body.notification.readAt).toBe(read.body.notification.readAt);
     expect(await countOf()).toBe(before - 1);
 
-    const all = await t.http().post('/v1/notifications/read-all').set(bearer(aluno));
+    const all = await t
+      .http()
+      .post('/v1/notifications/read-all')
+      .set(bearer(aluno));
     expect(all.status).toBe(200);
     expect(all.body.updated).toBe(before - 1);
     expect(await countOf()).toBe(0);
@@ -698,7 +839,9 @@ describe('notifications: fan-out through real flows + read API', () => {
     const anaRow = (await feed(aluno)).notifications[0];
 
     // Another member of the same academy can never read (or flip) my rows.
-    const professorIds = new Set((await feed(professor)).notifications.map((n: any) => n.id));
+    const professorIds = new Set(
+      (await feed(professor)).notifications.map((n: any) => n.id),
+    );
     expect(professorIds.has(anaRow.id)).toBe(false);
     const peer = await t
       .http()
@@ -725,7 +868,10 @@ describe('notifications: fan-out through real flows + read API', () => {
       const list = await t.http().get('/v1/notifications').set(bearer(aluno));
       expect(list.status).toBe(200);
 
-      const all = await t.http().post('/v1/notifications/read-all').set(bearer(aluno));
+      const all = await t
+        .http()
+        .post('/v1/notifications/read-all')
+        .set(bearer(aluno));
       expect(all.status).toBe(200);
 
       const flip = await t
@@ -743,7 +889,9 @@ describe('notifications: fan-out through real flows + read API', () => {
 
   it('a listener failure logs and never breaks the emitting flow', async () => {
     const listener = t.app.get(NotificationsFanoutListener);
-    const boom = vi.spyOn(listener, 'write').mockRejectedValue(new Error('fan-out boom'));
+    const boom = vi
+      .spyOn(listener, 'write')
+      .mockRejectedValue(new Error('fan-out boom'));
     try {
       const title = 'Evento do Listener Quebrado';
       const create = await t

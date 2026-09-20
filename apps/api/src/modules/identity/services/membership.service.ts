@@ -2,7 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { sessions, withTenant, type DbHandle } from '@tatame/db';
 import { APP_DB } from '../../../infra/db/db.module.js';
-import type { AcademyRole, AnyRoleName, PlatformRole } from '../../../common/decorators.js';
+import type {
+  AcademyRole,
+  AnyRoleName,
+  PlatformRole,
+} from '../../../common/decorators.js';
 
 /** One entry of the client switcher: an academy membership or platform role. */
 export interface MembershipView {
@@ -111,7 +115,10 @@ export class MembershipService {
    * the last-used one (most recent session), else platform (story 13: platform
    * staff default to the platform console), else the first.
    */
-  async resolveActive(userId: string, memberships: MembershipView[]): Promise<MembershipView | null> {
+  async resolveActive(
+    userId: string,
+    memberships: MembershipView[],
+  ): Promise<MembershipView | null> {
     if (memberships.length === 0) return null;
     if (memberships.length === 1) return memberships[0];
 

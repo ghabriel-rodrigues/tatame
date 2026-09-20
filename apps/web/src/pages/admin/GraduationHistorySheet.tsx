@@ -37,7 +37,8 @@ export interface GraduationHistorySheetProps {
 }
 
 function entryTitle(entry: GraduationEntry): string {
-  if (entry.kind === 'revocation') return `Revogação · ${beltLabel(entry.belt)}`;
+  if (entry.kind === 'revocation')
+    return `Revogação · ${beltLabel(entry.belt)}`;
   if (entry.kind === 'belt') return `Promoção · ${beltLabel(entry.belt)}`;
   return `${entry.degree}º grau · ${beltLabel(entry.belt)}`;
 }
@@ -79,7 +80,9 @@ export function GraduationHistorySheet({
           void queryClient.invalidateQueries({
             queryKey: ['get', '/v1/admin/students/{id}/graduations'],
           });
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/students'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/students'],
+          });
           onRevoked('Graduação revogada.');
         },
         onError: (cause) => {
@@ -107,7 +110,11 @@ export function GraduationHistorySheet({
         return (
           <ListRow
             key={entry.id}
-            className={entry.kind === 'revocation' ? 'GraduationRow-revocation' : undefined}
+            className={
+              entry.kind === 'revocation'
+                ? 'GraduationRow-revocation'
+                : undefined
+            }
             title={entryTitle(entry)}
             subtitle={entrySubtitle(entry)}
             leading={
@@ -145,7 +152,12 @@ export function GraduationHistorySheet({
       {error ? (
         <Typography
           role="alert"
-          sx={{ fontSize: 13, fontWeight: 600, color: 'var(--danger-500)', marginTop: '12px' }}
+          sx={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--danger-500)',
+            marginTop: '12px',
+          }}
         >
           {error}
         </Typography>
@@ -155,8 +167,8 @@ export function GraduationHistorySheet({
         <DialogTitle>Revogar graduação</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ marginBottom: '12px' }}>
-            Uma linha de compensação restaura a graduação anterior. A ação é auditada e cada
-            graduação só pode ser revogada uma vez.
+            Uma linha de compensação restaura a graduação anterior. A ação é
+            auditada e cada graduação só pode ser revogada uma vez.
           </DialogContentText>
           <FormField
             label="Motivo (opcional)"
@@ -167,7 +179,11 @@ export function GraduationHistorySheet({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRevoking(null)}>Cancelar</Button>
-          <Button color="error" disabled={revoke.isPending} onClick={confirmRevoke}>
+          <Button
+            color="error"
+            disabled={revoke.isPending}
+            onClick={confirmRevoke}
+          >
             Revogar
           </Button>
         </DialogActions>

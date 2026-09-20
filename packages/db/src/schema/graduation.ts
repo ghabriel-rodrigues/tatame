@@ -102,7 +102,9 @@ export const studentGraduations = pgTable(
     awardedByUserId: uuid('awarded_by_user_id')
       .notNull()
       .references(() => users.id),
-    awardedAt: timestamp('awarded_at', { withTimezone: true }).notNull().defaultNow(),
+    awardedAt: timestamp('awarded_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     notes: text('notes'),
     /** Set exactly when kind = 'revocation' — the reversed award row. */
     reversesGraduationId: uuid('reverses_graduation_id'),
@@ -110,7 +112,11 @@ export const studentGraduations = pgTable(
   },
   (t) => [
     unique('student_graduations_tenant_id_id_uq').on(t.tenantId, t.id),
-    index('student_graduations_tenant_student_idx').on(t.tenantId, t.studentId, t.awardedAt),
+    index('student_graduations_tenant_student_idx').on(
+      t.tenantId,
+      t.studentId,
+      t.awardedAt,
+    ),
     check(
       'student_graduations_revocation_ck',
       sql`(${t.kind} = 'revocation') = (${t.reversesGraduationId} IS NOT NULL)`,
@@ -170,6 +176,10 @@ export const studentNotes = pgTable(
       columns: [t.tenantId, t.studentId],
       foreignColumns: [students.tenantId, students.id],
     }),
-    pgPolicy('student_notes_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('student_notes_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );

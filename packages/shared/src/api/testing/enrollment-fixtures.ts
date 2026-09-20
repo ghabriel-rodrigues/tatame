@@ -26,7 +26,9 @@ const uuid = (block: string, counter: number) =>
   `018f0000-0000-7000-${block}-${counter.toString(16).padStart(12, '0')}`;
 
 let studentCounter = 0;
-export function makeStudent(overrides: Partial<StudentListItem> = {}): StudentListItem {
+export function makeStudent(
+  overrides: Partial<StudentListItem> = {},
+): StudentListItem {
   studentCounter += 1;
   return {
     id: uuid('8001', studentCounter),
@@ -42,7 +44,9 @@ export function makeStudent(overrides: Partial<StudentListItem> = {}): StudentLi
 }
 
 let guardianCounter = 0;
-export function makeGuardian(overrides: Partial<GuardianListItem> = {}): GuardianListItem {
+export function makeGuardian(
+  overrides: Partial<GuardianListItem> = {},
+): GuardianListItem {
   guardianCounter += 1;
   return {
     id: uuid('8002', guardianCounter),
@@ -57,7 +61,9 @@ export function makeGuardian(overrides: Partial<GuardianListItem> = {}): Guardia
 }
 
 let professorCounter = 0;
-export function makeProfessor(overrides: Partial<ProfessorListItem> = {}): ProfessorListItem {
+export function makeProfessor(
+  overrides: Partial<ProfessorListItem> = {},
+): ProfessorListItem {
   professorCounter += 1;
   return {
     membershipId: uuid('8003', professorCounter),
@@ -69,12 +75,16 @@ export function makeProfessor(overrides: Partial<ProfessorListItem> = {}): Profe
   };
 }
 
-export function makeSchedule(overrides: Partial<ScheduleSlotView> = {}): ScheduleSlotView {
+export function makeSchedule(
+  overrides: Partial<ScheduleSlotView> = {},
+): ScheduleSlotView {
   return { weekday: 1, startTime: '19:00', durationMinutes: 60, ...overrides };
 }
 
 let classCounter = 0;
-export function makeClass(overrides: Partial<ClassListItem> = {}): ClassListItem {
+export function makeClass(
+  overrides: Partial<ClassListItem> = {},
+): ClassListItem {
   classCounter += 1;
   return {
     id: uuid('8005', classCounter),
@@ -91,13 +101,17 @@ export function makeClass(overrides: Partial<ClassListItem> = {}): ClassListItem
   };
 }
 
-export function makeClassDetail(overrides: Partial<ClassDetail> = {}): ClassDetail {
+export function makeClassDetail(
+  overrides: Partial<ClassDetail> = {},
+): ClassDetail {
   return { ...makeClass(), roster: [], ...overrides };
 }
 
 let sessionCounter = 0;
 /** Materialized session row for the admin turma detail (ATT.14). */
-export function makeAdminSession(overrides: Partial<AdminSessionRow> = {}): AdminSessionRow {
+export function makeAdminSession(
+  overrides: Partial<AdminSessionRow> = {},
+): AdminSessionRow {
   sessionCounter += 1;
   return {
     id: uuid('8006', sessionCounter),
@@ -109,7 +123,9 @@ export function makeAdminSession(overrides: Partial<AdminSessionRow> = {}): Admi
   };
 }
 
-export function makeRosterStudent(overrides: Partial<RosterStudent> = {}): RosterStudent {
+export function makeRosterStudent(
+  overrides: Partial<RosterStudent> = {},
+): RosterStudent {
   const student = makeStudent();
   return {
     studentId: student.id,
@@ -133,7 +149,10 @@ export interface EnrollmentRegistryFixture {
 
 /** Screenshot-faithful registry (admin-07…12) with stable ids. */
 export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
-  const rafael = makeProfessor({ fullName: 'Rafael Nunes', email: 'rafael@tatame.dev' });
+  const rafael = makeProfessor({
+    fullName: 'Rafael Nunes',
+    email: 'rafael@tatame.dev',
+  });
   const ana = makeProfessor({ fullName: 'Ana Souza', email: 'ana@tatame.dev' });
 
   const fundamentos = makeClass({
@@ -173,7 +192,10 @@ export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
     ],
   });
 
-  const fernanda = makeGuardian({ fullName: 'Fernanda Silveira', dependentCount: 1 });
+  const fernanda = makeGuardian({
+    fullName: 'Fernanda Silveira',
+    dependentCount: 1,
+  });
 
   // Derived belts per admin-07 rows ("Faixa azul · Fundamentos…").
   const students = [
@@ -215,9 +237,24 @@ export function makeEnrollmentRegistry(): EnrollmentRegistryFixture {
     occupancy: 3,
     lotada: false,
     roster: [
-      { studentId: students[0]!.id, fullName: 'Lucas Almeida', birthDate: '2005-03-14', badge: 'ativo' },
-      { studentId: students[3]!.id, fullName: 'João Ferraz', birthDate: '2005-03-14', badge: 'ativo' },
-      { studentId: students[4]!.id, fullName: 'Bia Andrade', birthDate: '2005-03-14', badge: 'pendente' },
+      {
+        studentId: students[0]!.id,
+        fullName: 'Lucas Almeida',
+        birthDate: '2005-03-14',
+        badge: 'ativo',
+      },
+      {
+        studentId: students[3]!.id,
+        fullName: 'João Ferraz',
+        birthDate: '2005-03-14',
+        badge: 'ativo',
+      },
+      {
+        studentId: students[4]!.id,
+        fullName: 'Bia Andrade',
+        birthDate: '2005-03-14',
+        badge: 'pendente',
+      },
     ],
   };
 

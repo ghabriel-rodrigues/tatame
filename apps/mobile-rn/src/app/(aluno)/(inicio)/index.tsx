@@ -30,13 +30,28 @@ import {
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { openCheckinSheet } from '../../../features/attendance/checkin-sheet-store';
-import { dueLabel, formatBRL, longDayMonthPt } from '../../../features/billing/format';
-import { longDatePt, scheduleTimeRange } from '../../../features/enrollment/format';
-import { InitialsAvatar, OccupancyBar, QueryState, StatTile } from '../../../features/enrollment/ui';
+import {
+  dueLabel,
+  formatBRL,
+  longDayMonthPt,
+} from '../../../features/billing/format';
+import {
+  longDatePt,
+  scheduleTimeRange,
+} from '../../../features/enrollment/format';
+import {
+  InitialsAvatar,
+  OccupancyBar,
+  QueryState,
+  StatTile,
+} from '../../../features/enrollment/ui';
 import { UPCOMING_EVENTS_TITLE } from '../../../features/events/copy';
 import { NotificationBell } from '../../../features/notifications/ui';
 import { EventCard } from '../../../features/events/ui';
-import { homeRankingLine, RANKING_TITLE_ALUNO } from '../../../features/rankings/copy';
+import {
+  homeRankingLine,
+  RANKING_TITLE_ALUNO,
+} from '../../../features/rankings/copy';
 import { positionOrdinal } from '../../../features/rankings/format';
 import { STORE_ROW_TITLE } from '../../../features/store/copy';
 import { StoreStripCard } from '../../../features/store/ui';
@@ -54,7 +69,8 @@ export default function AlunoInicioScreen() {
   });
 
   if (!session) return null;
-  const firstName = session.user.fullName.split(' ')[0] ?? session.user.fullName;
+  const firstName =
+    session.user.fullName.split(' ')[0] ?? session.user.fullName;
   const readOnly = isReadOnly(session);
 
   const home = homeQuery.data;
@@ -68,7 +84,12 @@ export default function AlunoInicioScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             eyebrow={longDatePt()}
@@ -76,7 +97,11 @@ export default function AlunoInicioScreen() {
             trailing={
               // NOT.8: bell with the pink unread dot, left of the avatar.
               <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: theme.space['2'],
+                }}
               >
                 <NotificationBell />
                 <InitialsAvatar name={session.user.fullName} size={38} />
@@ -85,14 +110,18 @@ export default function AlunoInicioScreen() {
           />
 
           {readOnly ? (
-            <Card variant="tinted" testID="readonly-banner" padding={theme.space['4']}>
+            <Card
+              variant="tinted"
+              testID="readonly-banner"
+              padding={theme.space['4']}
+            >
               <View style={{ gap: 4 }}>
                 <Text variant="label" color={theme.color.warning['500']}>
                   Modo somente leitura
                 </Text>
                 <Text variant="caption">
-                  A academia está com pagamentos pendentes. Alterações ficam desabilitadas
-                  até a regularização.
+                  A academia está com pagamentos pendentes. Alterações ficam
+                  desabilitadas até a regularização.
                 </Text>
               </View>
             </Card>
@@ -105,7 +134,9 @@ export default function AlunoInicioScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={
-                  mensalidade.overdue ? 'Mensalidade em atraso' : 'Mensalidade em aberto'
+                  mensalidade.overdue
+                    ? 'Mensalidade em atraso'
+                    : 'Mensalidade em aberto'
                 }
                 testID="mensalidade-alert"
                 onPress={() => router.push('/carteira')}
@@ -162,7 +193,10 @@ export default function AlunoInicioScreen() {
                             paddingHorizontal: 12,
                           }}
                         >
-                          <CheckCircle2 size={14} color={theme.color.fg.onColor} />
+                          <CheckCircle2
+                            size={14}
+                            color={theme.color.fg.onColor}
+                          />
                           <Text
                             variant="caption"
                             weight="bold"
@@ -197,11 +231,13 @@ export default function AlunoInicioScreen() {
                         {todayClass.className}
                       </Text>
                       <Text variant="caption" color="rgba(255,255,255,0.8)">
-                        {scheduleTimeRange(todayClass.slot)} · {todayClass.slot.durationMinutes}{' '}
-                        min
+                        {scheduleTimeRange(todayClass.slot)} ·{' '}
+                        {todayClass.slot.durationMinutes} min
                       </Text>
                     </View>
-                    <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
+                    <View
+                      style={{ flexDirection: 'row', gap: theme.space['2'] }}
+                    >
                       {!todayClass.checkedIn ? (
                         <TatameButton
                           size="sm"
@@ -224,7 +260,8 @@ export default function AlunoInicioScreen() {
                       Sem aula hoje
                     </Text>
                     <Text variant="caption" color="rgba(255,255,255,0.8)">
-                      Aproveite o descanso — sua agenda mostra os próximos treinos.
+                      Aproveite o descanso — sua agenda mostra os próximos
+                      treinos.
                     </Text>
                   </View>
                 )}
@@ -252,7 +289,12 @@ export default function AlunoInicioScreen() {
                     label="graus na faixa"
                   />
                 ) : (
-                  <StatTile testID="tile-graus" value="—" label="graus na faixa" note="Em breve" />
+                  <StatTile
+                    testID="tile-graus"
+                    value="—"
+                    label="graus na faixa"
+                    note="Em breve"
+                  />
                 )}
               </View>
             ) : null}
@@ -275,14 +317,19 @@ export default function AlunoInicioScreen() {
                       <Text variant="subtitle">Sua graduação</Text>
                       <ChevronRight size={16} color={theme.color.fg['4']} />
                     </View>
-                    <BeltBar belt={graduation.belt} size="md" testID="home-belt" />
+                    <BeltBar
+                      belt={graduation.belt}
+                      size="md"
+                      testID="home-belt"
+                    />
                     <OccupancyBar
                       testID="graduation-bar"
                       occupancy={graduation.progress.current}
                       capacity={graduation.progress.target}
                     />
                     <Text variant="caption">
-                      {graduation.progress.current} de {graduation.progress.target} aulas ·{' '}
+                      {graduation.progress.current} de{' '}
+                      {graduation.progress.target} aulas ·{' '}
                       {graduation.progress.label}
                     </Text>
                   </View>
@@ -322,7 +369,11 @@ export default function AlunoInicioScreen() {
                     onPress={() => router.push('/loja')}
                     hitSlop={8}
                   >
-                    <Text variant="caption" weight="bold" color={theme.color.brand['1']}>
+                    <Text
+                      variant="caption"
+                      weight="bold"
+                      color={theme.color.brand['1']}
+                    >
                       Ver tudo
                     </Text>
                   </Pressable>

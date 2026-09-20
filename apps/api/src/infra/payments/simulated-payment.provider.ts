@@ -58,7 +58,9 @@ export class SimulatedPaymentProvider implements PaymentProviderPort {
     };
   }
 
-  async createMandate(intent: MandateIntent): Promise<{ providerMandateId: string }> {
+  async createMandate(
+    intent: MandateIntent,
+  ): Promise<{ providerMandateId: string }> {
     return { providerMandateId: `SIM-MANDATE-${intent.studentId}` };
   }
 
@@ -66,7 +68,9 @@ export class SimulatedPaymentProvider implements PaymentProviderPort {
     // Nothing to release provider-side in the simulated driver.
   }
 
-  async refund(providerPaymentId: string): Promise<{ providerRefundId: string }> {
+  async refund(
+    providerPaymentId: string,
+  ): Promise<{ providerRefundId: string }> {
     return { providerRefundId: `SIM-REFUND-${providerPaymentId}` };
   }
 

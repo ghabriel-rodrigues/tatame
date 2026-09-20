@@ -21,7 +21,10 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
       ['get', '/v1/admin/permissions'],
       ['put', '/v1/admin/permissions'],
     ] as const) {
-      const res = await (t.http() as any)[method](path).set(bearer(professor.accessToken)).send({});
+      const res = await (t.http() as any)
+        [method](path)
+        .set(bearer(professor.accessToken))
+        .send({});
       expect(res.status, `${method} ${path}`).toBe(403);
       expect(res.body.code).toBe('authz.forbidden_role');
     }
@@ -42,7 +45,10 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
 
   it('platform roles cannot reach academy admin surfaces (single active role)', async () => {
     const owner = await t.login('owner@tatame.dev');
-    const res = await t.http().get('/v1/admin/permissions').set(bearer(owner.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(owner.accessToken));
     expect(res.status).toBe(403);
     expect(res.body.code).toBe('authz.forbidden_role');
   });
@@ -51,7 +57,10 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
     const admin = await t.login('admin@tatame.dev');
     const professor = await t.login('professor@tatame.dev');
 
-    const matrix = await t.http().get('/v1/admin/permissions').set(bearer(admin.accessToken));
+    const matrix = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(admin.accessToken));
     expect(matrix.status).toBe(200);
     const inviteToggle = matrix.body.permissions.find(
       (p: any) => p.role === 'professor' && p.key === 'invites.create',
@@ -72,7 +81,9 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin.accessToken))
-      .send({ entries: [{ role: 'professor', key: 'invites.create', allowed: false }] });
+      .send({
+        entries: [{ role: 'professor', key: 'invites.create', allowed: false }],
+      });
     expect(update.status).toBe(200);
 
     const denied = await t
@@ -88,7 +99,9 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin.accessToken))
-      .send({ entries: [{ role: 'professor', key: 'invites.create', allowed: true }] });
+      .send({
+        entries: [{ role: 'professor', key: 'invites.create', allowed: true }],
+      });
     const restored = await t
       .http()
       .post('/v1/invites')
@@ -103,14 +116,21 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(admin.accessToken))
-      .send({ entries: [{ role: 'professor', key: 'billing.full_access', allowed: true }] });
+      .send({
+        entries: [
+          { role: 'professor', key: 'billing.full_access', allowed: true },
+        ],
+      });
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('validation.failed');
   });
 
   it('admin of academy A cannot manage academy B (tenant from token, not input)', async () => {
     const bravoAdmin = await t.login('admin.bravo@tatame.dev');
-    const matrix = await t.http().get('/v1/admin/permissions').set(bearer(bravoAdmin.accessToken));
+    const matrix = await t
+      .http()
+      .get('/v1/admin/permissions')
+      .set(bearer(bravoAdmin.accessToken));
     expect(matrix.status).toBe(200);
     // Alpha seeded professor/events.create=true; Bravo also seeds it — flip
     // Bravo's and verify Alpha is untouched (tenant isolation through RLS).
@@ -118,7 +138,9 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
       .http()
       .put('/v1/admin/permissions')
       .set(bearer(bravoAdmin.accessToken))
-      .send({ entries: [{ role: 'professor', key: 'events.create', allowed: false }] });
+      .send({
+        entries: [{ role: 'professor', key: 'events.create', allowed: false }],
+      });
 
     const alphaAdmin = await t.login('admin@tatame.dev');
     const alphaMatrix = await t
@@ -174,20 +196,28 @@ describe('rbac: guard chain layers + route-metadata meta-test', () => {
           routeCount += 1;
 
           const isPublic =
-            Reflect.getMetadata(PUBLIC_KEY, handler) ?? Reflect.getMetadata(PUBLIC_KEY, metatype);
+            Reflect.getMetadata(PUBLIC_KEY, handler) ??
+            Reflect.getMetadata(PUBLIC_KEY, metatype);
           const anyRole =
             Reflect.getMetadata(ANY_ROLE_KEY, handler) ??
             Reflect.getMetadata(ANY_ROLE_KEY, metatype);
           const roles =
-            Reflect.getMetadata(ROLES_KEY, handler) ?? Reflect.getMetadata(ROLES_KEY, metatype);
+            Reflect.getMetadata(ROLES_KEY, handler) ??
+            Reflect.getMetadata(ROLES_KEY, metatype);
 
-          const hasStance = isPublic === true || anyRole === true || (Array.isArray(roles) && roles.length > 0);
+          const hasStance =
+            isPublic === true ||
+            anyRole === true ||
+            (Array.isArray(roles) && roles.length > 0);
           if (!hasStance) offenders.push(`${metatype.name}.${name} (${path})`);
         }
       }
     }
 
     expect(routeCount).toBeGreaterThanOrEqual(17); // the identity surface
-    expect(offenders, `routes without an authz stance: ${offenders.join(', ')}`).toEqual([]);
+    expect(
+      offenders,
+      `routes without an authz stance: ${offenders.join(', ')}`,
+    ).toEqual([]);
   });
 });

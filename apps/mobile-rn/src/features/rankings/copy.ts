@@ -28,9 +28,17 @@ interface FootnoteCopy {
 /** Per-segment selos footnote (spec 013 story 17, prototype bug fixed). */
 export function seloFootnote(by: RankingBy): FootnoteCopy {
   if (by === 'events') {
-    return { lead: 'Presença em eventos vale o selo ', selo: SELO_ESPIRITO, tail: '.' };
+    return {
+      lead: 'Presença em eventos vale o selo ',
+      selo: SELO_ESPIRITO,
+      tail: '.',
+    };
   }
-  return { lead: '12+ aulas no mês valem o selo ', selo: SELO_CONSTANCIA, tail: '.' };
+  return {
+    lead: '12+ aulas no mês valem o selo ',
+    selo: SELO_CONSTANCIA,
+    tail: '.',
+  };
 }
 
 /** Aluno home entry card line (aluno-03): "Você está em 2º em presença…". */

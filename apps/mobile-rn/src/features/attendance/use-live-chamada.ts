@@ -40,7 +40,10 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
   // The state carries the id it belongs to, so going idle (or switching
   // codes) reads as INITIAL by derivation instead of a synchronous reset
   // write inside the effect.
-  const [owned, setOwned] = useState<{ id: string | null; state: LiveChamadaState }>({
+  const [owned, setOwned] = useState<{
+    id: string | null;
+    state: LiveChamadaState;
+  }>({
     id: null,
     state: INITIAL,
   });
@@ -62,9 +65,12 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
     };
 
     const fetchSnapshot = async (): Promise<void> => {
-      const { data } = await apiClient.GET('/v1/professor/live-codes/{id}/attendances', {
-        params: { path: { id: liveCodeId } },
-      });
+      const { data } = await apiClient.GET(
+        '/v1/professor/live-codes/{id}/attendances',
+        {
+          params: { path: { id: liveCodeId } },
+        },
+      );
       if (!data) return;
       setSafe((prev) => ({
         ...prev,
@@ -94,9 +100,12 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
     };
 
     const connect = async (): Promise<void> => {
-      const { data } = await apiClient.POST('/v1/professor/live-codes/{id}/stream-ticket', {
-        params: { path: { id: liveCodeId } },
-      });
+      const { data } = await apiClient.POST(
+        '/v1/professor/live-codes/{id}/stream-ticket',
+        {
+          params: { path: { id: liveCodeId } },
+        },
+      );
       if (disposed) return;
       if (!data) {
         startPolling();
@@ -117,7 +126,11 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
         onCheckin: (event) => {
           setSafe((prev) => {
             if (prev.attendances.some((row) => row.id === event.attendanceId)) {
-              return { ...prev, synced: true, presentCount: event.presentCount };
+              return {
+                ...prev,
+                synced: true,
+                presentCount: event.presentCount,
+              };
             }
             return {
               ...prev,
@@ -141,7 +154,9 @@ export function useLiveChamada(liveCodeId: string | null): LiveChamadaState {
             ...prev,
             synced: true,
             presentCount: event.presentCount,
-            attendances: prev.attendances.filter((row) => row.id !== event.attendanceId),
+            attendances: prev.attendances.filter(
+              (row) => row.id !== event.attendanceId,
+            ),
           }));
         },
         onError: () => {

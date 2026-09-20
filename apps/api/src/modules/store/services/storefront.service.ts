@@ -45,7 +45,9 @@ export class StorefrontService {
         .where(
           and(
             eq(products.status, 'active'),
-            filter.categoryId ? eq(products.categoryId, filter.categoryId) : undefined,
+            filter.categoryId
+              ? eq(products.categoryId, filter.categoryId)
+              : undefined,
             term
               ? sql`(${products.name} ILIKE ${`%${term}%`} OR array_to_string(${products.tags}, ' ') ILIKE ${`%${term}%`})`
               : undefined,
@@ -100,8 +102,14 @@ export class StorefrontService {
   }
 
   /** Tx-scoped detail lookup, shared with the order-creation validation. */
-  async requireActiveDetail(tx: DbTransaction, productId: string): Promise<ProductDetailView> {
-    const [row] = await tx.select().from(products).where(eq(products.id, productId));
+  async requireActiveDetail(
+    tx: DbTransaction,
+    productId: string,
+  ): Promise<ProductDetailView> {
+    const [row] = await tx
+      .select()
+      .from(products)
+      .where(eq(products.id, productId));
     if (!row || row.status !== 'active') {
       throw problem(404, ErrorCodes.NOT_FOUND, 'Product not found');
     }
@@ -141,7 +149,9 @@ export class StorefrontService {
       monogram: row.monogram,
       gradientPreset: row.gradientPreset,
       categoryId: row.categoryId,
-      categoryName: row.categoryId ? (categoryById.get(row.categoryId) ?? null) : null,
+      categoryName: row.categoryId
+        ? (categoryById.get(row.categoryId) ?? null)
+        : null,
     };
   }
 }

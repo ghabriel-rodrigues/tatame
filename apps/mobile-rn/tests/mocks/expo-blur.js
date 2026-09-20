@@ -2,4 +2,5 @@
 const React = require('react');
 const { View } = require('react-native');
 
-exports.BlurView = ({ children, ...props }) => React.createElement(View, props, children);
+exports.BlurView = ({ children, ...props }) =>
+  React.createElement(View, props, children);

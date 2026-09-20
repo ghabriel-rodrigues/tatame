@@ -5,7 +5,9 @@ export function durationToMs(value: string): number {
   const match = /^(\d+)([smhd])$/.exec(value);
   if (!match) throw new Error(`Invalid duration: ${value}`);
   const amount = Number(match[1]);
-  const unit = { s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000 }[match[2] as 's' | 'm' | 'h' | 'd'];
+  const unit = { s: 1_000, m: 60_000, h: 3_600_000, d: 86_400_000 }[
+    match[2] as 's' | 'm' | 'h' | 'd'
+  ];
   return amount * unit;
 }
 
@@ -16,10 +18,14 @@ const duration = z.string().regex(/^\d+[smhd]$/, 'expected e.g. 15m, 30d');
  * a misconfigured process never starts.
  */
 export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'test', 'production'])
+    .default('development'),
   API_PORT: z.coerce.number().int().positive().default(3000),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  JWT_ACCESS_SECRET: z.string().min(16, 'JWT_ACCESS_SECRET must be at least 16 chars'),
+  JWT_ACCESS_SECRET: z
+    .string()
+    .min(16, 'JWT_ACCESS_SECRET must be at least 16 chars'),
   JWT_ACCESS_TTL: duration.default('15m'),
   JWT_REFRESH_TTL: duration.default('30d'),
   /** Absent in dev/test → console notification driver (never hard-fail). */

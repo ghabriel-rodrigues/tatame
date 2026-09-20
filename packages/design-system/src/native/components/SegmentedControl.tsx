@@ -76,7 +76,9 @@ export function SegmentedControl<V extends string = string>({
                 borderRadius: theme.radius.pill,
                 paddingVertical: 7,
                 paddingHorizontal: 14,
-                backgroundColor: selected ? theme.color.bg.surface : 'transparent',
+                backgroundColor: selected
+                  ? theme.color.bg.surface
+                  : 'transparent',
               },
               selected ? shadowStyle(theme.shadow.xs as ShadowLayer[]) : null,
             ]}

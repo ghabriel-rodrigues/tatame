@@ -66,8 +66,12 @@ export function OrdersScreen() {
   const orders = ordersQuery.data?.orders ?? [];
 
   const invalidateStoreQueries = () => {
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/orders'] });
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/store/orders'],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/store/products'],
+    });
     void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
   };
 
@@ -85,10 +89,19 @@ export function OrdersScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <View
-            style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: theme.space['3'],
+            }}
           >
             <Pressable
               accessibilityRole="button"
@@ -119,7 +132,10 @@ export function OrdersScreen() {
             </Text>
           ) : null}
 
-          <QueryState loading={ordersQuery.isPending} error={ordersQuery.isError}>
+          <QueryState
+            loading={ordersQuery.isPending}
+            error={ordersQuery.isError}
+          >
             {orders.length === 0 ? (
               <Card testID="orders-empty">
                 <View style={{ gap: 4 }}>

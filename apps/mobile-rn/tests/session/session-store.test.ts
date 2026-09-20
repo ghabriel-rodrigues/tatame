@@ -18,7 +18,13 @@ import {
 } from '../../src/session/session-store';
 import { getAccessToken } from '../../src/session/token';
 import { setRefreshToken } from '../../src/session/token-store';
-import { installFetchMock, json, makeMe, makeMembership, problem } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  makeMembership,
+  problem,
+} from '../helpers/session';
 
 const secure = SecureStore as unknown as {
   __store: Map<string, string>;
@@ -48,7 +54,11 @@ describe('session-store', () => {
       seen.push(`${method} ${path}`);
       if (method === 'POST' && path === '/v1/auth/refresh') {
         expect(body).toEqual({ transport: 'body', refreshToken: 'rt-1' });
-        return json(200, { accessToken: 'at-1', accessExpiresIn: 900, refreshToken: 'rt-2' });
+        return json(200, {
+          accessToken: 'at-1',
+          accessExpiresIn: 900,
+          refreshToken: 'rt-2',
+        });
       }
       if (method === 'GET' && path === '/v1/auth/me') {
         expect(authorization).toBe('Bearer at-1');
@@ -93,10 +103,15 @@ describe('session-store', () => {
     installFetchMock(({ method, path, authorization }) => {
       if (method === 'POST' && path === '/v1/auth/refresh') {
         refreshCalls += 1;
-        return json(200, { accessToken: 'at-new', accessExpiresIn: 900, refreshToken: 'rt-2' });
+        return json(200, {
+          accessToken: 'at-new',
+          accessExpiresIn: 900,
+          refreshToken: 'rt-2',
+        });
       }
       if (method === 'GET' && path === '/v1/auth/me') {
-        if (authorization !== 'Bearer at-new') return problem(401, 'auth.token_expired');
+        if (authorization !== 'Bearer at-new')
+          return problem(401, 'auth.token_expired');
         return json(200, me);
       }
       return null;
@@ -146,7 +161,9 @@ describe('session-store', () => {
   });
 
   describe('gate + status derivations (AUTH.19)', () => {
-    const authed = (state: Partial<Parameters<typeof makeMe>[0]>): SessionState => ({
+    const authed = (
+      state: Partial<Parameters<typeof makeMe>[0]>,
+    ): SessionState => ({
       status: 'authed',
       session: makeMe(state),
     });
@@ -165,7 +182,12 @@ describe('session-store', () => {
         const memberships = [
           role === 'admin'
             ? makeMembership({ role })
-            : makeMembership({ role, type: 'platform', tenantId: null, academyName: null }),
+            : makeMembership({
+                role,
+                type: 'platform',
+                tenantId: null,
+                academyName: null,
+              }),
         ];
         expect(resolveGate(authed({ role, memberships }))).toBe('console-only');
       },

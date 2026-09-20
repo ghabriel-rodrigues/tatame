@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { bearer, createTestApp, DEV_PASSWORD, type TestApp } from './support/test-app.js';
+import {
+  bearer,
+  createTestApp,
+  DEV_PASSWORD,
+  type TestApp,
+} from './support/test-app.js';
 
 describe('auth: login, session, refresh rotation, switch, logout', () => {
   let t: TestApp;
@@ -20,7 +25,9 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
       .send({ email: 'aluno@tatame.dev', password: 'not-the-password' });
     expect(wrongPassword.status).toBe(401);
     expect(wrongPassword.body.code).toBe('auth.invalid_credentials');
-    expect(wrongPassword.headers['content-type']).toContain('application/problem+json');
+    expect(wrongPassword.headers['content-type']).toContain(
+      'application/problem+json',
+    );
 
     const unknownEmail = await t
       .http()
@@ -31,7 +38,10 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
   });
 
   it('answers 422 problem+json with field errors on invalid payloads', async () => {
-    const res = await t.http().post('/v1/auth/login').send({ email: 'not-an-email' });
+    const res = await t
+      .http()
+      .post('/v1/auth/login')
+      .send({ email: 'not-an-email' });
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('validation.failed');
     expect(res.body.errors).toEqual(
@@ -62,8 +72,8 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
       .send({ email: 'aluno@tatame.dev', password: DEV_PASSWORD });
     expect(res.status).toBe(200);
     expect(res.body.refreshToken).toBeUndefined();
-    const cookie = (res.headers['set-cookie'] as unknown as string[]).find((c) =>
-      c.startsWith('tatame_refresh='),
+    const cookie = (res.headers['set-cookie'] as unknown as string[]).find(
+      (c) => c.startsWith('tatame_refresh='),
     );
     expect(cookie).toBeTruthy();
     expect(cookie).toContain('HttpOnly');
@@ -124,7 +134,10 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
     expect(switched.status).toBe(200);
     expect(switched.body.activeMembershipId).toBe(adminBravo.id);
 
-    const me = await t.http().get('/v1/auth/me').set(bearer(switched.body.accessToken));
+    const me = await t
+      .http()
+      .get('/v1/auth/me')
+      .set(bearer(switched.body.accessToken));
     expect(me.body.activeRole).toBe('admin');
     expect(me.body.academy.slug).toBe('bravo-bjj');
 
@@ -156,7 +169,10 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
 
   it('logout revokes the session server-side (refresh family dead)', async () => {
     const body = await t.login('aluno@tatame.dev');
-    const logout = await t.http().post('/v1/auth/logout').set(bearer(body.accessToken));
+    const logout = await t
+      .http()
+      .post('/v1/auth/logout')
+      .set(bearer(body.accessToken));
     expect(logout.status).toBe(204);
 
     const refresh = await t
@@ -171,7 +187,10 @@ describe('auth: login, session, refresh rotation, switch, logout', () => {
     const one = await t.login('responsavel@tatame.dev');
     const two = await t.login('responsavel@tatame.dev');
 
-    const res = await t.http().post('/v1/auth/logout-all').set(bearer(two.accessToken));
+    const res = await t
+      .http()
+      .post('/v1/auth/logout-all')
+      .set(bearer(two.accessToken));
     expect(res.status).toBe(204);
 
     for (const session of [one, two]) {

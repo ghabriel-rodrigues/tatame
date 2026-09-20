@@ -31,7 +31,13 @@ export interface CardProps {
   testID?: string;
 }
 
-export function Card({ variant = 'surface', children, padding, style, testID }: CardProps) {
+export function Card({
+  variant = 'surface',
+  children,
+  padding,
+  style,
+  testID,
+}: CardProps) {
   const theme = useTheme();
   const pad = padding ?? theme.space['5'];
 
@@ -77,7 +83,10 @@ export function Card({ variant = 'surface', children, padding, style, testID }: 
   const surface: ViewStyle =
     variant === 'tinted'
       ? { backgroundColor: theme.color.brand.tint }
-      : { backgroundColor: theme.color.bg.surface, ...shadowStyle(theme.shadow.sm as ShadowLayer[]) };
+      : {
+          backgroundColor: theme.color.bg.surface,
+          ...shadowStyle(theme.shadow.sm as ShadowLayer[]),
+        };
 
   return (
     <View

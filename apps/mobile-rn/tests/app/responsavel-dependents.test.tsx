@@ -5,11 +5,23 @@
  * class schedule and the toggle-off hidden state (story 36).
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, problem, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  problem,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeDependents } from '../helpers/enrollment';
 
 jest.useFakeTimers();
@@ -37,7 +49,9 @@ function dependentsHandlers(override?: FetchHandler): FetchHandler {
   };
 }
 
-function renderResponsavel(options: { permissions?: Record<string, boolean> } = {}): void {
+function renderResponsavel(
+  options: { permissions?: Record<string, boolean> } = {},
+): void {
   installFetchMock(dependentsHandlers());
   sessionTestApi.seed({
     status: 'authed',
@@ -62,7 +76,9 @@ describe('responsável dependents (ENR.19)', () => {
 
   it('renders the panel with one card per dependent', async () => {
     renderResponsavel();
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
 
     expect(screen.getByText('Olá, Fernanda')).toBeTruthy();
     expect(screen.getByText('sábado, 1 de agosto')).toBeTruthy();
@@ -81,7 +97,9 @@ describe('responsável dependents (ENR.19)', () => {
 
   it('opens the dependent detail with the class schedule and belt placeholder', async () => {
     renderResponsavel();
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
 
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Pedro Silveira'));
@@ -98,13 +116,17 @@ describe('responsável dependents (ENR.19)', () => {
     // Graduation stays an explicit placeholder this phase.
     expect(screen.getByText('Graduação')).toBeTruthy();
     expect(
-      screen.getByText('A evolução de faixa e graus chega na fase de graduação.'),
+      screen.getByText(
+        'A evolução de faixa e graus chega na fase de graduação.',
+      ),
     ).toBeTruthy();
   });
 
   it('hides the cadastrar entry when dependents.register is off', async () => {
     renderResponsavel({ permissions: { 'dependents.register': false } });
-    await waitFor(() => expect(screen.getByText('Pedro Silveira')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Pedro Silveira')).toBeTruthy(),
+    );
 
     expect(screen.queryByLabelText('Cadastrar aluno')).toBeNull();
     expect(screen.queryByTestId('register-dependent-sheet')).toBeNull();

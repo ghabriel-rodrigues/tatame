@@ -65,6 +65,10 @@ export const academyPlans = pgTable(
     index('academy_plans_tenant_id_idx').on(t.tenantId),
     check('academy_plans_amount_ck', sql`${t.amountCents} > 0`),
     check('academy_plans_due_day_ck', sql`${t.dueDay} BETWEEN 1 AND 28`),
-    pgPolicy('academy_plans_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('academy_plans_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );

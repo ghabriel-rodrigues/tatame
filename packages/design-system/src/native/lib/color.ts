@@ -7,7 +7,13 @@
 /** Uppercase-hex `#RRGGBB` (or `#RGB`) -> `rgba(r, g, b, alpha)`. */
 export function hexToRgba(hex: string, alpha: number): string {
   const n = hex.replace('#', '');
-  const full = n.length === 3 ? n.split('').map((ch) => ch + ch).join('') : n;
+  const full =
+    n.length === 3
+      ? n
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : n;
   const int = Number.parseInt(full, 16);
   if (full.length !== 6 || Number.isNaN(int)) {
     throw new Error(`hexToRgba: invalid hex color "${hex}"`);

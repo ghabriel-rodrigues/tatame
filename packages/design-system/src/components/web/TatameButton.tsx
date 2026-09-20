@@ -97,7 +97,11 @@ export function TatameButton({
       onClick={onPress}
       type={type}
       aria-busy={loading || undefined}
-      startIcon={loading ? <CircularProgress color="inherit" size={16} thickness={5} /> : undefined}
+      startIcon={
+        loading ? (
+          <CircularProgress color="inherit" size={16} thickness={5} />
+        ) : undefined
+      }
     >
       {children ?? label}
     </Root>

@@ -8,9 +8,17 @@
 import { Text } from 'react-native';
 import { act, render, screen, waitFor } from '@testing-library/react-native';
 import * as AsyncStorageModule from '@react-native-async-storage/async-storage';
-import { READY_MADE_PALETTES, derivePalette, useTheme } from '@tatame/design-system/native';
+import {
+  READY_MADE_PALETTES,
+  derivePalette,
+  useTheme,
+} from '@tatame/design-system/native';
 import { AppThemeProvider } from '../../src/theme/AppThemeProvider';
-import { BRAND_CACHE_KEY, hydrateTheme, themeTestApi } from '../../src/theme/theme-store';
+import {
+  BRAND_CACHE_KEY,
+  hydrateTheme,
+  themeTestApi,
+} from '../../src/theme/theme-store';
 import { sessionTestApi } from '../../src/session/session-store';
 import { makeMe } from '../helpers/session';
 
@@ -26,7 +34,9 @@ const DEFAULT_BRAND_2 = '#8B3DEB';
 /** Probe rendering the resolved theme facts from the context. */
 function ThemeProbe() {
   const theme = useTheme();
-  return <Text testID="theme-probe">{`${theme.mode}:${theme.color.brand['2']}`}</Text>;
+  return (
+    <Text testID="theme-probe">{`${theme.mode}:${theme.color.brand['2']}`}</Text>
+  );
 }
 
 function probeText(): string {
@@ -88,6 +98,8 @@ describe('AppThemeProvider', () => {
       sessionTestApi.seed({ status: 'anon', session: null }, null);
     });
     await waitFor(() => expect(probeText()).toBe(`light:${DEFAULT_BRAND_2}`));
-    await waitFor(() => expect(storage.__store.has(BRAND_CACHE_KEY)).toBe(false));
+    await waitFor(() =>
+      expect(storage.__store.has(BRAND_CACHE_KEY)).toBe(false),
+    );
   });
 });

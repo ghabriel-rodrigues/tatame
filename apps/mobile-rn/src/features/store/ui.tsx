@@ -95,7 +95,11 @@ export function ProductGridCard({
           testID={testID ? `${testID}-tile` : undefined}
         />
         <View style={{ gap: 4 }}>
-          <Text variant="label" numberOfLines={2} style={{ fontSize: 12.5, minHeight: 32 }}>
+          <Text
+            variant="label"
+            numberOfLines={2}
+            style={{ fontSize: 12.5, minHeight: 32 }}
+          >
             {product.name}
           </Text>
           <View
@@ -188,7 +192,9 @@ export function QtyStepper({
   ) => (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={kind === 'minus' ? 'Diminuir quantidade' : 'Aumentar quantidade'}
+      accessibilityLabel={
+        kind === 'minus' ? 'Diminuir quantidade' : 'Aumentar quantidade'
+      }
       accessibilityState={{ disabled: !enabled }}
       disabled={!enabled}
       onPress={onPress}
@@ -215,10 +221,19 @@ export function QtyStepper({
   return (
     <View
       testID={testID}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.space['3'],
+      }}
     >
       {button('minus', canDecrement, onDecrement)}
-      <Text variant="label" weight="bold" testID={`${testID}-value`} style={{ minWidth: 18, textAlign: 'center' }}>
+      <Text
+        variant="label"
+        weight="bold"
+        testID={`${testID}-value`}
+        style={{ minWidth: 18, textAlign: 'center' }}
+      >
         {value}
       </Text>
       {button('plus', canIncrement, onIncrement)}

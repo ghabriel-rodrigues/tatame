@@ -63,11 +63,18 @@ export function Toast({
         alignItems: 'center',
       }}
     >
-      <Animated.View entering={fadeUp()} accessibilityLiveRegion="polite" testID={testID}>
+      <Animated.View
+        entering={fadeUp()}
+        accessibilityLiveRegion="polite"
+        testID={testID}
+      >
         <GlassSurface
           variant="regular"
           radius={theme.radius.pill}
-          contentStyle={{ paddingVertical: theme.space['3'], paddingHorizontal: theme.space['5'] }}
+          contentStyle={{
+            paddingVertical: theme.space['3'],
+            paddingHorizontal: theme.space['5'],
+          }}
         >
           <Text variant="label" color={theme.color.fg['1']} numberOfLines={1}>
             {message}

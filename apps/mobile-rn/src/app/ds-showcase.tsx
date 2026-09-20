@@ -24,7 +24,13 @@ import {
   useTheme,
 } from '@tatame/design-system/native';
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   const theme = useTheme();
   return (
     <View style={{ gap: theme.space['3'] }}>
@@ -43,7 +49,11 @@ export default function DsShowcase() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView
-        contentContainerStyle={{ padding: theme.space['5'], gap: theme.space['6'], paddingBottom: 120 }}
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          gap: theme.space['6'],
+          paddingBottom: 120,
+        }}
       >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['6'] }}>
           <ScreenHeader
@@ -58,7 +68,9 @@ export default function DsShowcase() {
             <Text variant="display">Display 25/700</Text>
             <Text variant="title">Title 20/700</Text>
             <Text variant="subtitle">Subtitle 16/600</Text>
-            <Text variant="body">Body 14/400 — Quicksand em todos os pesos.</Text>
+            <Text variant="body">
+              Body 14/400 — Quicksand em todos os pesos.
+            </Text>
             <Text variant="label">Label 13/600</Text>
             <Text variant="caption">Caption 12/400</Text>
             <Text variant="overline">Overline caps</Text>
@@ -75,9 +87,24 @@ export default function DsShowcase() {
           </Section>
 
           <Section title="FormField">
-            <FormField label="Email" type="email" value={email} onChangeText={setEmail} placeholder="voce@exemplo.com" />
-            <FormField label="Senha" type="password" placeholder="Senha" helperText="Mínimo 8 caracteres" />
-            <FormField label="Com erro" error="Campo obrigatório" placeholder="..." />
+            <FormField
+              label="Email"
+              type="email"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="voce@exemplo.com"
+            />
+            <FormField
+              label="Senha"
+              type="password"
+              placeholder="Senha"
+              helperText="Mínimo 8 caracteres"
+            />
+            <FormField
+              label="Com erro"
+              error="Campo obrigatório"
+              placeholder="..."
+            />
             <FormField label="Desabilitado" disabled placeholder="..." />
           </Section>
 
@@ -103,17 +130,33 @@ export default function DsShowcase() {
             {/* Glass needs content behind it: hero backdrop + overlapping glass. */}
             <Card variant="hero" padding={theme.space['4']}>
               <Card variant="glass">
-                <Text variant="label">glass — blur + shine sobre o gradiente.</Text>
+                <Text variant="label">
+                  glass — blur + shine sobre o gradiente.
+                </Text>
               </Card>
             </Card>
           </Section>
 
           <Section title="BrandLogo">
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['4'] }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: theme.space['4'],
+              }}
+            >
               <BrandLogo size="sm" />
               <BrandLogo size="md" />
               <BrandLogo size="lg" />
-              <BrandLogo size="lg" boxed={false} style={{ backgroundColor: theme.color.purple['700'], padding: 8, borderRadius: 8 }} />
+              <BrandLogo
+                size="lg"
+                boxed={false}
+                style={{
+                  backgroundColor: theme.color.purple['700'],
+                  padding: 8,
+                  borderRadius: 8,
+                }}
+              />
             </View>
           </Section>
 
@@ -134,11 +177,17 @@ export default function DsShowcase() {
                 </Text>
               </View>
             </Animated.View>
-            <Text variant="caption">fadeUp na montagem da tela; pop no burst; press nos botões.</Text>
+            <Text variant="caption">
+              fadeUp na montagem da tela; pop no burst; press nos botões.
+            </Text>
           </Section>
         </Animated.View>
       </ScrollView>
-      <Toast open={toast} onClose={() => setToast(false)} message="Toast glass — some em ~2.6s" />
+      <Toast
+        open={toast}
+        onClose={() => setToast(false)}
+        message="Toast glass — some em ~2.6s"
+      />
     </SafeAreaView>
   );
 }

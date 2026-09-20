@@ -10,7 +10,11 @@ describe('FormField', () => {
     const onChangeText = jest.fn();
     render(
       <ThemeProvider>
-        <FormField label="Email" placeholder="Email" onChangeText={onChangeText} />
+        <FormField
+          label="Email"
+          placeholder="Email"
+          onChangeText={onChangeText}
+        />
       </ThemeProvider>,
     );
     expect(screen.getByText('Email')).toBeTruthy();
@@ -19,7 +23,9 @@ describe('FormField', () => {
   });
 
   it('shows the error message (wins over helperText)', () => {
-    render(<FormField label="Senha" error="Campo obrigatório" helperText="dica" />);
+    render(
+      <FormField label="Senha" error="Campo obrigatório" helperText="dica" />,
+    );
     expect(screen.getByText('Campo obrigatório')).toBeTruthy();
     expect(screen.queryByText('dica')).toBeNull();
   });
@@ -35,7 +41,9 @@ describe('FormField', () => {
     expect(input.props.secureTextEntry).toBe(true);
 
     fireEvent.press(screen.getByLabelText('Mostrar senha'));
-    expect(screen.getByPlaceholderText('Senha').props.secureTextEntry).toBe(false);
+    expect(screen.getByPlaceholderText('Senha').props.secureTextEntry).toBe(
+      false,
+    );
     expect(screen.getByLabelText('Ocultar senha')).toBeTruthy();
   });
 

@@ -12,7 +12,10 @@
  */
 
 import EventSource from 'react-native-sse';
-import type { LiveStreamCheckinEvent, LiveStreamRevokeEvent } from '@tatame/shared';
+import type {
+  LiveStreamCheckinEvent,
+  LiveStreamRevokeEvent,
+} from '@tatame/shared';
 
 export interface LiveStreamHandlers {
   onOpen: () => void;
@@ -46,11 +49,15 @@ export function connectLiveStream(
 
   source.addEventListener('open', () => handlers.onOpen());
   source.addEventListener('checkin', (event) => {
-    const payload = parse<LiveStreamCheckinEvent>('data' in event ? event.data : null);
+    const payload = parse<LiveStreamCheckinEvent>(
+      'data' in event ? event.data : null,
+    );
     if (payload) handlers.onCheckin(payload);
   });
   source.addEventListener('revoke', (event) => {
-    const payload = parse<LiveStreamRevokeEvent>('data' in event ? event.data : null);
+    const payload = parse<LiveStreamRevokeEvent>(
+      'data' in event ? event.data : null,
+    );
     if (payload) handlers.onRevoke(payload);
   });
   source.addEventListener('error', () => handlers.onError());

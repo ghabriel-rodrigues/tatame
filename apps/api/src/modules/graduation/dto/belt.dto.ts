@@ -10,10 +10,16 @@ export class BeltRefDto {
   @ApiProperty({ format: 'uuid' })
   beltId!: string;
 
-  @ApiProperty({ example: 'Azul', description: 'PT-BR display name (client copy)' })
+  @ApiProperty({
+    example: 'Azul',
+    description: 'PT-BR display name (client copy)',
+  })
   name!: string;
 
-  @ApiProperty({ example: 'belt.blue', description: 'Design-token slug — never hex' })
+  @ApiProperty({
+    example: 'belt.blue',
+    description: 'Design-token slug — never hex',
+  })
   colorSlug!: string;
 
   @ApiProperty({
@@ -30,7 +36,9 @@ export class BeltRefDto {
 
 /** Derived current belt — the shared payload folded into every student list. */
 export class BeltViewDto extends BeltRefDto {
-  @ApiProperty({ description: 'Current degrees on this belt (0 after a belt promotion)' })
+  @ApiProperty({
+    description: 'Current degrees on this belt (0 after a belt promotion)',
+  })
   degrees!: number;
 }
 
@@ -41,19 +49,27 @@ export class NextMilestoneDto {
   @ApiProperty({
     nullable: true,
     type: Number,
-    description: 'The degree the bar points at; null when the milestone is the next belt',
+    description:
+      'The degree the bar points at; null when the milestone is the next belt',
   })
   degree!: number | null;
 }
 
 export class GraduationProgressDto {
-  @ApiProperty({ description: 'Active lessons since the last award (lifetime when none)' })
+  @ApiProperty({
+    description: 'Active lessons since the last award (lifetime when none)',
+  })
   current!: number;
 
-  @ApiProperty({ description: "The academy's lessons_per_degree for the current belt" })
+  @ApiProperty({
+    description: "The academy's lessons_per_degree for the current belt",
+  })
   target!: number;
 
-  @ApiProperty({ example: 'Próximo 3º grau', description: 'PT-BR convenience label' })
+  @ApiProperty({
+    example: 'Próximo 3º grau',
+    description: 'PT-BR convenience label',
+  })
   label!: string;
 
   @ApiProperty({ type: NextMilestoneDto })

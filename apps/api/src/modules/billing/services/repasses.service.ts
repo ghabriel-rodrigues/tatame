@@ -74,10 +74,17 @@ export class RepassesService {
           academySubscriptions,
           and(
             eq(academySubscriptions.academyId, academies.id),
-            inArray(academySubscriptions.status, ['trialing', 'active', 'past_due']),
+            inArray(academySubscriptions.status, [
+              'trialing',
+              'active',
+              'past_due',
+            ]),
           ),
         )
-        .leftJoin(platformPlans, eq(platformPlans.id, academySubscriptions.platformPlanId))
+        .leftJoin(
+          platformPlans,
+          eq(platformPlans.id, academySubscriptions.platformPlanId),
+        )
         .where(inArray(academies.status, ['trial', 'active', 'delinquent']));
 
       const grossRows = await tx
@@ -90,15 +97,23 @@ export class RepassesService {
         .from(payments)
         .innerJoin(
           charges,
-          and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)),
+          and(
+            eq(charges.tenantId, payments.tenantId),
+            eq(charges.id, payments.chargeId),
+          ),
         )
-        .where(and(eq(payments.status, 'succeeded'), isNotNull(payments.paidAt)))
+        .where(
+          and(eq(payments.status, 'succeeded'), isNotNull(payments.paidAt)),
+        )
         // Positional grouping: the period expression is parameterized (the
         // timezone rides as a bind param), so repeating it in GROUP BY would
         // not be recognized as the same expression by the planner.
         .groupBy(sql`1, 2`);
 
-      const grossByAcademy = new Map<string, Array<(typeof grossRows)[number]>>();
+      const grossByAcademy = new Map<
+        string,
+        Array<(typeof grossRows)[number]>
+      >();
       for (const row of grossRows) {
         const list = grossByAcademy.get(row.tenantId) ?? [];
         list.push(row);
@@ -110,7 +125,10 @@ export class RepassesService {
       let paymentFeesMonthCents = 0;
 
       for (const academy of academyRows) {
-        if (academy.subscriptionStatus === 'active' || academy.subscriptionStatus === 'past_due') {
+        if (
+          academy.subscriptionStatus === 'active' ||
+          academy.subscriptionStatus === 'past_due'
+        ) {
           subscriptionsMonthCents += academy.priceCents ?? 0;
         }
         const feeBps = academy.feeBps ?? 0;
@@ -153,9 +171,14 @@ export class RepassesService {
       }
 
       repasses.sort(
-        (a, b) => b.period.localeCompare(a.period) || a.academyName.localeCompare(b.academyName),
+        (a, b) =>
+          b.period.localeCompare(a.period) ||
+          a.academyName.localeCompare(b.academyName),
       );
-      return { totals: { subscriptionsMonthCents, paymentFeesMonthCents }, repasses };
+      return {
+        totals: { subscriptionsMonthCents, paymentFeesMonthCents },
+        repasses,
+      };
     });
   }
 }

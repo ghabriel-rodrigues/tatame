@@ -1,5 +1,10 @@
 import { Body, Controller, Get, HttpCode, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { requireAuthContext } from '../../../common/auth-context.js';
 import { Roles } from '../../../common/decorators.js';
@@ -22,14 +27,19 @@ export class AdminPermissionsController {
   private tenantId(): string {
     const ctx = requireAuthContext(this.cls);
     if (!ctx.tenantId) {
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'No active academy context');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'No active academy context',
+      );
     }
     return ctx.tenantId;
   }
 
   @Get()
   @ApiOperation({
-    summary: 'Resolved toggle matrix (defaults overlaid with rows) + per-role member counts',
+    summary:
+      'Resolved toggle matrix (defaults overlaid with rows) + per-role member counts',
   })
   @ApiOkResponse({ type: PermissionMatrixResponseDto })
   async list() {
@@ -48,7 +58,11 @@ export class AdminPermissionsController {
     const ctx = requireAuthContext(this.cls);
     const tenantId = this.tenantId();
     return {
-      permissions: await this.permissions.update(tenantId, ctx.userId, dto.entries),
+      permissions: await this.permissions.update(
+        tenantId,
+        ctx.userId,
+        dto.entries,
+      ),
       memberCounts: await this.permissions.memberCounts(tenantId),
     };
   }

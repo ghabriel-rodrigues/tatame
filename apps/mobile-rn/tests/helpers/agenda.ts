@@ -18,7 +18,9 @@ const uuid = (block: string, counter: number) =>
 
 export const FUNDAMENTOS_CLASS_ID = uuid('9006', 1);
 
-export function makeAgendaClass(overrides: Partial<AlunoAgendaClass> = {}): AlunoAgendaClass {
+export function makeAgendaClass(
+  overrides: Partial<AlunoAgendaClass> = {},
+): AlunoAgendaClass {
   return {
     classId: OPEN_MAT_CLASS_ID,
     className: 'Open mat',
@@ -52,7 +54,9 @@ export function makeAgenda(options: AgendaOptions = {}): AlunoAgendaResponse {
   };
 }
 
-export function makeCalendarItem(overrides: Partial<CalendarClassItem> = {}): CalendarClassItem {
+export function makeCalendarItem(
+  overrides: Partial<CalendarClassItem> = {},
+): CalendarClassItem {
   return {
     classId: FUNDAMENTOS_CLASS_ID,
     className: 'Fundamentos',
@@ -64,7 +68,9 @@ export function makeCalendarItem(overrides: Partial<CalendarClassItem> = {}): Ca
   };
 }
 
-export function makeBuckets(partial: Partial<CalendarBuckets> = {}): CalendarBuckets {
+export function makeBuckets(
+  partial: Partial<CalendarBuckets> = {},
+): CalendarBuckets {
   return { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], ...partial };
 }
 

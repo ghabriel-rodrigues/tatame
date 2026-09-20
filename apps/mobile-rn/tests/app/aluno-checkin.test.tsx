@@ -7,11 +7,23 @@
  * the invalidated home query.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, problem, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  problem,
+  type FetchHandler,
+} from '../helpers/session';
 import {
   OPEN_MAT_CLASS_ID,
   makeAlunoHome,
@@ -42,7 +54,10 @@ function renderWithCheckin(override?: FetchHandler): CheckinLog {
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -78,7 +93,9 @@ describe('aluno check-in sheet (ATT.15/16)', () => {
     renderWithCheckin();
     await openSheet();
 
-    await waitFor(() => expect(screen.getByText('Check-in · Open mat')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Check-in · Open mat')).toBeTruthy(),
+    );
     expect(screen.getByText('Hoje, 10:00 – 12:00 · 120 min')).toBeTruthy();
     for (const method of ['QR Code', 'Código', 'Manual']) {
       expect(screen.getByLabelText(method)).toBeTruthy();
@@ -102,11 +119,17 @@ describe('aluno check-in sheet (ATT.15/16)', () => {
     await openSheet();
     await submitCode();
 
-    await waitFor(() => expect(screen.getByTestId('checkin-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('checkin-success-pop')).toBeTruthy(),
+    );
     expect(log.bodies).toContainEqual({ method: 'code', code: '4729' });
     // Sheet result title (the hero chip may render the same copy post-flip).
-    expect(screen.getAllByText('Presença registrada').length).toBeGreaterThan(0);
-    expect(screen.getByText('Essa é a sua 7ª aula seguida. Bom treino!')).toBeTruthy();
+    expect(screen.getAllByText('Presença registrada').length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.getByText('Essa é a sua 7ª aula seguida. Bom treino!'),
+    ).toBeTruthy();
   });
 
   it('hides the streak line when gamification is off (streak null)', async () => {
@@ -118,7 +141,9 @@ describe('aluno check-in sheet (ATT.15/16)', () => {
     await openSheet();
     await submitCode();
 
-    await waitFor(() => expect(screen.getByTestId('checkin-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('checkin-success-pop')).toBeTruthy(),
+    );
     expect(screen.queryByText(/aula seguida/)).toBeNull();
   });
 
@@ -132,9 +157,13 @@ describe('aluno check-in sheet (ATT.15/16)', () => {
     await submitCode();
 
     await waitFor(() =>
-      expect(screen.getByText(/já tinha feito check-in nesta aula/)).toBeTruthy(),
+      expect(
+        screen.getByText(/já tinha feito check-in nesta aula/),
+      ).toBeTruthy(),
     );
-    expect(screen.getAllByText('Presença registrada').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Presença registrada').length).toBeGreaterThan(
+      0,
+    );
     // Never an error toast for the duplicate state.
     expect(screen.queryByText(/Algo deu errado/)).toBeNull();
   });
@@ -161,13 +190,20 @@ describe('aluno check-in sheet (ATT.15/16)', () => {
     await act(async () => {
       fireEvent.press(screen.getByLabelText('Manual'));
     });
-    expect(screen.getByText(/Verificação de localização em breve/)).toBeTruthy();
+    expect(
+      screen.getByText(/Verificação de localização em breve/),
+    ).toBeTruthy();
     await act(async () => {
       fireEvent.press(screen.getByText('Registrar presença'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('checkin-success-pop')).toBeTruthy());
-    expect(log.bodies).toContainEqual({ method: 'manual', classId: OPEN_MAT_CLASS_ID });
+    await waitFor(() =>
+      expect(screen.getByTestId('checkin-success-pop')).toBeTruthy(),
+    );
+    expect(log.bodies).toContainEqual({
+      method: 'manual',
+      classId: OPEN_MAT_CLASS_ID,
+    });
   });
 
   it('flips the home hero after closing the success state', async () => {
@@ -175,12 +211,16 @@ describe('aluno check-in sheet (ATT.15/16)', () => {
     await openSheet();
     await submitCode();
 
-    await waitFor(() => expect(screen.getByTestId('checkin-success-pop')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('checkin-success-pop')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Fechar'));
     });
 
-    await waitFor(() => expect(screen.getByTestId('hero-checked-in-chip')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('hero-checked-in-chip')).toBeTruthy(),
+    );
     expect(screen.queryByText('Fazer check-in')).toBeNull();
   });
 });

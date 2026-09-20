@@ -15,14 +15,20 @@ import {
 } from '@tatame/db';
 import type { AuthContext } from '../../../common/auth-context.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
-import { APP_CONFIG, type AppConfig } from '../../../infra/config/app-config.js';
+import {
+  APP_CONFIG,
+  type AppConfig,
+} from '../../../infra/config/app-config.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import {
   PAYMENT_PROVIDER_PORT,
   type PaymentProviderPort,
 } from '../../../infra/payments/payment-provider.port.js';
 import { localDate } from '../../attendance/lib/time.js';
-import { ProviderEventsService, type BillingActor } from './provider-events.service.js';
+import {
+  ProviderEventsService,
+  type BillingActor,
+} from './provider-events.service.js';
 
 /**
  * `buyer` is the persona-neutral order-charge ownership (spec 009): the payer
@@ -72,14 +78,18 @@ const asActor = (ctx: AuthContext): BillingActor => ({
   impersonatorUserId: ctx.impersonatorUserId,
 });
 
-export function toChargeView(row: typeof charges.$inferSelect, todayIso: string): ChargeView {
+export function toChargeView(
+  row: typeof charges.$inferSelect,
+  todayIso: string,
+): ChargeView {
   return {
     id: row.id,
     studentId: row.studentId,
     guardianId: row.guardianId,
     status: row.status,
     overdue:
-      (row.status === 'open' || row.status === 'overdue') && row.dueDate < todayIso,
+      (row.status === 'open' || row.status === 'overdue') &&
+      row.dueDate < todayIso,
     amountCents: row.amountCents,
     currency: row.currency,
     dueDate: row.dueDate,
@@ -115,7 +125,8 @@ export class PaymentFlowService {
   constructor(
     @Inject(APP_DB) private readonly appDb: DbHandle,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
-    @Inject(PAYMENT_PROVIDER_PORT) private readonly provider: PaymentProviderPort,
+    @Inject(PAYMENT_PROVIDER_PORT)
+    private readonly provider: PaymentProviderPort,
     private readonly providerEvents: ProviderEventsService,
   ) {}
 
@@ -130,7 +141,11 @@ export class PaymentFlowService {
     payer: PayerKind,
     chargeId: string,
     input: CreatePaymentInput,
-  ): Promise<{ payment: PaymentView; charge: ChargeView; mandateCreated: boolean }> {
+  ): Promise<{
+    payment: PaymentView;
+    charge: ChargeView;
+    mandateCreated: boolean;
+  }> {
     if (input.recurrence && input.method !== 'card') {
       throw problem(
         422,
@@ -190,18 +205,35 @@ export class PaymentFlowService {
                 providerMandateId,
               })
               .returning({ id: paymentMandates.id });
-            if (!mandate) throw problem(500, ErrorCodes.INTERNAL, 'Mandate insert returned no row');
-            await this.auditMandate(tx, ctx, 'billing.mandate.created', mandate.id, {
-              student_id: charge.studentId,
-              method: 'card',
-            });
+            if (!mandate)
+              throw problem(
+                500,
+                ErrorCodes.INTERNAL,
+                'Mandate insert returned no row',
+              );
+            await this.auditMandate(
+              tx,
+              ctx,
+              'billing.mandate.created',
+              mandate.id,
+              {
+                student_id: charge.studentId,
+                method: 'card',
+              },
+            );
             mandateCreated = true;
           } else if (active) {
             providerMandateId = active.providerMandateId;
           }
         }
 
-        const attempt = await this.openAttempt(tx, ctx.tenantId, charge, input, providerMandateId);
+        const attempt = await this.openAttempt(
+          tx,
+          ctx.tenantId,
+          charge,
+          input,
+          providerMandateId,
+        );
         return {
           charge,
           payment: attempt.payment,
@@ -253,13 +285,20 @@ export class PaymentFlowService {
       dueDate: charge.dueDate,
       providerMandateId,
     });
-    await withTenant(this.appDb.db, { tenantId, userId: actor.userId }, async (tx) => {
-      await this.ensurePendingPayment(tx, tenantId, charge, {
-        method: 'card',
-        providerPaymentId: result.providerPaymentId,
-        providerData: { ...result.card, recurring: Boolean(providerMandateId) },
-      });
-    });
+    await withTenant(
+      this.appDb.db,
+      { tenantId, userId: actor.userId },
+      async (tx) => {
+        await this.ensurePendingPayment(tx, tenantId, charge, {
+          method: 'card',
+          providerPaymentId: result.providerPaymentId,
+          providerData: {
+            ...result.card,
+            recurring: Boolean(providerMandateId),
+          },
+        });
+      },
+    );
     if (result.status === 'succeeded') {
       await this.providerEvents.handleProviderEvent(
         {
@@ -284,7 +323,10 @@ export class PaymentFlowService {
     ctx: AuthContext & { tenantId: string },
     paymentId: string,
   ): Promise<{ payment: PaymentView; charge: ChargeView }> {
-    if (this.config.paymentsProvider !== 'simulated' || this.provider.name !== 'simulated') {
+    if (
+      this.config.paymentsProvider !== 'simulated' ||
+      this.provider.name !== 'simulated'
+    ) {
       throw problem(404, ErrorCodes.NOT_FOUND, 'Not found');
     }
     const today = localDate();
@@ -292,11 +334,17 @@ export class PaymentFlowService {
       this.appDb.db,
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx) => {
-        const [row] = await tx.select().from(payments).where(eq(payments.id, paymentId));
+        const [row] = await tx
+          .select()
+          .from(payments)
+          .where(eq(payments.id, paymentId));
         if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Payment not found');
         // Order charges are persona-neutral: ownership is the order's buyer
         // (spec 009 — a professor buyer has no student row to match on).
-        const [target] = await tx.select().from(charges).where(eq(charges.id, row.chargeId));
+        const [target] = await tx
+          .select()
+          .from(charges)
+          .where(eq(charges.id, row.chargeId));
         const payer: PayerKind =
           target?.origin === 'order'
             ? 'buyer'
@@ -313,7 +361,11 @@ export class PaymentFlowService {
           );
         }
         if (!row.providerPaymentId) {
-          throw problem(500, ErrorCodes.INTERNAL, 'Payment attempt has no provider id');
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Payment attempt has no provider id',
+          );
         }
         return row;
       },
@@ -331,7 +383,10 @@ export class PaymentFlowService {
     );
 
     const fresh = await this.readPair(ctx.tenantId, payment.id);
-    return { payment: toPaymentView(fresh.payment), charge: toChargeView(fresh.charge, today) };
+    return {
+      payment: toPaymentView(fresh.payment),
+      charge: toChargeView(fresh.charge, today),
+    };
   }
 
   /** Comprovante data for a settled payment (student/guardian/admin). */
@@ -351,11 +406,17 @@ export class PaymentFlowService {
           .from(payments)
           .innerJoin(
             charges,
-            and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)),
+            and(
+              eq(charges.tenantId, payments.tenantId),
+              eq(charges.id, payments.chargeId),
+            ),
           )
           .leftJoin(
             students,
-            and(eq(students.tenantId, charges.tenantId), eq(students.id, charges.studentId)),
+            and(
+              eq(students.tenantId, charges.tenantId),
+              eq(students.id, charges.studentId),
+            ),
           )
           .leftJoin(
             academyPlans,
@@ -377,20 +438,32 @@ export class PaymentFlowService {
         } else if (ctx.role === 'guardian') {
           const guardian = await this.guardianOf(tx, ctx.userId);
           const chargeStudentId = row.charge.studentId;
-          const [dependent] = guardian && chargeStudentId
-            ? await tx
-                .select({ id: students.id })
-                .from(students)
-                .where(
-                  and(eq(students.id, chargeStudentId), eq(students.guardianId, guardian.id)),
-                )
-            : [];
-          if (!dependent) throw problem(404, ErrorCodes.NOT_FOUND, 'Payment not found');
+          const [dependent] =
+            guardian && chargeStudentId
+              ? await tx
+                  .select({ id: students.id })
+                  .from(students)
+                  .where(
+                    and(
+                      eq(students.id, chargeStudentId),
+                      eq(students.guardianId, guardian.id),
+                    ),
+                  )
+              : [];
+          if (!dependent)
+            throw problem(404, ErrorCodes.NOT_FOUND, 'Payment not found');
         }
 
         // A comprovante exists only once settled.
-        if (row.payment.status !== 'succeeded' && row.payment.status !== 'refunded') {
-          throw problem(404, ErrorCodes.NOT_FOUND, 'No receipt for an unsettled payment');
+        if (
+          row.payment.status !== 'succeeded' &&
+          row.payment.status !== 'refunded'
+        ) {
+          throw problem(
+            404,
+            ErrorCodes.NOT_FOUND,
+            'No receipt for an unsettled payment',
+          );
         }
 
         const [academy] = await tx
@@ -419,7 +492,10 @@ export class PaymentFlowService {
       this.appDb.db,
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx) => {
-        const [row] = await tx.select().from(payments).where(eq(payments.id, paymentId));
+        const [row] = await tx
+          .select()
+          .from(payments)
+          .where(eq(payments.id, paymentId));
         if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Payment not found');
         if (row.status !== 'succeeded' || !row.providerPaymentId) {
           throw problem(
@@ -432,7 +508,9 @@ export class PaymentFlowService {
       },
     );
 
-    const { providerRefundId } = await this.provider.refund(target.providerPaymentId as string);
+    const { providerRefundId } = await this.provider.refund(
+      target.providerPaymentId as string,
+    );
     // Simulated driver: instant `payment.refunded` through the same handler.
     await this.providerEvents.handleProviderEvent(
       {
@@ -448,8 +526,11 @@ export class PaymentFlowService {
 
     // The admin trigger itself is audited with impersonation attribution
     // (spec: materialize + refund are audited admin actions).
-    await withTenant(this.appDb.db, { tenantId: ctx.tenantId, userId: ctx.userId }, (tx) =>
-      tx.execute(sql`
+    await withTenant(
+      this.appDb.db,
+      { tenantId: ctx.tenantId, userId: ctx.userId },
+      (tx) =>
+        tx.execute(sql`
         SELECT audit_append(
           ${ctx.tenantId}::uuid,
           ${ctx.userId}::uuid,
@@ -480,19 +561,31 @@ export class PaymentFlowService {
       { tenantId: ctx.tenantId, userId: ctx.userId },
       async (tx) => {
         const student = await this.studentOf(tx, ctx.userId);
-        if (!student) throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record');
+        if (!student)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record');
         const mandate = await this.activeMandate(tx, student.id);
-        if (!mandate) throw problem(404, ErrorCodes.NOT_FOUND, 'No active recurrence');
+        if (!mandate)
+          throw problem(404, ErrorCodes.NOT_FOUND, 'No active recurrence');
         if (mandate.providerMandateId) {
           await this.provider.cancelMandate(mandate.providerMandateId);
         }
         await tx
           .update(paymentMandates)
-          .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+          .set({
+            status: 'canceled',
+            canceledAt: new Date(),
+            updatedAt: new Date(),
+          })
           .where(eq(paymentMandates.id, mandate.id));
-        await this.auditMandate(tx, ctx, 'billing.mandate.canceled', mandate.id, {
-          student_id: student.id,
-        });
+        await this.auditMandate(
+          tx,
+          ctx,
+          'billing.mandate.canceled',
+          mandate.id,
+          {
+            student_id: student.id,
+          },
+        );
       },
     );
   }
@@ -515,7 +608,10 @@ export class PaymentFlowService {
     payer: PayerKind,
     chargeId: string,
   ): Promise<typeof charges.$inferSelect> {
-    const [charge] = await tx.select().from(charges).where(eq(charges.id, chargeId));
+    const [charge] = await tx
+      .select()
+      .from(charges)
+      .where(eq(charges.id, chargeId));
     // Foreign/unknown charge = 404, never 403 (no existence leak; RLS already
     // hides other tenants).
     if (!charge) throw problem(404, ErrorCodes.NOT_FOUND, 'Charge not found');
@@ -525,7 +621,11 @@ export class PaymentFlowService {
       const [order] = charge.orderId
         ? await tx.select().from(orders).where(eq(orders.id, charge.orderId))
         : [];
-      if (charge.origin !== 'order' || !order || order.buyerUserId !== ctx.userId) {
+      if (
+        charge.origin !== 'order' ||
+        !order ||
+        order.buyerUserId !== ctx.userId
+      ) {
         throw problem(404, ErrorCodes.NOT_FOUND, 'Charge not found');
       }
     } else if (payer === 'student') {
@@ -562,7 +662,12 @@ export class PaymentFlowService {
     const [row] = await tx
       .select()
       .from(paymentMandates)
-      .where(and(eq(paymentMandates.studentId, studentId), eq(paymentMandates.status, 'active')));
+      .where(
+        and(
+          eq(paymentMandates.studentId, studentId),
+          eq(paymentMandates.status, 'active'),
+        ),
+      );
     return row ?? null;
   }
 
@@ -613,7 +718,10 @@ export class PaymentFlowService {
       });
       return { payment };
     }
-    const card = await this.provider.createCardCharge({ ...intent, providerMandateId });
+    const card = await this.provider.createCardCharge({
+      ...intent,
+      providerMandateId,
+    });
     const payment = await this.ensurePendingPayment(tx, tenantId, charge, {
       method: 'card',
       providerPaymentId: card.providerPaymentId,
@@ -625,7 +733,8 @@ export class PaymentFlowService {
     });
     return {
       payment,
-      settleAs: card.status === 'succeeded' ? card.providerPaymentId : undefined,
+      settleAs:
+        card.status === 'succeeded' ? card.providerPaymentId : undefined,
     };
   }
 
@@ -653,10 +762,19 @@ export class PaymentFlowService {
       if (existing.status === 'failed') {
         const [revived] = await tx
           .update(payments)
-          .set({ status: 'pending', providerData: attempt.providerData, updatedAt: new Date() })
+          .set({
+            status: 'pending',
+            providerData: attempt.providerData,
+            updatedAt: new Date(),
+          })
           .where(eq(payments.id, existing.id))
           .returning();
-        if (!revived) throw problem(500, ErrorCodes.INTERNAL, 'Payment revive returned no row');
+        if (!revived)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Payment revive returned no row',
+          );
         return revived;
       }
       // succeeded/refunded on an open charge — inconsistent; refuse cleanly.
@@ -680,16 +798,25 @@ export class PaymentFlowService {
         providerData: attempt.providerData,
       })
       .returning();
-    if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Payment insert returned no row');
+    if (!inserted)
+      throw problem(500, ErrorCodes.INTERNAL, 'Payment insert returned no row');
     return inserted;
   }
 
   private async readPair(tenantId: string, paymentId: string) {
     return withTenant(this.appDb.db, tenantId, async (tx) => {
-      const [payment] = await tx.select().from(payments).where(eq(payments.id, paymentId));
-      if (!payment) throw problem(500, ErrorCodes.INTERNAL, 'Payment vanished mid-flow');
-      const [charge] = await tx.select().from(charges).where(eq(charges.id, payment.chargeId));
-      if (!charge) throw problem(500, ErrorCodes.INTERNAL, 'Charge vanished mid-flow');
+      const [payment] = await tx
+        .select()
+        .from(payments)
+        .where(eq(payments.id, paymentId));
+      if (!payment)
+        throw problem(500, ErrorCodes.INTERNAL, 'Payment vanished mid-flow');
+      const [charge] = await tx
+        .select()
+        .from(charges)
+        .where(eq(charges.id, payment.chargeId));
+      if (!charge)
+        throw problem(500, ErrorCodes.INTERNAL, 'Charge vanished mid-flow');
       return { payment, charge };
     });
   }

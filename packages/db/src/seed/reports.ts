@@ -56,7 +56,11 @@ const FIXTURE_ALUNO_PROFILE = {
 };
 
 /** Record-only adults carrying the graded lesson counts (top 3 of aluno-06). */
-const RANKING_STUDENTS: Array<{ fullName: string; birthDate: string; lessons: number }> = [
+const RANKING_STUDENTS: Array<{
+  fullName: string;
+  birthDate: string;
+  lessons: number;
+}> = [
   { fullName: 'Rita Ranking', birthDate: '1994-01-12', lessons: 4 },
   { fullName: 'Rodrigo Ranking', birthDate: '1991-06-25', lessons: 3 },
   { fullName: 'Renan Ranking', birthDate: '1997-10-03', lessons: 2 },
@@ -116,7 +120,9 @@ export interface SeedReportHandles {
 
 /** Tenant-local (America/Sao_Paulo) YYYY-MM-DD — mirrors the API time lib. */
 function spDate(at: Date = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(at);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+  }).format(at);
 }
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -148,7 +154,10 @@ function pastInSemester(daysAgo: number, now: Date = new Date()): Date {
  * Requires `seedDevFixtures` (academies, users, students, classes) and
  * `seedBeltCatalog` to have run first.
  */
-export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandles): Promise<void> {
+export async function seedReportFixtures({
+  appDb,
+  platformDb,
+}: SeedReportHandles): Promise<void> {
   // 1. The fixture aluno's full profile — NULL-only fill so a demoed edit or
   //    the write-once lock is never clobbered by a re-run.
   await withPlatform(platformDb, async (tx) => {
@@ -161,9 +170,15 @@ export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandle
 
   for (const slug of Object.keys(MAIN_STUDENT)) {
     const [academy] = await withPlatform(platformDb, (tx) =>
-      tx.select({ id: academies.id }).from(academies).where(eq(academies.slug, slug)),
+      tx
+        .select({ id: academies.id })
+        .from(academies)
+        .where(eq(academies.slug, slug)),
     );
-    if (!academy) throw new Error(`Fixture academy ${slug} missing — run seedDevFixtures first`);
+    if (!academy)
+      throw new Error(
+        `Fixture academy ${slug} missing — run seedDevFixtures first`,
+      );
     const tenantId = academy.id;
 
     const userIdByEmail = new Map<string, string>();
@@ -171,7 +186,8 @@ export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandle
       const [user] = await withPlatform(platformDb, (tx) =>
         tx.select({ id: users.id }).from(users).where(eq(users.email, email)),
       );
-      if (!user) throw new Error(`Missing user ${email} — run seedDevFixtures first`);
+      if (!user)
+        throw new Error(`Missing user ${email} — run seedDevFixtures first`);
       userIdByEmail.set(email, user.id);
     }
     const professorUserId = userIdByEmail.get(PROFESSOR_EMAIL[slug]!)!;
@@ -182,8 +198,11 @@ export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandle
       const [main] = await tx
         .select({ id: students.id, userId: students.userId })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.fullName, mainName)));
-      if (!main) throw new Error(`Fixture student ${mainName} missing for ${slug}`);
+        .where(
+          and(eq(students.tenantId, tenantId), eq(students.fullName, mainName)),
+        );
+      if (!main)
+        throw new Error(`Fixture student ${mainName} missing for ${slug}`);
 
       const [guardian] = await tx
         .select({ id: guardians.id, userId: guardians.userId })
@@ -193,7 +212,12 @@ export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandle
       const [dep0] = await tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, tenantId), eq(students.guardianId, guardian.id)))
+        .where(
+          and(
+            eq(students.tenantId, tenantId),
+            eq(students.guardianId, guardian.id),
+          ),
+        )
         .orderBy(students.fullName);
       if (!dep0) throw new Error(`Fixture dependent missing for ${slug}`);
 
@@ -207,8 +231,11 @@ export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandle
       const [adulto] = await tx
         .select({ id: classes.id })
         .from(classes)
-        .where(and(eq(classes.tenantId, tenantId), eq(classes.name, 'Adulto Gi')));
-      if (!adulto) throw new Error(`Fixture class Adulto Gi missing for ${slug}`);
+        .where(
+          and(eq(classes.tenantId, tenantId), eq(classes.name, 'Adulto Gi')),
+        );
+      if (!adulto)
+        throw new Error(`Fixture class Adulto Gi missing for ${slug}`);
 
       const now = new Date();
       const monthKey = spDate(now).slice(0, 7);
@@ -224,13 +251,25 @@ export async function seedReportFixtures({ appDb, platformDb }: SeedReportHandle
       for (const s of RANKING_STUDENTS) {
         const studentId = rankingIdByName.get(s.fullName)!;
         for (const sessionId of sessionIds.slice(0, s.lessons)) {
-          await ensureActiveAttendance(tx, tenantId, sessionId, studentId, professorUserId);
+          await ensureActiveAttendance(
+            tx,
+            tenantId,
+            sessionId,
+            studentId,
+            professorUserId,
+          );
         }
       }
       // The fixture aluno's guaranteed current-month lesson (their dev-seed
       // check-in can fall into the previous month early in a month).
       if (sessionIds[0]) {
-        await ensureActiveAttendance(tx, tenantId, sessionIds[0], main.id, professorUserId);
+        await ensureActiveAttendance(
+          tx,
+          tenantId,
+          sessionIds[0],
+          main.id,
+          professorUserId,
+        );
       }
 
       // ── Por eventos: already-happened semester events, graded counts ────
@@ -288,7 +327,9 @@ async function ensureStudent(
   const found = await tx
     .select({ id: students.id })
     .from(students)
-    .where(and(eq(students.tenantId, tenantId), eq(students.fullName, s.fullName)));
+    .where(
+      and(eq(students.tenantId, tenantId), eq(students.fullName, s.fullName)),
+    );
   if (found[0]) return found[0].id;
   const [inserted] = await tx
     .insert(students)
@@ -321,7 +362,8 @@ async function ensureSession(
     .insert(classSessions)
     .values({ tenantId, classId, sessionDate, startsAt: at, status: 'done' })
     .returning({ id: classSessions.id });
-  if (!inserted) throw new Error(`Failed to insert session ${classId}@${sessionDate}`);
+  if (!inserted)
+    throw new Error(`Failed to insert session ${classId}@${sessionDate}`);
   return inserted.id;
 }
 

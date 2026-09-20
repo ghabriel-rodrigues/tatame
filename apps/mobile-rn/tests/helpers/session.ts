@@ -13,7 +13,9 @@ import type { MeResponse, MembershipView } from '@tatame/shared';
 
 let membershipCounter = 0;
 
-export function makeMembership(overrides: Partial<MembershipView> = {}): MembershipView {
+export function makeMembership(
+  overrides: Partial<MembershipView> = {},
+): MembershipView {
   membershipCounter += 1;
   return {
     id: `018f0000-0000-7000-8000-${membershipCounter.toString(16).padStart(12, '0')}`,
@@ -122,7 +124,11 @@ function notificationDefaults(method: string, path: string): Response | null {
   if (method === 'GET' && path === '/v1/rankings') {
     return json(200, {
       by: 'lessons',
-      window: { label: '2026-08', start: '2026-08-01', endExclusive: '2026-09-01' },
+      window: {
+        label: '2026-08',
+        start: '2026-08-01',
+        endExclusive: '2026-09-01',
+      },
       top: [],
       me: null,
       totalRanked: 0,
@@ -141,7 +147,9 @@ export function installFetchMock(handler: FetchHandler): jest.Mock {
   const impl = jest.fn(async (input: Request | string, init?: RequestInit) => {
     const isRequest = typeof input !== 'string';
     const url = isRequest ? input.url : input;
-    const method = (init?.method ?? (isRequest ? input.method : 'GET')).toUpperCase();
+    const method = (
+      init?.method ?? (isRequest ? input.method : 'GET')
+    ).toUpperCase();
     const authorization = isRequest
       ? input.headers.get('authorization')
       : (new Headers(init?.headers).get('authorization') ?? null);
@@ -162,8 +170,13 @@ export function installFetchMock(handler: FetchHandler): jest.Mock {
     const parsed = new URL(url, 'http://localhost:3000');
     const path = parsed.pathname;
     const response =
-      (await handler({ method, path, search: parsed.search, body, authorization })) ??
-      notificationDefaults(method, path);
+      (await handler({
+        method,
+        path,
+        search: parsed.search,
+        body,
+        authorization,
+      })) ?? notificationDefaults(method, path);
     if (!response) throw new Error(`Unhandled request: ${method} ${path}`);
     return response;
   });

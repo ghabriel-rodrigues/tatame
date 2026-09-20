@@ -23,7 +23,8 @@ const MESSAGES: Record<string, string> = {
   [ApiErrorCodes.TENANT_READ_ONLY]:
     'Academia em modo somente leitura — alterações desabilitadas.',
   [ApiErrorCodes.NOT_FOUND]: 'Registro não encontrado.',
-  [ApiErrorCodes.VALIDATION_FAILED]: 'Dados inválidos. Revise e tente novamente.',
+  [ApiErrorCodes.VALIDATION_FAILED]:
+    'Dados inválidos. Revise e tente novamente.',
 };
 
 export const GENERIC_GRADUATION_ERROR = 'Algo deu errado. Tente novamente.';

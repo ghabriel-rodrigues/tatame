@@ -20,13 +20,19 @@ export interface ThemeProviderProps {
   children?: ReactNode;
 }
 
-export function ThemeProvider({ brand = null, mode = 'light', children }: ThemeProviderProps) {
+export function ThemeProvider({
+  brand = null,
+  mode = 'light',
+  children,
+}: ThemeProviderProps) {
   const theme = useMemo(
     () => createTheme({ brand, mode }),
     // Re-derive only when the actual brand colors or mode change.
     [brand?.deep, brand?.vibrant, brand?.accent, mode],
   );
-  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+  );
 }
 
 let defaultTheme: Theme | null = null;

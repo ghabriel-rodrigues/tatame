@@ -72,7 +72,11 @@ export function ScreenHeader({
   return (
     <Root className={classes}>
       {onBack ? (
-        <IconButton aria-label="Voltar" onClick={onBack} className="ScreenHeader-back">
+        <IconButton
+          aria-label="Voltar"
+          onClick={onBack}
+          className="ScreenHeader-back"
+        >
           <BackIcon />
         </IconButton>
       ) : null}
@@ -86,12 +90,18 @@ export function ScreenHeader({
           {title}
         </Typography>
         {subtitle ? (
-          <Typography variant="body1" color="text.secondary" className="ScreenHeader-subtitle">
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            className="ScreenHeader-subtitle"
+          >
             {subtitle}
           </Typography>
         ) : null}
       </TextColumn>
-      {trailing ? <div className="ScreenHeader-trailing">{trailing}</div> : null}
+      {trailing ? (
+        <div className="ScreenHeader-trailing">{trailing}</div>
+      ) : null}
     </Root>
   );
 }

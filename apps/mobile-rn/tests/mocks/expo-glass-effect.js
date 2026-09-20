@@ -7,7 +7,8 @@
 const React = require('react');
 const { View } = require('react-native');
 
-const passthrough = ({ children, ...props }) => React.createElement(View, props, children);
+const passthrough = ({ children, ...props }) =>
+  React.createElement(View, props, children);
 
 module.exports = {
   GlassView: passthrough,

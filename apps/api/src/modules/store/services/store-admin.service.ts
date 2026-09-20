@@ -94,8 +94,20 @@ export class StoreAdminService {
         .insert(productCategories)
         .values({ tenantId: ctx.tenantId, name })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Category insert returned no row');
-      await this.audit(tx, ctx, 'store.category.created', 'product_category', row.id, { name });
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Category insert returned no row',
+        );
+      await this.audit(
+        tx,
+        ctx,
+        'store.category.created',
+        'product_category',
+        row.id,
+        { name },
+      );
       return { id: row.id, name: row.name, productCount: 0 };
     });
   }
@@ -114,11 +126,23 @@ export class StoreAdminService {
         .set({ name, updatedAt: new Date() })
         .where(eq(productCategories.id, category.id))
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Category update returned no row');
-      await this.audit(tx, ctx, 'store.category.updated', 'product_category', row.id, {
-        from: category.name,
-        to: name,
-      });
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Category update returned no row',
+        );
+      await this.audit(
+        tx,
+        ctx,
+        'store.category.updated',
+        'product_category',
+        row.id,
+        {
+          from: category.name,
+          to: name,
+        },
+      );
       const [count] = await this.categoryViews(tx, [row.id]);
       return count ?? { id: row.id, name: row.name, productCount: 0 };
     });
@@ -147,10 +171,19 @@ export class StoreAdminService {
           'Products still reference this category — move or archive them first',
         );
       }
-      await tx.delete(productCategories).where(eq(productCategories.id, category.id));
-      await this.audit(tx, ctx, 'store.category.deleted', 'product_category', category.id, {
-        name: category.name,
-      });
+      await tx
+        .delete(productCategories)
+        .where(eq(productCategories.id, category.id));
+      await this.audit(
+        tx,
+        ctx,
+        'store.category.deleted',
+        'product_category',
+        category.id,
+        {
+          name: category.name,
+        },
+      );
     });
   }
 
@@ -172,7 +205,8 @@ export class StoreAdminService {
     input: CreateProductInput,
   ): Promise<AdminProductView> {
     return withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      if (input.categoryId) await this.requireCategory(tx, input.categoryId, 'categoryId');
+      if (input.categoryId)
+        await this.requireCategory(tx, input.categoryId, 'categoryId');
 
       // The creation default cycles the design-system catalog (no DB default).
       const [{ count }] = (await tx
@@ -200,7 +234,12 @@ export class StoreAdminService {
           gradientPreset,
         })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Product insert returned no row');
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Product insert returned no row',
+        );
       await this.audit(tx, ctx, 'store.product.created', 'product', row.id, {
         name: row.name,
         monogram: row.monogram,
@@ -221,30 +260,48 @@ export class StoreAdminService {
     return withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
       const product = await this.requireProduct(tx, productId);
       if (product.status === 'archived') {
-        throw problem(409, ErrorCodes.CONFLICT, 'An archived product cannot be edited');
+        throw problem(
+          409,
+          ErrorCodes.CONFLICT,
+          'An archived product cannot be edited',
+        );
       }
-      if (input.categoryId) await this.requireCategory(tx, input.categoryId, 'categoryId');
+      if (input.categoryId)
+        await this.requireCategory(tx, input.categoryId, 'categoryId');
 
       const [row] = await tx
         .update(products)
         .set({
           ...(input.name !== undefined ? { name: input.name } : {}),
-          ...(input.description !== undefined ? { description: input.description } : {}),
-          ...(input.priceCents !== undefined ? { priceCents: input.priceCents } : {}),
+          ...(input.description !== undefined
+            ? { description: input.description }
+            : {}),
+          ...(input.priceCents !== undefined
+            ? { priceCents: input.priceCents }
+            : {}),
           ...(input.stockQty !== undefined ? { stockQty: input.stockQty } : {}),
           ...(input.lowStockThreshold !== undefined
             ? { lowStockThreshold: input.lowStockThreshold }
             : {}),
-          ...(input.categoryId !== undefined ? { categoryId: input.categoryId } : {}),
+          ...(input.categoryId !== undefined
+            ? { categoryId: input.categoryId }
+            : {}),
           ...(input.tags !== undefined ? { tags: input.tags ?? [] } : {}),
           ...(input.sizes !== undefined ? { sizes: input.sizes ?? [] } : {}),
           ...(input.monogram !== undefined ? { monogram: input.monogram } : {}),
-          ...(input.gradientPreset !== undefined ? { gradientPreset: input.gradientPreset } : {}),
+          ...(input.gradientPreset !== undefined
+            ? { gradientPreset: input.gradientPreset }
+            : {}),
           updatedAt: new Date(),
         })
         .where(eq(products.id, product.id))
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Product update returned no row');
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Product update returned no row',
+        );
       await this.audit(tx, ctx, 'store.product.updated', 'product', row.id, {
         fields: Object.keys(input),
       });
@@ -269,11 +326,22 @@ export class StoreAdminService {
       }
       const [row] = await tx
         .update(products)
-        .set({ status: 'archived', archivedAt: new Date(), updatedAt: new Date() })
+        .set({
+          status: 'archived',
+          archivedAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(products.id, product.id))
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Product archive returned no row');
-      await this.audit(tx, ctx, 'store.product.archived', 'product', row.id, { name: row.name });
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Product archive returned no row',
+        );
+      await this.audit(tx, ctx, 'store.product.archived', 'product', row.id, {
+        name: row.name,
+      });
       const [view] = await this.toAdminViews(tx, [row]);
       return view!;
     });
@@ -282,7 +350,9 @@ export class StoreAdminService {
   // ── overview ──────────────────────────────────────────────────────────────
 
   /** GET /admin/store/overview — the three stat tiles, tenant timezone. */
-  async overview(ctx: AuthContext & { tenantId: string }): Promise<StoreOverviewView> {
+  async overview(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<StoreOverviewView> {
     const month = localDate().slice(0, 7);
     return withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
       const paidInMonth = sql`to_char(${payments.paidAt} AT TIME ZONE ${TENANT_TIMEZONE}, 'YYYY-MM') = ${month}`;
@@ -290,13 +360,24 @@ export class StoreAdminService {
       // Vendas do mês: settled order money by paid_at (refunds excluded —
       // the tile reconciles with the wallet receipts, story 14).
       const [vendas] = await tx
-        .select({ total: sql<string>`COALESCE(SUM(${payments.amountCents}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${payments.amountCents}), 0)`,
+        })
         .from(payments)
         .innerJoin(
           charges,
-          and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)),
+          and(
+            eq(charges.tenantId, payments.tenantId),
+            eq(charges.id, payments.chargeId),
+          ),
         )
-        .where(and(eq(charges.origin, 'order'), eq(payments.status, 'succeeded'), paidInMonth));
+        .where(
+          and(
+            eq(charges.origin, 'order'),
+            eq(payments.status, 'succeeded'),
+            paidInMonth,
+          ),
+        );
 
       // Pedidos no mês: orders that REACHED paid inside the month — a later
       // refund does not unmake the sale count (paid_at survives the refund).
@@ -305,7 +386,10 @@ export class StoreAdminService {
         .from(payments)
         .innerJoin(
           charges,
-          and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)),
+          and(
+            eq(charges.tenantId, payments.tenantId),
+            eq(charges.id, payments.chargeId),
+          ),
         )
         .where(
           and(
@@ -352,7 +436,10 @@ export class StoreAdminService {
     return { tenantId: ctx.tenantId, userId: ctx.userId };
   }
 
-  private async categoryViews(tx: DbTransaction, ids?: string[]): Promise<CategoryView[]> {
+  private async categoryViews(
+    tx: DbTransaction,
+    ids?: string[],
+  ): Promise<CategoryView[]> {
     const rows = await tx
       .select()
       .from(productCategories)
@@ -363,7 +450,9 @@ export class StoreAdminService {
       .from(products)
       .where(sql`${products.categoryId} IS NOT NULL`)
       .groupBy(products.categoryId);
-    const countByCategory = new Map(counts.map((c) => [c.categoryId, Number(c.total)]));
+    const countByCategory = new Map(
+      counts.map((c) => [c.categoryId, Number(c.total)]),
+    );
     return rows.map((row) => ({
       id: row.id,
       name: row.name,
@@ -371,13 +460,20 @@ export class StoreAdminService {
     }));
   }
 
-  private async assertCategoryNameFree(tx: DbTransaction, name: string): Promise<void> {
+  private async assertCategoryNameFree(
+    tx: DbTransaction,
+    name: string,
+  ): Promise<void> {
     const [existing] = await tx
       .select({ id: productCategories.id })
       .from(productCategories)
       .where(eq(productCategories.name, name));
     if (existing) {
-      throw problem(409, ErrorCodes.CONFLICT, 'A category with this name already exists');
+      throw problem(
+        409,
+        ErrorCodes.CONFLICT,
+        'A category with this name already exists',
+      );
     }
   }
 
@@ -396,9 +492,12 @@ export class StoreAdminService {
       .where(eq(productCategories.id, categoryId));
     if (!row) {
       if (field) {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Request validation failed', [
-          { field, messages: ['Unknown category'] },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Request validation failed',
+          [{ field, messages: ['Unknown category'] }],
+        );
       }
       throw problem(404, ErrorCodes.NOT_FOUND, 'Category not found');
     }
@@ -409,7 +508,10 @@ export class StoreAdminService {
     tx: DbTransaction,
     productId: string,
   ): Promise<typeof products.$inferSelect> {
-    const [row] = await tx.select().from(products).where(eq(products.id, productId));
+    const [row] = await tx
+      .select()
+      .from(products)
+      .where(eq(products.id, productId));
     if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Product not found');
     return row;
   }
@@ -430,7 +532,10 @@ export class StoreAdminService {
       .from(orderItems)
       .innerJoin(
         orders,
-        and(eq(orders.tenantId, orderItems.tenantId), eq(orders.id, orderItems.orderId)),
+        and(
+          eq(orders.tenantId, orderItems.tenantId),
+          eq(orders.id, orderItems.orderId),
+        ),
       )
       .where(
         and(
@@ -439,7 +544,9 @@ export class StoreAdminService {
         ),
       )
       .groupBy(orderItems.productId);
-    const soldByProduct = new Map(sold.map((s) => [s.productId, Number(s.total)]));
+    const soldByProduct = new Map(
+      sold.map((s) => [s.productId, Number(s.total)]),
+    );
 
     const categories = await tx.select().from(productCategories);
     const categoryById = new Map(categories.map((c) => [c.id, c.name]));
@@ -452,13 +559,16 @@ export class StoreAdminService {
       monogram: row.monogram,
       gradientPreset: row.gradientPreset,
       categoryId: row.categoryId,
-      categoryName: row.categoryId ? (categoryById.get(row.categoryId) ?? null) : null,
+      categoryName: row.categoryId
+        ? (categoryById.get(row.categoryId) ?? null)
+        : null,
       tags: row.tags,
       sizes: row.sizes,
       stockQty: row.stockQty,
       lowStockThreshold: row.lowStockThreshold,
       status: row.status,
-      lowStock: row.status === 'active' && row.stockQty <= row.lowStockThreshold,
+      lowStock:
+        row.status === 'active' && row.stockQty <= row.lowStockThreshold,
       soldCount: soldByProduct.get(row.id) ?? 0,
     }));
   }

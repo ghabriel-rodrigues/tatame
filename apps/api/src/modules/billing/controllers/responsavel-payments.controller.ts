@@ -1,10 +1,27 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { BypassReadOnly, Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
 import { CreateChargePaymentDto } from '../dto/requests.dto.js';
-import { GuardianPaymentsResponseDto, PaymentCreatedResponseDto } from '../dto/responses.dto.js';
+import {
+  GuardianPaymentsResponseDto,
+  PaymentCreatedResponseDto,
+} from '../dto/responses.dto.js';
 import { GuardianPaymentsService } from '../services/guardian-payments.service.js';
 import { PaymentFlowService } from '../services/payment-flow.service.js';
 
@@ -48,7 +65,10 @@ export class ResponsavelPaymentsController {
       'creates the mandate with the responsável as payer.',
   })
   @ApiCreatedResponse({ type: PaymentCreatedResponseDto })
-  async pay(@Param('id', ParseUUIDPipe) chargeId: string, @Body() dto: CreateChargePaymentDto) {
+  async pay(
+    @Param('id', ParseUUIDPipe) chargeId: string,
+    @Body() dto: CreateChargePaymentDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.paymentFlow.createPayment(ctx, 'guardian', chargeId, {
       method: dto.method,

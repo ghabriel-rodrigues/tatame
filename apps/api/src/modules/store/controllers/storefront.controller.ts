@@ -22,7 +22,10 @@ import { BypassReadOnly, Roles } from '../../../common/decorators.js';
 import { PaymentCreatedResponseDto } from '../../billing/dto/responses.dto.js';
 import { PaymentFlowService } from '../../billing/services/payment-flow.service.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
-import { CreateOrderChargePaymentDto, CreateOrderDto } from '../dto/requests.dto.js';
+import {
+  CreateOrderChargePaymentDto,
+  CreateOrderDto,
+} from '../dto/requests.dto.js';
 import {
   CreateOrderResponseDto,
   OrdersResponseDto,
@@ -62,13 +65,20 @@ export class StorefrontController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'categoryId', required: false, type: String })
   @ApiOkResponse({ type: VitrineResponseDto })
-  async list(@Query('search') search?: string, @Query('categoryId') categoryId?: string) {
-    return this.storefront.list(requireTenantContext(this.cls), { search, categoryId });
+  async list(
+    @Query('search') search?: string,
+    @Query('categoryId') categoryId?: string,
+  ) {
+    return this.storefront.list(requireTenantContext(this.cls), {
+      search,
+      categoryId,
+    });
   }
 
   @Get('products/:id')
   @ApiOperation({
-    summary: 'Product detail: gallery derivation inputs, size pills, stock, price',
+    summary:
+      'Product detail: gallery derivation inputs, size pills, stock, price',
     description:
       'The 3 "fotos" are deterministic monogram-tile variants derived client-side from ' +
       '`gradientPreset` + `monogram` (no image upload in v1 — recorded debt).',
@@ -98,7 +108,8 @@ export class StorefrontController {
 
   @Get('orders')
   @ApiOperation({
-    summary: 'Meus pedidos — own orders with status chips and the retirada note',
+    summary:
+      'Meus pedidos — own orders with status chips and the retirada note',
   })
   @ApiOkResponse({ type: OrdersResponseDto })
   async myOrders() {
@@ -108,7 +119,8 @@ export class StorefrontController {
   @Delete('orders/:id')
   @HttpCode(204)
   @ApiOperation({
-    summary: 'Cancel an own order still awaiting payment (voids its open charge)',
+    summary:
+      'Cancel an own order still awaiting payment (voids its open charge)',
     description:
       'Pending only — a paid order is undone exclusively by the admin refund path ' +
       '(409 `store.order_not_cancelable`).',
@@ -123,7 +135,7 @@ export class StorefrontController {
   @ApiOperation({
     summary: 'Pix payment on an own order charge — persona-neutral wallet twin',
     description:
-      'Ownership is the order\'s buyer (student or professor alike). Returns the render-ready ' +
+      "Ownership is the order's buyer (student or professor alike). Returns the render-ready " +
       'Pix payload; settlement flows only through "Simular pagamento" (or the future webhook) ' +
       'via the normalized provider-event handler. @BypassReadOnly: paying an existing charge ' +
       'always works, even for delinquent academies.',
@@ -133,8 +145,13 @@ export class StorefrontController {
     @Param('id', ParseUUIDPipe) chargeId: string,
     @Body() dto: CreateOrderChargePaymentDto,
   ) {
-    return this.paymentFlow.createPayment(requireTenantContext(this.cls), 'buyer', chargeId, {
-      method: dto.method,
-    });
+    return this.paymentFlow.createPayment(
+      requireTenantContext(this.cls),
+      'buyer',
+      chargeId,
+      {
+        method: dto.method,
+      },
+    );
   }
 }

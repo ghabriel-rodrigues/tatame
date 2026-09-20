@@ -54,7 +54,9 @@ export function Card({
   padding = tokens.space[5],
   className,
 }: CardProps) {
-  const classes = ['Card-root', `Card-${variant}`, className].filter(Boolean).join(' ');
+  const classes = ['Card-root', `Card-${variant}`, className]
+    .filter(Boolean)
+    .join(' ');
   return (
     <Root className={classes} elevation={0} sx={{ padding: `${padding}px` }}>
       {children}

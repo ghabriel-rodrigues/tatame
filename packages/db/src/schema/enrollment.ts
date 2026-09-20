@@ -62,7 +62,11 @@ export const guardians = pgTable(
     unique('guardians_tenant_id_id_uq').on(t.tenantId, t.id),
     unique('guardians_tenant_user_uq').on(t.tenantId, t.userId),
     index('guardians_tenant_id_idx').on(t.tenantId),
-    pgPolicy('guardians_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('guardians_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -109,7 +113,11 @@ export const students = pgTable(
       columns: [t.tenantId, t.academyPlanId],
       foreignColumns: [academyPlans.tenantId, academyPlans.id],
     }),
-    pgPolicy('students_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('students_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -149,7 +157,11 @@ export const classes = pgTable(
   (t) => [
     unique('classes_tenant_id_id_uq').on(t.tenantId, t.id),
     index('classes_tenant_id_idx').on(t.tenantId),
-    pgPolicy('classes_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('classes_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );
 
@@ -214,7 +226,11 @@ export const enrollments = pgTable(
   },
   (t) => [
     unique('enrollments_tenant_id_id_uq').on(t.tenantId, t.id),
-    unique('enrollments_tenant_class_student_uq').on(t.tenantId, t.classId, t.studentId),
+    unique('enrollments_tenant_class_student_uq').on(
+      t.tenantId,
+      t.classId,
+      t.studentId,
+    ),
     index('enrollments_tenant_student_idx').on(t.tenantId, t.studentId),
     foreignKey({
       name: 'enrollments_class_fk',
@@ -226,6 +242,10 @@ export const enrollments = pgTable(
       columns: [t.tenantId, t.studentId],
       foreignColumns: [students.tenantId, students.id],
     }),
-    pgPolicy('enrollments_tenant_all', { for: 'all', to: appRole, ...tenantPolicy(t.tenantId) }),
+    pgPolicy('enrollments_tenant_all', {
+      for: 'all',
+      to: appRole,
+      ...tenantPolicy(t.tenantId),
+    }),
   ],
 );

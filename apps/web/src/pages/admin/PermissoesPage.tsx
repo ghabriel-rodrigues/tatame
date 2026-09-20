@@ -57,12 +57,18 @@ export function PermissoesPage() {
     setOverrides((current) => ({ ...current, [id]: next }));
     update.mutate(
       {
-        body: { entries: [{ role: row.role as PermissionRole, key: row.key, allowed: next }] },
+        body: {
+          entries: [
+            { role: row.role as PermissionRole, key: row.key, allowed: next },
+          ],
+        },
       },
       {
         onSuccess: () => {
           // The override now equals the server truth; the refetch confirms it.
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/permissions'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/permissions'],
+          });
         },
         onError: () => {
           setOverrides((current) => {
@@ -85,7 +91,9 @@ export function PermissoesPage() {
         />
 
         {matrixQuery.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando permissões…
           </Typography>
         ) : null}
@@ -106,7 +114,9 @@ export function PermissoesPage() {
               >
                 <Chip label={group.label} tone={group.tone} />
                 {counts ? (
-                  <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-3)' }}>
+                  <Typography
+                    sx={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-3)' }}
+                  >
                     {countLabel(counts[group.role])}
                   </Typography>
                 ) : null}
@@ -119,10 +129,18 @@ export function PermissoesPage() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '12px 14px',
-                    '&:not(:last-of-type)': { borderBottom: '1px solid var(--border-1)' },
+                    '&:not(:last-of-type)': {
+                      borderBottom: '1px solid var(--border-1)',
+                    },
                   }}
                 >
-                  <Typography sx={{ fontSize: 13.5, fontWeight: 650, color: 'var(--fg-1)' }}>
+                  <Typography
+                    sx={{
+                      fontSize: 13.5,
+                      fontWeight: 650,
+                      color: 'var(--fg-1)',
+                    }}
+                  >
                     {rowLabel(row.label)}
                   </Typography>
                   <Switch

@@ -1,5 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
@@ -20,8 +25,10 @@ export class AdminCalendarController {
 
   @Get('calendar')
   @ApiOperation({
-    summary: 'Month calendar: all-active-turma weekly recurrence buckets ("aulas recorrentes")',
-    description: 'Schedule-derived — no session reads. The client expands dots over the grid.',
+    summary:
+      'Month calendar: all-active-turma weekly recurrence buckets ("aulas recorrentes")',
+    description:
+      'Schedule-derived — no session reads. The client expands dots over the grid.',
   })
   @ApiOkResponse({ type: CalendarResponseDto })
   async calendar(@Query() query: CalendarQueryDto) {

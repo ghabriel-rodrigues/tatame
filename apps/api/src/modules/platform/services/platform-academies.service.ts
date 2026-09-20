@@ -89,9 +89,16 @@ export class PlatformAcademiesService {
     private readonly passwordResets: PasswordResetService,
   ) {}
 
-  private static readonly LIVE_SUBSCRIPTION = ['trialing', 'active', 'past_due'] as const;
+  private static readonly LIVE_SUBSCRIPTION = [
+    'trialing',
+    'active',
+    'past_due',
+  ] as const;
 
-  private async rows(tx: DbTransaction, academyId?: string): Promise<PlatformAcademyRow[]> {
+  private async rows(
+    tx: DbTransaction,
+    academyId?: string,
+  ): Promise<PlatformAcademyRow[]> {
     const studentCounts = tx
       .select({
         tenantId: students.tenantId,
@@ -120,13 +127,20 @@ export class PlatformAcademiesService {
         academySubscriptions,
         and(
           eq(academySubscriptions.academyId, academies.id),
-          inArray(academySubscriptions.status, [...PlatformAcademiesService.LIVE_SUBSCRIPTION]),
+          inArray(academySubscriptions.status, [
+            ...PlatformAcademiesService.LIVE_SUBSCRIPTION,
+          ]),
         ),
       )
-      .leftJoin(platformPlans, eq(platformPlans.id, academySubscriptions.platformPlanId))
+      .leftJoin(
+        platformPlans,
+        eq(platformPlans.id, academySubscriptions.platformPlanId),
+      )
       .orderBy(asc(academies.name));
 
-    const result = academyId ? await query.where(eq(academies.id, academyId)) : await query;
+    const result = academyId
+      ? await query.where(eq(academies.id, academyId))
+      : await query;
     return result as PlatformAcademyRow[];
   }
 
@@ -138,15 +152,23 @@ export class PlatformAcademiesService {
   }
 
   async detail(academyId: string): Promise<PlatformAcademyDetail> {
-    return withPlatform(this.platformDb.db, (tx) => this.detailIn(tx, academyId));
+    return withPlatform(this.platformDb.db, (tx) =>
+      this.detailIn(tx, academyId),
+    );
   }
 
-  private async detailIn(tx: DbTransaction, academyId: string): Promise<PlatformAcademyDetail> {
+  private async detailIn(
+    tx: DbTransaction,
+    academyId: string,
+  ): Promise<PlatformAcademyDetail> {
     const [row] = await this.rows(tx, academyId);
     if (!row) throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
 
     const [meta] = await tx
-      .select({ createdAt: academies.createdAt, contactEmail: academies.contactEmail })
+      .select({
+        createdAt: academies.createdAt,
+        contactEmail: academies.contactEmail,
+      })
       .from(academies)
       .where(eq(academies.id, academyId));
 
@@ -170,7 +192,9 @@ export class PlatformAcademiesService {
       .where(
         and(
           eq(academySubscriptions.academyId, academyId),
-          inArray(academySubscriptions.status, [...PlatformAcademiesService.LIVE_SUBSCRIPTION]),
+          inArray(academySubscriptions.status, [
+            ...PlatformAcademiesService.LIVE_SUBSCRIPTION,
+          ]),
         ),
       );
 
@@ -203,7 +227,10 @@ export class PlatformAcademiesService {
    * set-password email is dispatched *after* it commits, so a mail failure
    * never rolls back a created customer.
    */
-  async register(ctx: AuthContext, input: RegisterAcademyInput): Promise<RegisterAcademyResult> {
+  async register(
+    ctx: AuthContext,
+    input: RegisterAcademyInput,
+  ): Promise<RegisterAcademyResult> {
     const email = input.adminEmail.trim().toLowerCase();
     const created = await withPlatform(this.platformDb.db, async (tx) => {
       const [plan] = await tx
@@ -211,7 +238,11 @@ export class PlatformAcademiesService {
         .from(platformPlans)
         .where(eq(platformPlans.id, input.platformPlanId));
       if (!plan || !plan.isActive) {
-        throw problem(404, ErrorCodes.PLAN_NOT_FOUND, 'Platform plan not found');
+        throw problem(
+          404,
+          ErrorCodes.PLAN_NOT_FOUND,
+          'Platform plan not found',
+        );
       }
 
       // Slug uniqueness: the invite URLs depend on it, so a collision gets a
@@ -222,7 +253,9 @@ export class PlatformAcademiesService {
           await tx
             .select({ slug: academies.slug })
             .from(academies)
-            .where(sql`${academies.slug} = ${base} OR ${academies.slug} LIKE ${`${base}-%`}`)
+            .where(
+              sql`${academies.slug} = ${base} OR ${academies.slug} LIKE ${`${base}-%`}`,
+            )
         ).map((row) => row.slug),
       );
       let slug = base;
@@ -238,7 +271,12 @@ export class PlatformAcademiesService {
           contactEmail: email,
         })
         .returning({ id: academies.id });
-      if (!academy) throw problem(500, ErrorCodes.INTERNAL, 'Academy insert returned no row');
+      if (!academy)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Academy insert returned no row',
+        );
 
       const now = Date.now();
       await tx.insert(academySubscriptions).values({
@@ -259,9 +297,17 @@ export class PlatformAcademiesService {
       if (!adminUserId) {
         const [inserted] = await tx
           .insert(users)
-          .values({ email, fullName: input.adminFullName?.trim() || input.name })
+          .values({
+            email,
+            fullName: input.adminFullName?.trim() || input.name,
+          })
           .returning({ id: users.id });
-        if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'Admin insert returned no row');
+        if (!inserted)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'Admin insert returned no row',
+          );
         adminUserId = inserted.id;
       }
 
@@ -272,7 +318,11 @@ export class PlatformAcademiesService {
     await withTenant(this.appDb.db, created.academyId, (tx) =>
       tx
         .insert(memberships)
-        .values({ tenantId: created.academyId, userId: created.adminUserId, role: 'admin' })
+        .values({
+          tenantId: created.academyId,
+          userId: created.adminUserId,
+          role: 'admin',
+        })
         .onConflictDoNothing({
           target: [memberships.tenantId, memberships.userId, memberships.role],
         }),
@@ -321,11 +371,17 @@ export class PlatformAcademiesService {
         .where(
           and(
             eq(academySubscriptions.academyId, academyId),
-            inArray(academySubscriptions.status, [...PlatformAcademiesService.LIVE_SUBSCRIPTION]),
+            inArray(academySubscriptions.status, [
+              ...PlatformAcademiesService.LIVE_SUBSCRIPTION,
+            ]),
           ),
         );
       if (!subscription) {
-        throw problem(404, ErrorCodes.NOT_FOUND, 'Academy has no live subscription');
+        throw problem(
+          404,
+          ErrorCodes.NOT_FOUND,
+          'Academy has no live subscription',
+        );
       }
 
       if (platformPlanId) {
@@ -334,13 +390,18 @@ export class PlatformAcademiesService {
           .from(platformPlans)
           .where(eq(platformPlans.id, platformPlanId));
         if (!plan || !plan.isActive) {
-          throw problem(404, ErrorCodes.PLAN_NOT_FOUND, 'Platform plan not found');
+          throw problem(
+            404,
+            ErrorCodes.PLAN_NOT_FOUND,
+            'Platform plan not found',
+          );
         }
       }
 
       // Choosing the plan the academy is already on is a cancel, not a
       // no-op schedule — the picker would otherwise strand a pending row.
-      const pending = platformPlanId === subscription.platformPlanId ? null : platformPlanId;
+      const pending =
+        platformPlanId === subscription.platformPlanId ? null : platformPlanId;
 
       await tx
         .update(academySubscriptions)
@@ -372,7 +433,8 @@ export class PlatformAcademiesService {
         .select({ id: academies.id, status: academies.status })
         .from(academies)
         .where(eq(academies.id, academyId));
-      if (!academy) throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
+      if (!academy)
+        throw problem(404, ErrorCodes.NOT_FOUND, 'Academy not found');
 
       let next: 'trial' | 'active' | 'delinquent' | 'suspended';
       if (suspended) {
@@ -386,7 +448,9 @@ export class PlatformAcademiesService {
           .where(
             and(
               eq(academySubscriptions.academyId, academyId),
-              inArray(academySubscriptions.status, [...PlatformAcademiesService.LIVE_SUBSCRIPTION]),
+              inArray(academySubscriptions.status, [
+                ...PlatformAcademiesService.LIVE_SUBSCRIPTION,
+              ]),
             ),
           );
         next =

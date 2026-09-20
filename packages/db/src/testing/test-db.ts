@@ -6,7 +6,9 @@ import { runMigrations } from '../lib/migrate.js';
 export function testAdminUrl(): string {
   const url = process.env['TEST_PG_ADMIN_URL'];
   if (!url) {
-    throw new Error('TEST_PG_ADMIN_URL is not set — vitest globalSetup did not run');
+    throw new Error(
+      'TEST_PG_ADMIN_URL is not set — vitest globalSetup did not run',
+    );
   }
   return url;
 }

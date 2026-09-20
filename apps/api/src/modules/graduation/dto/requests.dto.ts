@@ -20,20 +20,24 @@ import {
 export class AwardGraduationDto {
   @ApiProperty({
     enum: ['degree', 'belt'],
-    description: 'degree = one more stripe on the current belt; belt = promotion (degrees reset)',
+    description:
+      'degree = one more stripe on the current belt; belt = promotion (degrees reset)',
   })
   @IsIn(['degree', 'belt'])
   kind!: 'degree' | 'belt';
 
   @ApiPropertyOptional({
     format: 'uuid',
-    description: 'Target belt — required for kind=belt (any enabled, non-current catalog belt)',
+    description:
+      'Target belt — required for kind=belt (any enabled, non-current catalog belt)',
   })
   @ValidateIf((dto: AwardGraduationDto) => dto.kind === 'belt')
   @IsUUID()
   beltId?: string;
 
-  @ApiPropertyOptional({ description: 'Observação carried on the timeline entry' })
+  @ApiPropertyOptional({
+    description: 'Observação carried on the timeline entry',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
@@ -42,7 +46,9 @@ export class AwardGraduationDto {
 
 /** Admin-only compensation-row revocation (GRD.9). */
 export class RevokeGraduationDto {
-  @ApiPropertyOptional({ description: 'Audited reason ("who and why", story 31)' })
+  @ApiPropertyOptional({
+    description: 'Audited reason ("who and why", story 31)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2000)
@@ -56,7 +62,8 @@ export class GraduationRuleEntryDto {
 
   @ApiProperty({
     minimum: 10,
-    description: 'Aulas por grau — service rejects values below 10 with a stable code',
+    description:
+      'Aulas por grau — service rejects values below 10 with a stable code',
   })
   @IsInt()
   @Min(1)

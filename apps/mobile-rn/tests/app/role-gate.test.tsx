@@ -8,7 +8,10 @@
 import { act, renderRouter, screen } from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
-import { sessionTestApi, type SessionState } from '../../src/session/session-store';
+import {
+  sessionTestApi,
+  type SessionState,
+} from '../../src/session/session-store';
 import { installFetchMock, makeMe, makeMembership } from '../helpers/session';
 
 jest.useFakeTimers();
@@ -68,7 +71,10 @@ describe('role gate', () => {
   it('admin (web-only persona) gets the console-web screen', () => {
     renderApp({
       status: 'authed',
-      session: makeMe({ role: 'admin', memberships: [makeMembership({ role: 'admin' })] }),
+      session: makeMe({
+        role: 'admin',
+        memberships: [makeMembership({ role: 'admin' })],
+      }),
     });
     expect(screen.getByText('Use o console web')).toBeTruthy();
     expect(screen.getByText('Sair')).toBeTruthy();
@@ -80,7 +86,12 @@ describe('role gate', () => {
       session: makeMe({
         role: 'owner',
         memberships: [
-          makeMembership({ role: 'owner', type: 'platform', tenantId: null, academyName: null }),
+          makeMembership({
+            role: 'owner',
+            type: 'platform',
+            tenantId: null,
+            academyName: null,
+          }),
         ],
       }),
     });

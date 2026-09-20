@@ -1,7 +1,15 @@
 import { Body, Controller, Get, HttpCode, Put } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
-import { requireAuthContext, type AuthContext } from '../../../common/auth-context.js';
+import {
+  requireAuthContext,
+  type AuthContext,
+} from '../../../common/auth-context.js';
 import { Roles } from '../../../common/decorators.js';
 import { ErrorCodes, problem } from '../../../common/problem.js';
 import { UpdateAcademyDto } from '../dto/academy.dto.js';
@@ -26,13 +34,19 @@ export class AdminAcademyController {
   private tenantContext(): AuthContext & { tenantId: string } {
     const ctx = requireAuthContext(this.cls);
     if (!ctx.tenantId) {
-      throw problem(403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE, 'No active academy context');
+      throw problem(
+        403,
+        ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+        'No active academy context',
+      );
     }
     return ctx as AuthContext & { tenantId: string };
   }
 
   @Get()
-  @ApiOperation({ summary: 'Academy identity settings: name, brand triplet, toggles' })
+  @ApiOperation({
+    summary: 'Academy identity settings: name, brand triplet, toggles',
+  })
   @ApiOkResponse({ type: AdminAcademyResponseDto })
   async get() {
     return this.settings.get(this.tenantContext().tenantId);

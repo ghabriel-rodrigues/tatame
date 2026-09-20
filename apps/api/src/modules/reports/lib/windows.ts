@@ -23,9 +23,12 @@ const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 export function requireMonth(month?: string): string {
   if (month === undefined) return localDate().slice(0, 7);
   if (!MONTH_RE.test(month)) {
-    throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Invalid month — expected YYYY-MM', [
-      { field: 'month', messages: ['month must match YYYY-MM'] },
-    ]);
+    throw problem(
+      422,
+      ErrorCodes.VALIDATION_FAILED,
+      'Invalid month — expected YYYY-MM',
+      [{ field: 'month', messages: ['month must match YYYY-MM'] }],
+    );
   }
   return month;
 }
@@ -48,6 +51,14 @@ export function semesterWindow(month: string): DateWindow {
   const year = month.slice(0, 4);
   const first = Number(month.slice(5, 7)) <= 6;
   return first
-    ? { label: `${year}-S1`, start: `${year}-01-01`, endExclusive: `${year}-07-01` }
-    : { label: `${year}-S2`, start: `${year}-07-01`, endExclusive: `${Number(year) + 1}-01-01` };
+    ? {
+        label: `${year}-S1`,
+        start: `${year}-01-01`,
+        endExclusive: `${year}-07-01`,
+      }
+    : {
+        label: `${year}-S2`,
+        start: `${year}-07-01`,
+        endExclusive: `${Number(year) + 1}-01-01`,
+      };
 }

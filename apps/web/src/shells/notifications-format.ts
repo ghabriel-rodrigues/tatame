@@ -19,7 +19,15 @@ export function adminRouteFor(route: string | null | undefined): string | null {
   return ADMIN_ROUTE_MAP[route] ?? null;
 }
 
-const WEEKDAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+const WEEKDAYS = [
+  'Domingo',
+  'Segunda',
+  'Terça',
+  'Quarta',
+  'Quinta',
+  'Sexta',
+  'Sábado',
+];
 const MONTHS = [
   'jan',
   'fev',
@@ -38,11 +46,18 @@ const MONTHS = [
 const DAY_MS = 86_400_000;
 
 function startOfDay(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
 }
 
 /** Hoje · Ontem · weekday (< 7 days) · "5 de ago" beyond that (spec 010). */
-export function relativeNotificationTime(createdAt: string, now: Date = new Date()): string {
+export function relativeNotificationTime(
+  createdAt: string,
+  now: Date = new Date(),
+): string {
   const then = new Date(createdAt);
   const days = Math.round((startOfDay(now) - startOfDay(then)) / DAY_MS);
   if (days <= 0) return 'Hoje';

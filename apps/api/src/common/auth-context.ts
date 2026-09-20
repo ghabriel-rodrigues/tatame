@@ -34,7 +34,9 @@ export function getAuthContext(cls: ClsService): AuthContext | undefined {
 export function requireAuthContext(cls: ClsService): AuthContext {
   const ctx = getAuthContext(cls);
   if (!ctx) {
-    throw new Error('AuthContext missing — handler reached without JwtAuthGuard');
+    throw new Error(
+      'AuthContext missing — handler reached without JwtAuthGuard',
+    );
   }
   return ctx;
 }

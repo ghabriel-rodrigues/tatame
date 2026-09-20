@@ -59,9 +59,10 @@ export function ProductDetailScreen() {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [size, setSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [pixOrder, setPixOrder] = useState<{ order: StoreOrder; chargeId: string } | null>(
-    null,
-  );
+  const [pixOrder, setPixOrder] = useState<{
+    order: StoreOrder;
+    chargeId: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const product = detailQuery.data;
@@ -72,9 +73,15 @@ export function ProductDetailScreen() {
 
   /** Every storefront surface that renders this product/order (spec 009). */
   const invalidateStoreQueries = () => {
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products'] });
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/products/{id}'] });
-    void queryClient.invalidateQueries({ queryKey: ['get', '/v1/store/orders'] });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/store/products'],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/store/products/{id}'],
+    });
+    void queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/store/orders'],
+    });
     void queryClient.invalidateQueries({ queryKey: ['get', '/v1/aluno/home'] });
   };
 
@@ -112,7 +119,9 @@ export function ProductDetailScreen() {
               style={StyleSheet.absoluteFill}
             />
             <SafeAreaView edges={['top']}>
-              <View style={{ padding: theme.space['5'], gap: theme.space['3'] }}>
+              <View
+                style={{ padding: theme.space['5'], gap: theme.space['3'] }}
+              >
                 <View
                   style={{
                     flexDirection: 'row',
@@ -157,7 +166,12 @@ export function ProductDetailScreen() {
                     </View>
                   ) : null}
                 </View>
-                <View style={{ alignItems: 'center', paddingVertical: theme.space['5'] }}>
+                <View
+                  style={{
+                    alignItems: 'center',
+                    paddingVertical: theme.space['5'],
+                  }}
+                >
                   <Text
                     variant="display"
                     weight="bold"
@@ -167,7 +181,9 @@ export function ProductDetailScreen() {
                     {product?.monogram ?? ''}
                   </Text>
                 </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'flex-end' }}
+                >
                   <View
                     style={{
                       backgroundColor: 'rgba(26,11,46,0.55)',
@@ -192,7 +208,10 @@ export function ProductDetailScreen() {
           </View>
 
           <View style={{ padding: theme.space['5'], gap: theme.space['4'] }}>
-            <QueryState loading={detailQuery.isPending} error={detailQuery.isError}>
+            <QueryState
+              loading={detailQuery.isPending}
+              error={detailQuery.isError}
+            >
               {product && state ? (
                 <>
                   {/* Gallery thumbnails — monogram-tile variants (spec 009). */}
@@ -238,7 +257,11 @@ export function ProductDetailScreen() {
                     <Text variant="title" style={{ flex: 1 }}>
                       {product.name}
                     </Text>
-                    <Text variant="title" weight="bold" color={theme.color.brand['1']}>
+                    <Text
+                      variant="title"
+                      weight="bold"
+                      color={theme.color.brand['1']}
+                    >
                       {formatBRL(product.priceCents)}
                     </Text>
                   </View>
@@ -251,10 +274,18 @@ export function ProductDetailScreen() {
 
                   {product.tags.length > 0 ? (
                     <View
-                      style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space['2'] }}
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        gap: theme.space['2'],
+                      }}
                     >
                       {product.tags.map((tag) => (
-                        <Chip key={tag} label={`#${tag}`} testID={`tag-${tag}`} />
+                        <Chip
+                          key={tag}
+                          label={`#${tag}`}
+                          testID={`tag-${tag}`}
+                        />
                       ))}
                     </View>
                   ) : null}
@@ -275,7 +306,9 @@ export function ProductDetailScreen() {
                             label={option}
                             size="md"
                             selected={size === option}
-                            onPress={() => setSize(size === option ? null : option)}
+                            onPress={() =>
+                              setSize(size === option ? null : option)
+                            }
                             testID={`size-${option}`}
                           />
                         ))}
@@ -296,16 +329,28 @@ export function ProductDetailScreen() {
                         value={quantity}
                         canDecrement={state.canDecrement}
                         canIncrement={state.canIncrement}
-                        onDecrement={() => setQuantity((current) => current - 1)}
-                        onIncrement={() => setQuantity((current) => current + 1)}
+                        onDecrement={() =>
+                          setQuantity((current) => current - 1)
+                        }
+                        onIncrement={() =>
+                          setQuantity((current) => current + 1)
+                        }
                       />
                     </View>
                   ) : null}
 
                   {state.soldOut ? (
-                    <Chip label={SOLD_OUT_LABEL} tone="danger" testID="sold-out-badge" />
+                    <Chip
+                      label={SOLD_OUT_LABEL}
+                      tone="danger"
+                      testID="sold-out-badge"
+                    />
                   ) : (
-                    <Text variant="caption" testID="stock-line" style={{ fontSize: 11.5 }}>
+                    <Text
+                      variant="caption"
+                      testID="stock-line"
+                      style={{ fontSize: 11.5 }}
+                    >
                       {stockLine(product.stockQty)}
                     </Text>
                   )}

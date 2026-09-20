@@ -5,7 +5,7 @@ Personas covered: Aluno, Professor, Admin da academia
 
 ## Problem Statement
 
-The schedule data has existed since Phase 3 — every turma carries its weekday slots in `class_schedules` — but no persona can actually *see the week*. The aluno's Agenda tab is still the Phase-2 placeholder in all three mobile apps (on iOS the tab does not even exist yet), so "which classes can I train today, and at what time?" has no answer inside the product. The "Ver agenda" CTA on the aluno home hero is rendered disabled in every client, an explicitly recorded debt from the attendance slice. The month view designed for three personas — aluno-08, professor-04 and admin-14, the calendar with recurrence dots, event dots and a selected-day agenda — exists nowhere: not as a mobile screen, not as a console page.
+The schedule data has existed since Phase 3 — every turma carries its weekday slots in `class_schedules` — but no persona can actually _see the week_. The aluno's Agenda tab is still the Phase-2 placeholder in all three mobile apps (on iOS the tab does not even exist yet), so "which classes can I train today, and at what time?" has no answer inside the product. The "Ver agenda" CTA on the aluno home hero is rendered disabled in every client, an explicitly recorded debt from the attendance slice. The month view designed for three personas — aluno-08, professor-04 and admin-14, the calendar with recurrence dots, event dots and a selected-day agenda — exists nowhere: not as a mobile screen, not as a console page.
 
 Everything the design asks for on these screens is already answerable by existing rows: enrolled classes per weekday (enrollments × class_schedules), professor and level chips (classes + belts), occupancy (active enrollments vs capacity), and today's check-in state (the materialized `class_sessions` row plus the active attendance). This phase is the read-model layer over Phase 3/4 data — no new truth, just the two missing windows onto it. The only piece with no substrate yet is "Eventos do mês": events are a later phase, and this slice must render their section honestly empty rather than fake them or silently drop them.
 
@@ -81,24 +81,24 @@ Calendar dots derive from **schedules, not sessions** — the calendar shows the
 - A new lean `agenda` backend module (sibling of attendance/enrollment) owning only read services and persona controllers under the existing guard chain (JWT → persona role → academy status; GETs are unaffected by read-only mode). It queries enrollment- and attendance-owned tables directly — acceptable because nothing mutates; write paths remain exclusively with their owning modules.
 - Endpoint surface (versioned prefix, generated into the OpenAPI spec):
 
-| Endpoint | Role | Purpose |
-|---|---|---|
-| `GET /aluno/agenda?weekday=0..6` | student | enrolled classes for that weekday + today check-in state + `events: []` |
-| `GET /aluno/calendar?month=YYYY-MM` | student | enrolled-class recurrence buckets + `events: []` |
-| `GET /professor/calendar?month=YYYY-MM` | professor | own-class recurrence buckets + `events: []` |
-| `GET /admin/calendar?month=YYYY-MM` | admin | all-active-class recurrence buckets + `events: []` |
+| Endpoint                                | Role      | Purpose                                                                 |
+| --------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| `GET /aluno/agenda?weekday=0..6`        | student   | enrolled classes for that weekday + today check-in state + `events: []` |
+| `GET /aluno/calendar?month=YYYY-MM`     | student   | enrolled-class recurrence buckets + `events: []`                        |
+| `GET /professor/calendar?month=YYYY-MM` | professor | own-class recurrence buckets + `events: []`                             |
+| `GET /admin/calendar?month=YYYY-MM`     | admin     | all-active-class recurrence buckets + `events: []`                      |
 
 ### Aluno agenda contract
 
 - Response: `{ weekday, isToday, classes: [...], events: [] }`. Each class item is one schedule slot of an actively enrolled, active class on that weekday: class id and name, slot start time and end time (start + duration), professor name, level fields (min/max belt names and age range — the client composes the chip label exactly as the existing turma surfaces do: belt range, Kids age range, or "Todas as faixas"), and occupancy `{ active, capacity }` counted from active enrollments. Sorted by start time. A class with two slots on the same weekday yields two items.
-- **Today state** (only when the requested weekday is today in the tenant timezone): each item carries `checkedIn` — true iff today's session row exists for the class *and* the caller's student has an active (non-revoked) attendance on it. No session row or a revoked attendance ⇒ `checkedIn: false`. The client renders the check-in button when `isToday && !checkedIn` and the green check when `checkedIn`. The button only *opens* the Phase-4 check-in sheet — every window/enrollment/duplicate rule stays enforced by `POST /aluno/checkins`, and a successful check-in refetches the agenda.
+- **Today state** (only when the requested weekday is today in the tenant timezone): each item carries `checkedIn` — true iff today's session row exists for the class _and_ the caller's student has an active (non-revoked) attendance on it. No session row or a revoked attendance ⇒ `checkedIn: false`. The client renders the check-in button when `isToday && !checkedIn` and the green check when `checkedIn`. The button only _opens_ the Phase-4 check-in sheet — every window/enrollment/duplicate rule stays enforced by `POST /aluno/checkins`, and a successful check-in refetches the agenda.
 - `weekday` uses the schema convention 0 = Sunday … 6 = Saturday; omitted ⇒ defaults to today.
 
 ### Calendar contract — recurrence buckets, client-side expansion
 
 - All three calendar endpoints share one shape: `{ month, classesByWeekday: { 0..6: [items] }, events: [] }`. Items carry class id, name, start/end time, professor name and occupancy (persona scoping is the only difference: aluno = active enrollments, professor = `professor_user_id = caller`, admin = every active class; archived classes excluded everywhere).
 - **The server returns the weekly plan, not per-date dots** — deliberately mirroring the prototype's own logic (`AULAS_SEM` keyed by weekday + events keyed by date). The client expands: for each date in the rendered grid, class dot iff that weekday's bucket is non-empty; event dot iff an event falls on the date; the selected-day agenda = the weekday bucket merged with that date's events, sorted by time, tagged Aula/Evento. This keeps the payload minimal, the server timezone-trivial, and the contract already correct for events later.
-- `month` is validated and echoed; in v1 it only matters to the (empty) events window — recurrence is month-independent. It exists so the events phase changes no signature. Clients render the current month only: the prototype's "‹" chevron is *back navigation*, not month paging — month paging was never designed and is out of scope.
+- `month` is validated and echoed; in v1 it only matters to the (empty) events window — recurrence is month-independent. It exists so the events phase changes no signature. Clients render the current month only: the prototype's "‹" chevron is _back navigation_, not month paging — month paging was never designed and is out of scope.
 - Dots derive from schedules by definition, so canceled or never-materialized sessions have no effect here — the calendar shows the plan; the attendance surfaces show the reality.
 
 ### Eventos do mês — explicit debt

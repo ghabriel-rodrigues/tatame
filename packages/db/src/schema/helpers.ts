@@ -13,7 +13,9 @@ export const id = () =>
 
 /** `created_at` / `updated_at` timestamptz pair; `updated_at` app-maintained. */
 export const timestamps = {
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()
     .defaultNow()

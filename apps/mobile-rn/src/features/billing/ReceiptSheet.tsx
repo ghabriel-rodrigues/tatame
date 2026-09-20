@@ -38,7 +38,12 @@ function ReceiptRow({ label, value }: { label: string; value: string }) {
       }}
     >
       <Text variant="caption">{label}</Text>
-      <Text variant="label" weight="bold" numberOfLines={1} style={{ flexShrink: 1 }}>
+      <Text
+        variant="label"
+        weight="bold"
+        numberOfLines={1}
+        style={{ flexShrink: 1 }}
+      >
         {value}
       </Text>
     </View>
@@ -56,8 +61,15 @@ export function ReceiptSheet({ open, onClose, paymentId }: ReceiptSheetProps) {
   const receipt = query.data;
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Comprovante" testID="receipt-sheet">
-      {query.isPending ? <Text variant="caption">Carregando comprovante…</Text> : null}
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title="Comprovante"
+      testID="receipt-sheet"
+    >
+      {query.isPending ? (
+        <Text variant="caption">Carregando comprovante…</Text>
+      ) : null}
       {query.isError ? (
         <Text variant="caption" color={theme.color.danger['500']}>
           Não foi possível carregar o comprovante.
@@ -69,7 +81,8 @@ export function ReceiptSheet({ open, onClose, paymentId }: ReceiptSheetProps) {
             {formatBRL(receipt.payment.amountCents)}
           </Text>
           <Text variant="caption">
-            Mensalidade de {monthNamePt(receipt.charge.periodStart ?? receipt.charge.dueDate)}
+            Mensalidade de{' '}
+            {monthNamePt(receipt.charge.periodStart ?? receipt.charge.dueDate)}
             {receipt.academyName ? ` · ${receipt.academyName}` : ''}
           </Text>
           <View style={{ marginTop: theme.space['2'] }}>
@@ -78,14 +91,29 @@ export function ReceiptSheet({ open, onClose, paymentId }: ReceiptSheetProps) {
             {receipt.studentName ? (
               <ReceiptRow label="Aluno" value={receipt.studentName} />
             ) : null}
-            {receipt.planName ? <ReceiptRow label="Plano" value={receipt.planName} /> : null}
-            <ReceiptRow label="Competência" value={mensalidadeTitle(receipt.charge)} />
-            <ReceiptRow label="Método" value={METHOD_LABELS[receipt.payment.method]} />
+            {receipt.planName ? (
+              <ReceiptRow label="Plano" value={receipt.planName} />
+            ) : null}
+            <ReceiptRow
+              label="Competência"
+              value={mensalidadeTitle(receipt.charge)}
+            />
+            <ReceiptRow
+              label="Método"
+              value={METHOD_LABELS[receipt.payment.method]}
+            />
             <ReceiptRow
               label="Pago em"
-              value={receipt.payment.paidAt ? shortDayMonth(receipt.payment.paidAt) : '—'}
+              value={
+                receipt.payment.paidAt
+                  ? shortDayMonth(receipt.payment.paidAt)
+                  : '—'
+              }
             />
-            <ReceiptRow label="Identificador" value={receipt.payment.id.slice(0, 18)} />
+            <ReceiptRow
+              label="Identificador"
+              value={receipt.payment.id.slice(0, 18)}
+            />
           </View>
         </View>
       ) : null}

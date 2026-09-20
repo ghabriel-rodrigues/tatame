@@ -39,7 +39,11 @@ export class CreateEventDto {
   @MaxLength(60)
   bannerPreset?: string;
 
-  @ApiPropertyOptional({ nullable: true, type: String, example: 'Tatame principal' })
+  @ApiPropertyOptional({
+    nullable: true,
+    type: String,
+    example: 'Tatame principal',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(160)
@@ -66,13 +70,17 @@ export class CreateEventDto {
   @Min(1)
   priceCents?: number | null;
 
-  @ApiProperty({ format: 'uuid', description: 'The "Responsável: Prof. …" line' })
+  @ApiProperty({
+    format: 'uuid',
+    description: 'The "Responsável: Prof. …" line',
+  })
   @IsUUID()
   responsibleUserId!: string;
 
   @ApiPropertyOptional({
     enum: ['draft', 'published'],
-    description: 'Default draft — creating and publishing are separate gestures',
+    description:
+      'Default draft — creating and publishing are separate gestures',
   })
   @IsOptional()
   @IsIn(['draft', 'published'])

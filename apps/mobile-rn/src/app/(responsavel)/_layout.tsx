@@ -8,7 +8,13 @@
 
 import { useState } from 'react';
 import { View } from 'react-native';
-import { CalendarDays, CreditCard, Home, User, UserPlus } from 'lucide-react-native';
+import {
+  CalendarDays,
+  CreditCard,
+  Home,
+  User,
+  UserPlus,
+} from 'lucide-react-native';
 import { Toast } from '@tatame/design-system/native';
 import { PersonaTabs } from '../../components/PersonaTabs';
 import { canRegisterDependents } from '../../features/enrollment/permissions';

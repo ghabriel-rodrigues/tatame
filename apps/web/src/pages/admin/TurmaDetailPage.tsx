@@ -23,7 +23,11 @@ import {
   Toast,
 } from '@tatame/design-system';
 import { $api, queryClient } from '../../api/api';
-import { InitialsAvatar, enrollmentErrorMessage, useToastState } from './common';
+import {
+  InitialsAvatar,
+  enrollmentErrorMessage,
+  useToastState,
+} from './common';
 import {
   WEEKDAY_CHIP_ORDER,
   WEEKDAY_SHORT,
@@ -35,16 +39,32 @@ import {
 } from './format';
 import { EditRecordSheet } from './EditRecordSheet';
 
-function StatTile({ value, label, hint }: { value: string; label: string; hint?: string }) {
+function StatTile({
+  value,
+  label,
+  hint,
+}: {
+  value: string;
+  label: string;
+  hint?: string;
+}) {
   return (
     <Card padding={14} className="StatTile">
       <Stack sx={{ alignItems: 'center' }} spacing="2px">
-        <Typography sx={{ fontSize: 16, fontWeight: 700, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontSize: 16, fontWeight: 700, color: 'var(--fg-1)' }}
+        >
           {value}
         </Typography>
-        <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>{label}</Typography>
+        <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
+          {label}
+        </Typography>
         {hint ? (
-          <Typography sx={{ fontSize: 10.5, color: 'var(--fg-4, var(--fg-3))' }}>{hint}</Typography>
+          <Typography
+            sx={{ fontSize: 10.5, color: 'var(--fg-4, var(--fg-3))' }}
+          >
+            {hint}
+          </Typography>
         ) : null}
       </Stack>
     </Card>
@@ -77,24 +97,45 @@ export function TurmaDetailPage() {
   const detail = $api.useQuery('get', '/v1/admin/classes/{id}', {
     params: { path: { id } },
   });
-  const sessionsQuery = $api.useQuery('get', '/v1/admin/classes/{id}/sessions', {
-    params: { path: { id } },
+  const sessionsQuery = $api.useQuery(
+    'get',
+    '/v1/admin/classes/{id}/sessions',
+    {
+      params: { path: { id } },
+    },
+  );
+  const students = $api.useQuery('get', '/v1/admin/students', undefined, {
+    enabled: adding,
   });
-  const students = $api.useQuery('get', '/v1/admin/students', undefined, { enabled: adding });
-  const addStudent = $api.useMutation('post', '/v1/admin/classes/{id}/students');
-  const removeStudent = $api.useMutation('delete', '/v1/admin/classes/{id}/students/{studentId}');
+  const addStudent = $api.useMutation(
+    'post',
+    '/v1/admin/classes/{id}/students',
+  );
+  const removeStudent = $api.useMutation(
+    'delete',
+    '/v1/admin/classes/{id}/students/{studentId}',
+  );
   const rename = $api.useMutation('patch', '/v1/admin/classes/{id}');
   const archive = $api.useMutation('post', '/v1/admin/classes/{id}/archive');
 
   async function invalidate() {
-    await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/classes'] });
+    await queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/admin/classes'],
+    });
   }
 
   const turma = detail.data?.class;
 
   if (detail.isLoading) {
     return (
-      <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center', mt: 4 }}>
+      <Typography
+        sx={{
+          fontSize: 13.5,
+          color: 'var(--fg-3)',
+          textAlign: 'center',
+          mt: 4,
+        }}
+      >
         Carregando turma…
       </Typography>
     );
@@ -104,7 +145,12 @@ export function TurmaDetailPage() {
       <EmptyState
         title="Turma não encontrada"
         description="Ela pode ter sido arquivada."
-        action={<TatameButton label="Voltar" onPress={() => navigate('/admin/cadastros')} />}
+        action={
+          <TatameButton
+            label="Voltar"
+            onPress={() => navigate('/admin/cadastros')}
+          />
+        }
       />
     );
   }
@@ -115,7 +161,8 @@ export function TurmaDetailPage() {
   // Derived on read from the listed sessions — never cached, never faked.
   const averagePresent =
     sessions.length > 0
-      ? sessions.reduce((sum, session) => sum + session.presentCount, 0) / sessions.length
+      ? sessions.reduce((sum, session) => sum + session.presentCount, 0) /
+        sessions.length
       : null;
   const rosterIds = new Set(turma.roster.map((row) => row.studentId));
   const candidates = (students.data?.students ?? []).filter(
@@ -131,8 +178,17 @@ export function TurmaDetailPage() {
           onBack={() => navigate('/admin/cadastros')}
           trailing={
             <Stack direction="row" spacing="8px">
-              <TatameButton size="sm" variant="secondary" label="Editar" onPress={() => setEditing(true)} />
-              <TatameButton size="sm" label="Adicionar aluno" onPress={() => setAdding(true)} />
+              <TatameButton
+                size="sm"
+                variant="secondary"
+                label="Editar"
+                onPress={() => setEditing(true)}
+              />
+              <TatameButton
+                size="sm"
+                label="Adicionar aluno"
+                onPress={() => setAdding(true)}
+              />
             </Stack>
           }
         />
@@ -141,7 +197,14 @@ export function TurmaDetailPage() {
           <Typography variant="overline" sx={{ color: 'var(--fg-3)' }}>
             Horário recorrente
           </Typography>
-          <Box sx={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: '6px',
+              flexWrap: 'wrap',
+              marginTop: '8px',
+            }}
+          >
             {WEEKDAY_CHIP_ORDER.map((weekday) => (
               <Chip
                 key={weekday}
@@ -159,10 +222,14 @@ export function TurmaDetailPage() {
               marginTop: '12px',
             }}
           >
-            <Typography sx={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-1)' }}>
+            <Typography
+              sx={{ fontSize: 15, fontWeight: 700, color: 'var(--fg-1)' }}
+            >
               {firstSlot ? scheduleTimeRange(firstSlot) : 'Sem horário'}
             </Typography>
-            <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>toda semana</Typography>
+            <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
+              toda semana
+            </Typography>
           </Box>
           {turma.minBelt || turma.maxBelt ? (
             // Turma belt range as drawn chips — "Branca a Azul" (GRD.14).
@@ -188,7 +255,9 @@ export function TurmaDetailPage() {
                 />
               ) : null}
               {turma.minBelt && turma.maxBelt ? (
-                <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>a</Typography>
+                <Typography sx={{ fontSize: 11.5, color: 'var(--fg-3)' }}>
+                  a
+                </Typography>
               ) : null}
               {turma.maxBelt ? (
                 <BeltChip
@@ -197,7 +266,9 @@ export function TurmaDetailPage() {
                   tipColorSlug={turma.maxBelt.tipColorSlug}
                   maxDegrees={turma.maxBelt.maxDegrees}
                   label={
-                    turma.minBelt ? beltLabel(turma.maxBelt) : `Até ${turma.maxBelt.name}`
+                    turma.minBelt
+                      ? beltLabel(turma.maxBelt)
+                      : `Até ${turma.maxBelt.name}`
                   }
                 />
               ) : null}
@@ -205,7 +276,9 @@ export function TurmaDetailPage() {
           ) : null}
         </Card>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <Box
+          sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+        >
           <StatTile
             value={`${turma.occupancy} de ${turma.capacity}`}
             label="ocupação"
@@ -215,17 +288,23 @@ export function TurmaDetailPage() {
             value={
               averagePresent === null
                 ? '—'
-                : averagePresent.toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+                : averagePresent.toLocaleString('pt-BR', {
+                    maximumFractionDigits: 1,
+                  })
             }
             label="frequência média"
             hint={
-              averagePresent === null ? 'Sem chamadas registradas' : 'presenças por aula'
+              averagePresent === null
+                ? 'Sem chamadas registradas'
+                : 'presenças por aula'
             }
           />
         </Box>
 
         <Stack spacing="8px">
-          <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             Chamadas
           </Typography>
           <Card padding={4}>
@@ -239,7 +318,9 @@ export function TurmaDetailPage() {
               <ListRow
                 key={session.id}
                 title={sessionDateLabel(session.sessionDate)}
-                {...(session.startsAt ? { subtitle: sessionTimeLabel(session.startsAt) } : {})}
+                {...(session.startsAt
+                  ? { subtitle: sessionTimeLabel(session.startsAt) }
+                  : {})}
                 trailing={<Chip label={presencesLabel(session.presentCount)} />}
               />
             ))}
@@ -247,7 +328,9 @@ export function TurmaDetailPage() {
         </Stack>
 
         <Stack spacing="8px">
-          <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             Alunos da turma
           </Typography>
           <Card padding={4}>
@@ -268,13 +351,18 @@ export function TurmaDetailPage() {
                     aria-label={`Remover ${row.fullName}`}
                     onClick={() => {
                       removeStudent.mutate(
-                        { params: { path: { id: turma.id, studentId: row.studentId } } },
+                        {
+                          params: {
+                            path: { id: turma.id, studentId: row.studentId },
+                          },
+                        },
                         {
                           onSuccess: () => {
                             void invalidate();
                             toast.show('Aluno removido da turma.');
                           },
-                          onError: (error) => toast.show(enrollmentErrorMessage(error)),
+                          onError: (error) =>
+                            toast.show(enrollmentErrorMessage(error)),
                         },
                       );
                     }}
@@ -320,7 +408,8 @@ export function TurmaDetailPage() {
                       setAdding(false);
                       toast.show('Aluno adicionado à turma.');
                     },
-                    onError: (error) => setAddError(enrollmentErrorMessage(error)),
+                    onError: (error) =>
+                      setAddError(enrollmentErrorMessage(error)),
                   },
                 );
               }}
@@ -329,7 +418,12 @@ export function TurmaDetailPage() {
           {addError ? (
             <Typography
               role="alert"
-              sx={{ fontSize: 13, fontWeight: 600, color: 'var(--danger-500)', marginTop: '12px' }}
+              sx={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--danger-500)',
+                marginTop: '12px',
+              }}
             >
               {addError}
             </Typography>
@@ -345,7 +439,10 @@ export function TurmaDetailPage() {
           title="Editar turma"
           currentName={turma.name}
           onRename={async (name) => {
-            await rename.mutateAsync({ params: { path: { id: turma.id } }, body: { name } });
+            await rename.mutateAsync({
+              params: { path: { id: turma.id } },
+              body: { name },
+            });
             await invalidate();
             setEditing(false);
             toast.show('Nome atualizado.');
@@ -364,7 +461,11 @@ export function TurmaDetailPage() {
         />
       ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

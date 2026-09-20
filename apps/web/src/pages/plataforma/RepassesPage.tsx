@@ -16,7 +16,10 @@ import { $api } from '../../api/api';
 import { InitialsAvatar } from '../admin/common';
 import { formatBRLWhole, monthName } from '../billing-format';
 
-const STATUS_CHIPS: Record<RepasseRow['status'], { label: string; tone: 'success' | 'warning' | 'danger' }> = {
+const STATUS_CHIPS: Record<
+  RepasseRow['status'],
+  { label: string; tone: 'success' | 'warning' | 'danger' }
+> = {
   repassado: { label: 'Repassado', tone: 'success' },
   em_transito: { label: 'Em trânsito', tone: 'warning' },
   retido: { label: 'Retido', tone: 'danger' },
@@ -26,10 +29,14 @@ function TotalTile({ value, caption }: { value: string; caption: string }) {
   return (
     <Box sx={{ flex: 1, minWidth: 0 }}>
       <Card padding={14}>
-        <Typography sx={{ fontSize: 19, fontWeight: 800, color: 'var(--fg-1)' }}>
+        <Typography
+          sx={{ fontSize: 19, fontWeight: 800, color: 'var(--fg-1)' }}
+        >
           {value}
         </Typography>
-        <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}>
+        <Typography
+          sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}
+        >
           {caption}
         </Typography>
       </Card>
@@ -45,7 +52,10 @@ function repasseSubtitle(row: RepasseRow): string {
 export function RepassesPage() {
   const query = $api.useQuery('get', '/v1/platform/billing/repasses');
   const data = query.data;
-  const forbidden = isProblemCode(query.error, ApiErrorCodes.AUTHZ_FORBIDDEN_ROLE);
+  const forbidden = isProblemCode(
+    query.error,
+    ApiErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+  );
 
   return (
     <Box sx={{ maxWidth: 560, margin: '0 auto' }}>
@@ -56,7 +66,9 @@ export function RepassesPage() {
         />
 
         {query.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando faturamento…
           </Typography>
         ) : null}
@@ -84,12 +96,20 @@ export function RepassesPage() {
               />
             </Stack>
 
-            <Typography sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}>
+            <Typography
+              sx={{ fontSize: 14.5, fontWeight: 700, color: 'var(--fg-1)' }}
+            >
               Repasses às academias
             </Typography>
             <Card padding={4}>
               {data.repasses.length === 0 ? (
-                <Typography sx={{ fontSize: 12.5, color: 'var(--fg-3)', padding: '12px 14px' }}>
+                <Typography
+                  sx={{
+                    fontSize: 12.5,
+                    color: 'var(--fg-3)',
+                    padding: '12px 14px',
+                  }}
+                >
                   Nenhum repasse no período.
                 </Typography>
               ) : null}
@@ -104,7 +124,11 @@ export function RepassesPage() {
                     trailing={
                       <Stack sx={{ alignItems: 'flex-end' }} spacing="4px">
                         <Typography
-                          sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+                          sx={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: 'var(--fg-1)',
+                          }}
                         >
                           {formatBRLWhole(row.netCents)}
                         </Typography>

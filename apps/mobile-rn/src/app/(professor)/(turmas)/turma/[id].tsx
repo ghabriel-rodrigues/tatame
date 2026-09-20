@@ -39,7 +39,11 @@ import {
   occupancyPercent,
   scheduleSummary,
 } from '../../../../features/enrollment/format';
-import { InitialsAvatar, QueryState, StatTile } from '../../../../features/enrollment/ui';
+import {
+  InitialsAvatar,
+  QueryState,
+  StatTile,
+} from '../../../../features/enrollment/ui';
 
 export default function ProfessorTurmaDetailScreen() {
   const theme = useTheme();
@@ -72,7 +76,9 @@ export default function ProfessorTurmaDetailScreen() {
       { params: { path: { id: turma.id, studentId: removing.studentId } } },
       {
         onSuccess: () => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/professor/classes'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/professor/classes'],
+          });
           void queryClient.invalidateQueries({
             queryKey: ['get', '/v1/professor/classes/{id}'],
           });
@@ -86,9 +92,17 @@ export default function ProfessorTurmaDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
-          <QueryState loading={detailQuery.isPending} error={detailQuery.isError}>
+          <QueryState
+            loading={detailQuery.isPending}
+            error={detailQuery.isError}
+          >
             {turma ? (
               <>
                 <ScreenHeader
@@ -136,7 +150,9 @@ export default function ProfessorTurmaDetailScreen() {
 
                 {turma.roster.length === 0 ? (
                   <Card>
-                    <Text variant="caption">Nenhum aluno matriculado nesta turma.</Text>
+                    <Text variant="caption">
+                      Nenhum aluno matriculado nesta turma.
+                    </Text>
                   </Card>
                 ) : (
                   <Card padding={theme.space['1']}>
@@ -146,7 +162,9 @@ export default function ProfessorTurmaDetailScreen() {
                         title={student.fullName}
                         leading={<InitialsAvatar name={student.fullName} />}
                         divider={index < turma.roster.length - 1}
-                        onPress={() => router.push(`/aluno/${student.studentId}`)}
+                        onPress={() =>
+                          router.push(`/aluno/${student.studentId}`)
+                        }
                         trailing={
                           <View
                             style={{
@@ -173,7 +191,10 @@ export default function ProfessorTurmaDetailScreen() {
                               }}
                               hitSlop={8}
                             >
-                              <CircleMinus size={18} color={theme.color.fg['4']} />
+                              <CircleMinus
+                                size={18}
+                                color={theme.color.fg['4']}
+                              />
                             </Pressable>
                           </View>
                         }
@@ -202,7 +223,9 @@ export default function ProfessorTurmaDetailScreen() {
         onClose={() => setRemoving(null)}
         title="Remover aluno"
         subtitle={
-          removing && turma ? `${removing.fullName} sai da turma ${turma.name}.` : undefined
+          removing && turma
+            ? `${removing.fullName} sai da turma ${turma.name}.`
+            : undefined
         }
         testID="remove-student-sheet"
       >

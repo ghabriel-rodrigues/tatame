@@ -9,10 +9,15 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createApiClient } from '@tatame/shared';
 import { emitAuthLost, getAccessToken, setAccessToken } from './token';
-import { clearRefreshToken, getRefreshToken, setRefreshToken } from './token-store';
+import {
+  clearRefreshToken,
+  getRefreshToken,
+  setRefreshToken,
+} from './token-store';
 
 /** Dev default targets the local API; EXPO_PUBLIC_API_URL overrides. */
-export const apiBaseUrl = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000';
+export const apiBaseUrl =
+  process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000';
 
 interface BodyRefreshResponse {
   accessToken: string;
@@ -61,7 +66,8 @@ export async function requestBodyRefreshDetailed(
   }
   const body = (await response.json()) as BodyRefreshResponse;
   if (typeof body.accessToken !== 'string') return { kind: 'rejected' };
-  if (typeof body.refreshToken === 'string') await setRefreshToken(body.refreshToken);
+  if (typeof body.refreshToken === 'string')
+    await setRefreshToken(body.refreshToken);
   setAccessToken(body.accessToken);
   return { kind: 'ok', accessToken: body.accessToken };
 }

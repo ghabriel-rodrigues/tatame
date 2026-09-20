@@ -24,7 +24,8 @@ import { renderRoute } from '../../test/render-route';
 import { server } from '../../test/setup';
 import { THEME_MODE_STORAGE_KEY, resetThemeState } from '../../app/theme-store';
 
-const session = () => makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+const session = () =>
+  makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
 
 const cssVar = (name: string) =>
   document.documentElement.style.getPropertyValue(`--${name}`);
@@ -43,7 +44,9 @@ describe('Configurações hub (CFG.9)', () => {
 
     // Identidade visual: monogram + name field + disabled Logo (upload = debt).
     expect(screen.getByText('Identidade visual')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Nome da academia/)).toHaveValue('Alpha Jiu-Jitsu');
+    expect(screen.getByLabelText(/Nome da academia/)).toHaveValue(
+      'Alpha Jiu-Jitsu',
+    );
     expect(screen.getByText('AJ')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Logo' })).toBeDisabled();
 
@@ -53,7 +56,10 @@ describe('Configurações hub (CFG.9)', () => {
       'true',
     );
     for (const name of ['Oceano', 'Mata', 'Ouro']) {
-      expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      );
     }
 
     // Toggles: dark off, notificações on, geolocalização honestly disabled.
@@ -62,11 +68,17 @@ describe('Configurações hub (CFG.9)', () => {
     expect(screen.getByLabelText('Check-in por geolocalização')).toBeDisabled();
 
     // Entry rows.
-    expect(screen.getByRole('button', { name: 'Permissões por perfil' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Permissões por perfil' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Integrações de pagamento')).toBeInTheDocument();
     expect(screen.getByText('Pix ativo')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Planos de mensalidade' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Regras de graduação' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Planos de mensalidade' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Regras de graduação' }),
+    ).toBeInTheDocument();
   });
 
   it('live-previews a selected palette and persists it with Salvar', async () => {
@@ -218,7 +230,9 @@ describe('Configurações hub (CFG.9)', () => {
     renderRoute('/admin/configuracoes', { session: session() });
     await screen.findByRole('heading', { name: 'Configurações' });
 
-    await user.click(screen.getByRole('button', { name: 'Permissões por perfil' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Permissões por perfil' }),
+    );
 
     expect(
       await screen.findByRole('heading', { name: 'Permissões por perfil' }),

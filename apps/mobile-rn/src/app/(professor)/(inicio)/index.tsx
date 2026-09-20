@@ -27,8 +27,15 @@ import {
 import { api } from '../../../api/query';
 import { greetingPt } from '../../../features/attendance/format';
 import { longDatePt } from '../../../features/enrollment/format';
-import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollment/ui';
-import { confirmadosLine, eventDateLine } from '../../../features/events/format';
+import {
+  InitialsAvatar,
+  QueryState,
+  StatTile,
+} from '../../../features/enrollment/ui';
+import {
+  confirmadosLine,
+  eventDateLine,
+} from '../../../features/events/format';
 import { EventDateSquare } from '../../../features/events/ui';
 import { NotificationBell } from '../../../features/notifications/ui';
 import { RANKING_TITLE_PROFESSOR } from '../../../features/rankings/copy';
@@ -46,7 +53,8 @@ export default function ProfessorInicioScreen() {
   });
 
   if (!session) return null;
-  const firstName = session.user.fullName.split(' ')[0] ?? session.user.fullName;
+  const firstName =
+    session.user.fullName.split(' ')[0] ?? session.user.fullName;
   const readOnly = isReadOnly(session);
   const dashboard = dashboardQuery.data;
   const nextClass = dashboard?.nextClass ?? null;
@@ -55,13 +63,24 @@ export default function ProfessorInicioScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             eyebrow={longDatePt()}
             title={`${greetingPt()}, ${firstName}`}
             trailing={
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: theme.space['2'],
+                }}
+              >
                 {/* AGD.6: month view one tap from Início (spec 007 story 20). */}
                 <Pressable
                   accessibilityRole="button"
@@ -89,20 +108,27 @@ export default function ProfessorInicioScreen() {
           />
 
           {readOnly ? (
-            <Card variant="tinted" testID="readonly-banner" padding={theme.space['4']}>
+            <Card
+              variant="tinted"
+              testID="readonly-banner"
+              padding={theme.space['4']}
+            >
               <View style={{ gap: 4 }}>
                 <Text variant="label" color={theme.color.warning['500']}>
                   Modo somente leitura
                 </Text>
                 <Text variant="caption">
-                  A academia está com pagamentos pendentes. Alterações ficam desabilitadas
-                  até a regularização.
+                  A academia está com pagamentos pendentes. Alterações ficam
+                  desabilitadas até a regularização.
                 </Text>
               </View>
             </Card>
           ) : null}
 
-          <QueryState loading={dashboardQuery.isPending} error={dashboardQuery.isError}>
+          <QueryState
+            loading={dashboardQuery.isPending}
+            error={dashboardQuery.isError}
+          >
             {dashboard ? (
               <>
                 <View style={{ flexDirection: 'row', gap: theme.space['3'] }}>
@@ -154,12 +180,19 @@ export default function ProfessorInicioScreen() {
                             {nextClass.checkedInCount} confirmados
                           </Text>
                         </View>
-                        <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            gap: theme.space['2'],
+                          }}
+                        >
                           <TatameButton
                             size="sm"
                             variant="secondary"
                             label="Iniciar chamada"
-                            onPress={() => router.push(`/chamada/${nextClass.classId}`)}
+                            onPress={() =>
+                              router.push(`/chamada/${nextClass.classId}`)
+                            }
                           />
                           <TatameButton
                             size="sm"
@@ -185,7 +218,10 @@ export default function ProfessorInicioScreen() {
                 {ranking && rankingTop.length > 0 ? (
                   // REP.11: real top 3 + "Ver todos" → full ranking screen
                   // (professor-02 section, professor-05/06 screen).
-                  <View style={{ gap: theme.space['3'] }} testID="ranking-section">
+                  <View
+                    style={{ gap: theme.space['3'] }}
+                    testID="ranking-section"
+                  >
                     <View
                       style={{
                         flexDirection: 'row',
@@ -194,7 +230,8 @@ export default function ProfessorInicioScreen() {
                       }}
                     >
                       <Text variant="subtitle">
-                        {RANKING_TITLE_PROFESSOR} · {windowMonthPt(ranking.window)}
+                        {RANKING_TITLE_PROFESSOR} ·{' '}
+                        {windowMonthPt(ranking.window)}
                       </Text>
                       <Pressable
                         accessibilityRole="button"
@@ -202,7 +239,11 @@ export default function ProfessorInicioScreen() {
                         onPress={() => router.push('/ranking')}
                         hitSlop={8}
                       >
-                        <Text variant="caption" weight="bold" color={theme.color.brand['2']}>
+                        <Text
+                          variant="caption"
+                          weight="bold"
+                          color={theme.color.brand['2']}
+                        >
                           Ver todos
                         </Text>
                       </Pressable>
@@ -218,7 +259,8 @@ export default function ProfessorInicioScreen() {
                             gap: theme.space['3'],
                             paddingVertical: 13,
                             paddingHorizontal: 16,
-                            borderBottomWidth: index < rankingTop.length - 1 ? 1 : 0,
+                            borderBottomWidth:
+                              index < rankingTop.length - 1 ? 1 : 0,
                             borderBottomColor: theme.color.border['1'],
                           }}
                         >
@@ -248,7 +290,12 @@ export default function ProfessorInicioScreen() {
                               {row.position}
                             </Text>
                           </View>
-                          <Text variant="label" weight="bold" style={{ flex: 1 }} numberOfLines={1}>
+                          <Text
+                            variant="label"
+                            weight="bold"
+                            style={{ flex: 1 }}
+                            numberOfLines={1}
+                          >
                             {row.name}
                           </Text>
                           <Text
@@ -282,16 +329,30 @@ export default function ProfessorInicioScreen() {
                             gap: theme.space['3'],
                           }}
                         >
-                          <EventDateSquare date={event.date} bannerPreset={event.bannerPreset} />
+                          <EventDateSquare
+                            date={event.date}
+                            bannerPreset={event.bannerPreset}
+                          />
                           <View style={{ flex: 1, gap: 3 }}>
                             <Text variant="label" numberOfLines={1}>
                               {event.name}
                             </Text>
-                            <Text variant="caption" numberOfLines={1} style={{ fontSize: 11.5 }}>
+                            <Text
+                              variant="caption"
+                              numberOfLines={1}
+                              style={{ fontSize: 11.5 }}
+                            >
                               {eventDateLine(event.date, event.time)}
                             </Text>
-                            <Text variant="caption" numberOfLines={1} style={{ fontSize: 11.5 }}>
-                              {confirmadosLine(event.confirmedCount, event.priceCents)}
+                            <Text
+                              variant="caption"
+                              numberOfLines={1}
+                              style={{ fontSize: 11.5 }}
+                            >
+                              {confirmadosLine(
+                                event.confirmedCount,
+                                event.priceCents,
+                              )}
                             </Text>
                           </View>
                         </View>
@@ -303,7 +364,9 @@ export default function ProfessorInicioScreen() {
                 <Card>
                   <View style={{ gap: 4 }}>
                     <Text variant="label">Próximos da graduação</Text>
-                    <Text variant="caption">Em breve — chega com a fase de graduação.</Text>
+                    <Text variant="caption">
+                      Em breve — chega com a fase de graduação.
+                    </Text>
                   </View>
                 </Card>
               </>

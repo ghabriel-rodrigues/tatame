@@ -45,7 +45,9 @@ export function makePlanView(overrides: Partial<WalletPlan> = {}): WalletPlan {
   };
 }
 
-export function makePixPayment(overrides: Partial<PaymentView> = {}): PaymentView {
+export function makePixPayment(
+  overrides: Partial<PaymentView> = {},
+): PaymentView {
   return {
     id: PIX_PAYMENT_ID,
     chargeId: CHARGE_ID,
@@ -64,9 +66,12 @@ export function makePixPayment(overrides: Partial<PaymentView> = {}): PaymentVie
   };
 }
 
-export const LINHA_DIGITAVEL = '34191.79001 01043.510047 91020.150008 6 84410000018000';
+export const LINHA_DIGITAVEL =
+  '34191.79001 01043.510047 91020.150008 6 84410000018000';
 
-export function makeBoletoPayment(overrides: Partial<PaymentView> = {}): PaymentView {
+export function makeBoletoPayment(
+  overrides: Partial<PaymentView> = {},
+): PaymentView {
   return makePixPayment({
     method: 'boleto',
     providerData: {
@@ -104,7 +109,10 @@ export function makePaidCharge(
   return makeOpenCharge({
     status: 'paid',
     payments: [
-      makePixPayment({ status: 'succeeded', paidAt: '2026-08-05T14:00:00.000Z' }),
+      makePixPayment({
+        status: 'succeeded',
+        paidAt: '2026-08-05T14:00:00.000Z',
+      }),
     ],
     ...overrides,
   });
@@ -165,7 +173,11 @@ export function makeWallet(options: WalletOptions = {}): WalletResponse {
   const charge = options.paid
     ? makePaidCharge()
     : options.overdue
-      ? makeOpenCharge({ status: 'overdue', overdue: true, dueDate: '2026-07-10' })
+      ? makeOpenCharge({
+          status: 'overdue',
+          overdue: true,
+          dueDate: '2026-07-10',
+        })
       : makeOpenCharge();
   return {
     student: { id: STUDENT_ID, fullName: 'Lucas Almeida' },
@@ -203,7 +215,11 @@ export const JULIA_ID = uuid('8006', 2);
 export function makeGuardianPayments(
   overrides: Partial<GuardianPaymentsResponse> = {},
 ): GuardianPaymentsResponse {
-  const kidsPlan = makePlanView({ id: KIDS_PLAN_ID, name: 'Kids', amountCents: 15_000 });
+  const kidsPlan = makePlanView({
+    id: KIDS_PLAN_ID,
+    name: 'Kids',
+    amountCents: 15_000,
+  });
   const history: GuardianHistoryEntry[] = [
     {
       studentId: PEDRO_ID,
@@ -277,7 +293,9 @@ export function makeGuardianPayments(
 }
 
 /** Comprovante payload for the settled julho Pix payment. */
-export function makeReceipt(overrides: Partial<ReceiptResponse> = {}): ReceiptResponse {
+export function makeReceipt(
+  overrides: Partial<ReceiptResponse> = {},
+): ReceiptResponse {
   return {
     payment: makePixPayment({
       id: HISTORY_PAYMENT_JUL,

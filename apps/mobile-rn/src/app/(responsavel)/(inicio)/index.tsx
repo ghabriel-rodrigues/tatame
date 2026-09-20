@@ -24,11 +24,19 @@ import {
 } from '@tatame/design-system/native';
 import { api } from '../../../api/query';
 import { formatBRL, longDayMonthPt } from '../../../features/billing/format';
-import { ageFromBirthDate, longDatePt, slotLabel } from '../../../features/enrollment/format';
+import {
+  ageFromBirthDate,
+  longDatePt,
+  slotLabel,
+} from '../../../features/enrollment/format';
 import { canRegisterDependents } from '../../../features/enrollment/permissions';
 import { openRegisterDependentSheet } from '../../../features/enrollment/register-sheet-store';
 import type { DependentDetail } from '../../../features/enrollment/types';
-import { InitialsAvatar, QueryState, StatTile } from '../../../features/enrollment/ui';
+import {
+  InitialsAvatar,
+  QueryState,
+  StatTile,
+} from '../../../features/enrollment/ui';
 import { NotificationBell } from '../../../features/notifications/ui';
 import { useSession } from '../../../session/session-store';
 
@@ -47,7 +55,13 @@ function DependentCard({ dependent }: { dependent: DependentDetail }) {
     >
       <Card padding={theme.space['4']}>
         <View style={{ gap: theme.space['3'] }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: theme.space['3'],
+            }}
+          >
             <InitialsAvatar name={dependent.fullName} size={38} />
             <View style={{ flex: 1, gap: 2 }}>
               <Text variant="subtitle" numberOfLines={1}>
@@ -111,7 +125,10 @@ function DependentCard({ dependent }: { dependent: DependentDetail }) {
             ) : (
               <StatTile value="—" label="faixa" note="Em breve" />
             )}
-            <StatTile value={nextSlot ? slotLabel(nextSlot) : '—'} label="próxima aula" />
+            <StatTile
+              value={nextSlot ? slotLabel(nextSlot) : '—'}
+              label="próxima aula"
+            />
           </View>
         </View>
       </Card>
@@ -127,18 +144,28 @@ export default function ResponsavelInicioScreen() {
   const dependents = query.data?.dependents ?? [];
 
   if (!session) return null;
-  const firstName = session.user.fullName.split(' ')[0] ?? session.user.fullName;
+  const firstName =
+    session.user.fullName.split(' ')[0] ?? session.user.fullName;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             eyebrow={longDatePt()}
             title={`Olá, ${firstName}`}
             trailing={
               <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['2'] }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: theme.space['2'],
+                }}
               >
                 <Chip label="Responsável" tone="brand" />
                 {/* NOT.9: bell with the pink unread dot, left of the avatar. */}

@@ -160,22 +160,22 @@ Each client stores the session in its platform-appropriate secure fashion (httpO
 
 ### Endpoint list (API contract, identity surface, versioned prefix)
 
-| Endpoint | Auth | Purpose |
-|---|---|---|
-| `POST /auth/login` | public | credentials → token pair (or TOTP challenge) + memberships |
-| `POST /auth/login/totp` | challenge token | complete platform 2FA login |
-| `POST /auth/refresh` | refresh token (cookie/body) | rotate pair, reuse detection |
-| `POST /auth/switch` | bearer | re-issue tokens for another membership |
-| `POST /auth/logout` | bearer | revoke current session |
-| `POST /auth/logout-all` | bearer | revoke all sessions |
-| `GET /auth/me` | bearer | user + memberships + active context + toggles |
-| `POST /auth/password/forgot` | public | send reset email (202 always) |
-| `POST /auth/password/reset` | public | consume token, set password, revoke sessions |
-| `POST /auth/totp/setup`, `POST /auth/totp/enable` | bearer (platform) | opt-in 2FA |
-| `GET /public/invites/:token` | public | invite landing payload |
-| `POST /public/invites/:token/accept` | public | atomic signup, returns token pair |
-| `GET /admin/permissions`, `PUT /admin/permissions` | bearer (admin) | manage permission toggles |
-| `POST /platform/academies/:id/impersonate` | bearer (owner, support) | audited impersonation session |
+| Endpoint                                           | Auth                        | Purpose                                                    |
+| -------------------------------------------------- | --------------------------- | ---------------------------------------------------------- |
+| `POST /auth/login`                                 | public                      | credentials → token pair (or TOTP challenge) + memberships |
+| `POST /auth/login/totp`                            | challenge token             | complete platform 2FA login                                |
+| `POST /auth/refresh`                               | refresh token (cookie/body) | rotate pair, reuse detection                               |
+| `POST /auth/switch`                                | bearer                      | re-issue tokens for another membership                     |
+| `POST /auth/logout`                                | bearer                      | revoke current session                                     |
+| `POST /auth/logout-all`                            | bearer                      | revoke all sessions                                        |
+| `GET /auth/me`                                     | bearer                      | user + memberships + active context + toggles              |
+| `POST /auth/password/forgot`                       | public                      | send reset email (202 always)                              |
+| `POST /auth/password/reset`                        | public                      | consume token, set password, revoke sessions               |
+| `POST /auth/totp/setup`, `POST /auth/totp/enable`  | bearer (platform)           | opt-in 2FA                                                 |
+| `GET /public/invites/:token`                       | public                      | invite landing payload                                     |
+| `POST /public/invites/:token/accept`               | public                      | atomic signup, returns token pair                          |
+| `GET /admin/permissions`, `PUT /admin/permissions` | bearer (admin)              | manage permission toggles                                  |
+| `POST /platform/academies/:id/impersonate`         | bearer (owner, support)     | audited impersonation session                              |
 
 Stable problem+json error codes (shared registry): invalid credentials, token expired, refresh reused, MFA required/invalid, invite invalid-or-expired, minor-requires-guardian, reset invalid-or-expired, forbidden role, permission disabled, impersonation restricted, tenant suspended, tenant read-only.
 

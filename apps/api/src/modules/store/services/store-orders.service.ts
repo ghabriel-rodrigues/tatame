@@ -106,7 +106,8 @@ export class StoreOrdersService {
           totalCents,
         })
         .returning();
-      if (!order) throw problem(500, ErrorCodes.INTERNAL, 'Order insert returned no row');
+      if (!order)
+        throw problem(500, ErrorCodes.INTERNAL, 'Order insert returned no row');
 
       // The snapshot: repricing never rewrites history (story on unit_price).
       const [item] = await tx
@@ -120,19 +121,30 @@ export class StoreOrdersService {
           unitPriceCents: product.priceCents,
         })
         .returning();
-      if (!item) throw problem(500, ErrorCodes.INTERNAL, 'Order item insert returned no row');
+      if (!item)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Order item insert returned no row',
+        );
 
       // The buyer's student row (Carteira addressing) when one exists —
       // professor buyers have no student row and leave student_id NULL.
       const studentId =
-        ctx.role === 'student' ? ((await this.studentOf(tx, ctx.userId))?.id ?? null) : null;
-      const charge = await this.orderCharges.issueOrderCharge(tx, asActor(ctx), {
-        tenantId: ctx.tenantId,
-        orderId: order.id,
-        studentId,
-        amountCents: totalCents,
-        dueDate: localDate(),
-      });
+        ctx.role === 'student'
+          ? ((await this.studentOf(tx, ctx.userId))?.id ?? null)
+          : null;
+      const charge = await this.orderCharges.issueOrderCharge(
+        tx,
+        asActor(ctx),
+        {
+          tenantId: ctx.tenantId,
+          orderId: order.id,
+          studentId,
+          amountCents: totalCents,
+          dueDate: localDate(),
+        },
+      );
 
       await this.audit(tx, ctx, 'store.order.created', order.id, {
         number,
@@ -145,22 +157,28 @@ export class StoreOrdersService {
       });
 
       return {
-        order: this.view(order, {
-          productId: product.id,
-          productName: product.name,
-          monogram: product.monogram,
-          gradientPreset: product.gradientPreset,
-          size,
-          quantity: input.quantity,
-          unitPriceCents: product.priceCents,
-        }, charge.id),
+        order: this.view(
+          order,
+          {
+            productId: product.id,
+            productName: product.name,
+            monogram: product.monogram,
+            gradientPreset: product.gradientPreset,
+            size,
+            quantity: input.quantity,
+            unitPriceCents: product.priceCents,
+          },
+          charge.id,
+        ),
         chargeId: charge.id,
       };
     });
   }
 
   /** GET /store/orders — Meus pedidos (own orders only), newest first. */
-  async myOrders(ctx: AuthContext & { tenantId: string }): Promise<{ orders: OrderView[] }> {
+  async myOrders(
+    ctx: AuthContext & { tenantId: string },
+  ): Promise<{ orders: OrderView[] }> {
     return withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
       const rows = await tx
         .select()
@@ -183,7 +201,10 @@ export class StoreOrdersService {
   ): Promise<void> {
     let canceled: OrderCanceledEvent | null = null;
     await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      const [order] = await tx.select().from(orders).where(eq(orders.id, orderId));
+      const [order] = await tx
+        .select()
+        .from(orders)
+        .where(eq(orders.id, orderId));
       // Foreign/unknown (incl. another buyer's) order = 404, never 403.
       if (!order || order.buyerUserId !== ctx.userId) {
         throw problem(404, ErrorCodes.NOT_FOUND, 'Order not found');
@@ -197,9 +218,18 @@ export class StoreOrdersService {
       }
       await tx
         .update(orders)
-        .set({ status: 'canceled', canceledAt: new Date(), updatedAt: new Date() })
+        .set({
+          status: 'canceled',
+          canceledAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(orders.id, order.id));
-      await this.orderCharges.cancelOpenOrderCharges(tx, asActor(ctx), ctx.tenantId, order.id);
+      await this.orderCharges.cancelOpenOrderCharges(
+        tx,
+        asActor(ctx),
+        ctx.tenantId,
+        order.id,
+      );
       await this.audit(tx, ctx, 'store.order.canceled', order.id, {
         from: 'pending',
         via: 'buyer',
@@ -264,7 +294,10 @@ export class StoreOrdersService {
     if (status === 'canceled') {
       await this.adminCancel(ctx, orderId);
     } else {
-      let emitted: { name: string; event: OrderReadyEvent | OrderDeliveredEvent } | null = null;
+      let emitted: {
+        name: string;
+        event: OrderReadyEvent | OrderDeliveredEvent;
+      } | null = null;
       await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
         const order = await this.requireOrder(tx, orderId);
         const allowedFrom: Record<'ready' | 'delivered', string> = {
@@ -317,34 +350,45 @@ export class StoreOrdersService {
     ctx: AuthContext & { tenantId: string },
     orderId: string,
   ): Promise<void> {
-    const paymentId = await withTenant(this.appDb.db, this.tenantCtx(ctx), async (tx) => {
-      const order = await this.requireOrder(tx, orderId);
-      if (order.status !== 'paid' && order.status !== 'ready') {
-        throw problem(
-          409,
-          ErrorCodes.STORE_ORDER_INVALID_TRANSITION,
-          `Cannot cancel a ${order.status} order — only paid or em-andamento orders refund`,
-        );
-      }
-      const [settled] = await tx
-        .select({ id: payments.id })
-        .from(payments)
-        .innerJoin(
-          charges,
-          and(eq(charges.tenantId, payments.tenantId), eq(charges.id, payments.chargeId)),
-        )
-        .where(
-          and(
-            eq(charges.origin, 'order'),
-            eq(charges.orderId, order.id),
-            eq(payments.status, 'succeeded'),
-          ),
-        );
-      if (!settled) {
-        throw problem(409, ErrorCodes.BILLING_REFUND_UNSETTLED, 'No settled payment to refund');
-      }
-      return settled.id;
-    });
+    const paymentId = await withTenant(
+      this.appDb.db,
+      this.tenantCtx(ctx),
+      async (tx) => {
+        const order = await this.requireOrder(tx, orderId);
+        if (order.status !== 'paid' && order.status !== 'ready') {
+          throw problem(
+            409,
+            ErrorCodes.STORE_ORDER_INVALID_TRANSITION,
+            `Cannot cancel a ${order.status} order — only paid or em-andamento orders refund`,
+          );
+        }
+        const [settled] = await tx
+          .select({ id: payments.id })
+          .from(payments)
+          .innerJoin(
+            charges,
+            and(
+              eq(charges.tenantId, payments.tenantId),
+              eq(charges.id, payments.chargeId),
+            ),
+          )
+          .where(
+            and(
+              eq(charges.origin, 'order'),
+              eq(charges.orderId, order.id),
+              eq(payments.status, 'succeeded'),
+            ),
+          );
+        if (!settled) {
+          throw problem(
+            409,
+            ErrorCodes.BILLING_REFUND_UNSETTLED,
+            'No settled payment to refund',
+          );
+        }
+        return settled.id;
+      },
+    );
     await this.paymentFlow.refund(
       ctx,
       paymentId,
@@ -378,7 +422,10 @@ export class StoreOrdersService {
     tx: DbTransaction,
     orderId: string,
   ): Promise<typeof orders.$inferSelect> {
-    const [order] = await tx.select().from(orders).where(eq(orders.id, orderId));
+    const [order] = await tx
+      .select()
+      .from(orders)
+      .where(eq(orders.id, orderId));
     if (!order) throw problem(404, ErrorCodes.NOT_FOUND, 'Order not found');
     return order;
   }
@@ -388,7 +435,10 @@ export class StoreOrdersService {
     tx: DbTransaction,
     productId: string,
   ): Promise<typeof products.$inferSelect> {
-    const [product] = await tx.select().from(products).where(eq(products.id, productId));
+    const [product] = await tx
+      .select()
+      .from(products)
+      .where(eq(products.id, productId));
     if (!product) throw problem(404, ErrorCodes.NOT_FOUND, 'Product not found');
     if (product.status !== 'active') {
       throw problem(
@@ -407,12 +457,20 @@ export class StoreOrdersService {
   ): string | null {
     if (product.sizes.length === 0) {
       if (size) {
-        throw problem(422, ErrorCodes.STORE_SIZE_INVALID, 'This product has no sizes');
+        throw problem(
+          422,
+          ErrorCodes.STORE_SIZE_INVALID,
+          'This product has no sizes',
+        );
       }
       return null;
     }
     if (!size) {
-      throw problem(422, ErrorCodes.STORE_SIZE_REQUIRED, 'Choose a size for this product');
+      throw problem(
+        422,
+        ErrorCodes.STORE_SIZE_REQUIRED,
+        'Choose a size for this product',
+      );
     }
     if (!product.sizes.includes(size)) {
       throw problem(
@@ -424,7 +482,10 @@ export class StoreOrdersService {
     return size;
   }
 
-  private async studentOf(tx: DbTransaction, userId: string): Promise<{ id: string } | null> {
+  private async studentOf(
+    tx: DbTransaction,
+    userId: string,
+  ): Promise<{ id: string } | null> {
     const [row] = await tx
       .select({ id: students.id })
       .from(students)
@@ -441,11 +502,19 @@ export class StoreOrdersService {
     const orderIds = rows.map((r) => r.id);
 
     const items = await tx
-      .select({ item: orderItems, productName: products.name, monogram: products.monogram, gradientPreset: products.gradientPreset })
+      .select({
+        item: orderItems,
+        productName: products.name,
+        monogram: products.monogram,
+        gradientPreset: products.gradientPreset,
+      })
       .from(orderItems)
       .innerJoin(
         products,
-        and(eq(products.tenantId, orderItems.tenantId), eq(products.id, orderItems.productId)),
+        and(
+          eq(products.tenantId, orderItems.tenantId),
+          eq(products.id, orderItems.productId),
+        ),
       )
       .where(inArray(orderItems.orderId, orderIds));
     const itemByOrder = new Map(
@@ -479,7 +548,11 @@ export class StoreOrdersService {
     }
 
     return rows.map((row) =>
-      this.view(row, itemByOrder.get(row.id) ?? null, chargeByOrder.get(row.id) ?? null),
+      this.view(
+        row,
+        itemByOrder.get(row.id) ?? null,
+        chargeByOrder.get(row.id) ?? null,
+      ),
     );
   }
 

@@ -81,7 +81,10 @@ export interface CalendarView {
 
 export type CalendarPersona = 'aluno' | 'professor' | 'admin';
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /** Slot end as HH:MM (start + duration, wrapping midnight). */
 function endTimeOf(startTime: string, durationMinutes: number): string {
@@ -122,11 +125,17 @@ export class AgendaService {
         .from(enrollments)
         .innerJoin(
           classes,
-          and(eq(classes.tenantId, enrollments.tenantId), eq(classes.id, enrollments.classId)),
+          and(
+            eq(classes.tenantId, enrollments.tenantId),
+            eq(classes.id, enrollments.classId),
+          ),
         )
         .innerJoin(
           classSchedules,
-          and(eq(classSchedules.tenantId, classes.tenantId), eq(classSchedules.classId, classes.id)),
+          and(
+            eq(classSchedules.tenantId, classes.tenantId),
+            eq(classSchedules.classId, classes.id),
+          ),
         )
         .where(
           and(
@@ -141,7 +150,9 @@ export class AgendaService {
       const classIds = [...new Set(rows.map((r) => r.class.id))];
       const [occupancyMap, professorMap, catalog] = await Promise.all([
         this.occupancyByClass(tx, classIds),
-        this.professorNames(tx, [...new Set(rows.map((r) => r.class.professorUserId))]),
+        this.professorNames(tx, [
+          ...new Set(rows.map((r) => r.class.professorUserId)),
+        ]),
         this.graduationQuery.catalogById(tx),
       ]);
 
@@ -173,9 +184,14 @@ export class AgendaService {
                 isNull(attendances.revokedAt),
               ),
             );
-          const attendedSessionIds = new Set(attended.map((a) => a.classSessionId));
+          const attendedSessionIds = new Set(
+            attended.map((a) => a.classSessionId),
+          );
           for (const session of sessions) {
-            checkedInByClass.set(session.classId, attendedSessionIds.has(session.id));
+            checkedInByClass.set(
+              session.classId,
+              attendedSessionIds.has(session.id),
+            );
           }
         }
       }
@@ -253,7 +269,10 @@ export class AgendaService {
             .from(enrollments)
             .innerJoin(
               classes,
-              and(eq(classes.tenantId, enrollments.tenantId), eq(classes.id, enrollments.classId)),
+              and(
+                eq(classes.tenantId, enrollments.tenantId),
+                eq(classes.id, enrollments.classId),
+              ),
             )
             .where(
               and(
@@ -265,7 +284,8 @@ export class AgendaService {
         ).map((r) => r.class);
       } else {
         const conditions = [eq(classes.status, 'active')];
-        if (persona === 'professor') conditions.push(eq(classes.professorUserId, ctx.userId));
+        if (persona === 'professor')
+          conditions.push(eq(classes.professorUserId, ctx.userId));
         classRows = await tx
           .select()
           .from(classes)
@@ -276,7 +296,9 @@ export class AgendaService {
       const classIds = [...classById.keys()];
       const [occupancyMap, professorMap] = await Promise.all([
         this.occupancyByClass(tx, classIds),
-        this.professorNames(tx, [...new Set(classRows.map((r) => r.professorUserId))]),
+        this.professorNames(tx, [
+          ...new Set(classRows.map((r) => r.professorUserId)),
+        ]),
       ]);
 
       const classesByWeekday: Record<string, CalendarClassItem[]> = {};
@@ -327,7 +349,11 @@ export class AgendaService {
       .from(students)
       .where(and(eq(students.userId, userId), eq(students.status, 'active')));
     if (!student) {
-      throw problem(404, ErrorCodes.NOT_FOUND, 'No active student record for this account');
+      throw problem(
+        404,
+        ErrorCodes.NOT_FOUND,
+        'No active student record for this account',
+      );
     }
     return student;
   }
@@ -341,7 +367,12 @@ export class AgendaService {
     const rows = await tx
       .select({ classId: enrollments.classId, total: count() })
       .from(enrollments)
-      .where(and(inArray(enrollments.classId, classIds), eq(enrollments.status, 'active')))
+      .where(
+        and(
+          inArray(enrollments.classId, classIds),
+          eq(enrollments.status, 'active'),
+        ),
+      )
       .groupBy(enrollments.classId);
     for (const row of rows) map.set(row.classId, Number(row.total));
     return map;

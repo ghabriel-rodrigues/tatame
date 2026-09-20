@@ -166,7 +166,11 @@ interface DevClassFixture {
   capacity: number;
   ageMin?: number;
   ageMax?: number;
-  schedules: Array<{ weekday: number; startTime: string; durationMinutes: number }>;
+  schedules: Array<{
+    weekday: number;
+    startTime: string;
+    durationMinutes: number;
+  }>;
 }
 
 const DEV_CLASSES: DevClassFixture[] = [
@@ -247,7 +251,11 @@ const DEV_GUARDIANS: Record<string, DevGuardianFixture> = {
 };
 
 /** Default permission-toggle rows per academy (absent row = code default). */
-const DEV_ROLE_PERMISSIONS: Array<{ role: MembershipRole; key: string; allowed: boolean }> = [
+const DEV_ROLE_PERMISSIONS: Array<{
+  role: MembershipRole;
+  key: string;
+  allowed: boolean;
+}> = [
   { role: 'professor', key: 'events.create', allowed: true },
   { role: 'professor', key: 'invites.create', allowed: true },
   { role: 'student', key: 'store.purchase', allowed: true },
@@ -278,7 +286,10 @@ export interface SeedDevHandles {
  * Requires `seedPlatformPlans` AND `seedBeltCatalog` to have run first (the
  * graduation fixtures resolve belts from the shared catalog).
  */
-export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Promise<void> {
+export async function seedDevFixtures({
+  appDb,
+  platformDb,
+}: SeedDevHandles): Promise<void> {
   const secretHash = await hashDevPassword(DEV_PASSWORD);
 
   const academyIdBySlug = new Map<string, string>();
@@ -318,7 +329,10 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
         .select({ id: platformPlans.id })
         .from(platformPlans)
         .where(eq(platformPlans.name, a.plan));
-      if (!plan) throw new Error(`Platform plan ${a.plan} not seeded — run seedPlatformPlans first`);
+      if (!plan)
+        throw new Error(
+          `Platform plan ${a.plan} not seeded — run seedPlatformPlans first`,
+        );
 
       const existing = await tx
         .select({ id: academySubscriptions.id })
@@ -391,7 +405,11 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
             .insert(memberships)
             .values({ tenantId, userId, role: m.role })
             .onConflictDoNothing({
-              target: [memberships.tenantId, memberships.userId, memberships.role],
+              target: [
+                memberships.tenantId,
+                memberships.userId,
+                memberships.role,
+              ],
             });
         }
       }
@@ -399,9 +417,18 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       for (const p of DEV_ROLE_PERMISSIONS) {
         await tx
           .insert(rolePermissions)
-          .values({ tenantId, role: p.role, permissionKey: p.key, allowed: p.allowed })
+          .values({
+            tenantId,
+            role: p.role,
+            permissionKey: p.key,
+            allowed: p.allowed,
+          })
           .onConflictDoUpdate({
-            target: [rolePermissions.tenantId, rolePermissions.role, rolePermissions.permissionKey],
+            target: [
+              rolePermissions.tenantId,
+              rolePermissions.role,
+              rolePermissions.permissionKey,
+            ],
             set: { allowed: p.allowed, updatedAt: new Date() },
           });
       }
@@ -410,9 +437,11 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       // range, Lotada at capacity), enrollments, and a guardian with 2
       // dependents. All written through the RLS-enforced tenant path.
       const professorEmail = DEV_CLASS_PROFESSOR[a.slug];
-      if (!professorEmail) throw new Error(`Missing fixture professor for ${a.slug}`);
+      if (!professorEmail)
+        throw new Error(`Missing fixture professor for ${a.slug}`);
       const professorUserId = userIdByEmail.get(professorEmail);
-      if (!professorUserId) throw new Error(`Missing user id for ${professorEmail}`);
+      if (!professorUserId)
+        throw new Error(`Missing user id for ${professorEmail}`);
 
       const classIdByName = new Map<string, string>();
       for (const c of DEV_CLASSES) {
@@ -442,7 +471,8 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       const lotadaId = classIdByName.get('Lotada');
       const kidsId = classIdByName.get('Kids');
       const adultoId = classIdByName.get('Adulto Gi');
-      if (!lotadaId || !kidsId || !adultoId) throw new Error('Fixture classes missing');
+      if (!lotadaId || !kidsId || !adultoId)
+        throw new Error('Fixture classes missing');
 
       // Record-only adults filling Lotada to its capacity of 2.
       const studentIdByName = new Map<string, string>();
@@ -456,7 +486,8 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       // where the student membership lives).
       if (a.slug === 'alpha-jj') {
         const alunoUserId = userIdByEmail.get('aluno@tatame.dev');
-        if (!alunoUserId) throw new Error('Missing user id for aluno@tatame.dev');
+        if (!alunoUserId)
+          throw new Error('Missing user id for aluno@tatame.dev');
         const anaId = await upsertStudent(tx, tenantId, {
           fullName: 'Ana Aluna',
           birthDate: '2000-03-15',
@@ -469,11 +500,17 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       // Guardian with 2 minor dependents, both enrolled in Kids.
       const g = DEV_GUARDIANS[a.slug];
       if (!g) throw new Error(`Missing fixture guardian for ${a.slug}`);
-      const guardianUserId = g.userEmail ? userIdByEmail.get(g.userEmail) : undefined;
-      if (g.userEmail && !guardianUserId) throw new Error(`Missing user id for ${g.userEmail}`);
+      const guardianUserId = g.userEmail
+        ? userIdByEmail.get(g.userEmail)
+        : undefined;
+      if (g.userEmail && !guardianUserId)
+        throw new Error(`Missing user id for ${g.userEmail}`);
       const guardianId = await upsertGuardian(tx, tenantId, g, guardianUserId);
       for (const d of g.dependents) {
-        const dependentId = await upsertStudent(tx, tenantId, { ...d, guardianId });
+        const dependentId = await upsertStudent(tx, tenantId, {
+          ...d,
+          guardianId,
+        });
         studentIdByName.set(d.fullName, dependentId);
         await enroll(tx, tenantId, kidsId, dependentId);
       }
@@ -488,13 +525,21 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       const adminUserId = userIdByEmail.get(adminEmail);
       if (!adminUserId) throw new Error(`Missing user id for ${adminEmail}`);
 
-      const latestSessionByClass = new Map<string, { id: string; startsAt: Date }>();
+      const latestSessionByClass = new Map<
+        string,
+        { id: string; startsAt: Date }
+      >();
       for (const c of DEV_CLASSES) {
         const classId = classIdByName.get(c.name);
         if (!classId) throw new Error(`Fixture class ${c.name} missing`);
         for (const s of c.schedules) {
           const startsAt = lastOccurrenceOnOrBefore(s.weekday, s.startTime);
-          const sessionId = await upsertSession(tx, tenantId, classId, startsAt);
+          const sessionId = await upsertSession(
+            tx,
+            tenantId,
+            classId,
+            startsAt,
+          );
           const latest = latestSessionByClass.get(c.name);
           if (!latest || startsAt > latest.startsAt) {
             latestSessionByClass.set(c.name, { id: sessionId, startsAt });
@@ -514,7 +559,8 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       // Self check-ins on Lotada: one per method the aluno sheet offers.
       const fabioId = studentIdByName.get('Fabio Fila');
       const flaviaId = studentIdByName.get('Flavia Fila');
-      if (!fabioId || !flaviaId) throw new Error('Fixture filler students missing');
+      if (!fabioId || !flaviaId)
+        throw new Error('Fixture filler students missing');
       await ensureActiveAttendance(tx, tenantId, lotadaSession.id, fabioId, {
         method: 'qr',
         checkedInAt: minutesAfter(lotadaSession.startsAt, 2),
@@ -536,18 +582,26 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       // Kids roll call is manual, recorded by the professor. The first
       // dependent's row is revoked through the seam and re-inserted — the
       // sanctioned correction pattern (partial unique allows the re-check-in).
-      const [dep0, dep1] = g.dependents.map((d) => studentIdByName.get(d.fullName));
+      const [dep0, dep1] = g.dependents.map((d) =>
+        studentIdByName.get(d.fullName),
+      );
       if (!dep0 || !dep1) throw new Error('Fixture dependents missing');
       await ensureActiveAttendance(tx, tenantId, kidsSession.id, dep1, {
         method: 'manual',
         recordedByUserId: professorUserId,
         checkedInAt: minutesAfter(kidsSession.startsAt, 3),
       });
-      await ensureRevokedRecheckedAttendance(tx, tenantId, kidsSession.id, dep0, {
-        recordedByUserId: professorUserId,
-        revokedByUserId: adminUserId,
-        checkedInAt: minutesAfter(kidsSession.startsAt, 5),
-      });
+      await ensureRevokedRecheckedAttendance(
+        tx,
+        tenantId,
+        kidsSession.id,
+        dep0,
+        {
+          recordedByUserId: professorUserId,
+          revokedByUserId: adminUserId,
+          checkedInAt: minutesAfter(kidsSession.startsAt, 5),
+        },
+      );
 
       // GRD.5 — graduation fixtures: an immutable history for one student
       // (belt award + degree awards + one revocation compensation pair, all
@@ -556,17 +610,25 @@ export async function seedDevFixtures({ appDb, platformDb }: SeedDevHandles): Pr
       // observação. All written through the RLS-enforced tenant path; belts
       // resolved from the shared catalog (public SELECT).
       const gradTargetName = DEV_GRADUATION_STUDENT[a.slug];
-      if (!gradTargetName) throw new Error(`Missing graduation fixture student for ${a.slug}`);
+      if (!gradTargetName)
+        throw new Error(`Missing graduation fixture student for ${a.slug}`);
       const gradStudentId = studentIdByName.get(gradTargetName);
-      if (!gradStudentId) throw new Error(`Fixture student ${gradTargetName} missing`);
+      if (!gradStudentId)
+        throw new Error(`Fixture student ${gradTargetName} missing`);
 
       const brancaId = await findBeltId(tx, 'adult', 'Branca');
       const azulId = await findBeltId(tx, 'adult', 'Azul');
       const pretaId = await findBeltId(tx, 'adult', 'Preta');
       const laranjaId = await findBeltId(tx, 'kids', 'Laranja');
 
-      await upsertGraduationRule(tx, tenantId, azulId, { lessonsPerDegree: 45, enabled: true });
-      await upsertGraduationRule(tx, tenantId, laranjaId, { lessonsPerDegree: 40, enabled: false });
+      await upsertGraduationRule(tx, tenantId, azulId, {
+        lessonsPerDegree: 45,
+        enabled: true,
+      });
+      await upsertGraduationRule(tx, tenantId, laranjaId, {
+        lessonsPerDegree: 40,
+        enabled: false,
+      });
 
       await ensureGraduationHistory(tx, tenantId, gradStudentId, {
         beltId: azulId,
@@ -628,12 +690,19 @@ async function upsertClass(
 async function upsertStudent(
   tx: DbTransaction,
   tenantId: string,
-  s: { fullName: string; birthDate: string; userId?: string; guardianId?: string },
+  s: {
+    fullName: string;
+    birthDate: string;
+    userId?: string;
+    guardianId?: string;
+  },
 ): Promise<string> {
   const found = await tx
     .select({ id: students.id })
     .from(students)
-    .where(and(eq(students.tenantId, tenantId), eq(students.fullName, s.fullName)));
+    .where(
+      and(eq(students.tenantId, tenantId), eq(students.fullName, s.fullName)),
+    );
   if (found[0]) return found[0].id;
   const [inserted] = await tx
     .insert(students)
@@ -658,7 +727,9 @@ async function upsertGuardian(
   const found = await tx
     .select({ id: guardians.id })
     .from(guardians)
-    .where(and(eq(guardians.tenantId, tenantId), eq(guardians.fullName, g.fullName)));
+    .where(
+      and(eq(guardians.tenantId, tenantId), eq(guardians.fullName, g.fullName)),
+    );
   if (found[0]) return found[0].id;
   const [inserted] = await tx
     .insert(guardians)
@@ -678,14 +749,19 @@ async function enroll(
     .insert(enrollments)
     .values({ tenantId, classId, studentId })
     .onConflictDoNothing({
-      target: [enrollments.tenantId, enrollments.classId, enrollments.studentId],
+      target: [
+        enrollments.tenantId,
+        enrollments.classId,
+        enrollments.studentId,
+      ],
     });
 }
 
 type CheckinMethod = (typeof checkinMethod.enumValues)[number];
 type GraduationKind = (typeof graduationKind.enumValues)[number];
 
-const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 3600 * 1000);
+const daysAgo = (days: number) =>
+  new Date(Date.now() - days * 24 * 3600 * 1000);
 
 /** Upserts a per-academy graduation rule row on `(tenant_id, belt_id)`. */
 async function upsertGraduationRule(
@@ -730,7 +806,10 @@ async function insertGraduation(
   const isRevocation = row.kind === 'revocation';
   const action = isRevocation ? 'graduation.revoked' : 'graduation.awarded';
   const metadata = isRevocation
-    ? { reverses_graduation_id: row.reversesGraduationId, reason: row.notes ?? null }
+    ? {
+        reverses_graduation_id: row.reversesGraduationId,
+        reason: row.notes ?? null,
+      }
     : { belt_id: row.beltId, degree: row.degree, kind: row.kind };
   await tx.execute(
     sql`SELECT audit_append(${row.tenantId}::uuid, ${row.awardedByUserId}::uuid, NULL,
@@ -755,11 +834,19 @@ async function ensureGraduationHistory(
     .select({ id: studentGraduations.id })
     .from(studentGraduations)
     .where(
-      and(eq(studentGraduations.tenantId, tenantId), eq(studentGraduations.studentId, studentId)),
+      and(
+        eq(studentGraduations.tenantId, tenantId),
+        eq(studentGraduations.studentId, studentId),
+      ),
     );
   if (existing.length > 0) return;
 
-  const base = { tenantId, studentId, beltId: opts.beltId, awardedByUserId: opts.awardedByUserId };
+  const base = {
+    tenantId,
+    studentId,
+    beltId: opts.beltId,
+    awardedByUserId: opts.awardedByUserId,
+  };
   await insertGraduation(tx, {
     ...base,
     kind: 'belt',
@@ -767,7 +854,12 @@ async function ensureGraduationHistory(
     awardedAt: daysAgo(300),
     notes: 'Exame de faixa — aprovado com distinção.',
   });
-  await insertGraduation(tx, { ...base, kind: 'degree', degree: 1, awardedAt: daysAgo(200) });
+  await insertGraduation(tx, {
+    ...base,
+    kind: 'degree',
+    degree: 1,
+    awardedAt: daysAgo(200),
+  });
   await insertGraduation(tx, {
     ...base,
     kind: 'degree',
@@ -856,7 +948,8 @@ async function upsertSession(
     .insert(classSessions)
     .values({ tenantId, classId, sessionDate, startsAt })
     .returning({ id: classSessions.id });
-  if (!inserted) throw new Error(`Failed to insert session ${classId}@${sessionDate}`);
+  if (!inserted)
+    throw new Error(`Failed to insert session ${classId}@${sessionDate}`);
   return inserted.id;
 }
 
@@ -902,7 +995,11 @@ async function ensureRevokedRecheckedAttendance(
   tenantId: string,
   classSessionId: string,
   studentId: string,
-  opts: { recordedByUserId: string; revokedByUserId: string; checkedInAt: Date },
+  opts: {
+    recordedByUserId: string;
+    revokedByUserId: string;
+    checkedInAt: Date;
+  },
 ): Promise<void> {
   const existing = await tx
     .select({ id: attendances.id, revokedAt: attendances.revokedAt })
@@ -931,7 +1028,9 @@ async function ensureRevokedRecheckedAttendance(
       sql`SELECT status FROM attendance_revoke(${tenantId}::uuid, ${first.id}::uuid, ${opts.revokedByUserId}::uuid, ${'seed: roll-call correction'})`,
     );
     if (revoked.rows[0]?.['status'] !== 'revoked') {
-      throw new Error(`Seed revoke failed: ${String(revoked.rows[0]?.['status'])}`);
+      throw new Error(
+        `Seed revoke failed: ${String(revoked.rows[0]?.['status'])}`,
+      );
     }
   }
   await ensureActiveAttendance(tx, tenantId, classSessionId, studentId, {

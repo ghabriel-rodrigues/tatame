@@ -73,32 +73,43 @@ export default function AlunoCarteiraScreen() {
       {},
       {
         onSuccess: () => void walletQuery.refetch(),
-        onError: (mutationError) => setMandateError(billingErrorMessage(mutationError)),
+        onError: (mutationError) =>
+          setMandateError(billingErrorMessage(mutationError)),
       },
     );
   };
 
-  const chargeMonth = charge ? monthNamePt(charge.periodStart ?? charge.dueDate) : '';
+  const chargeMonth = charge
+    ? monthNamePt(charge.periodStart ?? charge.dueDate)
+    : '';
   const paid = charge ? settledPayment(charge) : null;
   const chip = charge ? chargeChip(charge) : null;
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             title="Carteira"
             subtitle={plan ? planHeaderLine(plan) : undefined}
           />
 
-          <QueryState loading={walletQuery.isPending} error={walletQuery.isError}>
+          <QueryState
+            loading={walletQuery.isPending}
+            error={walletQuery.isError}
+          >
             {wallet && !plan ? (
               <Card testID="wallet-empty">
                 <View style={{ gap: 4 }}>
                   <Text variant="label">Sem plano de mensalidade</Text>
                   <Text variant="caption">
-                    Quando a academia atribuir um plano a você, as cobranças aparecem
-                    aqui.
+                    Quando a academia atribuir um plano a você, as cobranças
+                    aparecem aqui.
                   </Text>
                 </View>
               </Card>
@@ -115,10 +126,18 @@ export default function AlunoCarteiraScreen() {
                     }}
                   >
                     <Text variant="label">{mensalidadeTitle(charge)}</Text>
-                    <Chip label={chip.label} tone={chip.tone} testID="mensalidade-chip" />
+                    <Chip
+                      label={chip.label}
+                      tone={chip.tone}
+                      testID="mensalidade-chip"
+                    />
                   </View>
                   <View style={{ gap: 2 }}>
-                    <Text variant="display" weight="bold" style={{ fontSize: 28 }}>
+                    <Text
+                      variant="display"
+                      weight="bold"
+                      style={{ fontSize: 28 }}
+                    >
                       {formatBRL(charge.amountCents)}
                     </Text>
                     {isPayable(charge) ? (
@@ -136,7 +155,9 @@ export default function AlunoCarteiraScreen() {
                         label="Pagar com Pix"
                         onPress={() => setSheet('pix')}
                       />
-                      <View style={{ flexDirection: 'row', gap: theme.space['2'] }}>
+                      <View
+                        style={{ flexDirection: 'row', gap: theme.space['2'] }}
+                      >
                         <View style={{ flex: 1 }}>
                           <TatameButton
                             fullWidth
@@ -172,14 +193,19 @@ export default function AlunoCarteiraScreen() {
                 <View style={{ gap: 4 }}>
                   <Text variant="label">Nenhuma cobrança em aberto</Text>
                   <Text variant="caption">
-                    A mensalidade do próximo ciclo aparece aqui quando for gerada.
+                    A mensalidade do próximo ciclo aparece aqui quando for
+                    gerada.
                   </Text>
                 </View>
               </Card>
             ) : null}
 
             {recurrence?.active ? (
-              <Card variant="tinted" testID="recurrence-banner" padding={theme.space['4']}>
+              <Card
+                variant="tinted"
+                testID="recurrence-banner"
+                padding={theme.space['4']}
+              >
                 <View style={{ gap: theme.space['2'] }}>
                   <View
                     style={{

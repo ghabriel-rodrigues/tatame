@@ -30,7 +30,9 @@ export const FIXTURE_ACADEMY_BRAVO: MeAcademy = {
 
 let membershipCounter = 0;
 
-export function makeMembership(overrides: Partial<MembershipView> = {}): MembershipView {
+export function makeMembership(
+  overrides: Partial<MembershipView> = {},
+): MembershipView {
   membershipCounter += 1;
   return {
     id: `018f0000-0000-7000-8000-${membershipCounter.toString(16).padStart(12, '0')}`,
@@ -65,7 +67,9 @@ export interface SessionFixtureOptions {
   user?: Partial<AuthSessionResponse['user']>;
 }
 
-export function makeAuthSession(options: SessionFixtureOptions = {}): AuthSessionResponse {
+export function makeAuthSession(
+  options: SessionFixtureOptions = {},
+): AuthSessionResponse {
   const memberships = options.memberships ?? [makeMembership()];
   const first = memberships[0];
   if (!first) throw new Error('makeAuthSession needs at least one membership');
@@ -121,7 +125,10 @@ export function makeMeResponse(options: MeFixtureOptions = {}): MeResponse {
           : null,
     permissions: options.permissions ?? {},
     impersonation: options.impersonated
-      ? { isImpersonated: true, impersonatorUserId: '018f0000-0000-7000-8000-0000000000ow' }
+      ? {
+          isImpersonated: true,
+          impersonatorUserId: '018f0000-0000-7000-8000-0000000000ow',
+        }
       : { isImpersonated: false },
   };
 }

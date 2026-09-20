@@ -74,7 +74,8 @@ export function historyTitle(entry: {
   periodStart?: string | null;
   paidAt?: string | null;
 }): string {
-  if (entry.periodStart) return `Mensalidade · ${monthNamePt(entry.periodStart)}`;
+  if (entry.periodStart)
+    return `Mensalidade · ${monthNamePt(entry.periodStart)}`;
   return 'Pagamento avulso';
 }
 
@@ -111,7 +112,8 @@ export function paidLine(
   viaMandate = false,
 ): string {
   const date = paidAt ? shortDayMonth(paidAt) : '—';
-  if (viaMandate && method === 'card') return `Pago em ${date} via recorrência no cartão`;
+  if (viaMandate && method === 'card')
+    return `Pago em ${date} via recorrência no cartão`;
   return `Pago em ${date} · ${METHOD_LABELS[method]}`;
 }
 
@@ -121,9 +123,12 @@ export function chargeChip(charge: Pick<ChargeView, 'status' | 'overdue'>): {
   tone: ChipTone;
 } {
   if (charge.status === 'paid') return { label: 'Paga', tone: 'success' };
-  if (charge.status === 'refunded') return { label: 'Reembolsada', tone: 'neutral' };
-  if (charge.status === 'canceled') return { label: 'Cancelada', tone: 'neutral' };
-  if (charge.overdue || charge.status === 'overdue') return { label: 'Em atraso', tone: 'danger' };
+  if (charge.status === 'refunded')
+    return { label: 'Reembolsada', tone: 'neutral' };
+  if (charge.status === 'canceled')
+    return { label: 'Cancelada', tone: 'neutral' };
+  if (charge.overdue || charge.status === 'overdue')
+    return { label: 'Em atraso', tone: 'danger' };
   return { label: 'Em aberto', tone: 'warning' };
 }
 
@@ -136,14 +141,19 @@ export function isPayable(charge: Pick<ChargeView, 'status'>): boolean {
  * "Cobrança recorrente ativa. A próxima mensalidade chega em 1 de setembro
  * com aviso automático." (aluno-12 recurrence banner, story 6).
  */
-export function recurrenceBannerLine(nextChargeDueDate?: string | null): string {
+export function recurrenceBannerLine(
+  nextChargeDueDate?: string | null,
+): string {
   const base = 'Cobrança recorrente ativa.';
   if (!nextChargeDueDate) return base;
   return `${base} A próxima mensalidade chega em ${longDayMonthPt(nextChargeDueDate)} com aviso automático.`;
 }
 
 /** Reads a string field from the render-ready provider snapshot. */
-export function providerField(payment: PaymentView, key: string): string | null {
+export function providerField(
+  payment: PaymentView,
+  key: string,
+): string | null {
   const data = (payment.providerData ?? {}) as Record<string, unknown>;
   const value = data[key];
   return typeof value === 'string' ? value : null;
@@ -157,7 +167,8 @@ export function isSimulated(payment: PaymentView): boolean {
 /** The settled payment of a charge (receipt target), newest attempt wins. */
 export function settledPayment(charge: ChargeWithPayments): PaymentView | null {
   const settled = charge.payments.filter(
-    (payment) => payment.status === 'succeeded' || payment.status === 'refunded',
+    (payment) =>
+      payment.status === 'succeeded' || payment.status === 'refunded',
   );
   return settled[settled.length - 1] ?? null;
 }

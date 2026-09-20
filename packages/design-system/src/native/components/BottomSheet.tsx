@@ -36,7 +36,14 @@ export interface BottomSheetProps {
   testID?: string;
 }
 
-export function BottomSheet({ open, onClose, title, subtitle, children, testID }: BottomSheetProps) {
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  subtitle,
+  children,
+  testID,
+}: BottomSheetProps) {
   const theme = useTheme();
   return (
     <Modal
@@ -47,7 +54,13 @@ export function BottomSheet({ open, onClose, title, subtitle, children, testID }
       // Rendered above the app's own chrome; the scrim owns dismissal.
       statusBarTranslucent
     >
-      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: theme.color.bg.overlay }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          backgroundColor: theme.color.bg.overlay,
+        }}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Fechar"
@@ -55,7 +68,9 @@ export function BottomSheet({ open, onClose, title, subtitle, children, testID }
           style={{ flex: 1 }}
           testID={testID ? `${testID}-scrim` : undefined}
         />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <View
             accessibilityViewIsModal
             testID={testID}
@@ -97,7 +112,9 @@ export function BottomSheet({ open, onClose, title, subtitle, children, testID }
             ) : null}
             <ScrollView
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingTop: title ? theme.space['4'] : 0 }}
+              contentContainerStyle={{
+                paddingTop: title ? theme.space['4'] : 0,
+              }}
             >
               {children}
             </ScrollView>

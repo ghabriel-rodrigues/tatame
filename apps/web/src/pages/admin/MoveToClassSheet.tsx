@@ -8,7 +8,12 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { BottomSheet, Chip, EmptyState, ListRow } from '@tatame/design-system';
-import { ApiErrorCodes, isProblemCode, parseProblem, type StudentListItem } from '@tatame/shared';
+import {
+  ApiErrorCodes,
+  isProblemCode,
+  parseProblem,
+  type StudentListItem,
+} from '@tatame/shared';
 import { $api, queryClient } from '../../api/api';
 import { InitialsAvatar, enrollmentErrorMessage } from './common';
 import { scheduleTimeRange } from './format';
@@ -20,14 +25,21 @@ export interface MoveToClassSheetProps {
   onSuccess: (message: string) => void;
 }
 
-export function MoveToClassSheet({ open, onClose, selection, onSuccess }: MoveToClassSheetProps) {
+export function MoveToClassSheet({
+  open,
+  onClose,
+  selection,
+  onSuccess,
+}: MoveToClassSheetProps) {
   const [apiError, setApiError] = useState<string | null>(null);
   const [perStudentErrors, setPerStudentErrors] = useState<string[]>([]);
 
   const classes = $api.useQuery('get', '/v1/admin/classes');
   const move = $api.useMutation('post', '/v1/admin/students/move');
 
-  const nameById = new Map(selection.map((student) => [student.id, student.fullName]));
+  const nameById = new Map(
+    selection.map((student) => [student.id, student.fullName]),
+  );
 
   function moveTo(destinationClassId: string) {
     setApiError(null);
@@ -41,8 +53,12 @@ export function MoveToClassSheet({ open, onClose, selection, onSuccess }: MoveTo
       },
       {
         onSuccess: (result) => {
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/students'] });
-          void queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/classes'] });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/students'],
+          });
+          void queryClient.invalidateQueries({
+            queryKey: ['get', '/v1/admin/classes'],
+          });
           const destination = classes.data?.classes.find(
             (turma) => turma.id === result.destinationClassId,
           );
@@ -70,7 +86,9 @@ export function MoveToClassSheet({ open, onClose, selection, onSuccess }: MoveTo
   }
 
   const count = selection.length;
-  const active = (classes.data?.classes ?? []).filter((turma) => turma.status === 'active');
+  const active = (classes.data?.classes ?? []).filter(
+    (turma) => turma.status === 'active',
+  );
 
   return (
     <BottomSheet
@@ -105,21 +123,31 @@ export function MoveToClassSheet({ open, onClose, selection, onSuccess }: MoveTo
                 fits ? (
                   <Chip label="mover →" tone="brand" />
                 ) : (
-                  <Chip label={turma.lotada ? 'Lotada' : 'Sem vagas'} tone="danger" />
+                  <Chip
+                    label={turma.lotada ? 'Lotada' : 'Sem vagas'}
+                    tone="danger"
+                  />
                 )
               }
-              {...(fits && !move.isPending ? { onPress: () => moveTo(turma.id) } : {})}
+              {...(fits && !move.isPending
+                ? { onPress: () => moveTo(turma.id) }
+                : {})}
             />
           );
         })}
       </Stack>
       {apiError ? (
         <Box role="alert" sx={{ marginTop: '14px' }}>
-          <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'var(--danger-500)' }}>
+          <Typography
+            sx={{ fontSize: 13, fontWeight: 600, color: 'var(--danger-500)' }}
+          >
             {apiError}
           </Typography>
           {perStudentErrors.map((line) => (
-            <Typography key={line} sx={{ fontSize: 12.5, color: 'var(--danger-500)' }}>
+            <Typography
+              key={line}
+              sx={{ fontSize: 12.5, color: 'var(--danger-500)' }}
+            >
               {line}
             </Typography>
           ))}

@@ -37,7 +37,9 @@ describe('events format (EVT.10-11)', () => {
   });
 
   it('eventDateLine: full PT-BR weekday, "Data a definir" guard, time join', () => {
-    expect(eventDateLine('2026-08-15', '10:00')).toBe('Sábado, 15 de agosto · 10:00');
+    expect(eventDateLine('2026-08-15', '10:00')).toBe(
+      'Sábado, 15 de agosto · 10:00',
+    );
     expect(eventDateLine('2026-08-15', null)).toBe('Sábado, 15 de agosto');
     expect(eventDateLine(null, null)).toBe('Data a definir');
   });
@@ -46,7 +48,9 @@ describe('events format (EVT.10-11)', () => {
     expect(eventShortLine('2026-09-13', '09:30', 'Ginásio Municipal')).toBe(
       'Dom, 13 de setembro · 09:30 · Ginásio Municipal',
     );
-    expect(eventShortLine('2026-08-15', '10:00', null)).toBe('Sáb, 15 de agosto · 10:00');
+    expect(eventShortLine('2026-08-15', '10:00', null)).toBe(
+      'Sáb, 15 de agosto · 10:00',
+    );
     expect(eventShortLine(null)).toBe('Data a definir');
   });
 
@@ -59,10 +63,18 @@ describe('events format (EVT.10-11)', () => {
       label: 'Pagamento pendente',
       tone: 'warning',
     });
-    expect(eventStateChip(6_000, null)).toEqual({ label: 'R$ 60,00', tone: 'neutral' });
-    expect(eventStateChip(null, null)).toEqual({ label: 'Gratuito', tone: 'brand' });
+    expect(eventStateChip(6_000, null)).toEqual({
+      label: 'R$ 60,00',
+      tone: 'neutral',
+    });
+    expect(eventStateChip(null, null)).toEqual({
+      label: 'Gratuito',
+      tone: 'brand',
+    });
     // Canceled rows behave as none — the row is reused on re-register.
-    expect(eventStateChip(null, makeRegistration({ status: 'canceled' }))).toEqual({
+    expect(
+      eventStateChip(null, makeRegistration({ status: 'canceled' })),
+    ).toEqual({
       label: 'Gratuito',
       tone: 'brand',
     });
@@ -82,9 +94,15 @@ describe('events format (EVT.10-11)', () => {
       kind: 'pending',
       label: 'Pagar inscrição · R$ 60,00',
     });
-    expect(detailAction(null, makeRegistration())).toEqual({ kind: 'confirmed' });
-    expect(detailAction(6_000, makeRegistration())).toEqual({ kind: 'confirmed' });
-    expect(detailAction(6_000, makeRegistration({ status: 'canceled' }))).toEqual({
+    expect(detailAction(null, makeRegistration())).toEqual({
+      kind: 'confirmed',
+    });
+    expect(detailAction(6_000, makeRegistration())).toEqual({
+      kind: 'confirmed',
+    });
+    expect(
+      detailAction(6_000, makeRegistration({ status: 'canceled' })),
+    ).toEqual({
       kind: 'pay',
       label: payLabel(6_000),
     });
@@ -96,16 +114,22 @@ describe('events format (EVT.10-11)', () => {
     // Settled inscription: only the audited admin refund undoes it.
     expect(canCancel(6_000, makeRegistration())).toBe(false);
     expect(canCancel(null, null)).toBe(false);
-    expect(canCancel(6_000, makeRegistration({ status: 'canceled' }))).toBe(false);
+    expect(canCancel(6_000, makeRegistration({ status: 'canceled' }))).toBe(
+      false,
+    );
   });
 
   it('dependentChipAction: free toggle, paid pay/resume, settled inert (stories 18-21)', () => {
     expect(dependentChipAction(null, null)).toBe('confirm');
     expect(dependentChipAction(null, makeRegistration())).toBe('cancel');
     expect(dependentChipAction(6_000, null)).toBe('pay');
-    expect(dependentChipAction(6_000, makePendingRegistration())).toBe('resume-payment');
+    expect(dependentChipAction(6_000, makePendingRegistration())).toBe(
+      'resume-payment',
+    );
     expect(dependentChipAction(6_000, makeRegistration())).toBe('none');
-    expect(dependentChipAction(6_000, makeRegistration({ status: 'canceled' }))).toBe('pay');
+    expect(
+      dependentChipAction(6_000, makeRegistration({ status: 'canceled' })),
+    ).toBe('pay');
   });
 
   it('confirmadosLine renders the professor dashboard list line (story 22)', () => {

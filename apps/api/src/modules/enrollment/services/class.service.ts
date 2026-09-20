@@ -16,7 +16,12 @@ import { ErrorCodes, problem } from '../../../common/problem.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { GraduationQueryService } from '../../graduation/services/graduation-query.service.js';
 import type { BeltRef, BeltView } from '../../graduation/graduation.types.js';
-import { ageOn, badgeFor, normalizeTime, type ScheduleSlotView } from '../lib/derive.js';
+import {
+  ageOn,
+  badgeFor,
+  normalizeTime,
+  type ScheduleSlotView,
+} from '../lib/derive.js';
 
 export interface ClassListItem {
   id: string;
@@ -72,7 +77,10 @@ export interface ClassScope {
   professorUserId?: string;
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Turmas (ENR.8): recurring weekly classes. Creating with N weekday chips
@@ -87,19 +95,32 @@ export class ClassService {
     private readonly graduationQuery: GraduationQueryService,
   ) {}
 
-  async create(ctx: AuthContext, input: CreateClassInput): Promise<ClassDetail> {
-    if (input.ageMin != null && input.ageMax != null && input.ageMin > input.ageMax) {
-      throw problem(422, ErrorCodes.VALIDATION_FAILED, 'ageMin cannot exceed ageMax', [
-        { field: 'ageMin', messages: ['ageMin cannot exceed ageMax'] },
-      ]);
+  async create(
+    ctx: AuthContext,
+    input: CreateClassInput,
+  ): Promise<ClassDetail> {
+    if (
+      input.ageMin != null &&
+      input.ageMax != null &&
+      input.ageMin > input.ageMax
+    ) {
+      throw problem(
+        422,
+        ErrorCodes.VALIDATION_FAILED,
+        'ageMin cannot exceed ageMax',
+        [{ field: 'ageMin', messages: ['ageMin cannot exceed ageMax'] }],
+      );
     }
     const seen = new Set<string>();
     for (const slot of input.schedules) {
       const key = `${slot.weekday}@${slot.startTime}`;
       if (seen.has(key)) {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Duplicate schedule slot', [
-          { field: 'schedules', messages: [`Duplicate slot ${key}`] },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Duplicate schedule slot',
+          [{ field: 'schedules', messages: [`Duplicate slot ${key}`] }],
+        );
       }
       seen.add(key);
     }
@@ -113,18 +134,34 @@ export class ClassService {
           if (!beltId) return null;
           const index = merged.findIndex((b) => b.beltId === beltId);
           if (index < 0) {
-            throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Unknown belt in the range', [
-              { field: 'minBeltId', messages: ['Belt range must reference catalog belts'] },
-            ]);
+            throw problem(
+              422,
+              ErrorCodes.VALIDATION_FAILED,
+              'Unknown belt in the range',
+              [
+                {
+                  field: 'minBeltId',
+                  messages: ['Belt range must reference catalog belts'],
+                },
+              ],
+            );
           }
           return index;
         };
         const minIndex = indexOf(input.minBeltId);
         const maxIndex = indexOf(input.maxBeltId);
         if (minIndex != null && maxIndex != null && minIndex > maxIndex) {
-          throw problem(422, ErrorCodes.VALIDATION_FAILED, 'minBelt cannot come after maxBelt', [
-            { field: 'minBeltId', messages: ['minBelt cannot come after maxBelt in ladder order'] },
-          ]);
+          throw problem(
+            422,
+            ErrorCodes.VALIDATION_FAILED,
+            'minBelt cannot come after maxBelt',
+            [
+              {
+                field: 'minBeltId',
+                messages: ['minBelt cannot come after maxBelt in ladder order'],
+              },
+            ],
+          );
         }
       }
 
@@ -139,12 +176,19 @@ export class ClassService {
           ),
         );
       if (!professor[0]) {
-        throw problem(422, ErrorCodes.VALIDATION_FAILED, 'Professor membership not found', [
-          {
-            field: 'professorUserId',
-            messages: ['Must hold an active professor membership in this academy'],
-          },
-        ]);
+        throw problem(
+          422,
+          ErrorCodes.VALIDATION_FAILED,
+          'Professor membership not found',
+          [
+            {
+              field: 'professorUserId',
+              messages: [
+                'Must hold an active professor membership in this academy',
+              ],
+            },
+          ],
+        );
       }
 
       const [row] = await tx
@@ -160,7 +204,8 @@ export class ClassService {
           maxBeltId: input.maxBeltId ?? null,
         })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Class insert returned no row');
+      if (!row)
+        throw problem(500, ErrorCodes.INTERNAL, 'Class insert returned no row');
 
       // Weekday chips → schedule rows, same transaction (story 13).
       await tx.insert(classSchedules).values(
@@ -185,7 +230,9 @@ export class ClassService {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const conditions = [];
       if (filter !== 'all') {
-        conditions.push(eq(classes.status, filter === 'active' ? 'active' : 'archived'));
+        conditions.push(
+          eq(classes.status, filter === 'active' ? 'active' : 'archived'),
+        );
       }
       if (scope.professorUserId) {
         conditions.push(eq(classes.professorUserId, scope.professorUserId));
@@ -198,12 +245,15 @@ export class ClassService {
       if (rows.length === 0) return [];
 
       const ids = rows.map((r) => r.id);
-      const [scheduleMap, occupancyMap, professorMap, catalog] = await Promise.all([
-        this.schedulesByClass(tx, ids),
-        this.occupancyByClass(tx, ids),
-        this.professorsByUserId(tx, [...new Set(rows.map((r) => r.professorUserId))]),
-        this.graduationQuery.catalogById(tx),
-      ]);
+      const [scheduleMap, occupancyMap, professorMap, catalog] =
+        await Promise.all([
+          this.schedulesByClass(tx, ids),
+          this.occupancyByClass(tx, ids),
+          this.professorsByUserId(tx, [
+            ...new Set(rows.map((r) => r.professorUserId)),
+          ]),
+          this.graduationQuery.catalogById(tx),
+        ]);
       return rows.map((row) =>
         this.toListItem(row, scheduleMap, occupancyMap, professorMap, catalog),
       );
@@ -211,7 +261,11 @@ export class ClassService {
   }
 
   /** Detail + roster; `scope.professorUserId` turns a foreign class into a 404. */
-  async detail(ctx: AuthContext, id: string, scope: ClassScope = {}): Promise<ClassDetail> {
+  async detail(
+    ctx: AuthContext,
+    id: string,
+    scope: ClassScope = {},
+  ): Promise<ClassDetail> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const detail = await this.assembleDetail(tx, id, scope);
       if (!detail) throw problem(404, ErrorCodes.NOT_FOUND, 'Class not found');
@@ -219,7 +273,11 @@ export class ClassService {
     });
   }
 
-  async updateName(ctx: AuthContext, id: string, name: string): Promise<ClassDetail> {
+  async updateName(
+    ctx: AuthContext,
+    id: string,
+    name: string,
+  ): Promise<ClassDetail> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const [row] = await tx
         .update(classes)
@@ -247,7 +305,9 @@ export class ClassService {
       await tx
         .update(enrollments)
         .set({ status: 'removed', updatedAt: new Date() })
-        .where(and(eq(enrollments.classId, id), eq(enrollments.status, 'active')));
+        .where(
+          and(eq(enrollments.classId, id), eq(enrollments.status, 'active')),
+        );
     });
   }
 
@@ -257,7 +317,10 @@ export class ClassService {
    * occupancy then name. No age-ranged match ⇒ null (registration proceeds
    * without enrollment).
    */
-  async suggest(ctx: AuthContext, birthDate: string): Promise<ClassSuggestion | null> {
+  async suggest(
+    ctx: AuthContext,
+    birthDate: string,
+  ): Promise<ClassSuggestion | null> {
     const age = ageOn(birthDate);
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const rows = await tx
@@ -281,7 +344,8 @@ export class ClassService {
       const open = ranged
         .filter((row) => (occupancyMap.get(row.id) ?? 0) < row.capacity)
         .sort((a, b) => {
-          const delta = (occupancyMap.get(a.id) ?? 0) - (occupancyMap.get(b.id) ?? 0);
+          const delta =
+            (occupancyMap.get(a.id) ?? 0) - (occupancyMap.get(b.id) ?? 0);
           return delta !== 0 ? delta : a.name.localeCompare(b.name);
         });
       const best = open[0];
@@ -307,16 +371,21 @@ export class ClassService {
     const row = rows[0];
     if (!row) return null;
     // Ownership is service-level filtering: foreign class = 404, never 403.
-    if (scope.professorUserId && row.professorUserId !== scope.professorUserId) return null;
+    if (scope.professorUserId && row.professorUserId !== scope.professorUserId)
+      return null;
 
-    const [scheduleMap, occupancyMap, professorMap, roster, catalog] = await Promise.all([
-      this.schedulesByClass(tx, [id]),
-      this.occupancyByClass(tx, [id]),
-      this.professorsByUserId(tx, [row.professorUserId]),
-      this.rosterOf(tx, id),
-      this.graduationQuery.catalogById(tx),
-    ]);
-    return { ...this.toListItem(row, scheduleMap, occupancyMap, professorMap, catalog), roster };
+    const [scheduleMap, occupancyMap, professorMap, roster, catalog] =
+      await Promise.all([
+        this.schedulesByClass(tx, [id]),
+        this.occupancyByClass(tx, [id]),
+        this.professorsByUserId(tx, [row.professorUserId]),
+        this.rosterOf(tx, id),
+        this.graduationQuery.catalogById(tx),
+      ]);
+    return {
+      ...this.toListItem(row, scheduleMap, occupancyMap, professorMap, catalog),
+      roster,
+    };
   }
 
   private toListItem(
@@ -390,7 +459,12 @@ export class ClassService {
     const rows = await tx
       .select({ classId: enrollments.classId, total: count() })
       .from(enrollments)
-      .where(and(inArray(enrollments.classId, classIds), eq(enrollments.status, 'active')))
+      .where(
+        and(
+          inArray(enrollments.classId, classIds),
+          eq(enrollments.status, 'active'),
+        ),
+      )
       .groupBy(enrollments.classId);
     for (const row of rows) map.set(row.classId, Number(row.total));
     return map;
@@ -410,7 +484,10 @@ export class ClassService {
     return map;
   }
 
-  private async rosterOf(tx: DbTransaction, classId: string): Promise<ClassDetail['roster']> {
+  private async rosterOf(
+    tx: DbTransaction,
+    classId: string,
+  ): Promise<ClassDetail['roster']> {
     const rows = await tx
       .select({
         studentId: students.id,
@@ -421,9 +498,14 @@ export class ClassService {
       .from(enrollments)
       .innerJoin(
         students,
-        and(eq(students.tenantId, enrollments.tenantId), eq(students.id, enrollments.studentId)),
+        and(
+          eq(students.tenantId, enrollments.tenantId),
+          eq(students.id, enrollments.studentId),
+        ),
       )
-      .where(and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')))
+      .where(
+        and(eq(enrollments.classId, classId), eq(enrollments.status, 'active')),
+      )
       .orderBy(asc(students.fullName));
     const beltByStudent = await this.graduationQuery.currentBeltMap(
       tx,

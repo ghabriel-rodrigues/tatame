@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { derivePalette, hexToOklab, type BrandInput } from './derive-palette.ts';
+import {
+  derivePalette,
+  hexToOklab,
+  type BrandInput,
+} from './derive-palette.ts';
 import { PALETTE_RECIPE } from './palette-recipe.data.ts';
 import { READY_MADE_PALETTES, TATAME_DEFAULT_BRAND } from './presets.ts';
 import { tokens, darkTokens } from '../../build/web/tokens.ts';
@@ -19,11 +23,20 @@ describe('derivePalette — golden fixture lock (ds-03)', () => {
   const file = JSON.parse(
     readFileSync(join(pkgRoot, 'tokens/palette-fixtures.json'), 'utf8'),
   ) as {
-    fixtures: Record<string, { brand: BrandInput; light: Record<string, string>; dark: Record<string, string> }>;
+    fixtures: Record<
+      string,
+      {
+        brand: BrandInput;
+        light: Record<string, string>;
+        dark: Record<string, string>;
+      }
+    >;
   };
 
   it('covers the 4 ready-made presets', () => {
-    expect(Object.keys(file.fixtures).sort()).toEqual(Object.keys(READY_MADE_PALETTES).sort());
+    expect(Object.keys(file.fixtures).sort()).toEqual(
+      Object.keys(READY_MADE_PALETTES).sort(),
+    );
   });
 
   it('re-derived output is byte-equal to the committed fixtures', () => {
@@ -36,7 +49,9 @@ describe('derivePalette — golden fixture lock (ds-03)', () => {
       };
     }
     // Byte-equality: identical key order AND identical hex strings.
-    expect(JSON.stringify(regenerated, null, 2)).toBe(JSON.stringify(file.fixtures, null, 2));
+    expect(JSON.stringify(regenerated, null, 2)).toBe(
+      JSON.stringify(file.fixtures, null, 2),
+    );
   });
 
   it('every derived value is uppercase #RRGGBB', () => {
@@ -52,7 +67,11 @@ describe('derivePalette — golden fixture lock (ds-03)', () => {
 
 describe('derivePalette — recipe semantics', () => {
   it('passes brand inputs through bit-exact on the anchor slots', () => {
-    const brand: BrandInput = { deep: '#123456', vibrant: '#abcdef', accent: '#fedcba' };
+    const brand: BrandInput = {
+      deep: '#123456',
+      vibrant: '#abcdef',
+      accent: '#fedcba',
+    };
     const out = derivePalette(brand, 'light');
     expect(out['purple-700']).toBe('#123456');
     expect(out['purple-500']).toBe('#ABCDEF');
@@ -86,8 +105,22 @@ describe('derivePalette — recipe semantics', () => {
   it('covers the full brand scale: purple 50-950, pink 50-700, both inks', () => {
     const out = derivePalette(TATAME_DEFAULT_BRAND, 'light');
     const expected = [
-      ...['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'].map((s) => `purple-${s}`),
-      ...['50', '100', '200', '300', '400', '500', '600', '700'].map((s) => `pink-${s}`),
+      ...[
+        '50',
+        '100',
+        '200',
+        '300',
+        '400',
+        '500',
+        '600',
+        '700',
+        '800',
+        '900',
+        '950',
+      ].map((s) => `purple-${s}`),
+      ...['50', '100', '200', '300', '400', '500', '600', '700'].map(
+        (s) => `pink-${s}`,
+      ),
       'purple-ink',
       'pink-ink',
     ];
@@ -114,17 +147,20 @@ describe('derivePalette — default preset approximates the static Lumira scale'
 
   it(`every derived scale token is within deltaE-OK ${TOLERANCE} of the static token`, () => {
     const staticScales: Record<string, string> = {};
-    for (const [step, hex] of Object.entries(tokens.color.purple)) staticScales[`purple-${step}`] = hex;
-    for (const [step, hex] of Object.entries(tokens.color.pink)) staticScales[`pink-${step}`] = hex;
+    for (const [step, hex] of Object.entries(tokens.color.purple))
+      staticScales[`purple-${step}`] = hex;
+    for (const [step, hex] of Object.entries(tokens.color.pink))
+      staticScales[`pink-${step}`] = hex;
 
     const report: Record<string, number> = {};
     for (const [token, staticHex] of Object.entries(staticScales)) {
       report[token] = deltaE(staticHex, light[token]!);
     }
     for (const [token, dE] of Object.entries(report)) {
-      expect(dE, `${token}: static ${staticScales[token]} vs derived ${light[token]}`).toBeLessThanOrEqual(
-        TOLERANCE,
-      );
+      expect(
+        dE,
+        `${token}: static ${staticScales[token]} vs derived ${light[token]}`,
+      ).toBeLessThanOrEqual(TOLERANCE);
     }
   });
 
@@ -143,7 +179,9 @@ describe('derivePalette — default preset approximates the static Lumira scale'
 
 describe('palette-recipe.data.ts mirror', () => {
   it('is content-identical to the canonical tokens/palette-recipe.json', () => {
-    const json = JSON.parse(readFileSync(join(pkgRoot, 'tokens/palette-recipe.json'), 'utf8'));
+    const json = JSON.parse(
+      readFileSync(join(pkgRoot, 'tokens/palette-recipe.json'), 'utf8'),
+    );
     delete json.$description;
     expect(PALETTE_RECIPE).toEqual(json);
   });

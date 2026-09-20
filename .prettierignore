@@ -9,3 +9,16 @@ packages/design-system/build
 packages/design-system/src/theme/palette-recipe.data.ts
 packages/design-system/tokens/palette-fixtures.json
 packages/design-system/tokens/reference
+
+# Native build outputs — never format
+apps/mobile-android/app/build
+apps/mobile-android/.gradle
+apps/mobile-ios/Packages/**/.build
+apps/mobile-ios/DerivedData
+# Binary downloads served by the web app
+apps/web/public/downloads
+# Planning/agent scratch docs — formatting is irrelevant there
+/.scratch
+/.agents
+/.github/skills
+/.opencode

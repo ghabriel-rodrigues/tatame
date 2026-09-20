@@ -5,7 +5,12 @@
  * screenshots professor-07…09 and responsavel-02/08.
  */
 
-import type { ClassDetail, ClassListItem, RosterStudent, ScheduleSlotView } from '@tatame/shared';
+import type {
+  ClassDetail,
+  ClassListItem,
+  RosterStudent,
+  ScheduleSlotView,
+} from '@tatame/shared';
 import type {
   ClassSuggestion,
   DependentDetail,
@@ -20,7 +25,11 @@ export const FUNDAMENTOS_ID = uuid('8005', 1);
 export const AVANCADA_ID = uuid('8005', 2);
 export const KIDS_ID = uuid('8005', 3);
 
-const slot = (weekday: number, startTime: string, durationMinutes = 60): ScheduleSlotView => ({
+const slot = (
+  weekday: number,
+  startTime: string,
+  durationMinutes = 60,
+): ScheduleSlotView => ({
   weekday,
   startTime,
   durationMinutes,
@@ -86,7 +95,10 @@ export function makeProfessorClasses(): ClassListItem[] {
 }
 
 export function makeProfessorClassDetails(): Record<string, ClassDetail> {
-  const [fundamentos, avancada] = makeProfessorClasses() as [ClassListItem, ClassListItem];
+  const [fundamentos, avancada] = makeProfessorClasses() as [
+    ClassListItem,
+    ClassListItem,
+  ];
   return {
     [FUNDAMENTOS_ID]: {
       ...fundamentos,

@@ -1,7 +1,11 @@
 import { eq, sql } from 'drizzle-orm';
 import type { Database } from '../lib/client.js';
 import { withPlatform } from '../lib/client.js';
-import { academies, academySubscriptions, platformPlans } from '../schema/index.js';
+import {
+  academies,
+  academySubscriptions,
+  platformPlans,
+} from '../schema/index.js';
 
 export interface SeedPlatformConsoleHandles {
   platformDb: Database;
@@ -53,7 +57,9 @@ export async function seedPlatformConsoleFixtures({
     }
     const essencial = planIdByName.get(SUSPENDED_ACADEMY.plan);
     if (!essencial) {
-      throw new Error('Platform plans not seeded — run seedPlatformPlans first');
+      throw new Error(
+        'Platform plans not seeded — run seedPlatformPlans first',
+      );
     }
 
     // The suspended academy: access blocked by the AcademyStatusGuard, and
@@ -69,10 +75,15 @@ export async function seedPlatformConsoleFixtures({
       })
       .onConflictDoUpdate({
         target: academies.slug,
-        set: { status: 'suspended', city: SUSPENDED_ACADEMY.city, updatedAt: new Date() },
+        set: {
+          status: 'suspended',
+          city: SUSPENDED_ACADEMY.city,
+          updatedAt: new Date(),
+        },
       })
       .returning({ id: academies.id });
-    if (!suspended) throw new Error(`Failed to upsert academy ${SUSPENDED_ACADEMY.slug}`);
+    if (!suspended)
+      throw new Error(`Failed to upsert academy ${SUSPENDED_ACADEMY.slug}`);
 
     const existing = await tx
       .select({ id: academySubscriptions.id })
@@ -92,7 +103,10 @@ export async function seedPlatformConsoleFixtures({
 
     // Backdate the subscriptions the earlier seeds created at now(), so the
     // 6-month series has real history instead of one populated column.
-    const backdate = async (slug: string, createdMonthsAgo: number): Promise<void> => {
+    const backdate = async (
+      slug: string,
+      createdMonthsAgo: number,
+    ): Promise<void> => {
       await tx
         .update(academySubscriptions)
         .set({ createdAt: monthsAgo(createdMonthsAgo) })
@@ -107,8 +121,12 @@ export async function seedPlatformConsoleFixtures({
     await tx
       .update(academySubscriptions)
       .set({
-        currentPeriodStart: new Date(Date.now() - (30 - TRIAL_ENDS_IN_DAYS) * 24 * 3600 * 1000),
-        currentPeriodEnd: new Date(Date.now() + TRIAL_ENDS_IN_DAYS * 24 * 3600 * 1000),
+        currentPeriodStart: new Date(
+          Date.now() - (30 - TRIAL_ENDS_IN_DAYS) * 24 * 3600 * 1000,
+        ),
+        currentPeriodEnd: new Date(
+          Date.now() + TRIAL_ENDS_IN_DAYS * 24 * 3600 * 1000,
+        ),
         createdAt: monthsAgo(1),
       })
       .where(

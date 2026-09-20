@@ -43,8 +43,12 @@ describe('Toast', () => {
 
   it('honors a custom duration and cancels the timer on close', () => {
     const onClose = jest.fn();
-    const view = render(<Toast open message="ok" onClose={onClose} duration={500} />);
-    view.rerender(<Toast open={false} message="ok" onClose={onClose} duration={500} />);
+    const view = render(
+      <Toast open message="ok" onClose={onClose} duration={500} />,
+    );
+    view.rerender(
+      <Toast open={false} message="ok" onClose={onClose} duration={500} />,
+    );
     act(() => {
       jest.advanceTimersByTime(1000);
     });

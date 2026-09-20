@@ -30,7 +30,11 @@ import { $api, queryClient } from '../../api/api';
 import { Fab, InitialsAvatar, StatusBadge, useToastState } from './common';
 import { beltRangeLabel, beltWithDegrees, classSubtitle } from './format';
 import { planOptionLabel } from '../billing-format';
-import { NewGuardianSheet, NewProfessorSheet, NewStudentSheet } from './CreateSheets';
+import {
+  NewGuardianSheet,
+  NewProfessorSheet,
+  NewStudentSheet,
+} from './CreateSheets';
 import { NewClassSheet } from './NewClassSheet';
 import { MoveToClassSheet } from './MoveToClassSheet';
 import { EditRecordSheet } from './EditRecordSheet';
@@ -64,9 +68,14 @@ export function CadastrosPage() {
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [moving, setMoving] = useState(false);
-  const [editingStudent, setEditingStudent] = useState<StudentListItem | null>(null);
-  const [editingGuardian, setEditingGuardian] = useState<GuardianListItem | null>(null);
-  const [historyStudent, setHistoryStudent] = useState<StudentListItem | null>(null);
+  const [editingStudent, setEditingStudent] = useState<StudentListItem | null>(
+    null,
+  );
+  const [editingGuardian, setEditingGuardian] =
+    useState<GuardianListItem | null>(null);
+  const [historyStudent, setHistoryStudent] = useState<StudentListItem | null>(
+    null,
+  );
 
   const students = $api.useQuery('get', '/v1/admin/students', undefined, {
     enabled: segment === 'alunos',
@@ -87,18 +96,27 @@ export function CadastrosPage() {
   const activePlans = (plans.data?.plans ?? []).filter((plan) => plan.isActive);
 
   const renameStudent = $api.useMutation('patch', '/v1/admin/students/{id}');
-  const archiveStudent = $api.useMutation('post', '/v1/admin/students/{id}/archive');
+  const archiveStudent = $api.useMutation(
+    'post',
+    '/v1/admin/students/{id}/archive',
+  );
   const renameGuardian = $api.useMutation('patch', '/v1/admin/guardians/{id}');
 
   const query = search.trim().toLowerCase();
-  const matches = (name: string) => query === '' || name.toLowerCase().includes(query);
+  const matches = (name: string) =>
+    query === '' || name.toLowerCase().includes(query);
 
   const studentRows = useMemo(
-    () => (students.data?.students ?? []).filter((student) => matches(student.fullName)),
+    () =>
+      (students.data?.students ?? []).filter((student) =>
+        matches(student.fullName),
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [students.data, query],
   );
-  const selection = studentRows.filter((student) => selectedIds.includes(student.id));
+  const selection = studentRows.filter((student) =>
+    selectedIds.includes(student.id),
+  );
 
   function switchSegment(next: Segment) {
     setSegment(next);
@@ -114,16 +132,23 @@ export function CadastrosPage() {
 
   function toggleSelected(id: string) {
     setSelectedIds((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
+      current.includes(id)
+        ? current.filter((value) => value !== id)
+        : [...current, id],
     );
   }
 
   async function invalidateStudents() {
-    await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/students'] });
+    await queryClient.invalidateQueries({
+      queryKey: ['get', '/v1/admin/students'],
+    });
   }
 
   const counts: Record<Segment, { total: number; label: string }> = {
-    alunos: { total: students.data?.students.length ?? 0, label: 'alunos no total' },
+    alunos: {
+      total: students.data?.students.length ?? 0,
+      label: 'alunos no total',
+    },
     professores: {
       total: professors.data?.professors.length ?? 0,
       label: 'professores no total',
@@ -132,7 +157,10 @@ export function CadastrosPage() {
       total: guardians.data?.guardians.length ?? 0,
       label: 'responsáveis no total',
     },
-    turmas: { total: classes.data?.classes.length ?? 0, label: 'turmas ativas' },
+    turmas: {
+      total: classes.data?.classes.length ?? 0,
+      label: 'turmas ativas',
+    },
   };
 
   return (
@@ -144,7 +172,11 @@ export function CadastrosPage() {
           trailing={
             segment === 'alunos' ? (
               selecting ? (
-                <TatameButton size="sm" label="Cancelar" onPress={exitSelection} />
+                <TatameButton
+                  size="sm"
+                  label="Cancelar"
+                  onPress={exitSelection}
+                />
               ) : (
                 <TatameButton
                   size="sm"
@@ -191,7 +223,9 @@ export function CadastrosPage() {
                         checked={selectedIds.includes(student.id)}
                         onChange={() => toggleSelected(student.id)}
                         slotProps={{
-                          input: { 'aria-label': `Selecionar ${student.fullName}` },
+                          input: {
+                            'aria-label': `Selecionar ${student.fullName}`,
+                          },
                         }}
                       />
                     ) : (
@@ -200,7 +234,9 @@ export function CadastrosPage() {
                   }
                   trailing={<StatusBadge badge={student.badge} />}
                   chevron={!selecting}
-                  {...(selecting ? {} : { onPress: () => setEditingStudent(student) })}
+                  {...(selecting
+                    ? {}
+                    : { onPress: () => setEditingStudent(student) })}
                 />
               ))}
             </>
@@ -208,8 +244,9 @@ export function CadastrosPage() {
 
           {segment === 'professores' ? (
             <>
-              {(professors.data?.professors ?? []).filter((p) => matches(p.fullName)).length ===
-                0 && !professors.isLoading ? (
+              {(professors.data?.professors ?? []).filter((p) =>
+                matches(p.fullName),
+              ).length === 0 && !professors.isLoading ? (
                 <EmptyState
                   title="Nenhum professor encontrado"
                   description="Use o botão '+' para registrar um professor."
@@ -237,8 +274,9 @@ export function CadastrosPage() {
 
           {segment === 'responsaveis' ? (
             <>
-              {(guardians.data?.guardians ?? []).filter((g) => matches(g.fullName)).length === 0 &&
-              !guardians.isLoading ? (
+              {(guardians.data?.guardians ?? []).filter((g) =>
+                matches(g.fullName),
+              ).length === 0 && !guardians.isLoading ? (
                 <EmptyState
                   title="Nenhum responsável encontrado"
                   description="Use o botão '+' para criar o primeiro registro."
@@ -251,7 +289,9 @@ export function CadastrosPage() {
                     key={guardian.id}
                     title={guardian.fullName}
                     subtitle={`${guardian.dependentCount} ${
-                      guardian.dependentCount === 1 ? 'dependente' : 'dependentes'
+                      guardian.dependentCount === 1
+                        ? 'dependente'
+                        : 'dependentes'
                     }`}
                     leading={<InitialsAvatar name={guardian.fullName} />}
                     trailing={<StatusBadge badge={guardian.badge} />}
@@ -264,8 +304,8 @@ export function CadastrosPage() {
 
           {segment === 'turmas' ? (
             <>
-              {(classes.data?.classes ?? []).filter((c) => matches(c.name)).length === 0 &&
-              !classes.isLoading ? (
+              {(classes.data?.classes ?? []).filter((c) => matches(c.name))
+                .length === 0 && !classes.isLoading ? (
                 <EmptyState
                   title="Nenhuma turma ativa"
                   description="Use o botão '+' para criar uma turma recorrente."
@@ -286,7 +326,9 @@ export function CadastrosPage() {
                         range || turma.lotada ? (
                           <Stack direction="row" spacing="6px">
                             {range ? <Chip label={range} /> : null}
-                            {turma.lotada ? <Chip label="Lotada" tone="brand" /> : null}
+                            {turma.lotada ? (
+                              <Chip label="Lotada" tone="brand" />
+                            ) : null}
                           </Stack>
                         ) : undefined
                       }
@@ -299,8 +341,11 @@ export function CadastrosPage() {
           ) : null}
         </Card>
 
-        <Typography sx={{ fontSize: 12, color: 'var(--fg-3)', textAlign: 'center' }}>
-          {counts[segment].total} {counts[segment].label} — mantenha os cadastros em dia.
+        <Typography
+          sx={{ fontSize: 12, color: 'var(--fg-3)', textAlign: 'center' }}
+        >
+          {counts[segment].total} {counts[segment].label} — mantenha os
+          cadastros em dia.
         </Typography>
       </Stack>
 
@@ -324,8 +369,12 @@ export function CadastrosPage() {
             zIndex: 20,
           }}
         >
-          <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-1)' }}>
-            {selectedIds.length === 1 ? '1 selecionado' : `${selectedIds.length} selecionados`}
+          <Typography
+            sx={{ fontSize: 13.5, fontWeight: 600, color: 'var(--fg-1)' }}
+          >
+            {selectedIds.length === 1
+              ? '1 selecionado'
+              : `${selectedIds.length} selecionados`}
           </Typography>
           <TatameButton
             size="sm"
@@ -346,13 +395,25 @@ export function CadastrosPage() {
         />
       ) : null}
       {segment === 'professores' && creating ? (
-        <NewProfessorSheet open onClose={() => setCreating(false)} onSuccess={toast.show} />
+        <NewProfessorSheet
+          open
+          onClose={() => setCreating(false)}
+          onSuccess={toast.show}
+        />
       ) : null}
       {segment === 'responsaveis' && creating ? (
-        <NewGuardianSheet open onClose={() => setCreating(false)} onSuccess={toast.show} />
+        <NewGuardianSheet
+          open
+          onClose={() => setCreating(false)}
+          onSuccess={toast.show}
+        />
       ) : null}
       {segment === 'turmas' && creating ? (
-        <NewClassSheet open onClose={() => setCreating(false)} onSuccess={toast.show} />
+        <NewClassSheet
+          open
+          onClose={() => setCreating(false)}
+          onSuccess={toast.show}
+        />
       ) : null}
 
       {moving ? (
@@ -376,7 +437,10 @@ export function CadastrosPage() {
           subtitle="Nome e plano de mensalidade do aluno."
           currentName={editingStudent.fullName}
           planSelect={{
-            options: activePlans.map((plan) => ({ id: plan.id, label: planOptionLabel(plan) })),
+            options: activePlans.map((plan) => ({
+              id: plan.id,
+              label: planOptionLabel(plan),
+            })),
             initialValue: editingStudent.academyPlanId ?? null,
           }}
           onRename={async (fullName, academyPlanId) => {
@@ -396,7 +460,9 @@ export function CadastrosPage() {
             confirmText:
               'O aluno será desativado e suas matrículas ativas serão encerradas. O histórico é preservado.',
             onArchive: async () => {
-              await archiveStudent.mutateAsync({ params: { path: { id: editingStudent.id } } });
+              await archiveStudent.mutateAsync({
+                params: { path: { id: editingStudent.id } },
+              });
               await invalidateStudents();
               setEditingStudent(null);
               toast.show('Aluno excluído.');
@@ -433,7 +499,9 @@ export function CadastrosPage() {
               params: { path: { id: editingGuardian.id } },
               body: { fullName },
             });
-            await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/guardians'] });
+            await queryClient.invalidateQueries({
+              queryKey: ['get', '/v1/admin/guardians'],
+            });
             setEditingGuardian(null);
             toast.show('Nome atualizado.');
           }}

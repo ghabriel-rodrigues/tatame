@@ -28,10 +28,22 @@ const SLUGS = [
 ] as const;
 
 const CATALOG: Record<(typeof SLUGS)[number], GradientResolver> = {
-  'store-blue-purple': (theme) => [theme.color.info['500'], theme.color.brand['2']],
-  'store-teal-green': (theme) => [theme.color.info['500'], theme.color.success['500']],
-  'store-orange-red': (theme) => [theme.color.warning['500'], theme.color.danger['500']],
-  'store-pink-purple': (theme) => [theme.color.brand.accent, theme.color.brand['2']],
+  'store-blue-purple': (theme) => [
+    theme.color.info['500'],
+    theme.color.brand['2'],
+  ],
+  'store-teal-green': (theme) => [
+    theme.color.info['500'],
+    theme.color.success['500'],
+  ],
+  'store-orange-red': (theme) => [
+    theme.color.warning['500'],
+    theme.color.danger['500'],
+  ],
+  'store-pink-purple': (theme) => [
+    theme.color.brand.accent,
+    theme.color.brand['2'],
+  ],
 };
 
 /** The catalog's slug list, in derivation order. */
@@ -42,7 +54,10 @@ export const STORE_GRADIENT_PRESETS: readonly string[] = SLUGS;
  * Unknown slugs fall back to the default preset — a client never renders a
  * blank tile because the catalog lags the server.
  */
-export function storeGradientColors(theme: Theme, slug?: string | null): [string, string] {
+export function storeGradientColors(
+  theme: Theme,
+  slug?: string | null,
+): [string, string] {
   const resolver =
     CATALOG[(slug ?? STORE_GRADIENT_DEFAULT) as (typeof SLUGS)[number]] ??
     CATALOG[STORE_GRADIENT_DEFAULT];
@@ -54,8 +69,12 @@ export function storeGradientColors(theme: Theme, slug?: string | null): [string
  * 2 catalog neighbors (wrap-around). Client-side derivation of the
  * prototype's "Foto N de 3" — stable for a given preset, no server input.
  */
-export function storeGalleryPresets(slug?: string | null): [string, string, string] {
-  const base = SLUGS.indexOf((slug ?? STORE_GRADIENT_DEFAULT) as (typeof SLUGS)[number]);
+export function storeGalleryPresets(
+  slug?: string | null,
+): [string, string, string] {
+  const base = SLUGS.indexOf(
+    (slug ?? STORE_GRADIENT_DEFAULT) as (typeof SLUGS)[number],
+  );
   const start = base === -1 ? 0 : base;
   return [
     SLUGS[start % SLUGS.length]!,

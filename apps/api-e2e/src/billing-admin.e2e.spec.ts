@@ -56,7 +56,10 @@ describe('billing: admin overview, plans, materialization, refund', () => {
         .select()
         .from(auditLogs)
         .where(
-          and(eq(auditLogs.tenantId, alphaId), eq(auditLogs.action, 'billing.charge.materialized')),
+          and(
+            eq(auditLogs.tenantId, alphaId),
+            eq(auditLogs.action, 'billing.charge.materialized'),
+          ),
         ),
     );
     expect(audits.length).toBeGreaterThanOrEqual(2);
@@ -66,7 +69,12 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       tx
         .select()
         .from(auditLogs)
-        .where(and(eq(auditLogs.tenantId, alphaId), eq(auditLogs.action, 'billing.charge.created'))),
+        .where(
+          and(
+            eq(auditLogs.tenantId, alphaId),
+            eq(auditLogs.action, 'billing.charge.created'),
+          ),
+        ),
     );
     expect(created.length).toBeGreaterThanOrEqual(1);
   });
@@ -74,14 +82,20 @@ describe('billing: admin overview, plans, materialization, refund', () => {
   it('materialization survives a concurrent race on the partial-unique key', async () => {
     const chargeCount = async () => {
       const [row] = await withPlatform(t.platformDb.db, (tx) =>
-        tx.select({ n: dsql<string>`COUNT(*)` }).from(charges).where(eq(charges.tenantId, alphaId)),
+        tx
+          .select({ n: dsql<string>`COUNT(*)` })
+          .from(charges)
+          .where(eq(charges.tenantId, alphaId)),
       );
       return Number(row!.n);
     };
     const before = await chargeCount();
     const results = await Promise.all(
       Array.from({ length: 4 }, () =>
-        t.http().post('/v1/admin/billing/charges/materialize').set(bearer(admin.accessToken)),
+        t
+          .http()
+          .post('/v1/admin/billing/charges/materialize')
+          .set(bearer(admin.accessToken)),
       ),
     );
     for (const res of results) expect(res.status).toBe(200);
@@ -89,25 +103,34 @@ describe('billing: admin overview, plans, materialization, refund', () => {
 
     // No duplicated competência per (student, plan, period).
     const [dupes] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.execute(dsql`
+      tx
+        .execute(
+          dsql`
         SELECT COUNT(*) AS n FROM (
           SELECT student_id, academy_plan_id, period_start
           FROM charges WHERE origin = 'plan'
           GROUP BY 1, 2, 3 HAVING COUNT(*) > 1
         ) d
-      `).then((r) => r.rows as Array<{ n: string }>),
+      `,
+        )
+        .then((r) => r.rows as Array<{ n: string }>),
     );
     expect(Number(dupes!.n)).toBe(0);
   });
 
   it('overview aggregates match the database truth (tenant timezone, derived on read)', async () => {
-    const res = await t.http().get('/v1/admin/billing/overview').set(bearer(admin.accessToken));
+    const res = await t
+      .http()
+      .get('/v1/admin/billing/overview')
+      .set(bearer(admin.accessToken));
     expect(res.status).toBe(200);
     const body = res.body;
 
     // Independent recomputation over the same predicates.
     const [truth] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.execute(dsql`
+      tx
+        .execute(
+          dsql`
         WITH local AS (
           SELECT p.amount_cents,
                  to_char(p.paid_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') AS month
@@ -118,7 +141,9 @@ describe('billing: admin overview, plans, materialization, refund', () => {
           COALESCE(SUM(amount_cents) FILTER (WHERE month = to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM')), 0) AS mes,
           COALESCE(SUM(amount_cents) FILTER (WHERE month >= to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'YYYY') || '-01'), 0) AS ano
         FROM local
-      `).then((r) => r.rows as Array<{ mes: string; ano: string }>),
+      `,
+        )
+        .then((r) => r.rows as Array<{ mes: string; ano: string }>),
     );
     expect(body.receitaMesCents).toBe(Number(truth!.mes));
     expect(body.receitaAnoCents).toBe(Number(truth!.ano));
@@ -130,22 +155,30 @@ describe('billing: admin overview, plans, materialization, refund', () => {
 
     // Inadimplência: numerator from the PREDICATE (open|overdue AND past due).
     const [overdue] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.execute(dsql`
+      tx
+        .execute(
+          dsql`
         SELECT COALESCE(SUM(amount_cents), 0) AS total
         FROM charges
         WHERE tenant_id = ${alphaId} AND origin = 'plan'
           AND status IN ('open', 'overdue')
           AND due_date < (now() AT TIME ZONE 'America/Sao_Paulo')::date
-      `).then((r) => r.rows as Array<{ total: string }>),
+      `,
+        )
+        .then((r) => r.rows as Array<{ total: string }>),
     );
     const overdueCents = Number(overdue!.total);
     if (overdueCents > 0) {
       expect(body.inadimplenciaPct).toBeGreaterThan(0);
       // Flavia (seeded overdue, no settlement) must be on the target list.
-      const flavia = body.inadimplentes.find((d: any) => d.fullName === 'Flavia Fila');
+      const flavia = body.inadimplentes.find(
+        (d: any) => d.fullName === 'Flavia Fila',
+      );
       expect(flavia).toBeTruthy();
       expect(flavia.totalCents).toBeGreaterThanOrEqual(18000);
-      expect(flavia.oldestDueDate < new Date().toISOString().slice(0, 10)).toBe(true);
+      expect(flavia.oldestDueDate < new Date().toISOString().slice(0, 10)).toBe(
+        true,
+      );
     }
 
     // Próximos vencimentos: only future/today open charges, grouped by day.
@@ -161,21 +194,31 @@ describe('billing: admin overview, plans, materialization, refund', () => {
   });
 
   it('plans CRUD: list, create, duplicate-name 409, edit, archive', async () => {
-    const list = await t.http().get('/v1/admin/billing/plans').set(bearer(admin.accessToken));
+    const list = await t
+      .http()
+      .get('/v1/admin/billing/plans')
+      .set(bearer(admin.accessToken));
     expect(list.status).toBe(200);
     expect(list.body.plans.map((p: any) => p.name).sort()).toEqual([
       'Kids Mensal',
       'Mensal',
       'Trimestral',
     ]);
-    const trimestral = list.body.plans.find((p: any) => p.name === 'Trimestral');
+    const trimestral = list.body.plans.find(
+      (p: any) => p.name === 'Trimestral',
+    );
     expect(trimestral.isActive).toBe(false); // seeded soft-archived
 
     const dup = await t
       .http()
       .post('/v1/admin/billing/plans')
       .set(bearer(admin.accessToken))
-      .send({ name: 'Mensal', amountCents: 20000, recurrence: 'monthly', dueDay: 5 });
+      .send({
+        name: 'Mensal',
+        amountCents: 20000,
+        recurrence: 'monthly',
+        dueDay: 5,
+      });
     expect(dup.status).toBe(409);
     expect(dup.body.code).toBe('plan.name_taken');
 
@@ -183,7 +226,12 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       .http()
       .post('/v1/admin/billing/plans')
       .set(bearer(admin.accessToken))
-      .send({ name: 'Anual Black', amountCents: 190000, recurrence: 'yearly', dueDay: 15 });
+      .send({
+        name: 'Anual Black',
+        amountCents: 190000,
+        recurrence: 'yearly',
+        dueDay: 15,
+      });
     expect(created.status).toBe(201);
     expect(created.body.plan).toMatchObject({
       name: 'Anual Black',
@@ -212,12 +260,20 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       .http()
       .post('/v1/admin/billing/plans')
       .set(bearer(admin.accessToken))
-      .send({ name: 'Dia 30', amountCents: 10000, recurrence: 'monthly', dueDay: 30 });
+      .send({
+        name: 'Dia 30',
+        amountCents: 10000,
+        recurrence: 'monthly',
+        dueDay: 30,
+      });
     expect(invalidDay.status).toBe(422);
   });
 
   it('student create/update validates the plan assignment (404/409, never a 500)', async () => {
-    const list = await t.http().get('/v1/admin/billing/plans').set(bearer(admin.accessToken));
+    const list = await t
+      .http()
+      .get('/v1/admin/billing/plans')
+      .set(bearer(admin.accessToken));
     const mensal = list.body.plans.find((p: any) => p.name === 'Mensal');
     const archived = list.body.plans.find((p: any) => p.name === 'Trimestral');
 
@@ -237,7 +293,11 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       .http()
       .post('/v1/admin/students')
       .set(bearer(admin.accessToken))
-      .send({ fullName: 'Plano Arquivado', birthDate: '1990-01-01', academyPlanId: archived.id });
+      .send({
+        fullName: 'Plano Arquivado',
+        birthDate: '1990-01-01',
+        academyPlanId: archived.id,
+      });
     expect(toArchived.status).toBe(409);
     expect(toArchived.body.code).toBe('plan.archived');
 
@@ -245,7 +305,11 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       .http()
       .post('/v1/admin/students')
       .set(bearer(admin.accessToken))
-      .send({ fullName: 'Aluno Novo Plano', birthDate: '1990-01-01', academyPlanId: mensal.id });
+      .send({
+        fullName: 'Aluno Novo Plano',
+        birthDate: '1990-01-01',
+        academyPlanId: mensal.id,
+      });
     expect(ok.status).toBe(201);
     expect(ok.body.student.academyPlanId).toBe(mensal.id);
 
@@ -268,7 +332,10 @@ describe('billing: admin overview, plans, materialization, refund', () => {
   });
 
   it('invite create validates the plan and accept lands the student pre-assigned', async () => {
-    const list = await t.http().get('/v1/admin/billing/plans').set(bearer(admin.accessToken));
+    const list = await t
+      .http()
+      .get('/v1/admin/billing/plans')
+      .set(bearer(admin.accessToken));
     const mensal = list.body.plans.find((p: any) => p.name === 'Mensal');
     const archived = list.body.plans.find((p: any) => p.name === 'Trimestral');
 
@@ -276,7 +343,10 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       .http()
       .post('/v1/invites')
       .set(bearer(admin.accessToken))
-      .send({ kind: 'student', academyPlanId: '00000000-0000-4000-8000-000000000000' });
+      .send({
+        kind: 'student',
+        academyPlanId: '00000000-0000-4000-8000-000000000000',
+      });
     expect(dangling.status).toBe(404);
     expect(dangling.body.code).toBe('plan.not_found');
 
@@ -296,30 +366,42 @@ describe('billing: admin overview, plans, materialization, refund', () => {
     expect(invite.status).toBe(201);
 
     // Landing exposes the plan binding; accept copies it onto the student.
-    const landing = await t.http().get(`/v1/public/invites/${invite.body.token}`);
+    const landing = await t
+      .http()
+      .get(`/v1/public/invites/${invite.body.token}`);
     expect(landing.status).toBe(200);
     expect(landing.body.academyPlanId).toBe(mensal.id);
 
-    const accept = await t.http().post(`/v1/public/invites/${invite.body.token}/accept`).send({
-      email: 'convidado.plano@tatame.dev',
-      password: 'SenhaForte!123',
-      fullName: 'Convidado Com Plano',
-      birthDate: '1995-06-06',
-    });
+    const accept = await t
+      .http()
+      .post(`/v1/public/invites/${invite.body.token}/accept`)
+      .send({
+        email: 'convidado.plano@tatame.dev',
+        password: 'SenhaForte!123',
+        fullName: 'Convidado Com Plano',
+        birthDate: '1995-06-06',
+      });
     expect(accept.status).toBe(201);
 
     const [row] = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select({ academyPlanId: students.academyPlanId })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Convidado Com Plano'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Convidado Com Plano'),
+          ),
+        ),
     );
     expect(row!.academyPlanId).toBe(mensal.id);
   });
 
   it('audited full refund flips payment + charge through the provider path', async () => {
     const refundedEvents: any[] = [];
-    t.app.get(EventEmitter2).on(BILLING_CHARGE_REFUNDED, (e) => refundedEvents.push(e));
+    t.app
+      .get(EventEmitter2)
+      .on(BILLING_CHARGE_REFUNDED, (e) => refundedEvents.push(e));
 
     // The seeded previous-cycle Pix settlement of Ana Aluna.
     const [target] = await withPlatform(t.platformDb.db, (tx) =>
@@ -377,7 +459,9 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       tx
         .select({ id: payments.id })
         .from(payments)
-        .where(and(eq(payments.tenantId, alphaId), eq(payments.status, 'pending'))),
+        .where(
+          and(eq(payments.tenantId, alphaId), eq(payments.status, 'pending')),
+        ),
     );
     if (pending) {
       const unsettled = await t
@@ -394,9 +478,18 @@ describe('billing: admin overview, plans, materialization, refund', () => {
     // seeded mandate is ACTIVE in this database.
     const [lara] = await withPlatform(t.platformDb.db, (tx) =>
       tx
-        .select({ id: students.id, guardianId: students.guardianId, planId: students.academyPlanId })
+        .select({
+          id: students.id,
+          guardianId: students.guardianId,
+          planId: students.academyPlanId,
+        })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Lara Kids'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Lara Kids'),
+          ),
+        ),
     );
     const past = new Date();
     past.setMonth(past.getMonth() - 3);
@@ -434,7 +527,9 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       tx
         .select()
         .from(payments)
-        .where(and(eq(payments.chargeId, inserted!.id), eq(payments.method, 'card'))),
+        .where(
+          and(eq(payments.chargeId, inserted!.id), eq(payments.method, 'card')),
+        ),
     );
     expect(cardPayment!.status).toBe('succeeded');
     expect(cardPayment!.providerPaymentId).toBe(`SIM-CARD-${inserted!.id}`);
@@ -443,7 +538,10 @@ describe('billing: admin overview, plans, materialization, refund', () => {
   it('CONTRACT: the normalized-event handler is idempotent under re-delivery', async () => {
     const handler = t.app.get(ProviderEventsService);
     const [adminUser] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: users.id }).from(users).where(eq(users.email, 'admin@tatame.dev')),
+      tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, 'admin@tatame.dev')),
     );
     const actor = { userId: adminUser!.id, impersonatorUserId: null };
 
@@ -453,13 +551,20 @@ describe('billing: admin overview, plans, materialization, refund', () => {
       tx
         .select({ id: students.id })
         .from(students)
-        .where(and(eq(students.tenantId, alphaId), eq(students.fullName, 'Flavia Fila'))),
+        .where(
+          and(
+            eq(students.tenantId, alphaId),
+            eq(students.fullName, 'Flavia Fila'),
+          ),
+        ),
     );
     const [openCharge] = await withPlatform(t.platformDb.db, (tx) =>
       tx
         .select()
         .from(charges)
-        .where(and(eq(charges.studentId, flavia!.id), eq(charges.status, 'overdue'))),
+        .where(
+          and(eq(charges.studentId, flavia!.id), eq(charges.status, 'overdue')),
+        ),
     );
     expect(openCharge).toBeTruthy();
     const providerPaymentId = `SIM-PIX-${openCharge!.id}`;
@@ -523,7 +628,12 @@ describe('billing: admin overview, plans, materialization, refund', () => {
         }),
       );
       const failed = await handler.handleProviderEvent(
-        { type: 'payment.failed', provider: 'simulated', tenantId: alphaId, providerPaymentId: failProviderId },
+        {
+          type: 'payment.failed',
+          provider: 'simulated',
+          tenantId: alphaId,
+          providerPaymentId: failProviderId,
+        },
         actor,
       );
       expect(failed.applied).toBe(true);

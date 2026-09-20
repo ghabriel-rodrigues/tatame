@@ -39,11 +39,26 @@ import { useSession } from '../../../session/session-store';
 
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
-function AgendaClassCard({ item, isToday }: { item: AlunoAgendaClass; isToday: boolean }) {
+function AgendaClassCard({
+  item,
+  isToday,
+}: {
+  item: AlunoAgendaClass;
+  isToday: boolean;
+}) {
   const theme = useTheme();
   return (
-    <Card padding={theme.space['4']} testID={`agenda-class-${item.classId}-${item.startTime}`}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }}>
+    <Card
+      padding={theme.space['4']}
+      testID={`agenda-class-${item.classId}-${item.startTime}`}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: theme.space['3'],
+        }}
+      >
         <View style={{ alignItems: 'center', minWidth: 48 }}>
           <Text variant="subtitle" weight="bold">
             {item.startTime}
@@ -59,7 +74,13 @@ function AgendaClassCard({ item, isToday }: { item: AlunoAgendaClass; isToday: b
           <Text variant="caption" numberOfLines={1}>
             {item.professorName}
           </Text>
-          <View style={{ flexDirection: 'row', gap: theme.space['2'], flexWrap: 'wrap' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: theme.space['2'],
+              flexWrap: 'wrap',
+            }}
+          >
             <Chip label={levelChipLabel(item)} tone="brand" />
             <Chip label={vagasLabel(item.occupancy)} tone="neutral" />
           </View>
@@ -77,10 +98,19 @@ function AgendaClassCard({ item, isToday }: { item: AlunoAgendaClass; isToday: b
               justifyContent: 'center',
             }}
           >
-            <Check size={18} color={theme.color.success['500']} strokeWidth={3} />
+            <Check
+              size={18}
+              color={theme.color.success['500']}
+              strokeWidth={3}
+            />
           </View>
         ) : showCheckinButton(isToday, item.checkedIn) ? (
-          <TatameButton size="sm" variant="secondary" label="Check-in" onPress={openCheckinSheet} />
+          <TatameButton
+            size="sm"
+            variant="secondary"
+            label="Check-in"
+            onPress={openCheckinSheet}
+          />
         ) : null}
       </View>
     </Card>
@@ -104,7 +134,12 @@ export default function AlunoAgendaScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             title="Agenda"
@@ -135,7 +170,9 @@ export default function AlunoAgendaScreen() {
             }
           />
 
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          >
             {WEEKDAYS.map((day) => (
               <Chip
                 key={day}
@@ -149,7 +186,10 @@ export default function AlunoAgendaScreen() {
             ))}
           </View>
 
-          <QueryState loading={agendaQuery.isPending} error={agendaQuery.isError}>
+          <QueryState
+            loading={agendaQuery.isPending}
+            error={agendaQuery.isError}
+          >
             {agenda ? (
               <>
                 {classes.length === 0 ? (

@@ -18,7 +18,9 @@ function isBlackBelt(belt: BeltView): boolean {
 
 /** Hero title (aluno-09): "Azul · 2 graus"; degree-less: just the name. */
 export function beltHeroTitle(belt: BeltView): string {
-  return belt.degrees > 0 ? `${belt.name} · ${degreesLabel(belt.degrees)}` : belt.name;
+  return belt.degrees > 0
+    ? `${belt.name} · ${degreesLabel(belt.degrees)}`
+    : belt.name;
 }
 
 /** Rank chip (professor-12): "Faixa preta · 2º dan" / "Faixa azul · 2 graus". */
@@ -33,7 +35,8 @@ export function beltChipLabel(belt: BeltView): string {
 /** Timeline entry title: "Azul · 2º grau" / "Faixa azul" / revogação. */
 export function timelineEntryTitle(entry: GraduationEntry): string {
   if (entry.kind === 'revocation') return 'Graduação revogada';
-  if (entry.kind === 'belt') return `Faixa ${entry.belt.name.toLocaleLowerCase('pt-BR')}`;
+  if (entry.kind === 'belt')
+    return `Faixa ${entry.belt.name.toLocaleLowerCase('pt-BR')}`;
   return `${entry.belt.name} · ${entry.degree}º grau`;
 }
 

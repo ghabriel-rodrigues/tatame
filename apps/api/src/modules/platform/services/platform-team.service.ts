@@ -63,7 +63,10 @@ export class PlatformTeamService {
     });
   }
 
-  async invite(ctx: AuthContext, input: InviteTeamMemberInput): Promise<InviteTeamMemberResult> {
+  async invite(
+    ctx: AuthContext,
+    input: InviteTeamMemberInput,
+  ): Promise<InviteTeamMemberResult> {
     const email = input.email.trim().toLowerCase();
     const created = await withPlatform(this.platformDb.db, async (tx) => {
       const [existingUser] = await tx
@@ -79,14 +82,23 @@ export class PlatformTeamService {
           .from(platformUsers)
           .where(eq(platformUsers.userId, userId));
         if (alreadyOnTeam) {
-          throw problem(409, ErrorCodes.CONFLICT, 'This email is already on the platform team');
+          throw problem(
+            409,
+            ErrorCodes.CONFLICT,
+            'This email is already on the platform team',
+          );
         }
       } else {
         const [inserted] = await tx
           .insert(users)
           .values({ email, fullName: input.fullName.trim() })
           .returning({ id: users.id });
-        if (!inserted) throw problem(500, ErrorCodes.INTERNAL, 'User insert returned no row');
+        if (!inserted)
+          throw problem(
+            500,
+            ErrorCodes.INTERNAL,
+            'User insert returned no row',
+          );
         userId = inserted.id;
       }
 
@@ -94,7 +106,12 @@ export class PlatformTeamService {
         .insert(platformUsers)
         .values({ userId, role: input.role })
         .returning({ id: platformUsers.id });
-      if (!member) throw problem(500, ErrorCodes.INTERNAL, 'Platform member insert returned no row');
+      if (!member)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Platform member insert returned no row',
+        );
 
       return { memberId: member.id, userId, userCreated };
     });
@@ -113,8 +130,13 @@ export class PlatformTeamService {
 
     const roster = await this.list();
     const member = roster.find((row) => row.id === created.memberId);
-    if (!member) throw problem(500, ErrorCodes.INTERNAL, 'Invited member disappeared');
+    if (!member)
+      throw problem(500, ErrorCodes.INTERNAL, 'Invited member disappeared');
 
-    return { member, userCreated: created.userCreated, passwordEmailSent: true };
+    return {
+      member,
+      userCreated: created.userCreated,
+      passwordEmailSent: true,
+    };
   }
 }

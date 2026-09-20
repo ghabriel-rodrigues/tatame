@@ -2,10 +2,23 @@
  * Enrollment display helpers (ENR.13-15). Pure formatting only — occupancy,
  * Lotada and badges are server-derived; nothing here recomputes rules.
  */
-import type { BeltRef, BeltView, ClassListItem, ScheduleSlotView } from '@tatame/shared';
+import type {
+  BeltRef,
+  BeltView,
+  ClassListItem,
+  ScheduleSlotView,
+} from '@tatame/shared';
 
 /** 0 = Domingo … 6 = Sábado (API weekday contract). */
-export const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
+export const WEEKDAY_SHORT = [
+  'Dom',
+  'Seg',
+  'Ter',
+  'Qua',
+  'Qui',
+  'Sex',
+  'Sáb',
+] as const;
 
 /** Weekday chips rendered Monday-first, like the handoff (Seg … Dom). */
 export const WEEKDAY_CHIP_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
@@ -14,7 +27,11 @@ export const WEEKDAY_CHIP_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
 export function scheduleSummary(schedules: ScheduleSlotView[]): string {
   if (schedules.length === 0) return 'Sem horário';
   const days = [...schedules]
-    .sort((a, b) => WEEKDAY_CHIP_ORDER.indexOf(a.weekday as 1) - WEEKDAY_CHIP_ORDER.indexOf(b.weekday as 1))
+    .sort(
+      (a, b) =>
+        WEEKDAY_CHIP_ORDER.indexOf(a.weekday as 1) -
+        WEEKDAY_CHIP_ORDER.indexOf(b.weekday as 1),
+    )
     .map((slot) => WEEKDAY_SHORT[slot.weekday] ?? '?');
   const startTime = schedules[0]?.startTime ?? '';
   return `${[...new Set(days)].join(' · ')} ${startTime}`.trim();
@@ -60,18 +77,25 @@ export function presencesLabel(count: number): string {
 export function initials(fullName: string): string {
   const parts = fullName.trim().split(/\s+/);
   const first = parts[0]?.[0] ?? '';
-  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : (parts[0]?.[1] ?? '');
+  const last =
+    parts.length > 1
+      ? (parts[parts.length - 1]?.[0] ?? '')
+      : (parts[0]?.[1] ?? '');
   return `${first}${last}`.toUpperCase();
 }
 
 /** Whole-years age from an ISO birth date (minor ⇒ guardian client check). */
-export function ageFromBirthDate(birthDate: string, today: Date = new Date()): number {
+export function ageFromBirthDate(
+  birthDate: string,
+  today: Date = new Date(),
+): number {
   const birth = new Date(`${birthDate}T00:00:00`);
   if (Number.isNaN(birth.getTime())) return Number.NaN;
   let age = today.getFullYear() - birth.getFullYear();
   const beforeBirthday =
     today.getMonth() < birth.getMonth() ||
-    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+    (today.getMonth() === birth.getMonth() &&
+      today.getDate() < birth.getDate());
   if (beforeBirthday) age -= 1;
   return age;
 }
@@ -82,7 +106,9 @@ export function beltLabel(belt: Pick<BeltView, 'name'>): string {
 }
 
 /** "Faixa azul · 2 graus" (degrees omitted at zero) — admin-07 subtitles. */
-export function beltWithDegrees(belt: Pick<BeltView, 'name' | 'degrees'>): string {
+export function beltWithDegrees(
+  belt: Pick<BeltView, 'name' | 'degrees'>,
+): string {
   if (belt.degrees <= 0) return beltLabel(belt);
   return `${beltLabel(belt)} · ${belt.degrees} ${belt.degrees === 1 ? 'grau' : 'graus'}`;
 }

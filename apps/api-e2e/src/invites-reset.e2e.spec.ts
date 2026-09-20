@@ -2,13 +2,21 @@ import { createHash } from 'node:crypto';
 import { invites, withPlatform } from '@tatame/db';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { bearer, createTestApp, DEV_PASSWORD, type TestApp } from './support/test-app.js';
+import {
+  bearer,
+  createTestApp,
+  DEV_PASSWORD,
+  type TestApp,
+} from './support/test-app.js';
 
 describe('invite flows (the only signup) + password reset', () => {
   let t: TestApp;
   let professorToken: string;
 
-  async function createInvite(kind: 'student' | 'guardian', maxUses?: number): Promise<string> {
+  async function createInvite(
+    kind: 'student' | 'guardian',
+    maxUses?: number,
+  ): Promise<string> {
     const res = await t
       .http()
       .post('/v1/invites')
@@ -40,11 +48,14 @@ describe('invite flows (the only signup) + password reset', () => {
   });
 
   it('landing fails honestly for unknown, expired and revoked tokens', async () => {
-    const unknown = await t.http().get('/v1/public/invites/definitely-not-a-token');
+    const unknown = await t
+      .http()
+      .get('/v1/public/invites/definitely-not-a-token');
     expect(unknown.status).toBe(404);
     expect(unknown.body.code).toBe('invite.invalid_or_expired');
 
-    const sha256 = (raw: string) => createHash('sha256').update(raw).digest('hex');
+    const sha256 = (raw: string) =>
+      createHash('sha256').update(raw).digest('hex');
 
     const expiredToken = await createInvite('student');
     await withPlatform(t.platformDb.db, (tx) =>
@@ -82,15 +93,19 @@ describe('invite flows (the only signup) + password reset', () => {
     expect(res.body.memberships).toHaveLength(1);
     expect(res.body.memberships[0].role).toBe('student');
 
-    const me = await t.http().get('/v1/auth/me').set(bearer(res.body.accessToken));
+    const me = await t
+      .http()
+      .get('/v1/auth/me')
+      .set(bearer(res.body.accessToken));
     expect(me.status).toBe(200);
     expect(me.body.user.email).toBe('novo.aluno@example.com');
 
     // And the account is a real login from now on.
-    const login = await t
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: 'novo.aluno@example.com', password: 'SenhaForte!123', transport: 'body' });
+    const login = await t.http().post('/v1/auth/login').send({
+      email: 'novo.aluno@example.com',
+      password: 'SenhaForte!123',
+      transport: 'body',
+    });
     expect(login.status).toBe(200);
   });
 
@@ -145,7 +160,10 @@ describe('invite flows (the only signup) + password reset', () => {
 
     const me = await t.http().get('/v1/auth/me').set(bearer(aluno.accessToken));
     expect(me.body.memberships).toHaveLength(2);
-    expect(me.body.memberships.map((m: any) => m.role).sort()).toEqual(['guardian', 'student']);
+    expect(me.body.memberships.map((m: any) => m.role).sort()).toEqual([
+      'guardian',
+      'student',
+    ]);
 
     // Accepting the same invite again is a conflict, not a duplicate row.
     const again = await t
@@ -158,26 +176,35 @@ describe('invite flows (the only signup) + password reset', () => {
 
   it('exhausts max_uses invites', async () => {
     const token = await createInvite('student', 1);
-    const first = await t.http().post(`/v1/public/invites/${token}/accept`).send({
-      email: 'unico.uso@example.com',
-      password: 'SenhaForte!123',
-      fullName: 'Único Uso',
-      birthDate: '1990-01-01',
-    });
+    const first = await t
+      .http()
+      .post(`/v1/public/invites/${token}/accept`)
+      .send({
+        email: 'unico.uso@example.com',
+        password: 'SenhaForte!123',
+        fullName: 'Único Uso',
+        birthDate: '1990-01-01',
+      });
     expect(first.status).toBe(201);
 
-    const second = await t.http().post(`/v1/public/invites/${token}/accept`).send({
-      email: 'tarde.demais@example.com',
-      password: 'SenhaForte!123',
-      fullName: 'Tarde Demais',
-      birthDate: '1990-01-01',
-    });
+    const second = await t
+      .http()
+      .post(`/v1/public/invites/${token}/accept`)
+      .send({
+        email: 'tarde.demais@example.com',
+        password: 'SenhaForte!123',
+        fullName: 'Tarde Demais',
+        birthDate: '1990-01-01',
+      });
     expect(second.status).toBe(410);
     expect(second.body.code).toBe('invite.invalid_or_expired');
   });
 
   it('forgot-password always answers 202 and never leaks account existence', async () => {
-    const unknown = await t.http().post('/v1/auth/password/forgot').send({ email: 'ghost@x.dev' });
+    const unknown = await t
+      .http()
+      .post('/v1/auth/password/forgot')
+      .send({ email: 'ghost@x.dev' });
     expect(unknown.status).toBe(202);
     expect(t.sentEmails).toHaveLength(0);
 
@@ -193,7 +220,10 @@ describe('invite flows (the only signup) + password reset', () => {
 
   it('reset is single-use, changes the password and revokes every session', async () => {
     const session = await t.login('responsavel@tatame.dev');
-    await t.http().post('/v1/auth/password/forgot').send({ email: 'responsavel@tatame.dev' });
+    await t
+      .http()
+      .post('/v1/auth/password/forgot')
+      .send({ email: 'responsavel@tatame.dev' });
     const resetUrl = new URL(t.sentEmails[t.sentEmails.length - 1].resetUrl);
     const rawToken = resetUrl.searchParams.get('token') as string;
     expect(rawToken).toBeTruthy();
@@ -217,10 +247,11 @@ describe('invite flows (the only signup) + password reset', () => {
       .post('/v1/auth/login')
       .send({ email: 'responsavel@tatame.dev', password: DEV_PASSWORD });
     expect(oldLogin.status).toBe(401);
-    const newLogin = await t
-      .http()
-      .post('/v1/auth/login')
-      .send({ email: 'responsavel@tatame.dev', password: 'NovaSenha!456', transport: 'body' });
+    const newLogin = await t.http().post('/v1/auth/login').send({
+      email: 'responsavel@tatame.dev',
+      password: 'NovaSenha!456',
+      transport: 'body',
+    });
     expect(newLogin.status).toBe(200);
 
     // Single use: the same token cannot reset twice.

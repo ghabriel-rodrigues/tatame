@@ -55,14 +55,30 @@ import {
 } from './store-format';
 
 async function invalidateStore() {
-  await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/store/overview'] });
-  await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/store/categories'] });
-  await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/store/products'] });
-  await queryClient.invalidateQueries({ queryKey: ['get', '/v1/admin/store/orders'] });
+  await queryClient.invalidateQueries({
+    queryKey: ['get', '/v1/admin/store/overview'],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: ['get', '/v1/admin/store/categories'],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: ['get', '/v1/admin/store/products'],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: ['get', '/v1/admin/store/orders'],
+  });
 }
 
 /** The admin-03 header tile ("R$ 3.240 / vendas no mês"). */
-function StatTile({ value, label, warn = false }: { value: string; label: string; warn?: boolean }) {
+function StatTile({
+  value,
+  label,
+  warn = false,
+}: {
+  value: string;
+  label: string;
+  warn?: boolean;
+}) {
   return (
     <Box
       sx={{
@@ -74,10 +90,18 @@ function StatTile({ value, label, warn = false }: { value: string; label: string
         textAlign: 'center',
       }}
     >
-      <Typography sx={{ fontSize: 17, fontWeight: 700, color: warn ? 'var(--warning-500)' : 'var(--fg-1)' }}>
+      <Typography
+        sx={{
+          fontSize: 17,
+          fontWeight: 700,
+          color: warn ? 'var(--warning-500)' : 'var(--fg-1)',
+        }}
+      >
         {value}
       </Typography>
-      <Typography sx={{ fontSize: 10, fontWeight: 600, color: 'var(--fg-3)' }}>{label}</Typography>
+      <Typography sx={{ fontSize: 10, fontWeight: 600, color: 'var(--fg-3)' }}>
+        {label}
+      </Typography>
     </Box>
   );
 }
@@ -232,7 +256,9 @@ function CategoriesCard({
           marginBottom: '10px',
         }}
       >
-        <Typography sx={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-2)' }}>
+        <Typography
+          sx={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-2)' }}
+        >
           Categorias da loja
         </Typography>
         <PillButton
@@ -244,7 +270,11 @@ function CategoriesCard({
           }}
         />
       </Box>
-      <Stack direction="row" spacing="6px" sx={{ flexWrap: 'wrap', rowGap: '6px' }}>
+      <Stack
+        direction="row"
+        spacing="6px"
+        sx={{ flexWrap: 'wrap', rowGap: '6px' }}
+      >
         {categories.map((category) => (
           <Box
             key={category.id}
@@ -323,7 +353,9 @@ function CategoriesCard({
           <Stack direction="row" spacing="8px" sx={{ alignItems: 'flex-end' }}>
             <Box sx={{ flex: 1 }}>
               <FormField
-                label={renaming ? `Renomear ${renaming.name}` : 'Nova categoria'}
+                label={
+                  renaming ? `Renomear ${renaming.name}` : 'Nova categoria'
+                }
                 value={name}
                 onChangeText={setName}
                 placeholder="Nome da categoria (ex. Nutrição)"
@@ -336,9 +368,11 @@ function CategoriesCard({
               onPress={submit}
             />
           </Stack>
-          <Typography sx={{ fontSize: 10.5, color: 'var(--fg-4)', marginTop: '7px' }}>
-            Categorias aparecem como filtro na loja do aluno e do professor. Só dá para
-            remover categoria sem produtos.
+          <Typography
+            sx={{ fontSize: 10.5, color: 'var(--fg-4)', marginTop: '7px' }}
+          >
+            Categorias aparecem como filtro na loja do aluno e do professor. Só
+            dá para remover categoria sem produtos.
           </Typography>
         </Box>
       ) : null}
@@ -357,7 +391,12 @@ interface ProductSheetProps {
   product?: AdminStoreProduct;
 }
 
-function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetProps) {
+function ProductSheet({
+  onClose,
+  onSuccess,
+  categories,
+  product,
+}: ProductSheetProps) {
   const editing = product !== undefined;
   const [name, setName] = useState(product?.name ?? '');
   const [description, setDescription] = useState(product?.description ?? '');
@@ -370,7 +409,9 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
   const [thresholdText, setThresholdText] = useState(
     String(product?.lowStockThreshold ?? 5),
   );
-  const [categoryId, setCategoryId] = useState<string | null>(product?.categoryId ?? null);
+  const [categoryId, setCategoryId] = useState<string | null>(
+    product?.categoryId ?? null,
+  );
   const [tagsText, setTagsText] = useState(product?.tags.join(', ') ?? '');
   const [sizes, setSizes] = useState<string[]>(product?.sizes ?? []);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -382,7 +423,9 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
   const archive = $api.useMutation('delete', '/v1/admin/store/products/{id}');
   const busy = create.isPending || update.isPending || archive.isPending;
 
-  const sizeChips = [...new Set([...DEFAULT_SIZE_CHIPS, ...(product?.sizes ?? [])])];
+  const sizeChips = [
+    ...new Set([...DEFAULT_SIZE_CHIPS, ...(product?.sizes ?? [])]),
+  ];
   const tags = parseTagsInput(tagsText);
   const galleryMonogram = editing ? product.monogram : previewMonogram(name);
   const galleryPreset = product?.gradientPreset ?? 'store-blue-purple';
@@ -390,13 +433,17 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
   function buildBody() {
     const next: Record<string, string> = {};
     const priceCents = parseBRLInput(priceText);
-    const stockQty = /^\d+$/.test(stockText.trim()) ? Number(stockText.trim()) : null;
+    const stockQty = /^\d+$/.test(stockText.trim())
+      ? Number(stockText.trim())
+      : null;
     const lowStockThreshold = /^\d+$/.test(thresholdText.trim())
       ? Number(thresholdText.trim())
       : null;
     if (name.trim().length < 2) next['name'] = 'Informe o nome do produto.';
-    if (priceCents === null) next['price'] = 'Informe um preço válido, ex.: 389,00.';
-    if (stockQty === null) next['stock'] = 'Informe o estoque em unidades inteiras.';
+    if (priceCents === null)
+      next['price'] = 'Informe um preço válido, ex.: 389,00.';
+    if (stockQty === null)
+      next['stock'] = 'Informe o estoque em unidades inteiras.';
     if (lowStockThreshold === null) {
       next['threshold'] = 'Informe o limite de estoque baixo (0 ou mais).';
     }
@@ -467,7 +514,11 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
           error={errors['name']}
           required
         />
-        <FormField label="Descrição" value={description} onChangeText={setDescription} />
+        <FormField
+          label="Descrição"
+          value={description}
+          onChangeText={setDescription}
+        />
         <Stack direction="row" spacing="10px">
           <FormField
             label="Preço (R$)"
@@ -498,7 +549,11 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
           <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>
             Categoria · gerencie na aba Produtos
           </FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {categories.map((category) => (
               <Chip
                 key={category.id}
@@ -521,7 +576,11 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
           placeholder="Tags de busca, separadas por vírgula (ex. kimono, a2, competição)"
         />
         {tags.length > 0 ? (
-          <Stack direction="row" spacing="6px" sx={{ flexWrap: 'wrap', rowGap: '6px' }}>
+          <Stack
+            direction="row"
+            spacing="6px"
+            sx={{ flexWrap: 'wrap', rowGap: '6px' }}
+          >
             {tags.map((tag) => (
               <Chip key={tag} label={`#${tag}`} tone="brand" />
             ))}
@@ -530,7 +589,11 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
 
         <Stack spacing="6px">
           <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Tamanhos</FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {sizeChips.map((size) => (
               <Chip
                 key={size}
@@ -551,7 +614,9 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
         </Stack>
 
         <Stack spacing="6px">
-          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Galeria de fotos</FormLabel>
+          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>
+            Galeria de fotos
+          </FormLabel>
           <Stack direction="row" spacing="8px">
             <Box
               data-testid="gallery-cover"
@@ -619,9 +684,11 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
               </Box>
             ))}
           </Stack>
-          <Typography sx={{ fontSize: 10.5, color: 'var(--fg-4)', lineHeight: 1.5 }}>
-            Upload de fotos chega em breve — por enquanto a capa é o monograma do produto
-            sobre o gradiente da loja.
+          <Typography
+            sx={{ fontSize: 10.5, color: 'var(--fg-4)', lineHeight: 1.5 }}
+          >
+            Upload de fotos chega em breve — por enquanto a capa é o monograma
+            do produto sobre o gradiente da loja.
           </Typography>
         </Stack>
 
@@ -644,12 +711,16 @@ function ProductSheet({ onClose, onSuccess, categories, product }: ProductSheetP
       </Stack>
 
       {editing ? (
-        <Dialog open={confirmingArchive} onClose={() => setConfirmingArchive(false)}>
+        <Dialog
+          open={confirmingArchive}
+          onClose={() => setConfirmingArchive(false)}
+        >
           <DialogTitle>Remover da loja</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              O produto sai da vitrine e não pode mais ser comprado. Os pedidos que já
-              referenciam este produto são preservados no histórico — nada é apagado.
+              O produto sai da vitrine e não pode mais ser comprado. Os pedidos
+              que já referenciam este produto são preservados no histórico —
+              nada é apagado.
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -677,7 +748,10 @@ function OrderStatusSheet({
   onError: (message: string) => void;
 }) {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
-  const transition = $api.useMutation('post', '/v1/admin/store/orders/{id}/status');
+  const transition = $api.useMutation(
+    'post',
+    '/v1/admin/store/orders/{id}/status',
+  );
   const options: Array<Exclude<StoreOrderStatus, 'pending'>> = [
     'paid',
     'ready',
@@ -718,21 +792,34 @@ function OrderStatusSheet({
           border: '1px solid var(--border-1)',
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+        <Box
+          sx={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}
+        >
           <Typography sx={{ fontSize: 13, color: 'var(--fg-2)' }}>
-            {order.item ? orderItemLabel(order.item) : `Pedido #${order.number}`}
+            {order.item
+              ? orderItemLabel(order.item)
+              : `Pedido #${order.number}`}
           </Typography>
-          <Typography sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             {formatBRLWhole(order.totalCents)}
           </Typography>
         </Box>
-        <Typography sx={{ fontSize: 11, color: 'var(--fg-4)', marginTop: '6px' }}>
+        <Typography
+          sx={{ fontSize: 11, color: 'var(--fg-4)', marginTop: '6px' }}
+        >
           {order.pickupNote} · comprador é notificado a cada mudança de status
         </Typography>
       </Box>
 
       <Typography
-        sx={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-2)', margin: '14px 0 8px' }}
+        sx={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: 'var(--fg-2)',
+          margin: '14px 0 8px',
+        }}
       >
         Status do pedido
       </Typography>
@@ -774,14 +861,27 @@ function OrderStatusSheet({
               <Box
                 component="span"
                 aria-hidden
-                sx={{ flex: 'none', width: 10, height: 10, borderRadius: '999px' }}
+                sx={{
+                  flex: 'none',
+                  width: 10,
+                  height: 10,
+                  borderRadius: '999px',
+                }}
                 style={{ background: ORDER_STATUS_DOTS[status] }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}>
+                <Typography
+                  sx={{ fontWeight: 700, fontSize: 13, color: 'var(--fg-1)' }}
+                >
                   {ORDER_STATUS_LABELS[status]}
                 </Typography>
-                <Typography sx={{ fontSize: 10.5, color: 'var(--fg-3)', marginTop: '1px' }}>
+                <Typography
+                  sx={{
+                    fontSize: 10.5,
+                    color: 'var(--fg-3)',
+                    marginTop: '1px',
+                  }}
+                >
                   {ORDER_STATUS_DESCRIPTIONS[status]}
                 </Typography>
               </Box>
@@ -806,12 +906,15 @@ function OrderStatusSheet({
         })}
       </Stack>
 
-      <Dialog open={confirmingCancel} onClose={() => setConfirmingCancel(false)}>
+      <Dialog
+        open={confirmingCancel}
+        onClose={() => setConfirmingCancel(false)}
+      >
         <DialogTitle>Cancelar pedido</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            O valor pago será devolvido ao comprador — estorno do Pix em até 1 dia útil —
-            e o item volta ao estoque da loja.
+            O valor pago será devolvido ao comprador — estorno do Pix em até 1
+            dia útil — e o item volta ao estoque da loja.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -836,7 +939,9 @@ export function LojaPage() {
   const [tab, setTab] = useState<'produtos' | 'pedidos'>('produtos');
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<AdminStoreProduct | null>(null);
-  const [viewingOrder, setViewingOrder] = useState<AdminStoreOrder | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<AdminStoreOrder | null>(
+    null,
+  );
 
   const overviewQuery = $api.useQuery('get', '/v1/admin/store/overview');
   const categoriesQuery = $api.useQuery('get', '/v1/admin/store/categories');
@@ -858,14 +963,24 @@ export function LojaPage() {
           title="Loja da academia"
           subtitle="Produtos licenciados da equipe"
           trailing={
-            <TatameButton size="sm" label="Novo produto" onPress={() => setCreating(true)} />
+            <TatameButton
+              size="sm"
+              label="Novo produto"
+              onPress={() => setCreating(true)}
+            />
           }
         />
 
         {overview ? (
           <Stack direction="row" spacing="10px">
-            <StatTile value={formatBRLWhole(overview.vendasMesCents)} label="vendas no mês" />
-            <StatTile value={String(overview.pedidosMesCount)} label="pedidos no mês" />
+            <StatTile
+              value={formatBRLWhole(overview.vendasMesCents)}
+              label="vendas no mês"
+            />
+            <StatTile
+              value={String(overview.pedidosMesCount)}
+              label="pedidos no mês"
+            />
             <StatTile
               value={String(overview.lowStock.count)}
               label="estoque baixo"
@@ -920,7 +1035,11 @@ export function LojaPage() {
                       testId={`product-tile-${product.id}`}
                     />
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Stack direction="row" spacing="6px" sx={{ alignItems: 'center' }}>
+                      <Stack
+                        direction="row"
+                        spacing="6px"
+                        sx={{ alignItems: 'center' }}
+                      >
                         <Typography
                           sx={{
                             fontWeight: 700,
@@ -942,7 +1061,9 @@ export function LojaPage() {
                           fontSize: 11,
                           fontWeight: 600,
                           marginTop: '2px',
-                          color: product.lowStock ? 'var(--warning-500)' : 'var(--fg-3)',
+                          color: product.lowStock
+                            ? 'var(--warning-500)'
+                            : 'var(--fg-3)',
                         }}
                       >
                         {stockLine(product)}
@@ -950,7 +1071,11 @@ export function LojaPage() {
                     </Box>
                     <Box sx={{ flex: 'none', textAlign: 'right' }}>
                       <Typography
-                        sx={{ fontWeight: 700, fontSize: 13.5, color: 'var(--purple-ink)' }}
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: 13.5,
+                          color: 'var(--purple-ink)',
+                        }}
                       >
                         {formatBRLWhole(product.priceCents)}
                       </Typography>
@@ -1030,7 +1155,11 @@ export function LojaPage() {
         />
       ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

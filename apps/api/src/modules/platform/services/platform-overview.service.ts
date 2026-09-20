@@ -54,7 +54,9 @@ function monthKey(date: Date): string {
 
 function monthStart(offsetFromCurrent: number): Date {
   const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offsetFromCurrent, 1));
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offsetFromCurrent, 1),
+  );
 }
 
 function daysUntil(date: Date): number {
@@ -97,7 +99,10 @@ export class PlatformOverviewService {
         })
         .from(academySubscriptions)
         .innerJoin(academies, eq(academies.id, academySubscriptions.academyId))
-        .innerJoin(platformPlans, eq(platformPlans.id, academySubscriptions.platformPlanId));
+        .innerJoin(
+          platformPlans,
+          eq(platformPlans.id, academySubscriptions.platformPlanId),
+        );
 
       const [academyCounts] = await tx
         .select({
@@ -110,7 +115,12 @@ export class PlatformOverviewService {
         .select({ total: sql<number>`count(*)::int` })
         .from(students)
         .innerJoin(academies, eq(academies.id, students.tenantId))
-        .where(and(eq(students.status, 'active'), inArray(academies.status, ['trial', 'active', 'delinquent'])));
+        .where(
+          and(
+            eq(students.status, 'active'),
+            inArray(academies.status, ['trial', 'active', 'delinquent']),
+          ),
+        );
 
       // Series: month buckets from oldest to current.
       const series: MrrPoint[] = [];
@@ -122,11 +132,15 @@ export class PlatformOverviewService {
           if (!row.priceCents) continue;
           // A canceled subscription still earned the months it was live.
           if (row.status === 'canceled' && !row.canceledAt) continue;
-          if (row.status !== 'canceled' && !BILLABLE.includes(row.status as 'active' | 'past_due')) {
+          if (
+            row.status !== 'canceled' &&
+            !BILLABLE.includes(row.status as 'active' | 'past_due')
+          ) {
             continue;
           }
           if (row.createdAt.getTime() >= end.getTime()) continue;
-          if (row.canceledAt && row.canceledAt.getTime() < start.getTime()) continue;
+          if (row.canceledAt && row.canceledAt.getTime() < start.getTime())
+            continue;
           cents += row.priceCents;
         }
         series.push({ month: monthKey(start), cents });
@@ -134,7 +148,10 @@ export class PlatformOverviewService {
 
       const current = series[series.length - 1]?.cents ?? 0;
       const previous = series[series.length - 2]?.cents ?? 0;
-      const mrrDeltaPct = previous === 0 ? null : Math.round(((current - previous) / previous) * 100);
+      const mrrDeltaPct =
+        previous === 0
+          ? null
+          : Math.round(((current - previous) / previous) * 100);
 
       const attention: AttentionRow[] = [];
       for (const row of subscriptions) {
@@ -147,13 +164,17 @@ export class PlatformOverviewService {
               academyName: row.academyName,
               kind: 'trial_ending',
               reason:
-                days <= 0 ? 'Trial encerrado' : `Trial termina em ${pluralDays(days)}`,
+                days <= 0
+                  ? 'Trial encerrado'
+                  : `Trial termina em ${pluralDays(days)}`,
             });
           }
           continue;
         }
         if (row.status === 'past_due') {
-          const overdueDays = row.currentPeriodEnd ? -daysUntil(row.currentPeriodEnd) : 0;
+          const overdueDays = row.currentPeriodEnd
+            ? -daysUntil(row.currentPeriodEnd)
+            : 0;
           attention.push({
             academyId: row.academyId,
             academyName: row.academyName,
@@ -165,7 +186,9 @@ export class PlatformOverviewService {
           });
         }
       }
-      attention.sort((a, b) => a.academyName.localeCompare(b.academyName, 'pt-BR'));
+      attention.sort((a, b) =>
+        a.academyName.localeCompare(b.academyName, 'pt-BR'),
+      );
 
       const total = academyCounts?.total ?? 0;
       const delinquent = academyCounts?.delinquent ?? 0;
@@ -175,7 +198,8 @@ export class PlatformOverviewService {
         mrrDeltaPct,
         academyCount: total,
         studentCount: studentCounts?.total ?? 0,
-        delinquencyPct: total === 0 ? 0 : Math.round((delinquent / total) * 1000) / 10,
+        delinquencyPct:
+          total === 0 ? 0 : Math.round((delinquent / total) * 1000) / 10,
         series,
         attention,
       };

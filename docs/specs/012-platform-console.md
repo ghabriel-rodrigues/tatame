@@ -86,7 +86,7 @@ RBAC follows the charter's role split, which the Equipe screen itself states in 
 - **`platform_plans.features` becomes `text[]` of registry slugs** (`platform_plan_features`), replacing the `{invites, store, whiteLabel}` jsonb blob. The registry lives in shared code with PT-BR labels and stable slugs — `attendance` (Presença e turmas), `graduations` (Graduações), `pix_payments` (Pagamentos Pix), `store` (Loja da academia), `events` (Eventos), `full_finance` (Financeiro completo), `white_label` (White-label), `multi_unit` (Multiunidades), `advanced_reports` (Relatórios avançados), `api` (API) — following the admin-17 permission-registry precedent: the API serves `{slug,label}` rows, the client renders whatever the registry defines, and there is no client-side list to drift. A CHECK constraint rejects unknown slugs at the database boundary. The migration rewrites the three seeded rows onto the slug arrays that reproduce the plataforma-05 cards.
 - **No `is_highlighted` / "mais assinado" column and no `inherits_plan_id`.** Both are derived at read time: the badge goes to the plan with the most live subscriptions (ties → lower `sort_order`); the "Tudo do X" chip is emitted when a plan's feature set is a strict superset of the next-cheaper plan's, and that plan's shared chips are then suppressed. Storing either would let the display drift from the truth it summarizes.
 - **No new columns for suspension or plan change.** `academies.status` already carries `suspended` and the AcademyStatusGuard already blocks it; `academy_subscriptions.pending_platform_plan_id` already models the next-cycle change. This phase writes them for the first time.
-- **No MRR snapshot table.** The 6-month series is computed from subscription lifetimes (`created_at`, `canceled_at`, status) against plan prices: a subscription contributes its plan price to month *M* when it existed for any part of *M* and was not canceled before *M* started. Real history from real rows; a snapshot table would only be needed once prices change often enough that today's price misdescribes an old month, which is recorded as a limitation rather than pre-built.
+- **No MRR snapshot table.** The 6-month series is computed from subscription lifetimes (`created_at`, `canceled_at`, status) against plan prices: a subscription contributes its plan price to month _M_ when it existed for any part of _M_ and was not canceled before _M_ started. Real history from real rows; a snapshot table would only be needed once prices change often enough that today's price misdescribes an old month, which is recorded as a limitation rather than pre-built.
 - **Dev seeds** grow to make the console demoable on first login: five fixture academies spanning every status (active ×2, trial ending inside the attention window, delinquent, suspended) with subscriptions of mixed ages so the 6-month chart has slope, plus the four platform team members from plataforma-10 (one owner, two support, one finance) with logins.
 
 ### Backend — one `platform` module, RBAC by charter role
@@ -95,20 +95,20 @@ A new `apps/api/src/modules/platform` module owns the console. The two existing 
 
 Every route runs on the **platform (BYPASSRLS) pool** — the persona is cross-tenant by definition — except the two writes that must land inside a tenant (the new academy's admin membership, and the audited status flips), which go through `withTenant` so the tenant policies still apply.
 
-| Route | Roles |
-|---|---|
-| `GET /platform/overview` | owner, finance |
-| `GET /platform/academies` · `GET /platform/academies/:id` | owner, support, finance |
-| `POST /platform/academies` | owner |
-| `PUT /platform/academies/:id/plan` (`{platformPlanId}` or `null` to cancel a scheduled change) | owner |
-| `POST /platform/academies/:id/suspend` · `/reactivate` | owner |
-| `POST /platform/academies/:id/impersonate` (shipped) | owner, support |
-| `GET /platform/plans` | owner, support, finance |
-| `POST /platform/plans` · `PUT /platform/plans/:id` | owner |
-| `GET /platform/team` | owner, support, finance |
-| `POST /platform/team` | owner |
-| `GET /platform/integrations` | owner, support, finance |
-| `GET /platform/billing/repasses` (shipped) | owner, finance |
+| Route                                                                                          | Roles                   |
+| ---------------------------------------------------------------------------------------------- | ----------------------- |
+| `GET /platform/overview`                                                                       | owner, finance          |
+| `GET /platform/academies` · `GET /platform/academies/:id`                                      | owner, support, finance |
+| `POST /platform/academies`                                                                     | owner                   |
+| `PUT /platform/academies/:id/plan` (`{platformPlanId}` or `null` to cancel a scheduled change) | owner                   |
+| `POST /platform/academies/:id/suspend` · `/reactivate`                                         | owner                   |
+| `POST /platform/academies/:id/impersonate` (shipped)                                           | owner, support          |
+| `GET /platform/plans`                                                                          | owner, support, finance |
+| `POST /platform/plans` · `PUT /platform/plans/:id`                                             | owner                   |
+| `GET /platform/team`                                                                           | owner, support, finance |
+| `POST /platform/team`                                                                          | owner                   |
+| `GET /platform/integrations`                                                                   | owner, support, finance |
+| `GET /platform/billing/repasses` (shipped)                                                     | owner, finance          |
 
 - **Registering an academy** is one transaction: insert the academy (status `trial`, slug derived from the name with a uniqueness suffix, `contact_email` = the admin's email), insert its `academy_subscriptions` row (`trialing`, on the chosen plan, `current_period_end` = +14 days so the trial lands in the attention window on schedule), find-or-create the admin `users` row, and insert the `admin` membership through `withTenant`. Then — outside the transaction, fire-and-acknowledge like the existing forgot-password path — issue a single-use reset token and send it through the existing `NotificationPort`, so a mail failure never rolls back a created customer. Audited as `academy.registered`.
 - **Plan change** writes `pending_platform_plan_id` only. It never touches `platform_plan_id`, never re-prices the current period, and `null` clears a scheduled change. The response echoes the pending plan so the UI can render "Muda para X no próximo ciclo". Cycle rollover itself (a job that promotes pending → current at `current_period_end`) is **out of scope and recorded**: v1 has no scheduler, and the charter rule this phase must honour is "does not apply now", which the column already guarantees.

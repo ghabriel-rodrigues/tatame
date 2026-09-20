@@ -61,7 +61,9 @@ describe('session boot', () => {
     await boot();
 
     server.use(
-      mswHttp.post('http://localhost/v1/auth/logout', () => HttpResponse.error()),
+      mswHttp.post('http://localhost/v1/auth/logout', () =>
+        HttpResponse.error(),
+      ),
     );
 
     await logout();

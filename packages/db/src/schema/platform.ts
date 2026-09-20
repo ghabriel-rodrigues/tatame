@@ -14,7 +14,12 @@ import {
 } from 'drizzle-orm/pg-core';
 import { academies } from './academies.js';
 import { users } from './auth.js';
-import { paymentProvider, platformRole, subscriptionStatus, userStatus } from './enums.js';
+import {
+  paymentProvider,
+  platformRole,
+  subscriptionStatus,
+  userStatus,
+} from './enums.js';
 import { id, timestamps } from './helpers.js';
 import { appRole } from './roles.js';
 
@@ -63,7 +68,8 @@ export const PLATFORM_PLAN_FEATURE_SLUGS = [
   'api',
 ] as const;
 
-export type PlatformPlanFeatureSlug = (typeof PLATFORM_PLAN_FEATURE_SLUGS)[number];
+export type PlatformPlanFeatureSlug =
+  (typeof PLATFORM_PLAN_FEATURE_SLUGS)[number];
 
 /** Platform -> academy plan catalog (Essencial / Pro / Black). Public prices. */
 export const platformPlans = pgTable(
@@ -81,7 +87,10 @@ export const platformPlans = pgTable(
      * "Mais assinado" and the "Tudo do X" inheritance chip are derived at
      * read time, never stored.
      */
-    features: text('features').array().notNull().default(sql`'{}'::text[]`),
+    features: text('features')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
     /**
@@ -135,10 +144,14 @@ export const academySubscriptions = pgTable(
       .notNull()
       .references(() => platformPlans.id),
     status: subscriptionStatus('status').notNull().default('trialing'),
-    currentPeriodStart: timestamp('current_period_start', { withTimezone: true }),
+    currentPeriodStart: timestamp('current_period_start', {
+      withTimezone: true,
+    }),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }),
     /** Plan change applies next billing cycle. */
-    pendingPlatformPlanId: uuid('pending_platform_plan_id').references(() => platformPlans.id),
+    pendingPlatformPlanId: uuid('pending_platform_plan_id').references(
+      () => platformPlans.id,
+    ),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
     /** Provider behind the SaaS subscription; NULL until the Stripe swap. */
     provider: paymentProvider('provider'),

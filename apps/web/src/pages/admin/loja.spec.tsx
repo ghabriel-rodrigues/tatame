@@ -25,7 +25,8 @@ import {
 import { renderRoute } from '../../test/render-route';
 import { server } from '../../test/setup';
 
-const session = () => makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
+const session = () =>
+  makeMeResponse({ memberships: [makeMembership({ role: 'admin' })] });
 
 describe('Loja — Produtos (STO.8)', () => {
   it('renders the admin-03 stat tiles: vendas, pedidos and estoque baixo', async () => {
@@ -46,7 +47,9 @@ describe('Loja — Produtos (STO.8)', () => {
     server.use(...adminStoreHandlers());
     renderRoute('/admin/loja', { session: session() });
 
-    expect(await screen.findByText('Kimono oficial Horizonte')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Kimono oficial Horizonte'),
+    ).toBeInTheDocument();
     expect(screen.getByText('R$ 389')).toBeInTheDocument();
     expect(screen.getByText('12 em estoque · 7 vendidos')).toBeInTheDocument();
 
@@ -67,7 +70,9 @@ describe('Loja — Produtos (STO.8)', () => {
     server.use(...adminStoreHandlers());
     renderRoute('/admin/loja', { session: session() });
 
-    expect(await screen.findByText('Estoque baixo: 8 · 5 vendidos')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Estoque baixo: 8 · 5 vendidos'),
+    ).toBeInTheDocument();
   });
 
   it('renders the monogram tile with the gradient resolved from the preset slug', async () => {
@@ -83,7 +88,8 @@ describe('Loja — Produtos (STO.8)', () => {
     const tile = screen.getByTestId(`product-tile-${product.id}`);
     expect(tile).toHaveTextContent('GI');
     expect(tile).toHaveStyle({
-      background: 'linear-gradient(135deg, var(--purple-700), var(--purple-500))',
+      background:
+        'linear-gradient(135deg, var(--purple-700), var(--purple-500))',
     });
   });
 
@@ -95,9 +101,13 @@ describe('Loja — Produtos (STO.8)', () => {
     expect(
       await screen.findByRole('button', { name: 'Renomear No-gi' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Renomear Acessórios' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Renomear Acessórios' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument(); // Acessórios count badge
-    expect(screen.getByRole('button', { name: '+ Nova categoria' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '+ Nova categoria' }),
+    ).toBeInTheDocument();
   });
 
   it('creates a category from the inline "+ Nova categoria" form', async () => {
@@ -126,17 +136,27 @@ describe('Loja — Produtos (STO.8)', () => {
     server.use(...adminStoreHandlers({ categories }));
     let patched: { id: string; body: Record<string, unknown> } | null = null;
     server.use(
-      http.patch('/v1/admin/store/categories/{id}', async ({ params, request, response }) => {
-        patched = { id: params.id, body: (await request.json()) as Record<string, unknown> };
-        return response(200).json(makeStoreCategory({ name: 'Streetwear' }));
-      }),
+      http.patch(
+        '/v1/admin/store/categories/{id}',
+        async ({ params, request, response }) => {
+          patched = {
+            id: params.id,
+            body: (await request.json()) as Record<string, unknown>,
+          };
+          return response(200).json(makeStoreCategory({ name: 'Streetwear' }));
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/loja', { session: session() });
     await screen.findByText('Categorias da loja');
 
-    await user.click(await screen.findByRole('button', { name: 'Renomear Casual' }));
-    const input = screen.getByPlaceholderText('Nome da categoria (ex. Nutrição)');
+    await user.click(
+      await screen.findByRole('button', { name: 'Renomear Casual' }),
+    );
+    const input = screen.getByPlaceholderText(
+      'Nome da categoria (ex. Nutrição)',
+    );
     expect(input).toHaveValue('Casual');
     await user.clear(input);
     await user.type(input, 'Streetwear');
@@ -162,7 +182,9 @@ describe('Loja — Produtos (STO.8)', () => {
     renderRoute('/admin/loja', { session: session() });
     await screen.findByText('Categorias da loja');
 
-    await user.click(await screen.findByRole('button', { name: 'Remover Casual' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Remover Casual' }),
+    );
 
     expect(await screen.findByText('Categoria removida.')).toBeInTheDocument();
     expect(deletedId).toBe(FIXTURE_CATEGORY_IDS.casual);
@@ -179,7 +201,9 @@ describe('Loja — Produtos (STO.8)', () => {
     renderRoute('/admin/loja', { session: session() });
     await screen.findByText('Categorias da loja');
 
-    await user.click(await screen.findByRole('button', { name: 'Remover Kimonos' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Remover Kimonos' }),
+    );
 
     expect(
       await screen.findByText('Só dá para remover categoria sem produtos.'),
@@ -192,7 +216,9 @@ describe('Loja — Produtos (STO.8)', () => {
     server.use(
       http.post('/v1/admin/store/products', async ({ request, response }) => {
         body = (await request.json()) as Record<string, unknown>;
-        return response(201).json(makeAdminStoreProduct({ name: 'Squeeze da equipe' }));
+        return response(201).json(
+          makeAdminStoreProduct({ name: 'Squeeze da equipe' }),
+        );
       }),
     );
     const user = userEvent.setup();
@@ -215,7 +241,9 @@ describe('Loja — Produtos (STO.8)', () => {
     // The comma input renders as #chips.
     expect(within(sheet).getByText('#squeeze')).toBeInTheDocument();
     expect(within(sheet).getByText('#hidratação')).toBeInTheDocument();
-    await user.click(within(sheet).getByRole('button', { name: 'Criar produto' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Criar produto' }),
+    );
 
     expect(await screen.findByText('Produto criado.')).toBeInTheDocument();
     expect(body).toEqual({
@@ -236,7 +264,9 @@ describe('Loja — Produtos (STO.8)', () => {
     renderRoute('/admin/loja', { session: session() });
     await screen.findByText('Kimono oficial Horizonte');
 
-    await user.click(screen.getByRole('button', { name: 'Editar Kimono oficial Horizonte' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Editar Kimono oficial Horizonte' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Editar produto' });
 
     expect(within(sheet).getByText('Galeria de fotos')).toBeInTheDocument();
@@ -245,7 +275,9 @@ describe('Loja — Produtos (STO.8)', () => {
     expect(within(cover).getByText('capa')).toBeInTheDocument();
 
     // Photo upload is visibly deferred, not faked — both slots disabled.
-    const slots = within(sheet).getAllByRole('button', { name: /Adicionar foto/ });
+    const slots = within(sheet).getAllByRole('button', {
+      name: /Adicionar foto/,
+    });
     expect(slots).toHaveLength(2);
     for (const slot of slots) expect(slot).toBeDisabled();
   });
@@ -256,23 +288,35 @@ describe('Loja — Produtos (STO.8)', () => {
     server.use(...adminStoreHandlers({ products }));
     let patched: { id: string; body: Record<string, unknown> } | null = null;
     server.use(
-      http.patch('/v1/admin/store/products/{id}', async ({ params, request, response }) => {
-        patched = { id: params.id, body: (await request.json()) as Record<string, unknown> };
-        return response(200).json(makeAdminStoreProduct({ name: 'Kimono oficial Horizonte' }));
-      }),
+      http.patch(
+        '/v1/admin/store/products/{id}',
+        async ({ params, request, response }) => {
+          patched = {
+            id: params.id,
+            body: (await request.json()) as Record<string, unknown>,
+          };
+          return response(200).json(
+            makeAdminStoreProduct({ name: 'Kimono oficial Horizonte' }),
+          );
+        },
+      ),
     );
     const user = userEvent.setup();
     renderRoute('/admin/loja', { session: session() });
     await screen.findByText('Kimono oficial Horizonte');
 
-    await user.click(screen.getByRole('button', { name: 'Editar Kimono oficial Horizonte' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Editar Kimono oficial Horizonte' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Editar produto' });
     const estoque = within(sheet).getByLabelText(/Estoque/);
     await user.clear(estoque);
     await user.type(estoque, '15');
     // Deselect the GG size pill is not applicable — toggle A1 off instead.
     await user.click(within(sheet).getByRole('button', { name: 'A1' }));
-    await user.click(within(sheet).getByRole('button', { name: 'Salvar alterações' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Salvar alterações' }),
+    );
 
     expect(await screen.findByText('Produto atualizado.')).toBeInTheDocument();
     expect(patched).toEqual({
@@ -297,7 +341,10 @@ describe('Loja — Produtos (STO.8)', () => {
       http.delete('/v1/admin/store/products/{id}', ({ params, response }) => {
         archivedId = params.id;
         return response(200).json(
-          makeAdminStoreProduct({ name: 'Kimono oficial Horizonte', status: 'archived' }),
+          makeAdminStoreProduct({
+            name: 'Kimono oficial Horizonte',
+            status: 'archived',
+          }),
         );
       }),
     );
@@ -305,18 +352,28 @@ describe('Loja — Produtos (STO.8)', () => {
     renderRoute('/admin/loja', { session: session() });
     await screen.findByText('Kimono oficial Horizonte');
 
-    await user.click(screen.getByRole('button', { name: 'Editar Kimono oficial Horizonte' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Editar Kimono oficial Horizonte' }),
+    );
     const sheet = await screen.findByRole('dialog', { name: 'Editar produto' });
-    await user.click(within(sheet).getByRole('button', { name: 'Remover da loja' }));
+    await user.click(
+      within(sheet).getByRole('button', { name: 'Remover da loja' }),
+    );
 
-    const confirm = await screen.findByRole('dialog', { name: 'Remover da loja' });
+    const confirm = await screen.findByRole('dialog', {
+      name: 'Remover da loja',
+    });
     expect(
-      within(confirm).getByText(/pedidos que já referenciam este produto são preservados/),
+      within(confirm).getByText(
+        /pedidos que já referenciam este produto são preservados/,
+      ),
     ).toBeInTheDocument();
     expect(archivedId).toBeNull();
 
     await user.click(within(confirm).getByRole('button', { name: 'Remover' }));
-    expect(await screen.findByText('Produto removido da loja.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Produto removido da loja.'),
+    ).toBeInTheDocument();
     expect(archivedId).not.toBeNull();
   });
 

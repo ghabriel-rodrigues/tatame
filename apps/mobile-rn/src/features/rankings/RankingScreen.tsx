@@ -94,7 +94,9 @@ function RankingRowCard({
       ? {
           backgroundColor: theme.color.bg.surface,
           borderWidth: 1.5,
-          borderColor: row.isMe ? theme.color.brand['2'] : theme.color.border['1'],
+          borderColor: row.isMe
+            ? theme.color.brand['2']
+            : theme.color.border['1'],
           borderRadius: 16,
           paddingVertical: 12,
           paddingHorizontal: 15,
@@ -118,10 +120,22 @@ function RankingRowCard({
       <PositionCircle row={row} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
-          <Text variant="label" weight="bold" numberOfLines={1} style={{ flexShrink: 1 }}>
+          <Text
+            variant="label"
+            weight="bold"
+            numberOfLines={1}
+            style={{ flexShrink: 1 }}
+          >
             {row.name}
           </Text>
-          {row.isMe ? <Chip label="você" tone="brand" size="sm" testID="ranking-voce-chip" /> : null}
+          {row.isMe ? (
+            <Chip
+              label="você"
+              tone="brand"
+              size="sm"
+              testID="ranking-voce-chip"
+            />
+          ) : null}
         </View>
         {/* Gradient bar scaled to the leader (client-derived width only). */}
         <View
@@ -137,11 +151,20 @@ function RankingRowCard({
             colors={[theme.color.brand['2'], theme.color.brand.accent]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={{ width: `${fraction * 100}%`, height: '100%', borderRadius: theme.radius.pill }}
+            style={{
+              width: `${fraction * 100}%`,
+              height: '100%',
+              borderRadius: theme.radius.pill,
+            }}
           />
         </View>
       </View>
-      <Text variant="caption" weight="bold" color={theme.color.fg['2']} style={{ fontSize: 12 }}>
+      <Text
+        variant="caption"
+        weight="bold"
+        color={theme.color.fg['2']}
+        style={{ fontSize: 12 }}
+      >
         {countLabel(row.count, by)}
       </Text>
     </View>
@@ -173,12 +196,23 @@ export function RankingScreen({ title, layout = 'cards' }: RankingScreenProps) {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
             title={title}
             subtitle={
-              data ? rankingSubtitle(by, data.window, session?.academy?.name ?? null) : undefined
+              data
+                ? rankingSubtitle(
+                    by,
+                    data.window,
+                    session?.academy?.name ?? null,
+                  )
+                : undefined
             }
             onBack={() => router.back()}
           />
@@ -199,8 +233,9 @@ export function RankingScreen({ title, layout = 'cards' }: RankingScreenProps) {
               {rows.length === 0 ? (
                 <Card>
                   <Text variant="caption">
-                    Ainda sem dados neste período — o ranking aparece com as primeiras{' '}
-                    {by === 'lessons' ? 'presenças' : 'participações'}.
+                    Ainda sem dados neste período — o ranking aparece com as
+                    primeiras {by === 'lessons' ? 'presenças' : 'participações'}
+                    .
                   </Text>
                 </Card>
               ) : layout === 'list' ? (

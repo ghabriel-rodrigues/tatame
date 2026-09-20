@@ -21,7 +21,10 @@ import {
 } from '@tatame/shared/testing';
 import { renderRoute } from '../test/render-route';
 import { server } from '../test/setup';
-import { adminRouteFor, relativeNotificationTime } from './notifications-format';
+import {
+  adminRouteFor,
+  relativeNotificationTime,
+} from './notifications-format';
 
 // The /admin index is the Visão financeira (BIL.13) — it always fetches.
 beforeEach(() => {
@@ -48,7 +51,9 @@ describe('NOT.7 — console bell + unread dot', () => {
     expect(
       await screen.findByRole('button', { name: 'Notificações' }),
     ).toBeInTheDocument();
-    expect(await screen.findByTestId('notifications-unread-dot')).toBeInTheDocument();
+    expect(
+      await screen.findByTestId('notifications-unread-dot'),
+    ).toBeInTheDocument();
   });
 
   it('renders no dot when unread-count is zero', async () => {
@@ -60,19 +65,26 @@ describe('NOT.7 — console bell + unread dot', () => {
     ).toBeInTheDocument();
     // Let the page's own async settle so the badge query has resolved too.
     await screen.findByRole('heading', { name: 'Visão financeira' });
-    expect(screen.queryByTestId('notifications-unread-dot')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('notifications-unread-dot'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders no bell on the plataforma surface (platform notifications are debt)', async () => {
     server.use(...platformConsoleHandlers());
     renderRoute('/plataforma', {
-      session: makeMeResponse({ memberships: [makePlatformMembership()], academy: null }),
+      session: makeMeResponse({
+        memberships: [makePlatformMembership()],
+        academy: null,
+      }),
     });
 
     expect(
       await screen.findByRole('heading', { name: 'Visão geral' }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Notificações' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Notificações' }),
+    ).not.toBeInTheDocument();
   });
 });
 
@@ -100,16 +112,22 @@ describe('NOT.7 — notifications panel', () => {
     expect(
       within(panel).getByText('3 unidades restantes (alerta em 5)'),
     ).toBeInTheDocument();
-    expect(within(panel).getByText('Mensalidade de agosto disponível')).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Mensalidade de agosto disponível'),
+    ).toBeInTheDocument();
     expect(within(panel).getByText('Open mat de verão')).toBeInTheDocument();
-    expect(within(panel).getByText('Pedro Silveira fez check-in')).toBeInTheDocument();
+    expect(
+      within(panel).getByText('Pedro Silveira fez check-in'),
+    ).toBeInTheDocument();
     expect(within(panel).getAllByText('Hoje').length).toBeGreaterThan(0);
     expect(within(panel).getByText('Ontem')).toBeInTheDocument();
 
     // read-all fired on open; the dot dies without a refetch race.
     await waitFor(() => expect(readAllSpy).toHaveBeenCalledTimes(1));
     await waitFor(() =>
-      expect(screen.queryByTestId('notifications-unread-dot')).not.toBeInTheDocument(),
+      expect(
+        screen.queryByTestId('notifications-unread-dot'),
+      ).not.toBeInTheDocument(),
     );
   });
 
@@ -119,7 +137,9 @@ describe('NOT.7 — notifications panel', () => {
     renderAdmin();
 
     const panel = await openPanel(user);
-    expect(await within(panel).findByText('Nenhuma notificação')).toBeInTheDocument();
+    expect(
+      await within(panel).findByText('Nenhuma notificação'),
+    ).toBeInTheDocument();
   });
 
   it('renders pre-rendered chip labels and falls back to the category icon', async () => {
@@ -127,7 +147,11 @@ describe('NOT.7 — notifications panel', () => {
       ...notificationsHandlers({
         notifications: [
           ...makeNotificationFeed(),
-          makeNotification({ category: 'store', chip: null, title: 'Pedido #2431 pago' }),
+          makeNotification({
+            category: 'store',
+            chip: null,
+            title: 'Pedido #2431 pago',
+          }),
         ],
       }),
     );
@@ -141,11 +165,15 @@ describe('NOT.7 — notifications panel', () => {
       expect(within(panel).getByText(chip)).toBeInTheDocument();
     }
     // The chip-less row renders the store category icon instead.
-    expect(within(panel).getByTestId('notification-icon-store')).toBeInTheDocument();
+    expect(
+      within(panel).getByTestId('notification-icon-store'),
+    ).toBeInTheDocument();
   });
 
   it('navigates admin-relevant route hints and leaves the rest inert', async () => {
-    server.use(...notificationsHandlers({ notifications: makeNotificationFeed() }));
+    server.use(
+      ...notificationsHandlers({ notifications: makeNotificationFeed() }),
+    );
     const user = userEvent.setup();
     const { router } = renderAdmin();
 
@@ -153,7 +181,8 @@ describe('NOT.7 — notifications panel', () => {
     await within(panel).findByText('Estoque baixo: Mochila de treino');
     // jsdom-typing note: the RN types shadow lib.dom's HTMLElement — read
     // tagName through a structural cast (same workaround as web-07 suites).
-    const tagOf = (element: unknown) => (element as { tagName: string }).tagName;
+    const tagOf = (element: unknown) =>
+      (element as { tagName: string }).tagName;
     const cardWith = (text: string) =>
       within(panel)
         .getAllByRole('listitem')
@@ -170,7 +199,9 @@ describe('NOT.7 — notifications panel', () => {
     const storeCard = cardWith('Estoque baixo: Mochila de treino');
     expect(tagOf(storeCard)).toBe('BUTTON');
     await user.click(storeCard);
-    await waitFor(() => expect(router.state.location.pathname).toBe('/admin/loja'));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe('/admin/loja'),
+    );
   });
 });
 
@@ -189,11 +220,23 @@ describe('NOT.7 — pure logic', () => {
   it('formats PT-BR relative timestamps (Hoje/Ontem/weekday/month)', () => {
     const now = new Date(2026, 7, 10, 15, 0, 0); // seg, 10 ago 2026
     const iso = (d: Date) => d.toISOString();
-    expect(relativeNotificationTime(iso(new Date(2026, 7, 10, 8)), now)).toBe('Hoje');
-    expect(relativeNotificationTime(iso(new Date(2026, 7, 9, 22)), now)).toBe('Ontem');
-    expect(relativeNotificationTime(iso(new Date(2026, 7, 7, 12)), now)).toBe('Sexta');
-    expect(relativeNotificationTime(iso(new Date(2026, 7, 4, 12)), now)).toBe('Terça');
-    expect(relativeNotificationTime(iso(new Date(2026, 7, 3, 12)), now)).toBe('3 de ago');
-    expect(relativeNotificationTime(iso(new Date(2026, 6, 28, 12)), now)).toBe('28 de jul');
+    expect(relativeNotificationTime(iso(new Date(2026, 7, 10, 8)), now)).toBe(
+      'Hoje',
+    );
+    expect(relativeNotificationTime(iso(new Date(2026, 7, 9, 22)), now)).toBe(
+      'Ontem',
+    );
+    expect(relativeNotificationTime(iso(new Date(2026, 7, 7, 12)), now)).toBe(
+      'Sexta',
+    );
+    expect(relativeNotificationTime(iso(new Date(2026, 7, 4, 12)), now)).toBe(
+      'Terça',
+    );
+    expect(relativeNotificationTime(iso(new Date(2026, 7, 3, 12)), now)).toBe(
+      '3 de ago',
+    );
+    expect(relativeNotificationTime(iso(new Date(2026, 6, 28, 12)), now)).toBe(
+      '28 de jul',
+    );
   });
 });

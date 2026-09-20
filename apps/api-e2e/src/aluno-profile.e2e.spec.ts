@@ -68,7 +68,10 @@ describe('aluno profile & certificate flag (spec 013)', () => {
     });
 
     // Roster truth: the admin registry shows the new name immediately.
-    const registry = await t.http().get('/v1/admin/students').set(bearer(admin));
+    const registry = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
     const names = registry.body.students.map((s: any) => s.fullName);
     expect(names).toContain('Ana Aluna Silva');
     expect(names).not.toContain('Ana Aluna');
@@ -76,8 +79,13 @@ describe('aluno profile & certificate flag (spec 013)', () => {
     // Restore the fixture name (also proves the sync runs both ways).
     const restore = await putProfile({ fullName: 'Ana Aluna' });
     expect(restore.status).toBe(200);
-    const restored = await t.http().get('/v1/admin/students').set(bearer(admin));
-    expect(restored.body.students.map((s: any) => s.fullName)).toContain('Ana Aluna');
+    const restored = await t
+      .http()
+      .get('/v1/admin/students')
+      .set(bearer(admin));
+    expect(restored.body.students.map((s: any) => s.fullName)).toContain(
+      'Ana Aluna',
+    );
   });
 
   it('CPF/RG are write-once: any change after set is a 422 profile.field_locked; same value is a no-op', async () => {
@@ -105,7 +113,10 @@ describe('aluno profile & certificate flag (spec 013)', () => {
     expect(unlocked.body.cpfLocked).toBe(false);
     expect(unlocked.body.rgLocked).toBe(false);
 
-    const set = await putProfile({ cpf: '529.982.247-25', rg: 'MG-12.345.678' });
+    const set = await putProfile({
+      cpf: '529.982.247-25',
+      rg: 'MG-12.345.678',
+    });
     expect(set.status).toBe(200);
     expect(set.body.cpf).toBe('52998224725');
     expect(set.body.cpfLocked).toBe(true);
@@ -137,7 +148,10 @@ describe('aluno profile & certificate flag (spec 013)', () => {
   });
 
   it('email and birthDate in the payload are ignored-with-422, never silently dropped', async () => {
-    for (const body of [{ email: 'novo@tatame.dev' }, { birthDate: '1999-01-01' }]) {
+    for (const body of [
+      { email: 'novo@tatame.dev' },
+      { birthDate: '1999-01-01' },
+    ]) {
       const res = await putProfile(body);
       expect(res.status, JSON.stringify(body)).toBe(422);
       expect(res.body.code).toBe('profile.field_read_only');
@@ -148,7 +162,11 @@ describe('aluno profile & certificate flag (spec 013)', () => {
   });
 
   it('the surface is student-only, and the PUT is blocked in read-only academies', async () => {
-    for (const email of ['professor@tatame.dev', 'responsavel@tatame.dev', 'admin@tatame.dev']) {
+    for (const email of [
+      'professor@tatame.dev',
+      'responsavel@tatame.dev',
+      'admin@tatame.dev',
+    ]) {
       const token = (await t.login(email)).accessToken;
       const res = await t.http().get('/v1/aluno/profile').set(bearer(token));
       expect(res.status, email).toBe(403);
@@ -168,14 +186,19 @@ describe('aluno profile & certificate flag (spec 013)', () => {
   });
 
   it('certificateAvailable is real: true exactly on non-reversed belt promotions', async () => {
-    const before = await t.http().get('/v1/aluno/graduation').set(bearer(aluno));
+    const before = await t
+      .http()
+      .get('/v1/aluno/graduation')
+      .set(bearer(aluno));
     expect(before.status).toBe(200);
     for (const entry of before.body.timeline) {
       expect(entry.certificateAvailable, `${entry.kind} ${entry.id}`).toBe(
         entry.kind === 'belt' && !entry.reversed,
       );
     }
-    expect(before.body.timeline.some((e: any) => e.certificateAvailable)).toBe(true);
+    expect(before.body.timeline.some((e: any) => e.certificateAvailable)).toBe(
+      true,
+    );
     expect(
       before.body.timeline
         .filter((e: any) => e.kind !== 'belt')
@@ -184,9 +207,15 @@ describe('aluno profile & certificate flag (spec 013)', () => {
 
     // A reversed belt promotion loses the certificate: award Roxa, revoke it.
     const [ana] = await withPlatform(t.platformDb.db, (tx) =>
-      tx.select({ id: students.id }).from(students).where(eq(students.fullName, 'Ana Aluna')),
+      tx
+        .select({ id: students.id })
+        .from(students)
+        .where(eq(students.fullName, 'Ana Aluna')),
     );
-    const rules = await t.http().get('/v1/admin/graduation-rules').set(bearer(admin));
+    const rules = await t
+      .http()
+      .get('/v1/admin/graduation-rules')
+      .set(bearer(admin));
     const roxa = rules.body.rules.find((r: any) => r.name === 'Roxa');
     const award = await t
       .http()
@@ -204,11 +233,15 @@ describe('aluno profile & certificate flag (spec 013)', () => {
     expect(revoke.status).toBe(200);
 
     const after = await t.http().get('/v1/aluno/graduation').set(bearer(aluno));
-    const reversed = after.body.timeline.find((e: any) => e.id === award.body.graduation.id);
+    const reversed = after.body.timeline.find(
+      (e: any) => e.id === award.body.graduation.id,
+    );
     expect(reversed.reversed).toBe(true);
     expect(reversed.certificateAvailable).toBe(false);
     // The original (non-reversed) belt entry keeps its certificate.
-    const original = after.body.timeline.find((e: any) => e.kind === 'belt' && !e.reversed);
+    const original = after.body.timeline.find(
+      (e: any) => e.kind === 'belt' && !e.reversed,
+    );
     expect(original.certificateAvailable).toBe(true);
   });
 });

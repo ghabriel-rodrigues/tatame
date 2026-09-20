@@ -79,7 +79,9 @@ export async function boot(): Promise<AuthState> {
  * Login boundary: adopt the freshly issued access token, clear every cached
  * query (user boundary), and load the bootstrap session.
  */
-export async function adoptSession(accessToken: string): Promise<MeResponse | null> {
+export async function adoptSession(
+  accessToken: string,
+): Promise<MeResponse | null> {
   setAccessToken(accessToken);
   queryClient.clear();
   const session = await fetchSession();
@@ -96,7 +98,9 @@ export async function adoptSession(accessToken: string): Promise<MeResponse | nu
  * branding without a re-login — patch the cached session academy in place
  * (name/theme) so the theme provider re-derives immediately.
  */
-export function patchSessionAcademy(patch: Partial<NonNullable<MeResponse['academy']>>): void {
+export function patchSessionAcademy(
+  patch: Partial<NonNullable<MeResponse['academy']>>,
+): void {
   if (state.status !== 'authed' || !state.session?.academy) return;
   setState({
     ...state,
@@ -118,7 +122,9 @@ export async function refreshSession(): Promise<MeResponse | null> {
  * Membership switch (same session, new access token) — a tenant boundary:
  * cache cleared, session re-bootstrapped.
  */
-export async function switchMembership(membershipId: string): Promise<MeResponse | null> {
+export async function switchMembership(
+  membershipId: string,
+): Promise<MeResponse | null> {
   const { data, error } = await apiClient.POST('/v1/auth/switch', {
     body: { membershipId },
   });
@@ -168,7 +174,10 @@ export const authTestApi = {
     state = { status: 'booting', session: null };
     listeners.clear();
   },
-  seed(next: AuthState, accessToken: string | null = 'test-access-token'): void {
+  seed(
+    next: AuthState,
+    accessToken: string | null = 'test-access-token',
+  ): void {
     setAccessToken(next.status === 'authed' ? accessToken : null);
     state = next;
   },

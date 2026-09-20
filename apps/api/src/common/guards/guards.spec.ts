@@ -49,35 +49,62 @@ describe('RolesGuard (default deny)', () => {
 
   it('rejects a non-public route with NO authz metadata', () => {
     const guard = new RolesGuard(fakeReflector({}), fakeCls(ctx));
-    expectProblem(() => guard.canActivate(fakeContext()), 403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE);
+    expectProblem(
+      () => guard.canActivate(fakeContext()),
+      403,
+      ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+    );
   });
 
   it('passes @Public routes without a context', () => {
-    const guard = new RolesGuard(fakeReflector({ [PUBLIC_KEY]: true }), fakeCls(undefined));
+    const guard = new RolesGuard(
+      fakeReflector({ [PUBLIC_KEY]: true }),
+      fakeCls(undefined),
+    );
     expect(guard.canActivate(fakeContext())).toBe(true);
   });
 
   it('passes @AnyRole for any authenticated role', () => {
-    const guard = new RolesGuard(fakeReflector({ [ANY_ROLE_KEY]: true }), fakeCls(ctx));
+    const guard = new RolesGuard(
+      fakeReflector({ [ANY_ROLE_KEY]: true }),
+      fakeCls(ctx),
+    );
     expect(guard.canActivate(fakeContext())).toBe(true);
   });
 
   it('never unions roles: active role must be in the allow-list', () => {
     const allowAdmin = fakeReflector({ [ROLES_KEY]: ['admin'] });
     const guard = new RolesGuard(allowAdmin, fakeCls(ctx));
-    expectProblem(() => guard.canActivate(fakeContext()), 403, ErrorCodes.AUTHZ_FORBIDDEN_ROLE);
+    expectProblem(
+      () => guard.canActivate(fakeContext()),
+      403,
+      ErrorCodes.AUTHZ_FORBIDDEN_ROLE,
+    );
 
-    const allowProfessor = fakeReflector({ [ROLES_KEY]: ['professor', 'admin'] });
-    expect(new RolesGuard(allowProfessor, fakeCls(ctx)).canActivate(fakeContext())).toBe(true);
+    const allowProfessor = fakeReflector({
+      [ROLES_KEY]: ['professor', 'admin'],
+    });
+    expect(
+      new RolesGuard(allowProfessor, fakeCls(ctx)).canActivate(fakeContext()),
+    ).toBe(true);
   });
 });
 
 describe('AcademyStatusGuard', () => {
-  const tenantCtx: Partial<AuthContext> = { tenantId: 'tenant-1', role: 'admin' };
+  const tenantCtx: Partial<AuthContext> = {
+    tenantId: 'tenant-1',
+    role: 'admin',
+  };
 
   function makeGuard(status: string | null, metadata: Record<string, unknown>) {
-    const statuses = { getStatus: async () => status } as unknown as AcademyStatusService;
-    return new AcademyStatusGuard(fakeReflector(metadata), fakeCls(tenantCtx), statuses);
+    const statuses = {
+      getStatus: async () => status,
+    } as unknown as AcademyStatusService;
+    return new AcademyStatusGuard(
+      fakeReflector(metadata),
+      fakeCls(tenantCtx),
+      statuses,
+    );
   }
 
   it('skips platform tokens (no tenant)', async () => {
@@ -95,8 +122,12 @@ describe('AcademyStatusGuard', () => {
   });
 
   it('active/trial pass untouched', async () => {
-    await expect(makeGuard('active', {}).canActivate(fakeContext('POST'))).resolves.toBe(true);
-    await expect(makeGuard('trial', {}).canActivate(fakeContext('POST'))).resolves.toBe(true);
+    await expect(
+      makeGuard('active', {}).canActivate(fakeContext('POST')),
+    ).resolves.toBe(true);
+    await expect(
+      makeGuard('trial', {}).canActivate(fakeContext('POST')),
+    ).resolves.toBe(true);
   });
 
   it('suspended rejects everything except @AllowSuspended routes', async () => {
@@ -104,12 +135,16 @@ describe('AcademyStatusGuard', () => {
       makeGuard('suspended', {}).canActivate(fakeContext('GET')),
     ).rejects.toMatchObject({ code: ErrorCodes.TENANT_SUSPENDED });
     await expect(
-      makeGuard('suspended', { [ALLOW_SUSPENDED_KEY]: true }).canActivate(fakeContext('GET')),
+      makeGuard('suspended', { [ALLOW_SUSPENDED_KEY]: true }).canActivate(
+        fakeContext('GET'),
+      ),
     ).resolves.toBe(true);
   });
 
   it('delinquent allows reads, rejects mutations with tenant.read_only', async () => {
-    await expect(makeGuard('delinquent', {}).canActivate(fakeContext('GET'))).resolves.toBe(true);
+    await expect(
+      makeGuard('delinquent', {}).canActivate(fakeContext('GET')),
+    ).resolves.toBe(true);
     await expect(
       makeGuard('delinquent', {}).canActivate(fakeContext('PUT')),
     ).rejects.toMatchObject({ code: ErrorCodes.TENANT_READ_ONLY });
@@ -117,7 +152,9 @@ describe('AcademyStatusGuard', () => {
 
   it('delinquent mutation passes with @BypassReadOnly (payment routes)', async () => {
     await expect(
-      makeGuard('delinquent', { [BYPASS_READ_ONLY_KEY]: true }).canActivate(fakeContext('POST')),
+      makeGuard('delinquent', { [BYPASS_READ_ONLY_KEY]: true }).canActivate(
+        fakeContext('POST'),
+      ),
     ).resolves.toBe(true);
   });
 });

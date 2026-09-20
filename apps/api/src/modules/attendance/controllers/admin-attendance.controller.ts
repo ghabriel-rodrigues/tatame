@@ -1,5 +1,18 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClsService } from 'nestjs-cls';
 import { Roles } from '../../../common/decorators.js';
 import { requireTenantContext } from '../../enrollment/controllers/context.js';
@@ -30,17 +43,22 @@ export class AdminAttendanceController {
   @Post('attendances/:id/revoke')
   @HttpCode(200)
   @ApiOperation({
-    summary: 'Any-time audited revoke (window same_day | admin_late in the audit row)',
+    summary:
+      'Any-time audited revoke (window same_day | admin_late in the audit row)',
   })
   @ApiOkResponse({ type: RevokeAttendanceResponseDto })
-  async revoke(@Param('id', ParseUUIDPipe) attendanceId: string, @Body() dto: RevokeAttendanceDto) {
+  async revoke(
+    @Param('id', ParseUUIDPipe) attendanceId: string,
+    @Body() dto: RevokeAttendanceDto,
+  ) {
     const ctx = requireTenantContext(this.cls);
     return this.rollCall.revoke(ctx, attendanceId, 'admin', dto.reason);
   }
 
   @Get('classes/:id/sessions')
   @ApiOperation({
-    summary: 'Turma sessions with active attendance counts (replaces Phase-3 placeholders)',
+    summary:
+      'Turma sessions with active attendance counts (replaces Phase-3 placeholders)',
   })
   @ApiOkResponse({ type: AdminSessionListResponseDto })
   async sessions(@Param('id', ParseUUIDPipe) classId: string) {

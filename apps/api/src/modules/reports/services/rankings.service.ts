@@ -13,7 +13,12 @@ import {
 import type { AuthContext } from '../../../common/auth-context.js';
 import { APP_DB } from '../../../infra/db/db.module.js';
 import { TENANT_TIMEZONE } from '../../attendance/lib/time.js';
-import { monthWindow, requireMonth, semesterWindow, type DateWindow } from '../lib/windows.js';
+import {
+  monthWindow,
+  requireMonth,
+  semesterWindow,
+  type DateWindow,
+} from '../lib/windows.js';
 
 export type RankingBy = 'lessons' | 'events';
 
@@ -64,19 +69,37 @@ export class RankingsService {
 
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const active = await tx
-        .select({ id: students.id, name: students.fullName, userId: students.userId })
+        .select({
+          id: students.id,
+          name: students.fullName,
+          userId: students.userId,
+        })
         .from(students)
         .where(eq(students.status, 'active'));
 
       const counts =
-        by === 'lessons' ? await this.lessonCounts(tx, window) : await this.eventCounts(tx, window);
+        by === 'lessons'
+          ? await this.lessonCounts(tx, window)
+          : await this.eventCounts(tx, window);
 
       const ranked = active
-        .map((s) => ({ studentId: s.id, name: s.name, userId: s.userId, count: counts.get(s.id) ?? 0 }))
-        .sort((a, b) => b.count - a.count || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+        .map((s) => ({
+          studentId: s.id,
+          name: s.name,
+          userId: s.userId,
+          count: counts.get(s.id) ?? 0,
+        }))
+        .sort(
+          (a, b) =>
+            b.count - a.count ||
+            (a.name < b.name ? -1 : a.name > b.name ? 1 : 0),
+        )
         .map((row, index) => ({ ...row, position: index + 1 }));
 
-      const mine = ctx.role === 'student' ? ranked.find((r) => r.userId === ctx.userId) : undefined;
+      const mine =
+        ctx.role === 'student'
+          ? ranked.find((r) => r.userId === ctx.userId)
+          : undefined;
 
       return {
         by,
@@ -99,7 +122,10 @@ export class RankingsService {
     window: DateWindow,
   ): Promise<Map<string, number>> {
     const rows = await tx
-      .select({ studentId: attendances.studentId, total: sql<string>`COUNT(*)` })
+      .select({
+        studentId: attendances.studentId,
+        total: sql<string>`COUNT(*)`,
+      })
       .from(attendances)
       .innerJoin(
         classSessions,
@@ -125,7 +151,10 @@ export class RankingsService {
     window: DateWindow,
   ): Promise<Map<string, number>> {
     const rows = await tx
-      .select({ studentId: eventRegistrations.studentId, total: sql<string>`COUNT(*)` })
+      .select({
+        studentId: eventRegistrations.studentId,
+        total: sql<string>`COUNT(*)`,
+      })
       .from(eventRegistrations)
       .innerJoin(
         events,
@@ -147,4 +176,7 @@ export class RankingsService {
   }
 }
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});

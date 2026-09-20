@@ -45,7 +45,10 @@ export interface GuardianListItem {
 
 export type StatusFilter = 'active' | 'inactive' | 'all';
 
-const tenantCtx = (ctx: AuthContext) => ({ tenantId: ctx.tenantId, userId: ctx.userId });
+const tenantCtx = (ctx: AuthContext) => ({
+  tenantId: ctx.tenantId,
+  userId: ctx.userId,
+});
 
 /**
  * Admin registry for the people side of the triangle (ENR.6): students and
@@ -60,7 +63,10 @@ export class RegistryService {
     private readonly graduationAwards: GraduationAwardService,
   ) {}
 
-  async listStudents(ctx: AuthContext, filter: StatusFilter = 'active'): Promise<StudentListItem[]> {
+  async listStudents(
+    ctx: AuthContext,
+    filter: StatusFilter = 'active',
+  ): Promise<StudentListItem[]> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const rows = await tx
         .select()
@@ -74,7 +80,11 @@ export class RegistryService {
         this.graduationQuery.currentBeltMap(tx, ids),
       ]);
       return rows.map((row) =>
-        this.toStudentItem(row, classesByStudent.get(row.id) ?? [], beltByStudent.get(row.id)),
+        this.toStudentItem(
+          row,
+          classesByStudent.get(row.id) ?? [],
+          beltByStudent.get(row.id),
+        ),
       );
     });
   }
@@ -105,12 +115,17 @@ export class RegistryService {
           .from(guardians)
           .where(eq(guardians.id, input.guardianId));
         if (!guardian[0]) {
-          throw problem(404, ErrorCodes.NOT_FOUND, 'Guardian not found in this academy');
+          throw problem(
+            404,
+            ErrorCodes.NOT_FOUND,
+            'Guardian not found in this academy',
+          );
         }
       }
       // Plan assignment validation (spec 006, BIL.10): clean 404/409 instead
       // of the composite-FK 500 the Phase-3 stub allowed.
-      if (input.academyPlanId) await assertAssignablePlan(tx, input.academyPlanId);
+      if (input.academyPlanId)
+        await assertAssignablePlan(tx, input.academyPlanId);
       const [row] = await tx
         .insert(students)
         .values({
@@ -121,7 +136,12 @@ export class RegistryService {
           academyPlanId: input.academyPlanId ?? null,
         })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Student insert returned no row');
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Student insert returned no row',
+        );
       // Optional initial belt (story 32): a transfer student starts at their
       // real belt via one audited kind='belt' award row — left empty, they
       // start white with no synthetic row.
@@ -145,12 +165,15 @@ export class RegistryService {
   ): Promise<StudentListItem> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       // Archived plans refuse NEW assignment; null unassigns (spec 006).
-      if (input.academyPlanId) await assertAssignablePlan(tx, input.academyPlanId);
+      if (input.academyPlanId)
+        await assertAssignablePlan(tx, input.academyPlanId);
       const [row] = await tx
         .update(students)
         .set({
           ...(input.fullName !== undefined ? { fullName: input.fullName } : {}),
-          ...(input.academyPlanId !== undefined ? { academyPlanId: input.academyPlanId } : {}),
+          ...(input.academyPlanId !== undefined
+            ? { academyPlanId: input.academyPlanId }
+            : {}),
           updatedAt: new Date(),
         })
         .where(eq(students.id, id))
@@ -179,7 +202,9 @@ export class RegistryService {
       await tx
         .update(enrollments)
         .set({ status: 'removed', updatedAt: new Date() })
-        .where(and(eq(enrollments.studentId, id), eq(enrollments.status, 'active')));
+        .where(
+          and(eq(enrollments.studentId, id), eq(enrollments.status, 'active')),
+        );
     });
   }
 
@@ -197,9 +222,18 @@ export class RegistryService {
         .from(guardians)
         .leftJoin(
           students,
-          and(eq(students.guardianId, guardians.id), eq(students.status, 'active')),
+          and(
+            eq(students.guardianId, guardians.id),
+            eq(students.status, 'active'),
+          ),
         )
-        .groupBy(guardians.id, guardians.fullName, guardians.phone, guardians.email, guardians.userId)
+        .groupBy(
+          guardians.id,
+          guardians.fullName,
+          guardians.phone,
+          guardians.email,
+          guardians.userId,
+        )
         .orderBy(asc(guardians.fullName));
       return rows.map((row) => ({
         id: row.id,
@@ -227,7 +261,12 @@ export class RegistryService {
           email: input.email?.toLowerCase() ?? null,
         })
         .returning();
-      if (!row) throw problem(500, ErrorCodes.INTERNAL, 'Guardian insert returned no row');
+      if (!row)
+        throw problem(
+          500,
+          ErrorCodes.INTERNAL,
+          'Guardian insert returned no row',
+        );
       return {
         id: row.id,
         fullName: row.fullName,
@@ -240,7 +279,11 @@ export class RegistryService {
     });
   }
 
-  async updateGuardianName(ctx: AuthContext, id: string, fullName: string): Promise<GuardianListItem> {
+  async updateGuardianName(
+    ctx: AuthContext,
+    id: string,
+    fullName: string,
+  ): Promise<GuardianListItem> {
     return withTenant(this.appDb.db, tenantCtx(ctx), async (tx) => {
       const [row] = await tx
         .update(guardians)
@@ -271,13 +314,25 @@ export class RegistryService {
     const map = new Map<string, Array<{ id: string; name: string }>>();
     if (studentIds.length === 0) return map;
     const rows = await tx
-      .select({ studentId: enrollments.studentId, classId: classes.id, className: classes.name })
+      .select({
+        studentId: enrollments.studentId,
+        classId: classes.id,
+        className: classes.name,
+      })
       .from(enrollments)
       .innerJoin(
         classes,
-        and(eq(classes.tenantId, enrollments.tenantId), eq(classes.id, enrollments.classId)),
+        and(
+          eq(classes.tenantId, enrollments.tenantId),
+          eq(classes.id, enrollments.classId),
+        ),
       )
-      .where(and(inArray(enrollments.studentId, studentIds), eq(enrollments.status, 'active')));
+      .where(
+        and(
+          inArray(enrollments.studentId, studentIds),
+          eq(enrollments.status, 'active'),
+        ),
+      );
     for (const row of rows) {
       const list = map.get(row.studentId) ?? [];
       list.push({ id: row.classId, name: row.className });
@@ -291,7 +346,12 @@ export class RegistryService {
     classList: Array<{ id: string; name: string }>,
     belt: BeltView | undefined,
   ): StudentListItem {
-    if (!belt) throw problem(500, ErrorCodes.INTERNAL, 'Belt derivation returned no entry');
+    if (!belt)
+      throw problem(
+        500,
+        ErrorCodes.INTERNAL,
+        'Belt derivation returned no entry',
+      );
     return {
       id: row.id,
       fullName: row.fullName,

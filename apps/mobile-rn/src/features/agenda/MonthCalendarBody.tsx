@@ -72,7 +72,9 @@ export function MonthCalendarBody({
   const [selectedDay, setSelectedDay] = useState(now.getDate());
 
   const buckets = data?.classesByWeekday;
-  const items = buckets ? dayAgendaItems(buckets, weekdayOf(year, month, selectedDay)) : [];
+  const items = buckets
+    ? dayAgendaItems(buckets, weekdayOf(year, month, selectedDay))
+    : [];
 
   // Month's published events → pink dots + selected-day Evento entries.
   const monthKey = data?.month ?? `${year}-${`${month}`.padStart(2, '0')}`;
@@ -85,10 +87,17 @@ export function MonthCalendarBody({
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: theme.space['5'], paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: theme.space['5'],
+          paddingBottom: 130,
+        }}
+      >
         <Animated.View entering={fadeUp()} style={{ gap: theme.space['4'] }}>
           <ScreenHeader
-            title={monthTitlePt(data?.month ?? `${year}-${`${month}`.padStart(2, '0')}`)}
+            title={monthTitlePt(
+              data?.month ?? `${year}-${`${month}`.padStart(2, '0')}`,
+            )}
             subtitle={subtitle}
             onBack={() => router.back()}
           />
@@ -104,7 +113,10 @@ export function MonthCalendarBody({
                     selectedDay={selectedDay}
                     onSelectDay={setSelectedDay}
                     marks={marks}
-                    legend={{ classLabel: legendClassLabel, eventLabel: 'evento' }}
+                    legend={{
+                      classLabel: legendClassLabel,
+                      eventLabel: 'evento',
+                    }}
                   />
                 </Card>
 
@@ -116,7 +128,10 @@ export function MonthCalendarBody({
                   <Text
                     variant="caption"
                     testID="free-day-copy"
-                    style={{ textAlign: 'center', paddingVertical: theme.space['6'] }}
+                    style={{
+                      textAlign: 'center',
+                      paddingVertical: theme.space['6'],
+                    }}
                   >
                     {emptyDayCopy}
                   </Text>
@@ -152,7 +167,9 @@ export function MonthCalendarBody({
                               : item.professorName}
                           </Text>
                         </View>
-                        {persona === 'aluno' ? <Chip label="Aula" tone="brand" /> : null}
+                        {persona === 'aluno' ? (
+                          <Chip label="Aula" tone="brand" />
+                        ) : null}
                       </View>
                     </Card>
                   ))

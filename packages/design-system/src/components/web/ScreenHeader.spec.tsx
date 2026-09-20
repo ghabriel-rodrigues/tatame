@@ -8,23 +8,38 @@ import { TATAME_DEFAULT_BRAND } from '../../theme/presets.ts';
 import { createTatameTheme } from '../../theme/create-tatame-theme.ts';
 import { ScreenHeader } from './ScreenHeader.tsx';
 
-const theme = createTatameTheme(derivePalette(TATAME_DEFAULT_BRAND, 'light'), 'light');
-const renderUi = (ui: ReactElement) => render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
+const theme = createTatameTheme(
+  derivePalette(TATAME_DEFAULT_BRAND, 'light'),
+  'light',
+);
+const renderUi = (ui: ReactElement) =>
+  render(<ThemeProvider theme={theme}>{ui}</ThemeProvider>);
 
 describe('ScreenHeader', () => {
   it('renders a banner landmark with an h1 title', () => {
     renderUi(<ScreenHeader title="Bem-vindo de volta" />);
     expect(screen.getByRole('banner')).toBeTruthy();
-    const title = screen.getByRole('heading', { level: 1, name: 'Bem-vindo de volta' });
+    const title = screen.getByRole('heading', {
+      level: 1,
+      name: 'Bem-vindo de volta',
+    });
     expect(title.className).toContain('ScreenHeader-title');
   });
 
   it('renders optional eyebrow and subtitle', () => {
     renderUi(
-      <ScreenHeader eyebrow="Sexta, 12 de junho" title="Olá, Rafa" subtitle="Bora treinar?" />,
+      <ScreenHeader
+        eyebrow="Sexta, 12 de junho"
+        title="Olá, Rafa"
+        subtitle="Bora treinar?"
+      />,
     );
-    expect(screen.getByText('Sexta, 12 de junho').className).toContain('ScreenHeader-eyebrow');
-    expect(screen.getByText('Bora treinar?').className).toContain('ScreenHeader-subtitle');
+    expect(screen.getByText('Sexta, 12 de junho').className).toContain(
+      'ScreenHeader-eyebrow',
+    );
+    expect(screen.getByText('Bora treinar?').className).toContain(
+      'ScreenHeader-subtitle',
+    );
   });
 
   it('back button only exists when onBack is provided, labeled Voltar', () => {

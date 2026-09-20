@@ -10,7 +10,13 @@ import { useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Check } from 'lucide-react-native';
-import { Card, TatameButton, Text, pop, useTheme } from '@tatame/design-system/native';
+import {
+  Card,
+  TatameButton,
+  Text,
+  pop,
+  useTheme,
+} from '@tatame/design-system/native';
 import { formatBRL } from './format';
 
 /** Green check pop + confirmation copy (payment settled, aluno-13/15). */
@@ -26,7 +32,11 @@ export function PaymentSuccess({
   const theme = useTheme();
   return (
     <View
-      style={{ alignItems: 'center', gap: theme.space['3'], paddingVertical: theme.space['2'] }}
+      style={{
+        alignItems: 'center',
+        gap: theme.space['3'],
+        paddingVertical: theme.space['2'],
+      }}
     >
       <Animated.View
         entering={pop()}
@@ -173,12 +183,20 @@ export function CopiedNotice({
  * provider's barcode payload — a render-only illustration, never scannable
  * truth (the linha digitável is the payable artifact).
  */
-export function BarcodeStripes({ payload, testID }: { payload: string; testID?: string }) {
+export function BarcodeStripes({
+  payload,
+  testID,
+}: {
+  payload: string;
+  testID?: string;
+}) {
   const theme = useTheme();
-  const stripes = [...payload.replace(/\D/g, '').slice(0, 44)].map((char, index) => ({
-    key: index,
-    width: (char.charCodeAt(0) % 3) + 1,
-  }));
+  const stripes = [...payload.replace(/\D/g, '').slice(0, 44)].map(
+    (char, index) => ({
+      key: index,
+      width: (char.charCodeAt(0) % 3) + 1,
+    }),
+  );
   return (
     <View
       testID={testID}

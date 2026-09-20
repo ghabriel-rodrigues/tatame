@@ -16,7 +16,8 @@ export class EventRegistrationStateDto {
     format: 'uuid',
     nullable: true,
     type: String,
-    description: 'Open event-origin charge to pay (pending_payment only) — drives the Pix sheet',
+    description:
+      'Open event-origin charge to pay (pending_payment only) — drives the Pix sheet',
   })
   chargeId!: string | null;
 }
@@ -29,7 +30,10 @@ export class EventCardDto {
   @ApiProperty({ example: 'Open mat de verão' })
   name!: string;
 
-  @ApiProperty({ example: 'event-purple-pink', description: 'Design-system gradient slug' })
+  @ApiProperty({
+    example: 'event-purple-pink',
+    description: 'Design-system gradient slug',
+  })
   bannerPreset!: string;
 
   @ApiPropertyOptional({ nullable: true, type: String })
@@ -43,10 +47,20 @@ export class EventCardDto {
   })
   startsAt!: string | null;
 
-  @ApiPropertyOptional({ example: '2026-08-22', nullable: true, type: String, description: 'Tenant-local date' })
+  @ApiPropertyOptional({
+    example: '2026-08-22',
+    nullable: true,
+    type: String,
+    description: 'Tenant-local date',
+  })
   date!: string | null;
 
-  @ApiPropertyOptional({ example: '10:00', nullable: true, type: String, description: 'Tenant-local time' })
+  @ApiPropertyOptional({
+    example: '10:00',
+    nullable: true,
+    type: String,
+    description: 'Tenant-local time',
+  })
   time!: string | null;
 
   @ApiPropertyOptional({
@@ -66,13 +80,17 @@ export class EventResponsibleDto {
 }
 
 export class EventTotalsDto {
-  @ApiProperty({ description: 'Non-canceled registrations (pending + confirmed)' })
+  @ApiProperty({
+    description: 'Non-canceled registrations (pending + confirmed)',
+  })
   inscritos!: number;
 
   @ApiProperty()
   confirmados!: number;
 
-  @ApiProperty({ description: 'Settled event money (paid charges; refunds excluded)' })
+  @ApiProperty({
+    description: 'Settled event money (paid charges; refunds excluded)',
+  })
   arrecadadoCents!: number;
 }
 
@@ -91,7 +109,10 @@ export class AdminEventDto extends EventCardDto {
 }
 
 export class AdminEventsResponseDto {
-  @ApiProperty({ type: [AdminEventDto], description: 'Drafts first, then chronological' })
+  @ApiProperty({
+    type: [AdminEventDto],
+    description: 'Drafts first, then chronological',
+  })
   events!: AdminEventDto[];
 }
 
@@ -122,7 +143,8 @@ export class AdminRegistrationRowDto {
   @ApiPropertyOptional({
     nullable: true,
     type: Number,
-    description: 'Settled amount for this registration (null while unpaid / free)',
+    description:
+      'Settled amount for this registration (null while unpaid / free)',
   })
   paidAmountCents!: number | null;
 }
@@ -139,7 +161,9 @@ export class AdminEventRegistrationsResponseDto {
 }
 
 export class AnnounceResponseDto {
-  @ApiProperty({ description: 'Inscritos addressed by the queued announcement' })
+  @ApiProperty({
+    description: 'Inscritos addressed by the queued announcement',
+  })
   recipients!: number;
 }
 
@@ -163,7 +187,10 @@ export class AlunoEventDetailResponseDto extends EventCardDto {
   @ApiPropertyOptional({ nullable: true, type: String })
   description!: string | null;
 
-  @ApiProperty({ type: EventResponsibleDto, description: 'The "Responsável: Prof. …" line' })
+  @ApiProperty({
+    type: EventResponsibleDto,
+    description: 'The "Responsável: Prof. …" line',
+  })
   responsible!: EventResponsibleDto;
 
   @ApiPropertyOptional({ type: EventRegistrationStateDto, nullable: true })
@@ -207,7 +234,10 @@ export class ResponsavelEventDto extends EventCardDto {
 }
 
 export class ResponsavelEventsResponseDto {
-  @ApiProperty({ type: [ResponsavelEventDto], description: 'Published upcoming, chronological' })
+  @ApiProperty({
+    type: [ResponsavelEventDto],
+    description: 'Published upcoming, chronological',
+  })
   events!: ResponsavelEventDto[];
 }
 

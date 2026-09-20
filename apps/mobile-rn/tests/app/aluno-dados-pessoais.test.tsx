@@ -6,11 +6,22 @@
  * placeholder and the Salvar round trip with per-field PT-BR 422 mapping.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeAlunoHome } from '../helpers/attendance';
 import { makeAlunoProfile, makeEmptyAlunoProfile } from '../helpers/profile';
 
@@ -30,7 +41,10 @@ function renderAluno(override?: FetchHandler): jest.Mock {
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'student' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'student' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -43,7 +57,9 @@ async function openDadosPessoais(): Promise<void> {
   await act(async () => {
     fireEvent.press(screen.getByLabelText('Perfil'));
   });
-  await waitFor(() => expect(screen.getByTestId('perfil-dados-row')).toBeTruthy());
+  await waitFor(() =>
+    expect(screen.getByTestId('perfil-dados-row')).toBeTruthy(),
+  );
   await act(async () => {
     fireEvent.press(screen.getByTestId('perfil-dados-row'));
   });
@@ -112,15 +128,22 @@ describe('aluno Dados pessoais (REP.10)', () => {
       return null;
     });
     await openDadosPessoais();
-    await waitFor(() => expect(screen.getByLabelText('Nome completo')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByLabelText('Nome completo')).toBeTruthy(),
+    );
 
-    fireEvent.changeText(screen.getByLabelText('Nome completo'), 'Lucas A. Silva');
+    fireEvent.changeText(
+      screen.getByLabelText('Nome completo'),
+      'Lucas A. Silva',
+    );
     fireEvent.changeText(screen.getByLabelText('Cidade / UF'), 'Campinas / sp');
     await act(async () => {
       fireEvent.press(screen.getByTestId('dados-salvar'));
     });
 
-    await waitFor(() => expect(screen.getByText('Dados pessoais salvos.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Dados pessoais salvos.')).toBeTruthy(),
+    );
     expect(putBody).not.toBeNull();
     expect(putBody).toMatchObject({
       fullName: 'Lucas A. Silva',
@@ -160,7 +183,9 @@ describe('aluno Dados pessoais (REP.10)', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByText('CPF não pode ser alterado após definido.')).toBeTruthy(),
+      expect(
+        screen.getByText('CPF não pode ser alterado após definido.'),
+      ).toBeTruthy(),
     );
     expect(screen.getByTestId('dados-error')).toBeTruthy();
   });
@@ -173,7 +198,10 @@ describe('aluno Dados pessoais (REP.10)', () => {
             code: 'validation.failed',
             detail: 'Request validation failed',
             errors: [
-              { field: 'addressZip', messages: ['CEP inválido — use 8 dígitos'] },
+              {
+                field: 'addressZip',
+                messages: ['CEP inválido — use 8 dígitos'],
+              },
               { field: 'phone', messages: ['Telefone inválido'] },
             ],
           })

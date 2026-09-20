@@ -1,5 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -8,7 +15,11 @@ import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { migrationsFolder, runMigrations } from '../lib/migrate.js';
 import { APPEND_ONLY_TABLES } from '../schema/index.js';
-import { createFreshDb, testAdminUrl, type FreshDb } from '../testing/test-db.js';
+import {
+  createFreshDb,
+  testAdminUrl,
+  type FreshDb,
+} from '../testing/test-db.js';
 
 const AUTH_TABLES = [
   'users',
@@ -25,7 +36,13 @@ const AUTH_TABLES = [
   'academy_subscriptions',
 ];
 
-const ENROLLMENT_TABLES = ['students', 'guardians', 'classes', 'class_schedules', 'enrollments'];
+const ENROLLMENT_TABLES = [
+  'students',
+  'guardians',
+  'classes',
+  'class_schedules',
+  'enrollments',
+];
 
 const ATTENDANCE_TABLES = ['class_sessions', 'checkin_codes', 'attendances'];
 
@@ -51,7 +68,12 @@ const BILLING_TABLES = [
 
 const EVENTS_TABLES = ['events', 'event_registrations'];
 
-const STORE_TABLES = ['product_categories', 'products', 'orders', 'order_items'];
+const STORE_TABLES = [
+  'product_categories',
+  'products',
+  'orders',
+  'order_items',
+];
 
 const NOTIFICATIONS_TABLES = ['notifications'];
 
@@ -124,8 +146,13 @@ describe('migrations', () => {
     );
     expect(res.rows).toHaveLength(allTables.length);
     for (const row of res.rows) {
-      expect(row.relrowsecurity, `${row.relname} must have RLS enabled`).toBe(true);
-      expect(row.relforcerowsecurity, `${row.relname} must have RLS forced`).toBe(true);
+      expect(row.relrowsecurity, `${row.relname} must have RLS enabled`).toBe(
+        true,
+      );
+      expect(
+        row.relforcerowsecurity,
+        `${row.relname} must have RLS forced`,
+      ).toBe(true);
     }
   });
 
@@ -161,8 +188,12 @@ describe('migrations', () => {
     }
     for (const row of res.rows) {
       expect(row.relrowsecurity, `${row.table_name} RLS enabled`).toBe(true);
-      expect(row.relforcerowsecurity, `${row.table_name} RLS forced`).toBe(true);
-      expect(row.has_tenant_policy, `${row.table_name} tenant policy`).toBe(true);
+      expect(row.relforcerowsecurity, `${row.table_name} RLS forced`).toBe(
+        true,
+      );
+      expect(row.has_tenant_policy, `${row.table_name} tenant policy`).toBe(
+        true,
+      );
     }
   });
 
@@ -186,9 +217,13 @@ describe('migrations', () => {
        WHERE proname = ANY($1)`,
       [AUTH_FUNCTIONS],
     );
-    expect(res.rows.map((r) => r.proname).sort()).toEqual([...AUTH_FUNCTIONS].sort());
+    expect(res.rows.map((r) => r.proname).sort()).toEqual(
+      [...AUTH_FUNCTIONS].sort(),
+    );
     for (const row of res.rows) {
-      expect(row.prosecdef, `${row.proname} must be SECURITY DEFINER`).toBe(true);
+      expect(row.prosecdef, `${row.proname} must be SECURITY DEFINER`).toBe(
+        true,
+      );
     }
 
     const priv = await client.query(`
@@ -211,10 +246,13 @@ describe('migrations', () => {
       'auth_accept_invite_v2',
     ]);
     for (const row of res.rows) {
-      expect(row.prosecdef, `${row.proname} must be SECURITY DEFINER`).toBe(true);
+      expect(row.prosecdef, `${row.proname} must be SECURITY DEFINER`).toBe(
+        true,
+      );
     }
 
-    const sig = 'auth_accept_invite_v2(text, text, text, text, date, text, jsonb)';
+    const sig =
+      'auth_accept_invite_v2(text, text, text, text, date, text, jsonb)';
     const priv = await client.query(
       `SELECT
          has_function_privilege('tatame_app', '${sig}', 'EXECUTE') AS app_can,
@@ -287,7 +325,9 @@ describe('migrations', () => {
       [tables],
     );
     expect(
-      grants.rows.map((r) => `${r.table_name}:${r.grantee}:${r.privilege_type}`),
+      grants.rows.map(
+        (r) => `${r.table_name}:${r.grantee}:${r.privilege_type}`,
+      ),
       'append-only tables must carry no UPDATE/DELETE grants',
     ).toEqual([]);
 
@@ -313,7 +353,9 @@ describe('migrations', () => {
        JOIN pg_proc p ON p.oid = t.tgfoid
        WHERE NOT t.tgisinternal AND p.proname = 'forbid_mutation'`,
     );
-    expect(triggered.rows.map((r) => r.relname).sort()).toEqual([...tables].sort());
+    expect(triggered.rows.map((r) => r.relname).sort()).toEqual(
+      [...tables].sort(),
+    );
   });
 
   it('creates the attendance_revoke void seam, executable by tatame_app only', async () => {
@@ -323,7 +365,10 @@ describe('migrations', () => {
        WHERE proname = 'attendance_revoke'`,
     );
     expect(res.rows).toHaveLength(1);
-    expect(res.rows[0].prosecdef, 'attendance_revoke must be SECURITY DEFINER').toBe(true);
+    expect(
+      res.rows[0].prosecdef,
+      'attendance_revoke must be SECURITY DEFINER',
+    ).toBe(true);
 
     const sig = 'attendance_revoke(uuid, uuid, uuid, text, uuid)';
     const priv = await client.query(
@@ -337,8 +382,12 @@ describe('migrations', () => {
 
   it('hardens invites.class_id over Phase-2 data (dangling bindings nulled, FK added)', async () => {
     // Rebuild Phase-2 state: a migrations folder truncated at 0005.
-    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
-    const phase2Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 5);
+    const journal = JSON.parse(
+      readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+    );
+    const phase2Entries = journal.entries.filter(
+      (e: { idx: number }) => e.idx <= 5,
+    );
     expect(phase2Entries).toHaveLength(6);
     const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase2-'));
     mkdirSync(join(partialDir, 'meta'));
@@ -347,7 +396,10 @@ describe('migrations', () => {
       JSON.stringify({ ...journal, entries: phase2Entries }),
     );
     for (const entry of phase2Entries) {
-      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+      cpSync(
+        join(migrationsFolder, `${entry.tag}.sql`),
+        join(partialDir, `${entry.tag}.sql`),
+      );
     }
 
     const dbName = `t_${randomUUID().replaceAll('-', '')}`;
@@ -381,7 +433,9 @@ describe('migrations', () => {
       // The remaining migrations (0006+) must apply on top of that state.
       await migrate(drizzle(pool), { migrationsFolder });
 
-      const invite = await pool.query(`SELECT class_id FROM invites WHERE token_hash = 'phase2-token'`);
+      const invite = await pool.query(
+        `SELECT class_id FROM invites WHERE token_hash = 'phase2-token'`,
+      );
       expect(invite.rows).toHaveLength(1);
       expect(invite.rows[0].class_id).toBeNull(); // dangling binding cleaned
 
@@ -399,8 +453,12 @@ describe('migrations', () => {
 
   it('hardens the academy_plan_id stubs over Phase-5 data (dangling bindings nulled, FKs added)', async () => {
     // Rebuild pre-billing state: a migrations folder truncated at 0013.
-    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
-    const phase5Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 13);
+    const journal = JSON.parse(
+      readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+    );
+    const phase5Entries = journal.entries.filter(
+      (e: { idx: number }) => e.idx <= 13,
+    );
     expect(phase5Entries).toHaveLength(14);
     const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase5-'));
     mkdirSync(join(partialDir, 'meta'));
@@ -409,7 +467,10 @@ describe('migrations', () => {
       JSON.stringify({ ...journal, entries: phase5Entries }),
     );
     for (const entry of phase5Entries) {
-      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+      cpSync(
+        join(migrationsFolder, `${entry.tag}.sql`),
+        join(partialDir, `${entry.tag}.sql`),
+      );
     }
 
     const dbName = `t_${randomUUID().replaceAll('-', '')}`;
@@ -479,8 +540,12 @@ describe('migrations', () => {
 
   it('hardens charges.event_registration_id over Phase-6 data (dangling event charges removed, FK added)', async () => {
     // Rebuild pre-events state: a migrations folder truncated at 0016.
-    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
-    const phase6Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 16);
+    const journal = JSON.parse(
+      readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+    );
+    const phase6Entries = journal.entries.filter(
+      (e: { idx: number }) => e.idx <= 16,
+    );
     expect(phase6Entries).toHaveLength(17);
     const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase6-'));
     mkdirSync(join(partialDir, 'meta'));
@@ -489,7 +554,10 @@ describe('migrations', () => {
       JSON.stringify({ ...journal, entries: phase6Entries }),
     );
     for (const entry of phase6Entries) {
-      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+      cpSync(
+        join(migrationsFolder, `${entry.tag}.sql`),
+        join(partialDir, `${entry.tag}.sql`),
+      );
     }
 
     const dbName = `t_${randomUUID().replaceAll('-', '')}`;
@@ -545,12 +613,16 @@ describe('migrations', () => {
 
       // The dangling event charge and its payment are gone (the per-origin
       // CHECK forbids nulling, unlike the 0006/0014 nullable stubs)...
-      const gone = await pool.query(`SELECT 1 FROM charges WHERE origin = 'event'`);
+      const gone = await pool.query(
+        `SELECT 1 FROM charges WHERE origin = 'event'`,
+      );
       expect(gone.rows).toHaveLength(0);
       const orphanPayments = await pool.query(`SELECT 1 FROM payments`);
       expect(orphanPayments.rows).toHaveLength(0);
       // ...while plan money survives untouched.
-      const survivor = await pool.query(`SELECT id FROM charges WHERE origin = 'plan'`);
+      const survivor = await pool.query(
+        `SELECT id FROM charges WHERE origin = 'plan'`,
+      );
       expect(survivor.rows.map((r) => r.id)).toEqual([planCharge]);
 
       const fk = await pool.query(
@@ -567,8 +639,12 @@ describe('migrations', () => {
 
   it('hardens charges.order_id over Phase-8 data (dangling order charges removed, FK added, student_id relaxed)', async () => {
     // Rebuild pre-store state: a migrations folder truncated at 0019.
-    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
-    const phase8Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 19);
+    const journal = JSON.parse(
+      readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+    );
+    const phase8Entries = journal.entries.filter(
+      (e: { idx: number }) => e.idx <= 19,
+    );
     expect(phase8Entries).toHaveLength(20);
     const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase8-'));
     mkdirSync(join(partialDir, 'meta'));
@@ -577,7 +653,10 @@ describe('migrations', () => {
       JSON.stringify({ ...journal, entries: phase8Entries }),
     );
     for (const entry of phase8Entries) {
-      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+      cpSync(
+        join(migrationsFolder, `${entry.tag}.sql`),
+        join(partialDir, `${entry.tag}.sql`),
+      );
     }
 
     const dbName = `t_${randomUUID().replaceAll('-', '')}`;
@@ -633,12 +712,16 @@ describe('migrations', () => {
 
       // The dangling order charge and its payment are gone (the per-origin
       // CHECK forbids nulling, exactly like the 0017 event-stub cleanup)...
-      const gone = await pool.query(`SELECT 1 FROM charges WHERE origin = 'order'`);
+      const gone = await pool.query(
+        `SELECT 1 FROM charges WHERE origin = 'order'`,
+      );
       expect(gone.rows).toHaveLength(0);
       const orphanPayments = await pool.query(`SELECT 1 FROM payments`);
       expect(orphanPayments.rows).toHaveLength(0);
       // ...while plan money survives untouched.
-      const survivor = await pool.query(`SELECT id FROM charges WHERE origin = 'plan'`);
+      const survivor = await pool.query(
+        `SELECT id FROM charges WHERE origin = 'plan'`,
+      );
       expect(survivor.rows.map((r) => r.id)).toEqual([planCharge]);
 
       const fk = await pool.query(
@@ -683,16 +766,28 @@ describe('migrations', () => {
     expect(byName['auto_notifications_enabled'].is_nullable).toBe('NO');
     expect(byName['auto_notifications_enabled'].column_default).toBe('true');
 
-    const insert = (deep: string | null, vibrant: string | null, accent: string | null) =>
+    const insert = (
+      deep: string | null,
+      vibrant: string | null,
+      accent: string | null,
+    ) =>
       client.query(
         `INSERT INTO academies (id, name, slug, contact_email, brand_deep, brand_vibrant, brand_accent)
          VALUES ($1, 'Brand CK', $2, 'ck@t.dev', $3, $4, $5)`,
-        [randomUUID(), `brand-ck-${randomUUID().slice(0, 8)}`, deep, vibrant, accent],
+        [
+          randomUUID(),
+          `brand-ck-${randomUUID().slice(0, 8)}`,
+          deep,
+          vibrant,
+          accent,
+        ],
       );
 
     // Invalid hex shapes: shorthand, missing '#', lowercase (DB stores
     // uppercase only — the API normalizes), garbage.
-    await expect(insert('#123', '#3A5FA8', '#E63946')).rejects.toThrow(/academies_brand_deep_hex_ck/);
+    await expect(insert('#123', '#3A5FA8', '#E63946')).rejects.toThrow(
+      /academies_brand_deep_hex_ck/,
+    );
     await expect(insert('#14213D', '3A5FA8', '#E63946')).rejects.toThrow(
       /academies_brand_vibrant_hex_ck/,
     );
@@ -704,13 +799,17 @@ describe('migrations', () => {
     );
 
     // Partial triplet: all-or-none.
-    await expect(insert('#14213D', null, null)).rejects.toThrow(/academies_brand_all_or_none_ck/);
+    await expect(insert('#14213D', null, null)).rejects.toThrow(
+      /academies_brand_all_or_none_ck/,
+    );
     await expect(insert(null, '#3A5FA8', '#E63946')).rejects.toThrow(
       /academies_brand_all_or_none_ck/,
     );
 
     // Full triplet and full NULL both pass; the toggle defaults on.
-    await expect(insert('#14213D', '#3A5FA8', '#E63946')).resolves.toBeDefined();
+    await expect(
+      insert('#14213D', '#3A5FA8', '#E63946'),
+    ).resolves.toBeDefined();
     await expect(insert(null, null, null)).resolves.toBeDefined();
     const defaulted = await client.query(
       `SELECT auto_notifications_enabled FROM academies WHERE name = 'Brand CK' LIMIT 1`,
@@ -727,8 +826,12 @@ describe('migrations', () => {
 
   it('migrates the theme jsonb placeholder over Phase-10 data (valid triplets carried, noise dropped)', async () => {
     // Rebuild pre-config state: a migrations folder truncated at 0024.
-    const journal = JSON.parse(readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'));
-    const phase10Entries = journal.entries.filter((e: { idx: number }) => e.idx <= 24);
+    const journal = JSON.parse(
+      readFileSync(join(migrationsFolder, 'meta', '_journal.json'), 'utf8'),
+    );
+    const phase10Entries = journal.entries.filter(
+      (e: { idx: number }) => e.idx <= 24,
+    );
     expect(phase10Entries).toHaveLength(25);
     const partialDir = mkdtempSync(join(tmpdir(), 'tatame-phase10-'));
     mkdirSync(join(partialDir, 'meta'));
@@ -737,7 +840,10 @@ describe('migrations', () => {
       JSON.stringify({ ...journal, entries: phase10Entries }),
     );
     for (const entry of phase10Entries) {
-      cpSync(join(migrationsFolder, `${entry.tag}.sql`), join(partialDir, `${entry.tag}.sql`));
+      cpSync(
+        join(migrationsFolder, `${entry.tag}.sql`),
+        join(partialDir, `${entry.tag}.sql`),
+      );
     }
 
     const dbName = `t_${randomUUID().replaceAll('-', '')}`;
@@ -768,14 +874,24 @@ describe('migrations', () => {
         `SELECT slug, brand_deep, brand_vibrant, brand_accent FROM academies ORDER BY slug`,
       );
       expect(rows.rows).toEqual([
-        { slug: 'phase10-bare', brand_deep: null, brand_vibrant: null, brand_accent: null },
+        {
+          slug: 'phase10-bare',
+          brand_deep: null,
+          brand_vibrant: null,
+          brand_accent: null,
+        },
         {
           slug: 'phase10-branded',
           brand_deep: '#14213D',
           brand_vibrant: '#3A5FA8',
           brand_accent: '#E63946',
         },
-        { slug: 'phase10-noise', brand_deep: null, brand_vibrant: null, brand_accent: null },
+        {
+          slug: 'phase10-noise',
+          brand_deep: null,
+          brand_vibrant: null,
+          brand_accent: null,
+        },
       ]);
     } finally {
       await pool.end();

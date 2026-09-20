@@ -30,7 +30,11 @@ import { $api, queryClient } from '../../api/api';
 import { useAuth } from '../../auth/auth-store';
 import { useToastState } from '../admin/common';
 import { centsToInput, formatBRLWhole, parseBRLInput } from '../billing-format';
-import { academyCountLabel, platformErrorMessage, studentLimitLabel } from './platform-format';
+import {
+  academyCountLabel,
+  platformErrorMessage,
+  studentLimitLabel,
+} from './platform-format';
 
 /** plataforma-06 limit chips; `null` = unlimited. */
 const LIMIT_CHIPS: Array<{ label: string; value: number | null }> = [
@@ -52,11 +56,22 @@ interface PlanSheetProps {
   fullFeatures?: string[];
 }
 
-function PlanSheet({ open, onClose, onSuccess, registry, plan, fullFeatures }: PlanSheetProps) {
+function PlanSheet({
+  open,
+  onClose,
+  onSuccess,
+  registry,
+  plan,
+  fullFeatures,
+}: PlanSheetProps) {
   const editing = plan !== undefined;
   const [name, setName] = useState(plan?.name ?? '');
-  const [priceText, setPriceText] = useState(plan ? centsToInput(plan.priceCents) : '');
-  const [limit, setLimit] = useState<number | null>(plan ? plan.studentLimit : 250);
+  const [priceText, setPriceText] = useState(
+    plan ? centsToInput(plan.priceCents) : '',
+  );
+  const [limit, setLimit] = useState<number | null>(
+    plan ? plan.studentLimit : 250,
+  );
   const [features, setFeatures] = useState<string[]>(fullFeatures ?? []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
@@ -67,7 +82,9 @@ function PlanSheet({ open, onClose, onSuccess, registry, plan, fullFeatures }: P
 
   function toggleFeature(slug: string) {
     setFeatures((current) =>
-      current.includes(slug) ? current.filter((value) => value !== slug) : [...current, slug],
+      current.includes(slug)
+        ? current.filter((value) => value !== slug)
+        : [...current, slug],
     );
   }
 
@@ -75,14 +92,22 @@ function PlanSheet({ open, onClose, onSuccess, registry, plan, fullFeatures }: P
     const next: Record<string, string> = {};
     const priceCents = parseBRLInput(priceText);
     if (name.trim().length < 2) next['name'] = 'Informe o nome do plano.';
-    if (priceCents === null) next['price'] = 'Informe um valor válido, ex.: 199,00.';
+    if (priceCents === null)
+      next['price'] = 'Informe um valor válido, ex.: 199,00.';
     setErrors(next);
     if (Object.keys(next).length > 0 || priceCents === null) return;
 
-    const body = { name: name.trim(), priceCents, studentLimit: limit, features };
+    const body = {
+      name: name.trim(),
+      priceCents,
+      studentLimit: limit,
+      features,
+    };
     const options = {
       onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: ['get', '/v1/platform/plans'] });
+        await queryClient.invalidateQueries({
+          queryKey: ['get', '/v1/platform/plans'],
+        });
         setDone(true);
       },
       onError: (error: unknown) => setApiError(platformErrorMessage(error)),
@@ -120,7 +145,9 @@ function PlanSheet({ open, onClose, onSuccess, registry, plan, fullFeatures }: P
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={editing ? 'Editar plano da plataforma' : 'Novo plano da plataforma'}
+      title={
+        editing ? 'Editar plano da plataforma' : 'Novo plano da plataforma'
+      }
       subtitle={
         editing
           ? 'Mudanças valem no próximo ciclo das assinantes'
@@ -145,8 +172,14 @@ function PlanSheet({ open, onClose, onSuccess, registry, plan, fullFeatures }: P
         />
 
         <Stack spacing="6px">
-          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>Limite de alunos</FormLabel>
-          <Stack direction="row" spacing="8px" sx={{ flexWrap: 'wrap', rowGap: '8px' }}>
+          <FormLabel sx={{ fontSize: 13, fontWeight: 600 }}>
+            Limite de alunos
+          </FormLabel>
+          <Stack
+            direction="row"
+            spacing="8px"
+            sx={{ flexWrap: 'wrap', rowGap: '8px' }}
+          >
             {LIMIT_CHIPS.map((chip) => (
               <Chip
                 key={chip.label}
@@ -172,7 +205,9 @@ function PlanSheet({ open, onClose, onSuccess, registry, plan, fullFeatures }: P
                 padding: '4px 0',
               }}
             >
-              <Typography sx={{ fontSize: 13, color: 'var(--fg-2)' }}>{feature.label}</Typography>
+              <Typography sx={{ fontSize: 13, color: 'var(--fg-2)' }}>
+                {feature.label}
+              </Typography>
               <Switch
                 size="small"
                 checked={features.includes(feature.slug)}
@@ -216,7 +251,8 @@ function PlanCard({
             zIndex: 1,
             padding: '4px 10px',
             borderRadius: '999px',
-            background: 'linear-gradient(135deg, var(--brand-1), var(--brand-2))',
+            background:
+              'linear-gradient(135deg, var(--brand-1), var(--brand-2))',
             color: 'var(--white, #FFFFFF)',
             fontSize: 10,
             fontWeight: 700,
@@ -227,21 +263,36 @@ function PlanCard({
       ) : null}
       <Card
         padding={16}
-        {...(plan.isMostSubscribed ? { sx: { border: '1px solid var(--brand-2)' } } : {})}
+        {...(plan.isMostSubscribed
+          ? { sx: { border: '1px solid var(--brand-2)' } }
+          : {})}
       >
-        <Stack direction="row" sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <Typography sx={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-1)' }}>
+        <Stack
+          direction="row"
+          sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}
+        >
+          <Typography
+            sx={{ fontSize: 17, fontWeight: 700, color: 'var(--fg-1)' }}
+          >
             {plan.name}
           </Typography>
-          <Typography sx={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-1)' }}>
+          <Typography
+            sx={{ fontSize: 17, fontWeight: 800, color: 'var(--fg-1)' }}
+          >
             {formatBRLWhole(plan.priceCents)}
-            <Box component="span" sx={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)' }}>
+            <Box
+              component="span"
+              sx={{ fontSize: 11, fontWeight: 600, color: 'var(--fg-3)' }}
+            >
               /mês
             </Box>
           </Typography>
         </Stack>
-        <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}>
-          {studentLimitLabel(plan.studentLimit)} · {academyCountLabel(plan.academyCount)}
+        <Typography
+          sx={{ fontSize: 11.5, fontWeight: 600, color: 'var(--fg-3)' }}
+        >
+          {studentLimitLabel(plan.studentLimit)} ·{' '}
+          {academyCountLabel(plan.academyCount)}
         </Typography>
 
         <Stack
@@ -259,7 +310,12 @@ function PlanCard({
 
         {canEdit ? (
           <Box sx={{ marginTop: '12px' }}>
-            <TatameButton variant="secondary" size="sm" label="Editar plano" onPress={onEdit} />
+            <TatameButton
+              variant="secondary"
+              size="sm"
+              label="Editar plano"
+              onPress={onEdit}
+            />
           </Box>
         ) : null}
       </Card>
@@ -286,7 +342,9 @@ export function PlanosPage() {
   function fullFeaturesOf(plan: PlatformPlanRow): string[] {
     const own = plan.features.map((feature) => feature.slug);
     if (!plan.inheritsFrom) return own;
-    const parent = plans.find((candidate) => candidate.name === plan.inheritsFrom);
+    const parent = plans.find(
+      (candidate) => candidate.name === plan.inheritsFrom,
+    );
     return parent ? [...new Set([...fullFeaturesOf(parent), ...own])] : own;
   }
 
@@ -299,14 +357,20 @@ export function PlanosPage() {
           {...(isOwner
             ? {
                 trailing: (
-                  <TatameButton size="sm" label="Novo plano" onPress={() => setCreating(true)} />
+                  <TatameButton
+                    size="sm"
+                    label="Novo plano"
+                    onPress={() => setCreating(true)}
+                  />
                 ),
               }
             : {})}
         />
 
         {query.isLoading ? (
-          <Typography sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}>
+          <Typography
+            sx={{ fontSize: 13.5, color: 'var(--fg-3)', textAlign: 'center' }}
+          >
             Carregando planos…
           </Typography>
         ) : null}
@@ -349,7 +413,11 @@ export function PlanosPage() {
         />
       ) : null}
 
-      <Toast open={toast.message !== null} message={toast.message ?? ''} onClose={toast.clear} />
+      <Toast
+        open={toast.message !== null}
+        message={toast.message ?? ''}
+        onClose={toast.clear}
+      />
     </Box>
   );
 }

@@ -1,7 +1,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { ErrorCodes, problem } from '../../../common/problem.js';
-import { APP_CONFIG, type AppConfig } from '../../../infra/config/app-config.js';
+import {
+  APP_CONFIG,
+  type AppConfig,
+} from '../../../infra/config/app-config.js';
 
 /** Single-purpose claims bound into the ticket — never a session credential. */
 export interface StreamTicketClaims {
@@ -31,10 +34,15 @@ export class StreamTicketService {
   constructor(@Inject(APP_CONFIG) config: AppConfig) {
     // Domain-separated key: a leaked ticket signature can never be confused
     // with (or forged from) an access token, and vice versa.
-    this.key = createHmac('sha256', config.jwtAccessSecret).update('sse-stream-ticket-v1').digest();
+    this.key = createHmac('sha256', config.jwtAccessSecret)
+      .update('sse-stream-ticket-v1')
+      .digest();
   }
 
-  mint(input: { liveCodeId: string; tenantId: string; userId: string }, ttlSeconds = STREAM_TICKET_TTL_SECONDS): {
+  mint(
+    input: { liveCodeId: string; tenantId: string; userId: string },
+    ttlSeconds = STREAM_TICKET_TTL_SECONDS,
+  ): {
     ticket: string;
     expiresInSeconds: number;
   } {
@@ -46,7 +54,10 @@ export class StreamTicketService {
       exp: Math.floor(Date.now() / 1000) + ttlSeconds,
     };
     const payload = Buffer.from(JSON.stringify(claims)).toString('base64url');
-    return { ticket: `${payload}.${this.sign(payload)}`, expiresInSeconds: ttlSeconds };
+    return {
+      ticket: `${payload}.${this.sign(payload)}`,
+      expiresInSeconds: ttlSeconds,
+    };
   }
 
   /** Throws 401 `stream.ticket_invalid` on any failure (forged, expired, wrong room). */
@@ -57,7 +68,10 @@ export class StreamTicketService {
 
     const expected = Buffer.from(this.sign(payload));
     const provided = Buffer.from(signature);
-    if (expected.length !== provided.length || !timingSafeEqual(expected, provided)) {
+    if (
+      expected.length !== provided.length ||
+      !timingSafeEqual(expected, provided)
+    ) {
       throw this.invalid('Bad ticket signature');
     }
 
@@ -67,8 +81,10 @@ export class StreamTicketService {
     } catch {
       throw this.invalid('Malformed stream ticket');
     }
-    if (claims.pur !== 'live-stream') throw this.invalid('Wrong ticket purpose');
-    if (claims.lc !== liveCodeId) throw this.invalid('Ticket is bound to another live code');
+    if (claims.pur !== 'live-stream')
+      throw this.invalid('Wrong ticket purpose');
+    if (claims.lc !== liveCodeId)
+      throw this.invalid('Ticket is bound to another live code');
     if (typeof claims.exp !== 'number' || claims.exp * 1000 < Date.now()) {
       throw this.invalid('Stream ticket expired');
     }

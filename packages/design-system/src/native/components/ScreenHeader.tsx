@@ -44,7 +44,10 @@ export function ScreenHeader({
   return (
     <View
       testID={testID}
-      style={[{ flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] }, style]}
+      style={[
+        { flexDirection: 'row', alignItems: 'center', gap: theme.space['3'] },
+        style,
+      ]}
     >
       {onBack ? (
         <Pressable
