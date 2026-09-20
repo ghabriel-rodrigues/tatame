@@ -40,7 +40,9 @@ jobs:
       - name: Deploy to Netlify (prebuilt)
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        # --package=…dlx: netlify-cli ships two bins (ntl, netlify) and a bare
+        # `pnpm dlx netlify-cli` refuses to pick one (ERR_PNPM_DLX_MULTIPLE_BINS).
         run: >-
-          pnpm dlx netlify-cli@23 deploy --prod --no-build
+          pnpm --package=netlify-cli@23 dlx netlify deploy --prod --no-build
           --filter @org/web --dir apps/web/dist
           --site 65aaf3be-41e8-4939-b0f5-c2b74a37eee6
