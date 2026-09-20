@@ -8,6 +8,9 @@ allowBuilds:
   '@parcel/watcher': true
   less: false
   esbuild: true
+  # swc native binding — nx/@swc-node need it; unapproved build scripts are
+  # fatal (ERR_PNPM_IGNORED_BUILDS) on fresh CI installs (Render/Netlify)
+  '@swc/core': true
   # testcontainers/tooling transitive deps — builds not needed (pure-JS fallbacks)
   cpu-features: false
   protobufjs: false
