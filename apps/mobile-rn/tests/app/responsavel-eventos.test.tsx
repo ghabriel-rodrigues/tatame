@@ -207,7 +207,10 @@ describe('responsável Eventos (EVT.11)', () => {
 
     await waitFor(() => expect(screen.queryByTestId(`${chipId}-check`)).toBeNull());
     expect(log.cancels).toEqual([`${OPEN_MAT_EVENT_ID}:${PEDRO_ID}`]);
-  });
+    // Double interaction round-trip regularly exceeds jest's 5s default when
+    // the whole suite runs in parallel workers (first CI-wide run flushed
+    // this out; the test is green in isolation).
+  }, 15_000);
 
   it('paid chip opens the Pix sheet addressed to the child; simulate confirms (story 20)', async () => {
     const log = renderEventos();
