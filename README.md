@@ -6,15 +6,15 @@ Governance: **AGENTE BOSS** (`agents/boss.md`) keeps implementation aligned with
 
 ## Stack
 
-| Part | Tech |
-|---|---|
-| Monorepo | nx + pnpm + docker |
-| Backend | NestJS + TypeScript |
-| Database | Postgres 16 (docker-compose) |
-| Web | React + TanStack Query + MUI (no Next) |
+| Part          | Tech                                                            |
+| ------------- | --------------------------------------------------------------- |
+| Monorepo      | nx + pnpm + docker                                              |
+| Backend       | NestJS + TypeScript                                             |
+| Database      | Postgres 16 (docker-compose)                                    |
+| Web           | React + TanStack Query + MUI (no Next)                          |
 | Design system | `packages/design-system` — Lumira tokens, themes MUI + RN + web |
-| Mobile | Expo/React Native (TS) · Kotlin (Android) · Swift (iOS) |
-| Services | Stripe (payments) · Resend (email) · Netlify (web deploy) |
+| Mobile        | Expo/React Native (TS) · Kotlin (Android) · Swift (iOS)         |
+| Services      | Stripe (payments) · Resend (email) · Netlify (web deploy)       |
 
 ## Getting started
 
@@ -33,6 +33,7 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 > Generated from wayfinder planning + specs (see `docs/specs/`). Item numbering is stable; do not renumber. Mark `[x]` only with working, tested code.
 
 ### Phase 0 — Foundation
+
 - [x] 0.1 Nx + pnpm monorepo scaffold
 - [x] 0.2 Postgres via docker-compose + `.env.example` (Stripe/Resend/Netlify placeholders)
 - [x] 0.3 AGENTE BOSS charter + project governance (CLAUDE.md, agents/boss.md)
@@ -340,4 +341,4 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [ ] RLS.H7 (humano) App Store + Play Console — developer accounts, app records, signing, first internal-testing uploads
 - [ ] RLS.H8 (humano) DNS/domínio — domain purchase, Netlify + Resend + API host records
 
-_RLS.H* items are user-gated — the runbook in docs/RELEASE.md walks each one._
+_RLS.H\* items are user-gated — the runbook in docs/RELEASE.md walks each one._

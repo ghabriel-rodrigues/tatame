@@ -27,7 +27,13 @@ android {
         }
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"https://api.tatame.dev/\"")
+            // Production origin: the Netlify edge proxies /v1/* to the API host
+            // (H3), and every Retrofit path already carries the v1/ prefix.
+            buildConfigField("String", "API_BASE_URL", "\"https://tatame-bjj.netlify.app/\"")
+            // Sideload-test signing only (H7 pending): debug keystore keeps the
+            // APK installable without a release keystore decision. Replace with
+            // a real upload keystore before any store submission.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

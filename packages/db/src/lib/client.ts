@@ -6,7 +6,9 @@ import * as schema from '../schema/index.js';
 export type Database = NodePgDatabase<typeof schema>;
 
 /** The transaction handle passed to `withTenant` / `withPlatform` callbacks. */
-export type DbTransaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+export type DbTransaction = Parameters<
+  Parameters<Database['transaction']>[0]
+>[0];
 
 export interface DbHandle {
   db: Database;
@@ -25,7 +27,11 @@ export interface CreateDbOptions {
   role?: string | null;
 }
 
-function createHandle(databaseUrl: string, role: string | null, max: number): DbHandle {
+function createHandle(
+  databaseUrl: string,
+  role: string | null,
+  max: number,
+): DbHandle {
   if (role !== null && !/^[a-z_][a-z0-9_]*$/.test(role)) {
     throw new Error(`Invalid database role name: ${role}`);
   }
@@ -44,7 +50,11 @@ function createHandle(databaseUrl: string, role: string | null, max: number): Db
       client.query(`SET ROLE ${role}`).catch((error: unknown) => {
         void client.end();
         // Surface on the pool's error channel instead of crashing the process.
-        pool.emit('error', error instanceof Error ? error : new Error(String(error)), client);
+        pool.emit(
+          'error',
+          error instanceof Error ? error : new Error(String(error)),
+          client,
+        );
       });
     });
   }
@@ -57,8 +67,15 @@ function createHandle(databaseUrl: string, role: string | null, max: number): Db
  * (RLS enforced, fail closed). All tenant reads/writes must go through
  * {@link withTenant} — the raw handle is intentionally not tenant-scoped.
  */
-export function createAppDb(databaseUrl: string, options: CreateDbOptions = {}): DbHandle {
-  return createHandle(databaseUrl, options.role === undefined ? 'tatame_app' : options.role, options.max ?? 10);
+export function createAppDb(
+  databaseUrl: string,
+  options: CreateDbOptions = {},
+): DbHandle {
+  return createHandle(
+    databaseUrl,
+    options.role === undefined ? 'tatame_app' : options.role,
+    options.max ?? 10,
+  );
 }
 
 /**
@@ -66,7 +83,10 @@ export function createAppDb(databaseUrl: string, options: CreateDbOptions = {}):
  * `tatame_platform` (BYPASSRLS) — inject exclusively into platform-scope
  * providers, never into tenant feature modules (ticket 02).
  */
-export function createPlatformDb(databaseUrl: string, options: CreateDbOptions = {}): DbHandle {
+export function createPlatformDb(
+  databaseUrl: string,
+  options: CreateDbOptions = {},
+): DbHandle {
   return createHandle(
     databaseUrl,
     options.role === undefined ? 'tatame_platform' : options.role,
@@ -95,13 +115,18 @@ export async function withTenant<T>(
   context: string | TenantContext,
   fn: (tx: DbTransaction) => Promise<T>,
 ): Promise<T> {
-  const ctx: TenantContext = typeof context === 'string' ? { tenantId: context } : context;
+  const ctx: TenantContext =
+    typeof context === 'string' ? { tenantId: context } : context;
   return db.transaction(async (tx) => {
     if (ctx.tenantId != null) {
-      await tx.execute(sql`select set_config('app.tenant_id', ${ctx.tenantId}, true)`);
+      await tx.execute(
+        sql`select set_config('app.tenant_id', ${ctx.tenantId}, true)`,
+      );
     }
     if (ctx.userId != null) {
-      await tx.execute(sql`select set_config('app.user_id', ${ctx.userId}, true)`);
+      await tx.execute(
+        sql`select set_config('app.user_id', ${ctx.userId}, true)`,
+      );
     }
     return fn(tx);
   });
