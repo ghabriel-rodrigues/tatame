@@ -32,6 +32,7 @@ import br.com.tatame.feature.graduation.professor.GRADUATION_UPDATE_PERMISSION
 import br.com.tatame.feature.graduation.professor.ProfessorPerfilTab
 import br.com.tatame.feature.shell.PersonaShellScreen
 import br.com.tatame.feature.shell.ResponsavelPerfilTab
+import br.com.tatame.feature.shell.ShellTab
 import br.com.tatame.feature.shell.SuspendedAcademyScreen
 import br.com.tatame.feature.shell.WebOnlyRoleScreen
 import br.com.tatame.feature.splash.SplashScreen
@@ -90,12 +91,12 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
 
         me.activeRole == Roles.STUDENT -> PersonaShellScreen(
             me = me,
-            tabLabels = listOf(
-                R.string.tab_home,
-                R.string.tab_agenda,
-                R.string.tab_checkin,
-                R.string.tab_wallet,
-                R.string.tab_profile,
+            tabs = listOf(
+                ShellTab(R.string.tab_home, R.drawable.ic_tab_home),
+                ShellTab(R.string.tab_agenda, R.drawable.ic_tab_agenda),
+                ShellTab(R.string.tab_checkin, R.drawable.ic_tab_checkin),
+                ShellTab(R.string.tab_wallet, R.drawable.ic_tab_wallet),
+                ShellTab(R.string.tab_profile, R.drawable.ic_tab_profile),
             ),
             onLogout = onLogout,
             // ATT.19 — Início (index 0) is the real aluno surface; the central
@@ -143,11 +144,11 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
 
         me.activeRole == Roles.PROFESSOR -> PersonaShellScreen(
             me = me,
-            tabLabels = listOf(
-                R.string.tab_home,
-                R.string.tab_classes,
-                R.string.tab_students,
-                R.string.tab_profile,
+            tabs = listOf(
+                ShellTab(R.string.tab_home, R.drawable.ic_tab_home),
+                ShellTab(R.string.tab_classes, R.drawable.ic_tab_classes),
+                ShellTab(R.string.tab_students, R.drawable.ic_tab_students),
+                ShellTab(R.string.tab_profile, R.drawable.ic_tab_profile),
             ),
             onLogout = onLogout,
             // ENR.21/22 — Turmas tab (index 1); ATT.20/21 — dashboard (index 0);
@@ -186,11 +187,11 @@ private fun RoleGate(me: MeResponse, onLogout: () -> Unit) {
             // already IS the dependents panel) gives way to the real Eventos
             // tab, restoring the prototype's Início/Pagamentos/Eventos/Perfil
             // bar (responsavel-06).
-            tabLabels = listOf(
-                R.string.tab_home,
-                R.string.tab_payments,
-                R.string.tab_events,
-                R.string.tab_profile,
+            tabs = listOf(
+                ShellTab(R.string.tab_home, R.drawable.ic_tab_home),
+                ShellTab(R.string.tab_payments, R.drawable.ic_tab_payments),
+                ShellTab(R.string.tab_events, R.drawable.ic_tab_events),
+                ShellTab(R.string.tab_profile, R.drawable.ic_tab_profile),
             ),
             onLogout = onLogout,
             // ENR.22/23 — home tab (index 0) is the dependents panel; the

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Local CI gate (2026-09-20): pushing red to main stalls the whole deploy
+# chain (Render waits on checks; deploy-web is workflow_run-gated), so the
+# CI-equivalent runs here first. Enable once per clone with:
+#   git config core.hooksPath .githooks
+# Skip (emergencies only): git push --no-verify
+set -e
+
+echo "[pre-push] nx format:check"
+pnpm nx format:check
+
+echo "[pre-push] nx affected -t lint typecheck test build (base origin/main)"
+pnpm nx affected -t lint typecheck test build --base origin/main
+
+echo "[pre-push] green — pushing"

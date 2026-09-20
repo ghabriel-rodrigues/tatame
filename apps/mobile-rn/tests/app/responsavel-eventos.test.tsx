@@ -7,11 +7,22 @@
  * state independence.
  */
 
-import { act, fireEvent, renderRouter, screen, waitFor } from 'expo-router/testing-library';
+import {
+  act,
+  fireEvent,
+  renderRouter,
+  screen,
+  waitFor,
+} from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import { queryClient } from '../../src/session/api';
 import { sessionTestApi } from '../../src/session/session-store';
-import { installFetchMock, json, makeMe, type FetchHandler } from '../helpers/session';
+import {
+  installFetchMock,
+  json,
+  makeMe,
+  type FetchHandler,
+} from '../helpers/session';
 import { makeDependents } from '../helpers/enrollment';
 import { JULIA_ID, PEDRO_ID, makePixPayment } from '../helpers/billing';
 import {
@@ -65,7 +76,9 @@ function renderEventos(
         ? {
             ...event,
             dependents: event.dependents.map((dependent) =>
-              dependent.studentId === studentId ? { ...dependent, registration } : dependent,
+              dependent.studentId === studentId
+                ? { ...dependent, registration }
+                : dependent,
             ),
           }
         : event,
@@ -75,16 +88,20 @@ function renderEventos(
   installFetchMock((request) => {
     const overridden = override?.(request);
     if (overridden) return overridden;
-    if (request.method === 'GET' && request.path === '/v1/responsavel/dependents') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/responsavel/dependents'
+    ) {
       return json(200, { dependents: makeDependents() });
     }
     if (request.method === 'GET' && request.path === '/v1/responsavel/events') {
       log.listGets += 1;
       return json(200, { events });
     }
-    const registrationMatch = /^\/v1\/responsavel\/events\/([0-9a-f-]+)\/registrations\/([0-9a-f-]+)$/.exec(
-      request.path,
-    );
+    const registrationMatch =
+      /^\/v1\/responsavel\/events\/([0-9a-f-]+)\/registrations\/([0-9a-f-]+)$/.exec(
+        request.path,
+      );
     if (registrationMatch) {
       const [, eventId = '', studentId = ''] = registrationMatch;
       const event = events.find((candidate) => candidate.id === eventId);
@@ -101,24 +118,31 @@ function renderEventos(
       }
       if (request.method === 'DELETE') {
         log.cancels.push(`${eventId}:${studentId}`);
-        setRegistration(eventId, studentId, makeRegistration({ status: 'canceled' }));
+        setRegistration(
+          eventId,
+          studentId,
+          makeRegistration({ status: 'canceled' }),
+        );
         return new Response(null, { status: 204 });
       }
     }
     if (
       request.method === 'POST' &&
-      request.path === `/v1/responsavel/payments/charges/${EVENT_CHARGE_ID}/payments`
+      request.path ===
+        `/v1/responsavel/payments/charges/${EVENT_CHARGE_ID}/payments`
     ) {
       log.paymentPaths.push(request.path);
       return json(201, {
-        payment: makePixPayment({ chargeId: EVENT_CHARGE_ID, amountCents: 6_000 }),
+        payment: makePixPayment({
+          chargeId: EVENT_CHARGE_ID,
+          amountCents: 6_000,
+        }),
         charge: null,
         mandateCreated: false,
       });
     }
-    const simulateMatch = /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(
-      request.path,
-    );
+    const simulateMatch =
+      /^\/v1\/billing\/payments\/([0-9a-f-]+)\/simulate$/.exec(request.path);
     if (request.method === 'POST' && simulateMatch) {
       log.simulated.push(simulateMatch[1] ?? '');
       // Whichever dependent is pending on the paid event settles.
@@ -129,14 +153,23 @@ function renderEventos(
           }
         }
       }
-      return json(200, { payment: makePixPayment({ status: 'succeeded' }), charge: null });
+      return json(200, {
+        payment: makePixPayment({ status: 'succeeded' }),
+        charge: null,
+      });
     }
-    if (request.method === 'GET' && request.path === '/v1/responsavel/payments') {
+    if (
+      request.method === 'GET' &&
+      request.path === '/v1/responsavel/payments'
+    ) {
       return json(200, { dependents: [], history: [] });
     }
     return null;
   });
-  sessionTestApi.seed({ status: 'authed', session: makeMe({ role: 'guardian' }) });
+  sessionTestApi.seed({
+    status: 'authed',
+    session: makeMe({ role: 'guardian' }),
+  });
   renderRouter('src/app');
   act(() => {
     jest.advanceTimersByTime(2000);
@@ -150,7 +183,9 @@ async function openEventosTab(): Promise<void> {
     fireEvent.press(screen.getByLabelText('Eventos'));
   });
   await waitFor(() =>
-    expect(screen.getByText('Confirme a participação por dependente')).toBeTruthy(),
+    expect(
+      screen.getByText('Confirme a participação por dependente'),
+    ).toBeTruthy(),
   );
 }
 
@@ -166,19 +201,33 @@ describe('responsável Eventos (EVT.11)', () => {
     await openEventosTab();
 
     await waitFor(() =>
-      expect(screen.getByTestId(`responsavel-event-${FESTIVAL_EVENT_ID}`)).toBeTruthy(),
+      expect(
+        screen.getByTestId(`responsavel-event-${FESTIVAL_EVENT_ID}`),
+      ).toBeTruthy(),
     );
     expect(screen.getByText('Festival Kids')).toBeTruthy();
     expect(screen.getByText('R$ 60,00')).toBeTruthy();
-    expect(screen.getByText('Dom, 13 de setembro · 09:30 · Ginásio Municipal')).toBeTruthy();
+    expect(
+      screen.getByText('Dom, 13 de setembro · 09:30 · Ginásio Municipal'),
+    ).toBeTruthy();
     expect(screen.getByText('Open mat de verão')).toBeTruthy();
     expect(screen.getByText('Gratuito')).toBeTruthy();
-    expect(screen.getByText('Sáb, 15 de agosto · 10:00 · Tatame principal')).toBeTruthy();
+    expect(
+      screen.getByText('Sáb, 15 de agosto · 10:00 · Tatame principal'),
+    ).toBeTruthy();
     // One chip per dependent on each card (story 18).
-    expect(screen.getByTestId(`dependent-chip-${FESTIVAL_EVENT_ID}-${PEDRO_ID}`)).toBeTruthy();
-    expect(screen.getByTestId(`dependent-chip-${FESTIVAL_EVENT_ID}-${JULIA_ID}`)).toBeTruthy();
-    expect(screen.getByTestId(`dependent-chip-${OPEN_MAT_EVENT_ID}-${PEDRO_ID}`)).toBeTruthy();
-    expect(screen.getByTestId(`dependent-chip-${OPEN_MAT_EVENT_ID}-${JULIA_ID}`)).toBeTruthy();
+    expect(
+      screen.getByTestId(`dependent-chip-${FESTIVAL_EVENT_ID}-${PEDRO_ID}`),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId(`dependent-chip-${FESTIVAL_EVENT_ID}-${JULIA_ID}`),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId(`dependent-chip-${OPEN_MAT_EVENT_ID}-${PEDRO_ID}`),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId(`dependent-chip-${OPEN_MAT_EVENT_ID}-${JULIA_ID}`),
+    ).toBeTruthy();
   });
 
   it('free toggle: tap confirms the child (check), tap again cancels (story 19)', async () => {
@@ -193,19 +242,27 @@ describe('responsável Eventos (EVT.11)', () => {
       fireEvent.press(screen.getByTestId(chipId));
     });
 
-    await waitFor(() => expect(log.registers).toEqual([`${OPEN_MAT_EVENT_ID}:${PEDRO_ID}`]));
+    await waitFor(() =>
+      expect(log.registers).toEqual([`${OPEN_MAT_EVENT_ID}:${PEDRO_ID}`]),
+    );
     await waitFor(() => expect(log.listGets).toBeGreaterThan(1));
-    await waitFor(() => expect(screen.getByTestId(`${chipId}-check`)).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId(`${chipId}-check`)).toBeTruthy(),
+    );
     // Sibling untouched (story 21): Pedro confirmed never implies Júlia.
     expect(
-      screen.queryByTestId(`dependent-chip-${OPEN_MAT_EVENT_ID}-${JULIA_ID}-check`),
+      screen.queryByTestId(
+        `dependent-chip-${OPEN_MAT_EVENT_ID}-${JULIA_ID}-check`,
+      ),
     ).toBeNull();
 
     await act(async () => {
       fireEvent.press(screen.getByTestId(chipId));
     });
 
-    await waitFor(() => expect(screen.queryByTestId(`${chipId}-check`)).toBeNull());
+    await waitFor(() =>
+      expect(screen.queryByTestId(`${chipId}-check`)).toBeNull(),
+    );
     expect(log.cancels).toEqual([`${OPEN_MAT_EVENT_ID}:${PEDRO_ID}`]);
     // Double interaction round-trip regularly exceeds jest's 5s default when
     // the whole suite runs in parallel workers (first CI-wide run flushed
@@ -229,19 +286,25 @@ describe('responsável Eventos (EVT.11)', () => {
     // Addressed to the child (story 18/20 subtitle pattern).
     expect(screen.getByText('Inscrição · Festival Kids · Pedro')).toBeTruthy();
 
-    await waitFor(() => expect(screen.getByText('Simular pagamento')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('Simular pagamento')).toBeTruthy(),
+    );
     await act(async () => {
       fireEvent.press(screen.getByText('Simular pagamento'));
     });
 
-    await waitFor(() => expect(screen.getByText('A inscrição foi confirmada.')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('A inscrição foi confirmada.')).toBeTruthy(),
+    );
     expect(log.simulated).toHaveLength(1);
     await act(async () => {
       fireEvent.press(screen.getByText('Fechar'));
     });
 
     // Settlement lands via refetch: the chip gains the check.
-    await waitFor(() => expect(screen.getByTestId(`${chipId}-check`)).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId(`${chipId}-check`)).toBeTruthy(),
+    );
   });
 
   it('pending chip: tap resumes the SAME charge, long-press cancels (documented UX)', async () => {
@@ -277,14 +340,18 @@ describe('responsável Eventos (EVT.11)', () => {
       fireEvent(screen.getByTestId(chipId), 'longPress');
     });
 
-    await waitFor(() => expect(log.cancels).toEqual([`${FESTIVAL_EVENT_ID}:${PEDRO_ID}`]));
+    await waitFor(() =>
+      expect(log.cancels).toEqual([`${FESTIVAL_EVENT_ID}:${PEDRO_ID}`]),
+    );
   });
 
   it('renders the empty state when no events are published', async () => {
     renderEventos([]);
     await openEventosTab();
 
-    await waitFor(() => expect(screen.getByTestId('responsavel-events-empty')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByTestId('responsavel-events-empty')).toBeTruthy(),
+    );
     expect(screen.getByText('Nenhum evento por enquanto')).toBeTruthy();
   });
 });

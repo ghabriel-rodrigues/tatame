@@ -8,13 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,7 +22,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import br.com.tatame.R
 import br.com.tatame.core.designsystem.theme.PillShape
 import br.com.tatame.core.network.dto.AcademyStatus
@@ -30,19 +33,22 @@ import br.com.tatame.core.network.dto.MeResponse
 import br.com.tatame.feature.auth.roleLabel
 import com.tatame.designsystem.tokens.LumiraTokens
 
+/** One bottom-bar tab: label + Material glyph (prototype tab bars carry both). */
+data class ShellTab(@StringRes val label: Int, @DrawableRes val icon: Int)
+
 /**
- * Authenticated shell per persona (AUTH.23): placeholder bottom bar (full
- * GlassTabBar parity lands with later slices) + per-tab content. Tabs with an
- * entry in [tabContent] render real feature surfaces (ENR.21+); the rest keep
- * the session-context placeholder (name, academy, role, logout). Content
- * receives a `selectTab` callback for in-shell navigation (e.g. dashboard
- * "Ver turmas" → Turmas tab). The delinquency read-only banner always renders
- * above content.
+ * Authenticated shell per persona (AUTH.23): Material NavigationBar with the
+ * prototype's label+icon tabs (full GlassTabBar visual parity still pending)
+ * + per-tab content. Tabs with an entry in [tabContent] render real feature
+ * surfaces (ENR.21+); the rest keep the session-context placeholder (name,
+ * academy, role, logout). Content receives a `selectTab` callback for
+ * in-shell navigation (e.g. dashboard "Ver turmas" → Turmas tab). The
+ * delinquency read-only banner always renders above content.
  */
 @Composable
 fun PersonaShellScreen(
     me: MeResponse,
-    tabLabels: List<Int>,
+    tabs: List<ShellTab>,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     tabContent: Map<Int, @Composable (selectTab: (Int) -> Unit) -> Unit> = emptyMap(),
@@ -54,14 +60,20 @@ fun PersonaShellScreen(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                tabLabels.forEachIndexed { index, labelRes ->
+                tabs.forEachIndexed { index, tab ->
                     NavigationBarItem(
                         selected = index == selectedTab,
                         onClick = { selectedTab = index },
-                        icon = { TabDot(selected = index == selectedTab) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(tab.icon),
+                                // The visible label below already names the tab.
+                                contentDescription = null,
+                            )
+                        },
                         label = {
                             Text(
-                                text = stringResource(labelRes),
+                                text = stringResource(tab.label),
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         },
@@ -123,22 +135,6 @@ fun PersonaShellScreen(
             Spacer(Modifier.height(LumiraTokens.Space.S6))
         }
     }
-}
-
-@Composable
-private fun TabDot(selected: Boolean) {
-    Box(
-        modifier = Modifier
-            .size(LumiraTokens.Space.S3)
-            .background(
-                color = if (selected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outlineVariant
-                },
-                shape = PillShape,
-            ),
-    )
 }
 
 @Composable
