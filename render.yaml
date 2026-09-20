@@ -1,0 +1,42 @@
+# Render blueprint for the API (H3, free-tier path decided 2026-09-20:
+# Render free web service + Supabase Postgres us-west-2 — replaces the
+# original Fly.io GRU recommendation until there are paying users).
+#
+# Free-tier realities: the instance sleeps after ~15min idle (first request
+# then takes ~1min), and the Supabase free project pauses after 7 idle days.
+#
+# DATABASE_URL is set out-of-band (sync: false) — Supabase session-pooler URI
+# (aws-…pooler.supabase.com:5432, user postgres.<ref>) with
+# `sslmode=verify-full&sslrootcert=apps/api/certs/supabase-pooler-ca.crt`
+# (path relative to the repo root, Render's start cwd). The pooler is
+# mandatory: the direct db.<ref>.supabase.co host is IPv6-only and Render
+# egress is IPv4. Session mode (not 6543/transaction) because the db client
+# pins a `role` GUC in the connection startup packet.
+services:
+  - type: web
+    name: tatame-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm nx build api
+    startCommand: node apps/api/dist/main.cjs
+    # No dedicated health endpoint yet — Swagger UI answers 200 unauthenticated.
+    healthCheckPath: /docs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "24"
+      # Render routes traffic to $PORT (10000); the app reads API_PORT.
+      - key: API_PORT
+        value: "10000"
+      - key: PAYMENTS_PROVIDER
+        value: simulated
+      - key: WEB_URL
+        value: https://tatame-bjj.netlify.app
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: TOTP_ENC_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false

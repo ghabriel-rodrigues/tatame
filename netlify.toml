@@ -12,16 +12,18 @@
 [build.environment]
   NODE_VERSION = "24"
 
-# --- /api proxy placeholder (activate with RLS.H3) -------------------------
-# Same-origin proxy to the production API: avoids CORS entirely and keeps the
-# refresh cookie first-party. Activate by uncommenting and replacing
+# --- /v1 proxy placeholder (activate with RLS.H3) --------------------------
+# Same-origin proxy to the production API: avoids CORS entirely (the API
+# enables none) and keeps the refresh cookie first-party. The API surface is
+# URI-versioned under /v1 (not /api — the SPA fallback would otherwise
+# swallow it). Activate by uncommenting and replacing
 # <PRODUCTION_API_ORIGIN> once the API host exists (docs/RELEASE.md, H3 page).
 # Order matters: this block must stay ABOVE the SPA fallback.
 # Until it is active, production builds rely on VITE_API_URL (infra-05 §4).
 #
 # [[redirects]]
-#   from = "/api/*"
-#   to = "<PRODUCTION_API_ORIGIN>/api/:splat"
+#   from = "/v1/*"
+#   to = "<PRODUCTION_API_ORIGIN>/v1/:splat"
 #   status = 200
 #   force = true
 
