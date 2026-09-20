@@ -2,8 +2,9 @@
 # Authored before any git remote exists (charter: remote is the human's call);
 # goes live on the first push after RLS.H1. Native apps are outside the nx
 # graph and have their own path-filtered lanes (mobile-android.yml,
-# mobile-ios.yml). Netlify builds/deploys the web app on its own
-# infrastructure — deploy is deliberately not a job here (infra-04).
+# mobile-ios.yml). The web app deploys to Netlify from deploy-web.yml after
+# this workflow succeeds on main (2026-09-20; supersedes infra-04's
+# Netlify-side build wiring so a red CI never ships).
 name: CI
 
 on:

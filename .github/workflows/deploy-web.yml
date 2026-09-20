@@ -1,0 +1,46 @@
+# Post-CI web deploy (2026-09-20; supersedes infra-04's "Netlify builds on
+# its own infrastructure" wiring). Netlify's git auto-build cannot wait for
+# external CI, so a red CI would still ship the web bundle. This workflow
+# uploads the PREBUILT bundle to Netlify only after the CI workflow succeeds
+# on main — paired with Render's "after CI checks pass" auto-deploy trigger,
+# a red CI deploys nothing anywhere. Netlify's own git builds are stopped in
+# the site settings to avoid double deploys.
+name: Deploy Web
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: ./.github/actions/setup-pnpm
+
+      - name: Build web
+        run: pnpm nx build web
+
+      # --no-build + --filter: the CLI must neither rebuild nor open its
+      # interactive monorepo project prompt; the dir is the finished bundle.
+      - name: Deploy to Netlify (prebuilt)
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: >-
+          pnpm dlx netlify-cli@23 deploy --prod --no-build
+          --filter @org/web --dir apps/web/dist
+          --site 65aaf3be-41e8-4939-b0f5-c2b74a37eee6
