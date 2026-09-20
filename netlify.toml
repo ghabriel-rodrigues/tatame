@@ -19,13 +19,13 @@
 # swallow it). Activate by uncommenting and replacing
 # <PRODUCTION_API_ORIGIN> once the API host exists (docs/RELEASE.md, H3 page).
 # Order matters: this block must stay ABOVE the SPA fallback.
-# Until it is active, production builds rely on VITE_API_URL (infra-05 §4).
-#
-# [[redirects]]
-#   from = "/v1/*"
-#   to = "<PRODUCTION_API_ORIGIN>/v1/:splat"
-#   status = 200
-#   force = true
+# Activated 2026-09-20 (H3): production API on Render free tier.
+
+[[redirects]]
+  from = "/v1/*"
+  to = "https://tatame-api-703p.onrender.com/v1/:splat"
+  status = 200
+  force = true
 
 # SPA fallback — required for the React Router SPA: every non-asset path
 # serves index.html and the client router takes over.
