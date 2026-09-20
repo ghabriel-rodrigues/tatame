@@ -88,6 +88,17 @@ the fallback), and the response carries the `X-Content-Type-Options`,
 
 ## H3 — API + Postgres production host
 
+> **Executed 2026-09-20 — different from the shortlist below.** The user chose
+> the zero-cost demo path: **Render free web service** (Oregon, sleeps after
+> ~15 min idle) + **Supabase free Postgres** (us-west-2, same region as the
+> API on purpose; the project pauses after 7 idle days). `render.yaml` is the
+> service contract; DATABASE_URL must use Supabase's **session pooler** URI
+> with `sslmode=verify-full&sslrootcert=apps/api/certs/supabase-pooler-ca.crt`
+> (direct host is IPv6-only; transaction pooling breaks the per-connection
+> role). The netlify.toml `/v1/*` proxy is active. Revisit Fly.io GRU when
+> there are paying users. The section below is kept as the original decision
+> record.
+
 _(your call — informed by the BOSS shortlist, spec 014 §B-H3)_
 
 Shortlist judged on BR latency, cost and Stripe-webhook reachability:

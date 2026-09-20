@@ -331,9 +331,9 @@ Per feature: **DB schema → backend → web → mobiles (RN → Kotlin → Swif
 - [x] RLS.10 Device visual pass — compose+seed stack, Android emulator + iOS simulator + web + RN: auth, home/dashboard and check-in flows per persona plus Convite, compared against the handoff screenshots; findings filed as `docs/qa/visual-pass-014.md` with P0/P1 triage (full 79-screen pass recorded as ongoing QA, not a phase gate)
 - [x] RLS.11 Visual pass P0 fixes — every P0 mismatch from RLS.10 fixed and re-verified on device; P1s remain filed
 - [x] RLS.12 `docs/RELEASE.md` runbook — per-provider step-by-step (git host + push, Netlify, API/Postgres host per H3, Stripe live + webhook, Resend domain, EAS, App Store/Play Console, DNS), each page ending in a verify step; host-agnostic where the choice is the human's
-- [ ] RLS.H1 (humano) Pick the git host/organization and push — the user's decision alone; workflows go live on first push
-- [ ] RLS.H2 (humano) Create the Netlify site, link the repo, set per-context env vars (`VITE_API_URL`, `VITE_STRIPE_PUBLISHABLE_KEY`)
-- [ ] RLS.H3 (humano) Choose the API + Postgres production host — shortlist Fly.io / Railway / Render / Neon / Supabase on BR latency, cost, Stripe reachability; BOSS recommends Fly.io (GRU) + Fly managed Postgres, Supabase São Paulo Postgres as fallback; provision + secrets + migrations per runbook
+- [x] RLS.H1 (humano) Pick the git host/organization and push — the user's decision alone; workflows go live on first push _(2026-09-20: private repo `ghabriel-rodrigues/tatame` on the personal GitHub account, pushed over SSH)_
+- [x] RLS.H2 (humano) Create the Netlify site, link the repo, set per-context env vars _(2026-09-20: site `tatame-bjj` linked to the repo, continuous deploy live; no env vars needed — the web bundle calls relative `/v1` and the netlify.toml proxy is the production path)_
+- [x] RLS.H3 (humano) Choose the API + Postgres production host _(2026-09-20: user chose the zero-cost demo path — Render free web service + Supabase Postgres us-west-2 — over the Fly.io GRU recommendation, revisit when there are paying users; migrations + seed applied, /v1 proxy active, full persona journey verified through the public site; see render.yaml)_
 - [ ] RLS.H4 (humano) Stripe live mode — live keys in the API host secret store, webhook endpoint + secret registered, publishable key to Netlify/EAS
 - [ ] RLS.H5 (humano) Resend — domain verification DNS records, production from-address
 - [ ] RLS.H6 (humano) Expo/EAS — account, project link, `eas env` secrets, first preview + production builds
