@@ -18,7 +18,10 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm nx build api
+    # `corepack enable` symlinks into /usr/bin, which is read-only on Render
+    # (EROFS) — the `corepack pnpm` shim runs the packageManager-pinned pnpm
+    # without touching global paths.
+    buildCommand: corepack pnpm install --frozen-lockfile && corepack pnpm nx build api
     startCommand: node apps/api/dist/main.cjs
     # No dedicated health endpoint yet — Swagger UI answers 200 unauthenticated.
     healthCheckPath: /docs
