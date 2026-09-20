@@ -108,12 +108,19 @@ function isoDate(d: Date): string {
   return `${d.getFullYear()}-${month}-${day}`;
 }
 
-/** Upcoming fixture date at a fixed local hour, `days` from now. */
+/**
+ * Upcoming fixture date at a fixed TENANT-local hour (America/Sao_Paulo),
+ * `days` from now — independent of the process timezone. CI runners are UTC
+ * while the API formats times in the tenant zone, so seeding with
+ * `setHours()` shifts every asserted "10:00" to "07:00" there. Brazil has
+ * had no DST since 2019, so the fixed -03:00 offset is exact.
+ */
 function upcoming(days: number, hour: number): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  d.setHours(hour, 0, 0, 0);
-  return d;
+  const base = new Date(Date.now() + days * 86_400_000);
+  const ymd = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+  }).format(base);
+  return new Date(`${ymd}T${String(hour).padStart(2, '0')}:00:00-03:00`);
 }
 
 /**
