@@ -5,6 +5,12 @@
 # on main — paired with Render's "after CI checks pass" auto-deploy trigger,
 # a red CI deploys nothing anywhere. Netlify's own git builds are stopped in
 # the site settings to avoid double deploys.
+#
+# Credit guard (2026-09-21): Netlify's credit pricing charges PER PRODUCTION
+# DEPLOY (~15 credits each — 16 deploys burned 242 of the 300 monthly free
+# credits on day one). Each deploy records its commit as the deploy message
+# ("sha:<40hex>"); the next run diffs against that recorded commit and skips
+# the deploy entirely when nothing that shapes the published bundle changed.
 name: Deploy Web
 
 on:
@@ -19,6 +25,13 @@ concurrency:
   group: deploy-web
   cancel-in-progress: false
 
+env:
+  NETLIFY_SITE_ID: 65aaf3be-41e8-4939-b0f5-c2b74a37eee6
+  # Paths that shape the published bundle; anything else skips the deploy.
+  WEB_PATHS: >-
+    apps/web netlify.toml packages/shared packages/design-system
+    pnpm-lock.yaml
+
 jobs:
   deploy:
     if: >-
@@ -29,20 +42,59 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+          # Full history: the credit guard diffs against the last deployed sha.
+          fetch-depth: 0
+          filter: tree:0
+
+      - name: Skip when the web bundle is untouched since the last deploy
+        id: guard
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          prev=$(curl -sf -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+            "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys?per_page=40" \
+            | node -e '
+              let raw = "";
+              process.stdin.on("data", (c) => (raw += c));
+              process.stdin.on("end", () => {
+                const m = JSON.parse(raw)
+                  .filter((d) => d.state === "ready")
+                  .map((d) => /^sha:([0-9a-f]{40})$/.exec(d.title ?? ""))
+                  .find(Boolean);
+                process.stdout.write(m ? m[1] : "");
+              });')
+          if [ -z "$prev" ] || ! git cat-file -e "$prev^{commit}" 2>/dev/null; then
+            echo "No previous deploy marker — deploying to establish one."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Last deployed commit: $prev"
+          # shellcheck disable=SC2086 — WEB_PATHS is a deliberate word list.
+          if git diff --quiet "$prev" HEAD -- $WEB_PATHS; then
+            echo "Web bundle inputs unchanged — skipping the paid deploy."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only "$prev" HEAD -- $WEB_PATHS | head -20
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: ./.github/actions/setup-pnpm
+        if: steps.guard.outputs.run == 'true'
 
       - name: Build web
+        if: steps.guard.outputs.run == 'true'
         run: pnpm nx build web
 
       # --no-build + --filter: the CLI must neither rebuild nor open its
       # interactive monorepo project prompt; the dir is the finished bundle.
+      # --package=…dlx: netlify-cli ships two bins (ntl, netlify) and a bare
+      # `pnpm dlx netlify-cli` refuses to pick one (ERR_PNPM_DLX_MULTIPLE_BINS).
       - name: Deploy to Netlify (prebuilt)
+        if: steps.guard.outputs.run == 'true'
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        # --package=…dlx: netlify-cli ships two bins (ntl, netlify) and a bare
-        # `pnpm dlx netlify-cli` refuses to pick one (ERR_PNPM_DLX_MULTIPLE_BINS).
         run: >-
           pnpm --package=netlify-cli@23 dlx netlify deploy --prod --no-build
           --filter @org/web --dir apps/web/dist
-          --site 65aaf3be-41e8-4939-b0f5-c2b74a37eee6
+          --site "$NETLIFY_SITE_ID"
+          --message "sha:${{ github.event.workflow_run.head_sha }}"
